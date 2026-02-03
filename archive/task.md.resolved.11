@@ -1,0 +1,18 @@
+# Tasks: NEXUS 2026 AI Health Companion
+
+- [x] Design System Architecture & Data Flow <!-- id: 0 -->
+- [x] Create SQLite Schema (Optimized for HMM) <!-- id: 1 -->
+- [x] Specify HMM Implementation Strategy <!-- id: 2 -->
+- [x] Design Gemini 2.0 Flash API Integration <!-- id: 3 -->
+- [x] Build Basic Streamlit UI <!-- id: 6 -->
+  - [x] Home Page (Status Dashboard)
+  - [x] Sensor Data Page
+  - [x] Trends Page
+  - [x] Demo Controls
+  - [x] Input Pages (Glucose, Voice, Meds)
+- [x] Implement Loss Aversion Voucher System <!-- id: 7 -->
+- [ ] Create Demo Robustness & Fallback Plan <!-- id: 4 -->
+- [x] Implement Passive Sensor Data Collection <!-- id: 5 -->
+  - [x] Step Counter (Broadcasting)
+  - [x] Screen Time Tracker
+  - [x] Location Zone Tracker

@@ -1,0 +1,65 @@
+# HMM Implementation Strategy - NEXUS 2026
+
+## 1. Core Logic Overview
+We utilize a **Hidden Markov Model (HMM)** to infer the user's hidden health state (`STABLE`, `WARNING`, `CRISIS`) based on observable but noisy sensor data.
+
+**Why HMM?**
+- Handles temporal dependencies (Current state depends on Previous state).
+- Robust to noise (Single bad glucose reading won't trigger Crisis).
+- Handles missing data naturally (Probabilistic framework).
+
+## 2. State Space & Transitions
+Three distinct states with "Sticky" transitions (users tend to stay in their current state).
+
+**States:**
+0.  **STABLE**: Glucose controlled, meds taken, activity normal.
+1.  **WARNING**: Biomarkers slipping (glucose variance up, missed meds).
+2.  **CRISIS**: Critical threshold breach, immediate intervention required.
+
+**Transition Matrix (A):**
+*Probabilities of moving FROM row TO column.*
+| From \ To | STABLE | WARNING | CRISIS | params |
+|-----------|--------|---------|--------|--------|
+| **STABLE**| 0.98   | 0.02    | 0.00   | Hard to leave stable instantly |
+| **WARNING**| 0.15   | 0.80    | 0.05   | Can recover or worsen |
+| **CRISIS**| 0.00   | 0.10    | 0.90   | Hard to exit crisis without intervention |
+
+## 3. Observation Model (Emissions)
+We map raw features to "Emission Probabilities" $P(Observation | State)$.
+
+**Features & Weights:**
+| Feature | Weight (Impact) | Distribution | Description |
+|---------|-----------------|--------------|-------------|
+| `glucose_avg` | **40%** | Gaussian | Normalized mmol/L |
+| `meds_adherence`| **30%** | Gaussian | 0.0 to 1.0 |
+| `steps_avg` | **15%** | Gaussian | Daily step count |
+| `voice_sentiment`| **15%** | Gaussian | -1.0 to 1.0 |
+
+**Emission Strategy:**
+We treat features as **independent Gaussian** distributions given the state.
+$P(O|S) = \Pi P(feature_i | S)$
+
+**Missing Data Handling:**
+If a feature $f_i$ is missing (None/Null), we marginalize it out by setting $P(f_i | S) = 1.0$. This ensures missing data doesn't penalize the probability, effectively basing the decision only on *available* data.
+
+## 4. Inference Algorithm (Mobile Optimized)
+**Algorithm**: Viterbi (Max-Sum Log-Probability version).
+**Optimization**:
+- **Log-Space arithmetic**: To prevent underflow with small probabilities.
+- **Rolling Window**: Only analyze last **7 days** (42 steps @ 4h intervals). Older history has negligible impact on "Current" state.
+- **Pure Python**: No heavy dependencies (numpy optional, math sufficient) to ensure <2s runtime on old Android.
+
+## 5. Edge Cases & Fallbacks
+1.  **Cold Start (No Data)**:
+    - Default to `STABLE` state with low confidence.
+    - Message: "Calibrating..."
+2.  **Partial Data (e.g., No Steps)**:
+    - HMM relies on Glucose + Meds (higher weights).
+    - Accuracy degrades but system functions.
+3.  **Tier 1 Data Expiry**:
+    - Inference uses the *calculated features* stored in `hmm_states` (snapshot) or re-computes from `tier 2` aggregates.
+
+## 6. Performance Budget
+- **Memory**: <5MB (Matrix overhead is tiny).
+- **CPU**: <200ms for 7-day Viterbi chain.
+- **Storage**: ~100KB for Python script + dependencies.

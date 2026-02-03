@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Updated HMM Strategy to match the Python implementation.\nIncludes:\n- Full 8-feature Observation Model with Citations.\n- Updated Weights.\n- Description of the Demo Mode logic.",
+  "updatedAt": "2026-01-21T07:18:13.935827100Z",
+  "version": "1"
+}

@@ -1,0 +1,220 @@
+﻿Found 26 tables: ['glucose_readings', 'sqlite_sequence', 'medication_logs', 'passive_metrics', 'voice_checkins', 'voucher_redemptions', 'interventions_log', 'gemini_response_cache', 'demo_scenarios', 'voucher_tracker', 'cgm_readings', 'food_logs', 'fitbit_activity', 'fitbit_heart_rate', 'fitbit_sleep', 'hmm_states', 'state_change_alerts', 'users', 'patients', 'clinical_notes_history', 'reminders', 'nurse_alerts', 'family_alerts', 'medication_video_requests', 'appointment_requests', 'doctor_escalations']
+
+==============================
+TABLE: glucose_readings
+==============================
+Total Rows: 85
+     id    user_id  reading_value  reading_timestamp_utc source_type  confidence_score  photo_deleted_flag  is_synced  retention_until
+0  5069  demo_user       5.883656             1768662702      MANUAL               1.0                   0          0       1785424242
+1  5070  demo_user       5.753153             1768677102      MANUAL               1.0                   0          0       1785424242
+2  5071  demo_user       5.632264             1768691502      MANUAL               1.0                   0          0       1785424242
+3  5072  demo_user       5.561326             1768705902      MANUAL               1.0                   0          0       1785424242
+4  5073  demo_user       5.547280             1768720302      MANUAL               1.0                   0          0       1785424242
+
+==============================
+TABLE: sqlite_sequence
+==============================
+Total Rows: 16
+               name   seq
+0   passive_metrics  5923
+1  glucose_readings  5153
+2    voice_checkins   802
+3   medication_logs  3810
+4   voucher_tracker     3
+
+==============================
+TABLE: medication_logs
+==============================
+Total Rows: 77
+     id  medication_name dosage  taken_timestamp_utc  scheduled_timestamp_utc source_type  is_synced  retention_until
+0  3734  Metformin 500mg   None           1768662742               1768662642         TAP          0       1785424242
+1  3735  Metformin 500mg   None           1768677142               1768677042         TAP          0       1785424242
+2  3736  Metformin 500mg   None           1768691542               1768691442         TAP          0       1785424242
+3  3737  Metformin 500mg   None           1768705942               1768705842         TAP          0       1785424242
+4  3738  Metformin 500mg   None           1768720342               1768720242         TAP          0       1785424242
+
+==============================
+TABLE: passive_metrics
+==============================
+Total Rows: 84
+     id  window_start_utc  window_end_utc  step_count walking_speed_avg gait_asymmetry_score  screen_time_seconds typing_speed_cpm typing_correction_rate  time_at_home_seconds  max_distance_from_home_km  is_synced  retention_until  social_interactions
+0  5840        1768662642      1768677042        1059              None                 None                 7036             None                   None                  3600                        0.0          0       1785424242                    0
+1  5841        1768677042      1768691442         937              None                 None                 6475             None                   None                  3600                        0.0          0       1785424242                    0
+2  5842        1768691442      1768705842         960              None                 None                 8440             None                   None                  3600                        0.0          0       1785424242                    0
+3  5843        1768705842      1768720242         978              None                 None                 7069             None                   None                  3600                        0.0          0       1785424242                    0
+4  5844        1768720242      1768734642         995              None                 None                 8835             None                   None                  3600                        0.0          0       1785424242                    0
+
+==============================
+TABLE: voice_checkins
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: voucher_redemptions
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: interventions_log
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: gemini_response_cache
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: demo_scenarios
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: voucher_tracker
+==============================
+Total Rows: 3
+   id    user_id  week_start_utc  current_value penalties_json  created_at_utc  bonus_earned
+0   1  demo_user      1768752000            5.0             []      1768988502           0.0
+1   2  demo_user      1769356800            5.0             []      1769397742           0.0
+2   3  demo_user      1769961600            5.0             []      1770047390           0.0
+
+==============================
+TABLE: cgm_readings
+==============================
+Total Rows: 4032
+       id    user_id  glucose_value  timestamp_utc  device_id  is_synced
+0  176737  demo_user       5.954319     1768662642  dexcom_g7          0
+1  176738  demo_user       6.076567     1768662942  dexcom_g7          0
+2  176739  demo_user       5.904363     1768663242  dexcom_g7          0
+3  176740  demo_user       5.927262     1768663542  dexcom_g7          0
+4  176741  demo_user       5.659918     1768663842  dexcom_g7          0
+
+==============================
+TABLE: food_logs
+==============================
+Total Rows: 42
+     id    user_id  timestamp_utc  meal_type description  carbs_grams   source_type  is_synced
+0  1885  demo_user     1768672800     DINNER        None    47.232107  PHOTO_GEMINI          0
+1  1886  demo_user     1768716000  BREAKFAST        None    48.439557  PHOTO_GEMINI          0
+2  1887  demo_user     1768737600      LUNCH        None    53.664837  PHOTO_GEMINI          0
+3  1888  demo_user     1768759200     DINNER        None    51.835477  PHOTO_GEMINI          0
+4  1889  demo_user     1768802400  BREAKFAST        None    46.396303  PHOTO_GEMINI          0
+
+==============================
+TABLE: fitbit_activity
+==============================
+Total Rows: 14
+    id    user_id        date  steps  active_minutes  sedentary_minutes  calories_burned  is_synced
+0  743  demo_user  1768608000   6354              63                417             2054          0
+1  744  demo_user  1768694400   5673              56                424             2026          0
+2  745  demo_user  1768780800   6387              63                417             2055          0
+3  746  demo_user  1768867200   5723              57                423             2028          0
+4  747  demo_user  1768953600   6097              60                420             2043          0
+
+==============================
+TABLE: fitbit_heart_rate
+==============================
+Total Rows: 14
+    id    user_id        date  resting_heart_rate  average_heart_rate  is_synced  hrv_rmssd
+0  743  demo_user  1768608000                  65                  72          0       48.4
+1  744  demo_user  1768694400                  68                  75          0       42.7
+2  745  demo_user  1768780800                  68                  75          0       42.1
+3  746  demo_user  1768867200                  66                  73          0       41.6
+4  747  demo_user  1768953600                  67                  74          0       49.6
+
+==============================
+TABLE: fitbit_sleep
+==============================
+Total Rows: 14
+    id    user_id        date  total_sleep_minutes  sleep_score  is_synced
+0  743  demo_user  1768608000                  482    80.453665          0
+1  744  demo_user  1768694400                  493    82.291268          0
+2  745  demo_user  1768780800                  476    79.347653          0
+3  746  demo_user  1768867200                  451    75.210343          0
+4  747  demo_user  1768953600                  504    84.024429          0
+
+==============================
+TABLE: hmm_states
+==============================
+Total Rows: 93
+     id       user_id  timestamp_utc detected_state  confidence_score  confidence_margin patient_tier contributing_factors                                                                                                                                                                                                                                                                              input_vector_snapshot  is_synced  retention_until
+0  3698  current_user     1768615624        WARNING            0.8511              1.000      PREMIUM                 None  {"hour_of_day": 2, "glucose_avg": 5.536493028394854, "glucose_variability": 10.327514105709302, "meds_adherence": 0.3714285714285714, "carbs_intake": 54.504321236634816, "steps_daily": 6192, "resting_hr": 69, "hrv_rmssd": 46.5, "sleep_quality": 7.99049251244904, "social_engagement": null}          0       1785377224
+1  3782  current_user     1768615742        WARNING            0.8511              1.000      PREMIUM                 None  {"hour_of_day": 2, "glucose_avg": 5.536493028394854, "glucose_variability": 10.327514105709302, "meds_adherence": 0.3714285714285714, "carbs_intake": 54.504321236634816, "steps_daily": 6192, "resting_hr": 69, "hrv_rmssd": 46.5, "sleep_quality": 7.99049251244904, "social_engagement": null}          0       1785377342
+2  3783  current_user     1768630142         STABLE            0.9905              0.981      PREMIUM                 None   {"hour_of_day": 6, "glucose_avg": 9.52310119434407, "glucose_variability": 13.022133011069451, "meds_adherence": 0.7428571428571428, "carbs_intake": 54.504321236634816, "steps_daily": 6192, "resting_hr": 69, "hrv_rmssd": 46.5, "sleep_quality": 7.99049251244904, "social_engagement": null}          0       1785377342
+3  3866  current_user     1768632342        WARNING            0.8955              1.000      PREMIUM                 None                               {"hour_of_day": 6, "glucose_avg": 5.847249200848584, "glucose_variability": 5.0, "meds_adherence": 0.3714285714285714, "carbs_intake": null, "steps_daily": 6354, "resting_hr": 65, "hrv_rmssd": 48.4, "sleep_quality": 8.04536653374835, "social_engagement": null}          0       1785393942
+4  3950  current_user     1768632514        WARNING            0.5322              1.000        BASIC                 None                            {"hour_of_day": 6, "glucose_avg": 5.88365607907473, "glucose_variability": null, "meds_adherence": 0.3714285714285714, "carbs_intake": null, "steps_daily": 1059, "resting_hr": null, "hrv_rmssd": null, "sleep_quality": 8.045555555555556, "social_engagement": null}          0       1785394114
+
+==============================
+TABLE: state_change_alerts
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: users
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: patients
+==============================
+Total Rows: 3
+         user_id      display_name                                     conditions                                                   medications  last_hba1c           created_at
+0   current_user     Mr. Tan (72M)  Type 2 Diabetes, Hypertension, Hyperlipidemia  Metformin 1000mg BD, Amlodipine 5mg OD, Atorvastatin 20mg ON         8.1  2026-01-31 15:46:01
+1  critical_carl    Mr. Carl (65M)                  T2DM, Heart Failure (NYHA II)                      Insulin Glargine 20U, Furosemide 40mg OD         9.5  2026-01-31 15:46:01
+2   stable_sarah  Mdm. Sarah (58F)                          Pre-Diabetes, Obesity                    Metformin 500mg OD, Lifestyle Intervention         6.2  2026-01-31 15:46:01
+
+==============================
+TABLE: clinical_notes_history
+==============================
+Total Rows: 1
+   note_id       user_id                   timestamp                                                                                                                          sbar_json
+0        1  current_user  2026-01-31T23:49:52.171109  {"Situation": "Mock SBAR Situation", "Background": "Mock Background", "Assessment": ["Risk High"], "Recommendation": "Intervene"}
+
+==============================
+TABLE: reminders
+==============================
+Total Rows: 2
+   id      user_id reminder_time                                                       message repeat_type  created_at   status
+0   1    test_user         20:00       Uncle Tan, time for your Metformin! Take with water ah.       daily  1769937143  pending
+1   2  test_stable         09:00  Uncle, time for your morning walk to keep your sugar steady!        once  1769937190  pending
+
+==============================
+TABLE: nurse_alerts
+==============================
+Total Rows: 2
+   id      user_id  timestamp_utc  priority                                                                                                                                           reason   status acknowledged_at acknowledged_by
+0   1    test_user     1769937143    medium  Patient in WARNING state with declining trend. Low physical activity (1797 steps) and poor med adherence (65%) contributing to 39% crisis risk.  pending            None            None
+1   2  test_crisis     1769937199  critical                                                         Glucose at 20.32 mmol/L, CRISIS state detected. Med adherence 17%. Resting HR 100.5 bpm.  pending            None            None
+
+==============================
+TABLE: family_alerts
+==============================
+Total Rows: 1
+   id      user_id  timestamp_utc                                                                                                      message  include_metrics   status sent_at
+0   1  test_crisis     1769937199  Mr. Tan's blood sugar is critically high (20.3). Please check on him immediately. A nurse has been alerted.                1  pending    None
+
+==============================
+TABLE: medication_video_requests
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: appointment_requests
+==============================
+Total Rows: 0
+(Table is empty)
+
+==============================
+TABLE: doctor_escalations
+==============================
+Total Rows: 1
+   id      user_id  timestamp_utc                                                                        reason                                                                   metrics_snapshot   status reviewed_at reviewed_by outcome
+0   1  test_crisis     1769937199  Severe hyperglycemia (20.32) with poor medication adherence and tachycardia.  {"glucose": 20.32, "med_adherence": "17%", "resting_hr": 100.56, "carbs": 351.03}  pending        None        None    None

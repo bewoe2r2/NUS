@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Refined System Architecture for NEXUS 2026.\nChanges:\n- Removed Federated Learning.\n- Detailed Cloud Sync Policy (Denied vs Allowed).\n- Offline-First Guarantees.\n- Demo/God Mode specifics.\n- Gemini Fallback Strategy.",
+  "updatedAt": "2026-01-21T07:07:03.912070800Z",
+  "version": "1"
+}

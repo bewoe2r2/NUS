@@ -1,0 +1,4898 @@
+[
+  {
+    "id": "SCEN_0000",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0001",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0002",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0003",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0004",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0005",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0006",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0007",
+    "description": "HYPO | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0008",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0009",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0010",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0011",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0012",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0013",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0014",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0015",
+    "description": "HYPO | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0016",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0017",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0018",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0019",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0020",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0021",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0022",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0023",
+    "description": "HYPO | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0024",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0025",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0026",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0027",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0028",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0029",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0030",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0031",
+    "description": "HYPO | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0032",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0033",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0034",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0035",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0036",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0037",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0038",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0039",
+    "description": "HYPO | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0040",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0041",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0042",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0043",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0044",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0045",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0046",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0047",
+    "description": "HYPO | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0048",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0049",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0050",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0051",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0052",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0053",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0054",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0055",
+    "description": "HYPO | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0056",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0057",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0058",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0059",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0060",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0061",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0062",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0063",
+    "description": "HYPO | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0064",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0065",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0066",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0067",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0068",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0069",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0070",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0071",
+    "description": "HYPO | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 3.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "HYPO",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0072",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0073",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0074",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0075",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0076",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0077",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0078",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0079",
+    "description": "NORMAL | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0080",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0081",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0082",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0083",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0084",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0085",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0086",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0087",
+    "description": "NORMAL | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0088",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0089",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0090",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0091",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0092",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0093",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0094",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0095",
+    "description": "NORMAL | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0096",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0097",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0098",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0099",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0100",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0101",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0102",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0103",
+    "description": "NORMAL | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0104",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0105",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0106",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0107",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0108",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0109",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0110",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0111",
+    "description": "NORMAL | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0112",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0113",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0114",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0115",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0116",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0117",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0118",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0119",
+    "description": "NORMAL | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0120",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0121",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0122",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0123",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0124",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0125",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0126",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0127",
+    "description": "NORMAL | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0128",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0129",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0130",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0131",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0132",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0133",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0134",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0135",
+    "description": "NORMAL | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0136",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0137",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0138",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0139",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0140",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0141",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0142",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0143",
+    "description": "NORMAL | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 5.5,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "NORMAL",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0144",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0145",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0146",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0147",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0148",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0149",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0150",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0151",
+    "description": "WARNING | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0152",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0153",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0154",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0155",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0156",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0157",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0158",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0159",
+    "description": "WARNING | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0160",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0161",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0162",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0163",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0164",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0165",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0166",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0167",
+    "description": "WARNING | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0168",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0169",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0170",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0171",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0172",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0173",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0174",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0175",
+    "description": "WARNING | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0176",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0177",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0178",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0179",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0180",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0181",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0182",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0183",
+    "description": "WARNING | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0184",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0185",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0186",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0187",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0188",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0189",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0190",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0191",
+    "description": "WARNING | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0192",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0193",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0194",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0195",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0196",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0197",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0198",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0199",
+    "description": "WARNING | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0200",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0201",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0202",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0203",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0204",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0205",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0206",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0207",
+    "description": "WARNING | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0208",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0209",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0210",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0211",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0212",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0213",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0214",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0215",
+    "description": "WARNING | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 11.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "WARNING",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0216",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0217",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0218",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0219",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0220",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0221",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0222",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0223",
+    "description": "CRISIS | FALLING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0224",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0225",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0226",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0227",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0228",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0229",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0230",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0231",
+    "description": "CRISIS | FALLING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0232",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0233",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0234",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0235",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0236",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0237",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0238",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0239",
+    "description": "CRISIS | FALLING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": -0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "FALLING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0240",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0241",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0242",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0243",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0244",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0245",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0246",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0247",
+    "description": "CRISIS | STABLE | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0248",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0249",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0250",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0251",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0252",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0253",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0254",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0255",
+    "description": "CRISIS | STABLE | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0256",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0257",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0258",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0259",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0260",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0261",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0262",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0263",
+    "description": "CRISIS | STABLE | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.0,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "STABLE",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0264",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0265",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0266",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0267",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0268",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0269",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0270",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0271",
+    "description": "CRISIS | RISING | Meds:NONE",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "NONE"
+    }
+  },
+  {
+    "id": "SCEN_0272",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0273",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0274",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0275",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0276",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0277",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0278",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0279",
+    "description": "CRISIS | RISING | Meds:PARTIAL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 0.5,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "PARTIAL"
+    }
+  },
+  {
+    "id": "SCEN_0280",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0281",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0282",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0283",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 3.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0284",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0285",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 15.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0286",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 1000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  },
+  {
+    "id": "SCEN_0287",
+    "description": "CRISIS | RISING | Meds:FULL",
+    "inputs": {
+      "glucose": 18.0,
+      "velocity": 0.8,
+      "meds_adherence": 1.0,
+      "sleep_quality": 8.0,
+      "hrv_rmssd": 50.0,
+      "steps_daily": 8000
+    },
+    "meta": {
+      "glucose_cat": "CRISIS",
+      "trend_cat": "RISING",
+      "meds_cat": "FULL"
+    }
+  }
+]

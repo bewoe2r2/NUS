@@ -1,0 +1,20 @@
+# NEXUS 2026 Healthcare Companion - Dependencies
+
+# Core AI/ML
+google-generativeai  # TODO: Migrate to google.genai when ready
+numpy                # Used by merlion_risk_engine.py
+
+# Environment
+python-dotenv
+
+# Web UI
+streamlit
+plotly
+
+# Utilities
+qrcode[pil]
+pillow
+
+# Testing (optional for development)
+pytest
+hypothesis

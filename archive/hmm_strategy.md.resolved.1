@@ -1,0 +1,65 @@
+# HMM Implementation Strategy - NEXUS 2026
+
+## 1. Core Logic Overview
+We utilize a **Hidden Markov Model (HMM)** to infer the user's hidden health state (`STABLE`, `WARNING`, `CRISIS`) based on observable but noisy sensor data.
+
+**Why HMM?**
+- Handles temporal dependencies (Current state depends on Previous state).
+- Robust to noise (Single bad glucose reading won't trigger Crisis).
+- Handles missing data naturally (Probabilistic framework).
+
+## 2. State Space & Transitions
+Three distinct states with "Sticky" transitions (users tend to stay in their current state).
+
+**States:**
+0.  **STABLE**: Glucose controlled, meds taken, activity normal.
+1.  **WARNING**: Biomarkers slipping (glucose variance up, missed meds).
+2.  **CRISIS**: Critical threshold breach, immediate intervention required.
+
+**Transition Matrix (A):**
+*Probabilities of moving FROM row TO column.*
+| From \ To | STABLE | WARNING | CRISIS | params |
+|-----------|--------|---------|--------|--------|
+| **STABLE**| 0.98   | 0.02    | 0.00   | Hard to leave stable instantly |
+| **WARNING**| 0.15   | 0.80    | 0.05   | Can recover or worsen |
+| **CRISIS**| 0.00   | 0.10    | 0.90   | Hard to exit crisis without intervention |
+
+## 3. Observation Model (Emissions)
+We map raw features to "Emission Probabilities" $P(Observation | State)$.
+
+**Features & Weights:**
+| Feature | Weight (Impact) | Distribution | Description |
+|---------|-----------------|--------------|-------------|
+| `glucose_avg` | **30%** | Gaussian | Normalized mmol/L (ADA Guidelines) |
+| `glucose_variance` | **15%** | Gaussian | Stability of readings over 24h |
+| `meds_adherence`| **25%** | Gaussian | % taken vs scheduled |
+| `steps_avg` | **10%** | Gaussian | Daily step count (Active vs Bedridden) |
+| `sleep_quality` | **8%** | Gaussian | Derived from screen time (0-10) |
+| `typing_speed` | **5%** | Gaussian | Cognitive decline marker |
+| `sentiment` | **5%** | Gaussian | Voice check-in sentiment |
+| `missed_checkins`| **2%** | Gaussian | Behavioral withdrawal |
+
+**Emission Strategy:**
+We treat features as **independent Gaussian** distributions given the state.
+$P(O|S) = \Pi P(feature_i | S)$
+
+**Missing Data Handling:**
+If a feature $f_i$ is missing (None/Null), we marginalize it out by setting $P(f_i | S) = 1.0$. This ensures missing data doesn't penalize the probability, effectively basing the decision only on *available* data.
+
+## 4. Inference Algorithm (Mobile Optimized)
+**Algorithm**: Viterbi (Max-Sum Log-Probability version).
+**Optimization**:
+- **Log-Space arithmetic**: To prevent underflow with small probabilities.
+- **Rolling Window**: Only analyze last **7 days** (42 steps @ 4h intervals). Older history has negligible impact on "Current" state.
+- **Pure Python**: No heavy dependencies (numpy optional, math sufficient) to ensure <2s runtime on old Android.
+
+## 5. Confidence Scores
+We calculate a "Confidence Margin" to explain reliability to judges.
+- **High**: Margin > 0.3 (Winning state is clearly dominant)
+- **Moderate**: Margin > 0.1
+- **Low**: Margin <= 0.1 (Ambiguous data)
+
+## 6. Performance Budget
+- **Memory**: <5MB (Matrix overhead is tiny).
+- **CPU**: <200ms for 7-day Viterbi chain.
+- **Storage**: ~100KB for Python script + dependencies.

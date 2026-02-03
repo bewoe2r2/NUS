@@ -1,0 +1,33 @@
+# Implementation Plan - NEXUS 2026 Architecture & Schema
+
+## Goal Description
+Design the complete system architecture and SQLite database schema for the NEXUS 2026 AI Health Companion. The system must support offline-first capabilities, privacy-preserving data handling (Tier 1-3), and efficient on-device HMM inference for elderly diabetics.
+
+## Proposed Output Files
+
+### Architecture Documentation
+#### [NEW] [system_architecture.md](file:///C:/Users/brigh/.gemini/antigravity/brain/2f60c22c-fd19-4f88-920b-5630c3e2ed3a/system_architecture.md)
+- Complete data flow diagram (Mermaid)
+- Privacy tier definitions
+- Edge vs. Cloud responsibility matrix
+
+### Database Schema
+#### [NEW] [nexus_schema.sql](file:///C:/Users/brigh/.gemini/antigravity/brain/2f60c22c-fd19-4f88-920b-5630c3e2ed3a/nexus_schema.sql)
+- `glucose_readings` (Tier 2)
+- `medication_logs` (Tier 2)
+- `passive_metrics` (Tier 1 -> Aggregated)
+- `voice_checkins` (Tier 1/2)
+- `hmm_states` (Tier 2)
+- `voucher_tracker` (Tier 3)
+- `interventions_log` (Tier 2/3)
+- Indexes optimized for: `(user_id, timestamp desc)`, `(is_synced)`
+
+## Verification Plan
+
+### Automated Verification
+- **Schema Validation**: Run the `nexus_schema.sql` against a local SQLite instance to verify syntax and constraints.
+- **Query Performance**: Check `EXPLAIN QUERY PLAN` for critical HMM queries (last 24h glucose, last 7d meds).
+- **Size Estimation**: Calculate theoretical size for 6 months of data based on row counts.
+
+### Manual Verification
+- **Architecture Review**: User to review the data flow and privacy tiers against HIPAA/PDPA requirements.

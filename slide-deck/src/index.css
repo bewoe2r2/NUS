@@ -1,0 +1,36 @@
+@import '@fontsource/inter';
+@import '@fontsource/jetbrains-mono';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', sans-serif;
+  }
+
+  body {
+    @apply bg-slide text-primary font-sans antialiased overflow-hidden;
+    font-feature-settings: "cv11", "cv05", "ss01", "ss03";
+    /* Tech look */
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+
+  .text-glow-cyan {
+    text-shadow: 0 0 20px oklch(60% 0.22 200 / 0.5);
+  }
+
+  .mask-gradient {
+    mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  }
+}

@@ -1,0 +1,74 @@
+# NEXUS 2026 System Architecture
+
+## 1. High-Level Data Flow
+
+```mermaid
+graph TD
+    subgraph "Tier 1: On-Device (Ephemeral)"
+        Sensors[Phone Sensors] --> |Accel/GPS| RawData[Raw Metrics]
+        Camera[Camera] --> |Photo| Vision[Gemini Vision Encrypted]
+        Mic[Microphone] --> |Audio| AudioProc[Gemini Audio Encrypted]
+        
+        RawData --> |Process & Delete| Aggregator[Local Aggregator]
+        Vision --> |Extract Glucose| LocalDB[(SQLite Encrypted)]
+        AudioProc --> |Extract Sentiment| LocalDB
+    end
+
+    subgraph "Tier 2: On-Device (Persisted)"
+        LocalDB --> |Historical Data| HMM[HMM Inference Engine]
+        HMM --> |State Change| AppLogic[App Controller]
+        AppLogic --> |UI Update| UI[User Interface]
+    end
+
+    subgraph "Tier 3: Cloud (Anonymized)"
+        AppLogic --> |Sync Events/Stats| SyncMgr[Sync Manager]
+        SyncMgr --> |Queued Requests| CloudAPI[Cloud Backend]
+        CloudAPI --> |Doctor Dashboard| Dashboard[Clinical Portal]
+    end
+
+    %% Key Interactions
+    HMM -- "Every 4h" --> LocalDB
+    UI -- "Manual Input" --> LocalDB
+```
+
+## 2. Privacy & Data Handling Tiers
+
+| Tier | Scope | Storage Policy | Examples |
+|------|-------|----------------|----------|
+| **Tier 1** | **Ephemeral** | Process & Delete immediately (RAM only where possible) | Raw Accelerometer (50Hz), Raw Audio, Photos |
+| **Tier 2** | **Private Persisted** | Encrypted SQLite (SQLCipher) | Glucose values, Daily Step Counts, HMM States, Med Logs |
+| **Tier 3** | **Cloud Sync** | Anonymized / Tokenized | "Alert Triggered", "Weekly Adherence %", Voucher Redemptions |
+
+## 3. Gemini 2.0 Flash Integration Strategy
+
+### API Usage Pattern (Offline-First)
+1.  **Request**: App captures Photo/Audio.
+2.  **Check**: Is Network Available?
+    *   **Yes**: Call Gemini API immediately.
+    *   **No**:
+        *   *Photos*: Save generic metadata, queue for logic or manual fallback. (OCR hard to do offline without on-device model, fallback to manual entry).
+        *   *Voice*: Queue for later or use simple regex local fallback if possible.
+3.  **Process**:
+    *   **Success**: Parse JSON response -> Store in `glucose_readings` / `voice_checkins`.
+    *   **Fail**: Use fallback template or prompt user for manual correction.
+
+### Rate Limiting & caching
+*   **Token Bucket**: Client-side limiter (60req/min).
+*   **Cache**: Store last 7 days of "Generic Advice" responses to save tokens.
+*   **Retry**: Exponential backoff with jitter for sync operations.
+
+## 4. HMM Implementation (Edge Computing)
+
+*   **Location**: Strictly On-Device (Python via Chaquopy or TensorFlow Lite C++ API).
+*   **Input**: 4-hour aggregated vector from SQLite.
+*   **Model**: Pre-trained Gaussian HMM.
+*   **Updates**: Model weights updated only via App Store updates (no dynamic code loading for security).
+*   **Missing Data**:
+    *   If glucose missing > 24h: Increase `state_uncertainty` parameter.
+    *   Use "Previous State" + Decay factor.
+
+## 5. Demo Robustness (God Mode)
+
+*   **Offline Override**: "Force Offline" toggle in Debug Menu.
+*   **Time Travel**: "Inject Mock Data" button populates SQLite with 7 days of deteriorating health data instantly.
+*   **Crisis Button**: Immediately sets HMM state to `CRISIS` and triggers UI alerts (bypassing logic).

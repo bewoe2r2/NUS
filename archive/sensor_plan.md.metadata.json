@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Implementation plan for Passive Sensor Data Collection.\nDetails:\n- Step Counter: Peak detection algorithm on simulated accelerometer data.\n- Screen Time: Mock OS API for usage stats.\n- Location: Zone-based classification (Privacy Tier 1).",
+  "updatedAt": "2026-01-21T07:34:09.688345Z"
+}
