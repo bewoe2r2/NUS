@@ -1,0 +1,102 @@
+
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+    content: [
+        "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+        "./components/**/*.{js,ts,jsx,tsx,mdx}",
+        "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    ],
+    theme: {
+        extend: {
+            colors: {
+                neutral: {
+                    0: "var(--neutral-0)",
+                    50: "var(--neutral-50)",
+                    100: "var(--neutral-100)",
+                    200: "var(--neutral-200)",
+                    300: "var(--neutral-300)",
+                    400: "var(--neutral-400)",
+                    500: "var(--neutral-500)",
+                    600: "var(--neutral-600)",
+                    700: "var(--neutral-700)",
+                    800: "var(--neutral-800)",
+                    900: "var(--neutral-900)",
+                    950: "var(--neutral-950)",
+                },
+                accent: {
+                    50: "var(--accent-50)",
+                    100: "var(--accent-100)",
+                    200: "var(--accent-200)",
+                    300: "var(--accent-300)",
+                    400: "var(--accent-400)",
+                    500: "var(--accent-500)",
+                    600: "var(--accent-600)",
+                    700: "var(--accent-700)",
+                    800: "var(--accent-800)",
+                    900: "var(--accent-900)",
+                },
+                success: {
+                    bg: "var(--success-bg)",
+                    text: "var(--success-text)",
+                    solid: "var(--success-solid)",
+                    50: "oklch(96% 0.03 155)",
+                    100: "oklch(93% 0.05 155)",
+                    200: "oklch(88% 0.08 155)",
+                    500: "var(--success-solid)",
+                    600: "var(--success-text)",
+                    700: "oklch(40% 0.12 155)",
+                },
+                warning: {
+                    bg: "var(--warning-bg)",
+                    text: "var(--warning-text)",
+                    solid: "var(--warning-solid)",
+                    50: "oklch(97% 0.04 85)",
+                    100: "oklch(93% 0.06 85)",
+                    200: "oklch(88% 0.08 85)",
+                    500: "var(--warning-solid)",
+                    600: "var(--warning-text)",
+                    700: "oklch(50% 0.12 85)",
+                },
+                error: {
+                    bg: "var(--error-bg)",
+                    text: "var(--error-text)",
+                    solid: "var(--error-solid)",
+                    50: "oklch(97% 0.02 25)",
+                    100: "oklch(93% 0.04 25)",
+                    200: "oklch(88% 0.06 25)",
+                    500: "var(--error-solid)",
+                    600: "var(--error-text)",
+                    700: "oklch(45% 0.16 25)",
+                },
+            },
+            borderRadius: {
+                sm: "var(--radius-sm)",
+                md: "var(--radius-md)",
+                lg: "var(--radius-lg)",
+                xl: "var(--radius-xl)",
+                "2xl": "var(--radius-2xl)",
+                full: "var(--radius-full)",
+            },
+            boxShadow: {
+                subtle: "var(--shadow-subtle)",
+                card: "var(--shadow-card)",
+                float: "var(--shadow-float)",
+                glow: "var(--shadow-glow)",
+            },
+            fontFamily: {
+                sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+                mono: ["var(--font-geist-mono)", "monospace"],
+                display: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+            },
+            fontSize: {
+                h1: ["40px", { lineHeight: "48px", fontWeight: "800" }],
+                h2: ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                h3: ["28px", { lineHeight: "36px", fontWeight: "700" }],
+                h4: ["20px", { lineHeight: "28px", fontWeight: "600" }],
+            },
+        },
+    },
+    plugins: [],
+};
+export default config;

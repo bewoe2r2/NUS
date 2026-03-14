@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* ========================================================================
+       1. NEUTRAL SCALE (Cool Grey - Technocratic)
+       Target Hue: 240 (Cool Blue-Grey)
+       L = Lightness, C = Chroma, H = Hue
+       ======================================================================== */
+    --neutral-0: oklch(100% 0 0);
+    /* Pure White */
+    --neutral-50: oklch(98% 0.002 240);
+    /* App Background */
+    --neutral-100: oklch(95% 0.005 240);
+    /* Sub-layer */
+    --neutral-200: oklch(90% 0.01 240);
+    /* Borders - Subtle */
+    --neutral-300: oklch(82% 0.015 240);
+    /* Borders - Strong */
+    --neutral-400: oklch(70% 0.02 240);
+    /* Icons / Muted Text */
+    --neutral-500: oklch(55% 0.025 240);
+    /* Secondary Text */
+    --neutral-600: oklch(45% 0.03 240);
+    /* Body Text */
+    --neutral-700: oklch(35% 0.035 240);
+    --neutral-800: oklch(20% 0.04 240);
+    /* Headings */
+    --neutral-900: oklch(12% 0.05 240);
+    /* Deep Contrast */
+    --neutral-950: oklch(8% 0.05 240);
+    /* Black alternative */
+
+    /* ========================================================================
+       2. ACCENT SCALE (Medical Blue - Trust & Clarity)
+       Target Hue: 250 (Royal Blue)
+       ======================================================================== */
+    --accent-50: oklch(97% 0.02 250);
+    --accent-100: oklch(94% 0.04 250);
+    /* Highlight backgrounds */
+    --accent-200: oklch(88% 0.06 250);
+    --accent-300: oklch(80% 0.10 250);
+    --accent-400: oklch(70% 0.15 250);
+    --accent-500: oklch(60% 0.20 250);
+    /* PRIMARY BRAND COLOR */
+    --accent-600: oklch(50% 0.22 250);
+    /* Hover State */
+    --accent-700: oklch(42% 0.20 250);
+    /* Active State */
+    --accent-800: oklch(35% 0.18 250);
+    --accent-900: oklch(25% 0.15 250);
+
+    /* ========================================================================
+       3. SEMANTIC SCALES (Function-driven)
+       ======================================================================== */
+    /* SUCCESS (Teal-Green: 155) */
+    --success-bg: oklch(96% 0.03 155);
+    --success-text: oklch(55% 0.15 155);
+    --success-solid: oklch(62% 0.18 155);
+
+    /* WARNING (Amber: 85) */
+    --warning-bg: oklch(97% 0.04 85);
+    --warning-text: oklch(65% 0.15 85);
+    --warning-solid: oklch(75% 0.16 85);
+
+    /* ERROR (Crimson: 25) */
+    --error-bg: oklch(97% 0.02 25);
+    --error-text: oklch(60% 0.20 25);
+    --error-solid: oklch(60% 0.22 25);
+
+    /* ========================================================================
+       4. RADIUS SYSTEM (Apple-style continuous curves)
+       ======================================================================== */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+    --radius-full: 9999px;
+
+    /* ========================================================================
+       5. SHADOW SYSTEM (Layered, Colored)
+       ======================================================================== */
+    --shadow-subtle:
+      0 1px 2px oklch(0% 0 0 / 0.03),
+      0 2px 4px oklch(0% 0 0 / 0.02);
+
+    --shadow-card:
+      0 4px 6px -1px oklch(0% 0 0 / 0.02),
+      0 10px 15px -3px oklch(0% 0 0 / 0.04);
+
+    --shadow-float:
+      0 20px 25px -5px oklch(0% 0 0 / 0.05),
+      0 8px 10px -6px oklch(0% 0 0 / 0.01);
+
+    --shadow-glow:
+      0 0 20px oklch(60% 0.20 250 / 0.15);
+
+    /* ========================================================================
+       6. GLASSMORPHISM TOKENS
+       ======================================================================== */
+    --glass-surface: oklch(100% 0 0 / 0.85);
+    --glass-border: oklch(100% 0 0 / 0.4);
+    --glass-blur: 20px;
+  }
+
+  body {
+    background-color: var(--neutral-50);
+    color: var(--neutral-900);
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent iOS rubber banding on body, allow on scroll containers */
+    overscroll-behavior-y: none;
+  }
+}
+
+@layer utilities {
+
+  /* ELITE UTILITIES */
+  .glass-panel {
+    background: var(--glass-surface);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--neutral-200);
+  }
+
+  .glass-header {
+    background: oklch(98% 0.002 240 / 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--neutral-200);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
