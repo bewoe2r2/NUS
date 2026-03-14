@@ -183,44 +183,44 @@ def _apply_intervention(
     
     if intervention == "take_medication":
         med_name = params.get("medication", "").lower()
-        
+
         if "metformin" in med_name:
             # Metformin effect: -2 mmol/L on average
-            if "glucose_avg" in modified:
+            if modified.get("glucose_avg") is not None:
                 modified["glucose_avg"] = max(4.0, modified["glucose_avg"] - 2.0)
             # Also improves adherence
-            modified["meds_adherence"] = min(1.0, modified.get("meds_adherence", 0.5) + 0.2)
-        
+            modified["meds_adherence"] = min(1.0, (modified.get("meds_adherence") or 0.5) + 0.2)
+
         elif "insulin" in med_name:
             # Insulin effect: stronger, -3 to -4 mmol/L
-            if "glucose_avg" in modified:
+            if modified.get("glucose_avg") is not None:
                 modified["glucose_avg"] = max(4.0, modified["glucose_avg"] - 3.5)
-    
+
     elif intervention == "adjust_carbs":
         carb_change = params.get("carb_reduction", 0)  # in grams
-        
-        if "glucose_avg" in modified and carb_change > 0:
+
+        if modified.get("glucose_avg") is not None and carb_change > 0:
             # ~30g carbs = ~1.5 mmol/L glucose increase
             glucose_change = -(carb_change / 30.0) * 1.5
             modified["glucose_avg"] = max(4.0, modified["glucose_avg"] + glucose_change)
-        
-        if "carbs_intake" in modified:
+
+        if modified.get("carbs_intake") is not None:
             modified["carbs_intake"] = max(0, modified["carbs_intake"] - carb_change)
     
     elif intervention == "increase_activity":
         step_increase = params.get("additional_steps", 0)
-        
-        if "steps_daily" in modified:
-            modified["steps_daily"] = modified.get("steps_daily", 0) + step_increase
-        
-        if "glucose_avg" in modified and step_increase > 0:
+
+        if modified.get("steps_daily") is not None:
+            modified["steps_daily"] = modified["steps_daily"] + step_increase
+
+        if modified.get("glucose_avg") is not None and step_increase > 0:
             # Every 3000 steps reduces glucose by ~0.8 mmol/L
             glucose_change = -(step_increase / 3000.0) * 0.8
             modified["glucose_avg"] = max(4.0, modified["glucose_avg"] + glucose_change)
-        
+
         # Activity also improves HRV
-        if "hrv_rmssd" in modified and step_increase > 0:
-            modified["hrv_rmssd"] = min(100, modified.get("hrv_rmssd", 20) + 3)
+        if modified.get("hrv_rmssd") is not None and step_increase > 0:
+            modified["hrv_rmssd"] = min(100, modified["hrv_rmssd"] + 3)
     
     return modified
 

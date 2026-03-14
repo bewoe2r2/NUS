@@ -1,0 +1,89 @@
+:root {
+  /* === COLOR PALETTE (OKLCh) ===
+     Hue 260 = indigo-violet (not generic blue)
+     Shifting accent to hue 250 (deeper) to avoid §12.1 "blue primary + gray secondary"
+     Adding warm secondary hue 155 (teal-green) for contrast
+  */
+  --bg-paper: oklch(0.985 0.003 90);
+  --bg-raised: oklch(0.97 0.005 90);
+  --bg-card: oklch(1 0 0);
+  --bg-inset: oklch(0.94 0.008 260);
+
+  --text-ink: oklch(0.18 0.03 260);
+  --text-secondary: oklch(0.42 0.02 260);
+  --text-muted: oklch(0.58 0.01 260);
+
+  /* Accent: deep indigo, NOT generic blue */
+  --accent-primary: oklch(0.42 0.14 265);
+  --accent-hover: oklch(0.36 0.16 265);
+  --accent-muted: oklch(0.42 0.14 265 / 0.08);
+
+  /* Semantic colors */
+  --color-profit: oklch(0.52 0.12 160);
+  --color-loss: oklch(0.52 0.12 25);
+  --color-warning: oklch(0.62 0.14 80);
+
+  --border-default: oklch(0.86 0.008 260);
+  --border-subtle: oklch(0.92 0.004 90);
+
+  /* === TYPOGRAPHY ===
+     §3.2: "Avoid Generic AI Fonts: Inter, Roboto, Arial"
+     Body: DM Sans (geometric, distinctive, excellent readability)
+     Display: Playfair Display (editorial contrast)
+     Mono: JetBrains Mono (technical credibility)
+  */
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* === TYPE SCALE (Major Third ratio 1.250) ===
+     §3.3: Modular scale for typographic hierarchy
+     Base: 16px
+  */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.25rem;    /* 20px */
+  --text-xl: 1.5rem;     /* 24px */
+  --text-2xl: 2rem;      /* 32px */
+  --text-3xl: 2.5rem;    /* 40px */
+  --text-4xl: 3.25rem;   /* 52px */
+
+  /* === SPACING (strict 8pt grid) ===
+     §4.1: Allowed values ONLY: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128
+     Forbidden: 5, 10, 13, 15, 18, 20, 28, 30, 36, 40, 50, 80
+  */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* === EFFECTS ===
+     §7.1: Shadows use oklch, not rgba
+     ≤1 elevation change per UI section
+  */
+  --shadow-sm: 0 1px 2px oklch(0.18 0.03 260 / 0.06);
+  --shadow-md: 0 4px 16px oklch(0.18 0.03 260 / 0.08);
+  --shadow-lg: 0 8px 32px oklch(0.18 0.03 260 / 0.10);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* === MOTION ===
+     §5.1: Custom cubic-bezier, NOT ease/linear/ease-in-out
+  */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+}

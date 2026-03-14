@@ -9,24 +9,18 @@ interface SlideLayoutProps {
 
 const slideVariants = {
     enter: (direction: number) => ({
-        x: direction > 0 ? 1000 : -1000,
+        x: direction > 0 ? 800 : -800,
         opacity: 0,
-        scale: 1.1,
-        filter: "blur(20px)",
     }),
     center: {
         zIndex: 1,
         x: 0,
         opacity: 1,
-        scale: 1,
-        filter: "blur(0px)",
     },
     exit: (direction: number) => ({
         zIndex: 0,
-        x: direction < 0 ? 1000 : -1000,
+        x: direction < 0 ? 800 : -800,
         opacity: 0,
-        scale: 0.9,
-        filter: "blur(10px)",
     }),
 };
 
@@ -42,16 +36,13 @@ export const SlideLayout = ({ children, className }: SlideLayoutProps) => {
             exit="exit"
             transition={{
                 x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.5 },
-                scale: { duration: 0.5 },
-                filter: { duration: 0.4 },
+                opacity: { duration: 0.4 },
             }}
             className={cn(
-                "absolute inset-0 w-full h-full p-slide-p flex flex-col justify-center",
+                "absolute inset-0 w-full h-full p-slide-p flex flex-col justify-center bg-slide",
                 className
             )}
         >
-            {/* Background Mesh/Noise handled globally or per slide if needed */}
             {children}
         </motion.div>
     );

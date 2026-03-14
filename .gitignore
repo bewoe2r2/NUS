@@ -60,6 +60,19 @@ tmp/
 uploads/
 patient_photos/
 
+# Node
+node_modules/
+.next/
+
+# Build artifacts
+*.pptx
+video/out/
+slide_captures/
+FULL_PROJECT_CODE.txt
+build_output.txt
+database/*.db-shm
+database/*.db-wal
+
 # Tools
 .agent/
 .claude/

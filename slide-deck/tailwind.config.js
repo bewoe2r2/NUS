@@ -7,44 +7,64 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Professional Light Mode Palette (Swiss/Medical)
-        slide: '#ffffff', // Pure White
-        surface: '#f8fafc', // Slate-50 (Very subtle grey for cards)
+        // Wall Street Paper — analyst-portfolio exact OKLCh translations
+        slide: '#fafaf9',        // oklch(99% 0 0) — paper canvas
+        surface: '#ffffff',      // oklch(100% 0 0) — card (whiter than page)
+        subtle: '#f4f4f5',       // oklch(97% 0.01 240) — recessed panels
 
-        primary: '#0f172a', // Slate-900 (Deep Navy for text - sharper than black)
-        secondary: '#475569', // Slate-600 (Muted for body)
-        tertiary: '#94a3b8', // Slate-400 (Metadata)
+        primary: '#1a1a2e',      // oklch(20% 0.02 240) — ink
+        secondary: '#52526e',    // oklch(45% 0.02 240) — body text
+        tertiary: '#8585a0',     // oklch(65% 0.02 240) — labels, muted
 
         accent: {
-          cyan: '#0ea5e9', // Sky-500 (Clean Tech Blue)
-          rose: '#e11d48', // Rose-600 (Alert/Crisis - calibrated for white)
-          indigo: '#4f46e5', // Indigo-600 (Primary Action)
+          navy: '#354f8c',       // oklch(45% 0.15 260) — primary accent
+          navyLight: '#5a7abf',  // oklch(60% 0.12 260) — secondary blue
+          highlight: '#f0f2fa',  // oklch(96% 0.02 260) — pill bg, barely blue
+          // Muted semantic — chroma 0.12-0.20, NOT saturated
+          crimson: '#a63d3d',    // oklch(55% 0.15 25) — muted loss/crisis
+          emerald: '#3d8c5a',    // oklch(60% 0.12 145) — muted profit/success
+          amber: '#b8860b',      // oklch(65% 0.12 80) — muted warning
         },
-        status: {
-          success: '#10b981', // Emerald-500
-          warning: '#f59e0b', // Amber-500 
-        }
+
+        border: {
+          hairline: '#e5e5e5',   // oklch(90% 0 0)
+          strong: '#1a1a2e',     // same as ink
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
       },
       fontSize: {
-        // Elite Typography Scale
-        'display': ['6rem', { lineHeight: '1.0', letterSpacing: '-0.04em', fontWeight: '600' }],
-        'h1': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: '600' }],
-        'h2': ['2.5rem', { lineHeight: '1.15', letterSpacing: '-0.025em', fontWeight: '500' }],
-        'h3': ['1.75rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '500' }],
-        'body-lg': ['1.5rem', { lineHeight: '1.5', letterSpacing: '-0.01em', fontWeight: '400' }],
-        'body': ['1.125rem', { lineHeight: '1.6', letterSpacing: '0', fontWeight: '400' }],
+        'xs': ['0.75rem', { lineHeight: '1.4' }],
+        'sm': ['0.875rem', { lineHeight: '1.5' }],
+        'base': ['1rem', { lineHeight: '1.6' }],
+        'lg': ['1.125rem', { lineHeight: '1.6' }],
+        'xl': ['1.5rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
+        '2xl': ['2rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+        '3xl': ['3rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'display': ['4.5rem', { lineHeight: '1.0', letterSpacing: '-0.03em', fontWeight: '700' }],
+        'hero': ['6rem', { lineHeight: '0.95', letterSpacing: '-0.04em', fontWeight: '700' }],
+      },
+      letterSpacing: {
+        'label': '0.1em',      // uppercase labels
+        'metric': '0.05em',    // metric labels
+        'tight': '-0.01em',
+        'tighter': '-0.02em',
       },
       spacing: {
-        'slide-p': '96px', // Massive padding
+        'slide-p': '72px',     // slightly tighter to increase content area
+      },
+      boxShadow: {
+        'paper': '0 4px 12px rgba(0,0,0,0.05)',
+        'card': '0 1px 3px rgba(0,0,0,0.06)',
+        'elevated': '0 8px 24px rgba(0,0,0,0.08)',
+        'mockup': '0 12px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
       },
       animation: {
         'fade-in': 'fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'fade-up': 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {

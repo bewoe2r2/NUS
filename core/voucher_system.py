@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Loss Aversion Voucher System
+Bewo 2026 - Loss Aversion Voucher System
 file: voucher_system.py
 author: Lead Architect
 version: 1.0.0
@@ -18,8 +18,11 @@ import qrcode
 import base64
 import json
 
+import os as _os
+_DEFAULT_DB = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "database", "nexus_health.db")
+
 class VoucherSystem:
-    def __init__(self, db_path="nexus_health.db"):
+    def __init__(self, db_path=_DEFAULT_DB):
         self.db_path = db_path
         self.WEEKLY_START = 5.00  # Start with $5
         
@@ -94,7 +97,7 @@ class VoucherSystem:
     def generate_qr_code(self, amount):
         """Generate QR code for redemption"""
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
-        qr.add_data(f"NEXUS_VOUCHER:${amount:.2f}")
+        qr.add_data(f"BEWO_VOUCHER:${amount:.2f}")
         qr.make(fit=True)
         
         img = qr.make_image(fill_color="black", back_color="white")

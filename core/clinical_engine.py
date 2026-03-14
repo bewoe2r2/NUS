@@ -2,7 +2,7 @@
 clinical_engine.py
 ==================
 
-Core orchestration layer for the NEXUS Clinical Decision Support System.
+Core orchestration layer for the Bewo Clinical Decision Support System.
 This module implements the "Smart SBAR" logic, coordinating between:
 1. HMM Inference Engine (State Detection)
 2. Merlion Risk Engine (Future Risk Projection)
@@ -16,6 +16,7 @@ CRITICAL SAFETY & SECURITY:
 
 import json
 import logging
+import os
 import sqlite3
 import math
 from datetime import datetime, timedelta
@@ -30,7 +31,7 @@ from gemini_integration import GeminiIntegration
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DB_PATH = "nexus_health.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 CLINICAL_GUIDELINES = """
 1. Hypoglycemia (Glucose < 4.0): Immediate intervention. Juice/Glucose tabs.
 2. Hyperglycemia (Glucose > 15.0): Check ketones. Hydration. Insulin correction.
@@ -201,10 +202,12 @@ class ClinicalEngine:
                 data = dict(row)
                 if isinstance(data.get('conditions'), str):
                     try: data['conditions'] = json.loads(data['conditions'])
-                    except: data['conditions'] = []
+                    except Exception:
+                        data['conditions'] = [c.strip() for c in data['conditions'].split(',') if c.strip()]
                 if isinstance(data.get('medications'), str):
                     try: data['medications'] = json.loads(data['medications'])
-                    except: data['medications'] = []
+                    except Exception:
+                        data['medications'] = [m.strip() for m in data['medications'].split(',') if m.strip()]
                 return data
             return None
         finally:

@@ -1,20 +1,31 @@
-# NEXUS 2026 Healthcare Companion - Dependencies
+# Bewo Healthcare Companion - Dependencies
+# Install: pip install -r requirements.txt
 
-# Core AI/ML
-google-generativeai  # TODO: Migrate to google.genai when ready
-numpy                # Used by merlion_risk_engine.py
+# --- Backend (FastAPI) ---
+fastapi>=0.100.0
+uvicorn>=0.20.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
 
-# Environment
-python-dotenv
+# --- AI/ML ---
+google-generativeai>=0.3.0
+numpy>=1.24.0
+salesforce-merlion>=2.0.0
 
-# Web UI
-streamlit
-plotly
+# --- Environment ---
+python-dotenv>=1.0.0
 
-# Utilities
-qrcode[pil]
-pillow
+# --- HTTP ---
+requests>=2.31.0
 
-# Testing (optional for development)
-pytest
-hypothesis
+# --- Utilities ---
+qrcode[pil]>=7.4
+pillow>=10.0.0
+
+# --- Legacy UI (Streamlit dashboards) ---
+streamlit>=1.30.0
+plotly>=5.18.0
+
+# --- Testing ---
+pytest>=7.4.0
+hypothesis>=6.90.0

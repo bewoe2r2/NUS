@@ -48,7 +48,8 @@ import numpy as np
 # ==============================================================================
 # CONFIGURATION & CONSTANTS
 # ==============================================================================
-DB_PATH = "nexus_health.db"
+import os as _os
+DB_PATH = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "database", "nexus_health.db")
 STATES = ["STABLE", "WARNING", "CRISIS"]
 
 # ==============================================================================
@@ -987,6 +988,325 @@ class HMMEngine:
             'coverage': f'{len(calibrated_features)}/{len(self.features)}'
         }
 
+    # ==========================================================================
+    # BAUM-WELCH ALGORITHM (Expectation-Maximization for HMM)
+    # ==========================================================================
+
+    def _forward(self, observations, emission_params=None):
+        """
+        Forward pass: compute alpha[t][s] = P(o_1..o_t, X_t=s).
+        Uses log-space with log-sum-exp for numerical stability.
+
+        Returns:
+            alpha: T x N numpy array of log-probabilities
+            log_likelihood: total log P(observations | model)
+        """
+        T = len(observations)
+        N = len(STATES)
+        alpha = np.full((T, N), -np.inf)
+
+        # Initialization (t=0)
+        for s in range(N):
+            emit_lp, _ = self.get_emission_log_prob(observations[0], s, emission_params)
+            alpha[0][s] = LOG_INITIAL[s] + emit_lp
+
+        # Recursion (t=1..T-1)
+        for t in range(1, T):
+            for s in range(N):
+                # log-sum-exp over all previous states
+                terms = np.array([
+                    alpha[t-1][s_prev] + LOG_TRANSITIONS[s_prev][s]
+                    for s_prev in range(N)
+                ])
+                max_term = np.max(terms)
+                if max_term == -np.inf:
+                    log_sum = -np.inf
+                else:
+                    log_sum = max_term + np.log(np.sum(np.exp(terms - max_term)))
+
+                emit_lp, _ = self.get_emission_log_prob(observations[t], s, emission_params)
+                alpha[t][s] = log_sum + emit_lp
+
+        # Total log-likelihood: log-sum-exp of final row
+        final = alpha[T-1]
+        max_f = np.max(final)
+        if max_f == -np.inf:
+            log_likelihood = -np.inf
+        else:
+            log_likelihood = max_f + np.log(np.sum(np.exp(final - max_f)))
+
+        return alpha, log_likelihood
+
+    def _backward(self, observations, emission_params=None):
+        """
+        Backward pass: compute beta[t][s] = P(o_{t+1}..o_T | X_t=s).
+        Uses log-space with log-sum-exp for numerical stability.
+
+        Returns:
+            beta: T x N numpy array of log-probabilities
+        """
+        T = len(observations)
+        N = len(STATES)
+        beta = np.full((T, N), -np.inf)
+
+        # Initialization (t=T-1): beta[T-1][s] = log(1) = 0
+        beta[T-1] = 0.0
+
+        # Recursion (t=T-2..0)
+        for t in range(T-2, -1, -1):
+            for s in range(N):
+                terms = np.array([
+                    LOG_TRANSITIONS[s][s_next]
+                    + self.get_emission_log_prob(observations[t+1], s_next, emission_params)[0]
+                    + beta[t+1][s_next]
+                    for s_next in range(N)
+                ])
+                max_term = np.max(terms)
+                if max_term == -np.inf:
+                    beta[t][s] = -np.inf
+                else:
+                    beta[t][s] = max_term + np.log(np.sum(np.exp(terms - max_term)))
+
+        return beta
+
+    def baum_welch(self, observations_sequences, max_iter=20, tol=1e-4,
+                   update_transitions=True, update_emissions=True):
+        """
+        Baum-Welch (EM) algorithm for learning HMM parameters from patient data.
+
+        Learns personalized transition probabilities AND emission parameters
+        (means and variances per state per feature) from one or more observation
+        sequences. This is the key differentiator: the HMM adapts to each
+        patient's unique disease progression pattern.
+
+        Args:
+            observations_sequences: List of observation sequences.
+                Each sequence is a list of dicts with feature values.
+                Multiple sequences allow learning from separate visits/periods.
+            max_iter: Maximum EM iterations (default 20).
+            tol: Convergence threshold on log-likelihood improvement.
+            update_transitions: Whether to re-estimate transition matrix.
+            update_emissions: Whether to re-estimate emission parameters.
+
+        Returns:
+            dict with keys:
+                learned_transitions: 3x3 transition matrix (or None)
+                learned_emissions: {feature: {means: [...], vars: [...]}}
+                log_likelihood_history: list of log-likelihoods per iteration
+                converged: bool
+                iterations: int
+        """
+        N = len(STATES)
+        feature_names = list(self.weights.keys())
+
+        # Initialize with current parameters (copy)
+        current_transitions = [row[:] for row in TRANSITION_PROBS]
+        current_emissions = {}
+        for feat in feature_names:
+            current_emissions[feat] = {
+                'means': list(self.emission_params[feat]['means']),
+                'vars': list(self.emission_params[feat]['vars']),
+                'bounds': list(self.emission_params[feat]['bounds']),
+            }
+
+        log_likelihood_history = []
+
+        for iteration in range(max_iter):
+            # Pre-compute log transitions for this iteration
+            log_trans = [[safe_log(p) for p in row] for row in current_transitions]
+
+            # Accumulators across all sequences
+            gamma_sum = np.zeros(N)                    # Expected state occupancy
+            xi_sum = np.zeros((N, N))                  # Expected transitions
+            # Per-feature accumulators: weighted sums + weighted squared sums
+            feat_weighted_sum = {f: np.zeros(N) for f in feature_names}
+            feat_weighted_sq_sum = {f: np.zeros(N) for f in feature_names}
+            feat_weight_count = {f: np.zeros(N) for f in feature_names}
+            total_ll = 0.0
+
+            for obs_seq in observations_sequences:
+                T = len(obs_seq)
+                if T < 2:
+                    continue
+
+                # --- E-step: Forward-Backward ---
+                # Forward
+                alpha = np.full((T, N), -np.inf)
+                for s in range(N):
+                    emit_lp, _ = self.get_emission_log_prob(obs_seq[0], s, current_emissions)
+                    alpha[0][s] = LOG_INITIAL[s] + emit_lp
+                for t in range(1, T):
+                    for s in range(N):
+                        terms = np.array([alpha[t-1][sp] + log_trans[sp][s] for sp in range(N)])
+                        mx = np.max(terms)
+                        alpha[t][s] = (mx + np.log(np.sum(np.exp(terms - mx)))) if mx > -np.inf else -np.inf
+                        emit_lp, _ = self.get_emission_log_prob(obs_seq[t], s, current_emissions)
+                        alpha[t][s] += emit_lp
+
+                # Backward
+                beta = np.full((T, N), -np.inf)
+                beta[T-1] = 0.0
+                for t in range(T-2, -1, -1):
+                    for s in range(N):
+                        terms = np.array([
+                            log_trans[s][sn]
+                            + self.get_emission_log_prob(obs_seq[t+1], sn, current_emissions)[0]
+                            + beta[t+1][sn]
+                            for sn in range(N)
+                        ])
+                        mx = np.max(terms)
+                        beta[t][s] = (mx + np.log(np.sum(np.exp(terms - mx)))) if mx > -np.inf else -np.inf
+
+                # Log-likelihood for this sequence
+                mx_a = np.max(alpha[T-1])
+                seq_ll = (mx_a + np.log(np.sum(np.exp(alpha[T-1] - mx_a)))) if mx_a > -np.inf else -np.inf
+                total_ll += seq_ll
+
+                # Gamma: P(X_t = s | observations)
+                gamma = np.full((T, N), -np.inf)
+                for t in range(T):
+                    log_joint = alpha[t] + beta[t]
+                    mx_g = np.max(log_joint)
+                    if mx_g > -np.inf:
+                        probs = np.exp(log_joint - mx_g)
+                        probs /= np.sum(probs)
+                        gamma[t] = probs
+                    else:
+                        gamma[t] = np.ones(N) / N
+
+                # Xi: P(X_t = i, X_{t+1} = j | observations)
+                for t in range(T-1):
+                    xi_t = np.full((N, N), -np.inf)
+                    for i in range(N):
+                        for j in range(N):
+                            emit_lp, _ = self.get_emission_log_prob(obs_seq[t+1], j, current_emissions)
+                            xi_t[i][j] = alpha[t][i] + log_trans[i][j] + emit_lp + beta[t+1][j]
+                    # Normalize
+                    mx_xi = np.max(xi_t)
+                    if mx_xi > -np.inf:
+                        xi_probs = np.exp(xi_t - mx_xi)
+                        xi_probs /= np.sum(xi_probs)
+                        xi_sum += xi_probs
+
+                # Accumulate gamma (exclude last timestep for transitions)
+                for t in range(T-1):
+                    gamma_sum += gamma[t]
+
+                # Accumulate emission statistics
+                for t in range(T):
+                    for feat in feature_names:
+                        val = obs_seq[t].get(feat)
+                        if val is not None:
+                            for s in range(N):
+                                w = gamma[t][s]
+                                feat_weighted_sum[feat][s] += w * val
+                                feat_weighted_sq_sum[feat][s] += w * val * val
+                                feat_weight_count[feat][s] += w
+
+            log_likelihood_history.append(total_ll)
+
+            # Check convergence
+            if iteration > 0:
+                improvement = total_ll - log_likelihood_history[-2]
+                if improvement < tol and improvement >= 0:
+                    break
+
+            # --- M-step: Re-estimate parameters ---
+
+            # Transition matrix
+            if update_transitions:
+                for i in range(N):
+                    row_sum = np.sum(xi_sum[i])
+                    if row_sum > 1e-10:
+                        for j in range(N):
+                            current_transitions[i][j] = max(xi_sum[i][j] / row_sum, 1e-6)
+                    # Re-normalize
+                    row_total = sum(current_transitions[i])
+                    current_transitions[i] = [p / row_total for p in current_transitions[i]]
+
+            # Emission parameters (means and variances)
+            if update_emissions:
+                for feat in feature_names:
+                    bounds = current_emissions[feat]['bounds']
+                    for s in range(N):
+                        count = feat_weight_count[feat][s]
+                        if count > 1e-10:
+                            new_mean = feat_weighted_sum[feat][s] / count
+                            new_var = (feat_weighted_sq_sum[feat][s] / count) - (new_mean ** 2)
+                            # Clamp mean to physical bounds
+                            new_mean = max(bounds[0], min(bounds[1], new_mean))
+                            # Floor variance (prevent collapse)
+                            pop_var = self.emission_params[feat]['vars'][s]
+                            new_var = max(new_var, pop_var * 0.1)
+                            current_emissions[feat]['means'][s] = new_mean
+                            current_emissions[feat]['vars'][s] = new_var
+
+        converged = (len(log_likelihood_history) > 1 and
+                     iteration < max_iter - 1)
+
+        return {
+            'learned_transitions': current_transitions if update_transitions else None,
+            'learned_emissions': current_emissions if update_emissions else None,
+            'log_likelihood_history': log_likelihood_history,
+            'converged': converged,
+            'iterations': iteration + 1,
+        }
+
+    def train_patient_baum_welch(self, patient_id, observations_sequences,
+                                 max_iter=20, tol=1e-4):
+        """
+        Train personalized HMM parameters for a specific patient using Baum-Welch.
+        Stores learned parameters for use in future inference.
+
+        This is the high-level API: pass in patient observation sequences,
+        get back a trained model that will be used automatically in run_inference().
+
+        Args:
+            patient_id: Patient identifier
+            observations_sequences: List of observation sequences
+            max_iter: Maximum EM iterations
+            tol: Convergence threshold
+
+        Returns:
+            dict: Training result with learned parameters + convergence info
+        """
+        result = self.baum_welch(
+            observations_sequences,
+            max_iter=max_iter,
+            tol=tol,
+            update_transitions=True,
+            update_emissions=True,
+        )
+
+        if result['learned_emissions']:
+            # Convert to personalized baseline format
+            personalized = {}
+            for feat, params in result['learned_emissions'].items():
+                personalized[feat] = {
+                    'means': params['means'],
+                    'vars': params['vars'],
+                    'bounds': params['bounds'],
+                    'calibration_source': 'baum_welch',
+                }
+            self._personalized_baselines[patient_id] = personalized
+
+        # Store learned transitions per patient
+        if result['learned_transitions']:
+            if not hasattr(self, '_personalized_transitions'):
+                self._personalized_transitions = {}
+            self._personalized_transitions[patient_id] = result['learned_transitions']
+
+        return {
+            'success': True,
+            'patient_id': patient_id,
+            'converged': result['converged'],
+            'iterations': result['iterations'],
+            'final_log_likelihood': result['log_likelihood_history'][-1] if result['log_likelihood_history'] else None,
+            'log_likelihood_history': result['log_likelihood_history'],
+            'features_trained': list(result['learned_emissions'].keys()) if result['learned_emissions'] else [],
+            'transition_matrix': result['learned_transitions'],
+        }
+
     def _classify_observation_state(self, obs):
         """
         Classifies a single observation as STABLE/WARNING/CRISIS.
@@ -1152,6 +1472,13 @@ class HMMEngine:
         if patient_id:
             personalized_params = self.get_personalized_baseline(patient_id)
 
+        # Use Baum-Welch learned transitions if available, else population
+        log_trans = LOG_TRANSITIONS
+        if patient_id and hasattr(self, '_personalized_transitions'):
+            pt = self._personalized_transitions.get(patient_id)
+            if pt:
+                log_trans = [[safe_log(p) for p in row] for row in pt]
+
         T = len(observations)
         N = len(STATES)
         viterbi = [[-float('inf')] * N for _ in range(T)]
@@ -1170,7 +1497,7 @@ class HMMEngine:
                 max_prob = -float('inf')
                 best_prev = 0
                 for s_prev in range(N):
-                    prob = viterbi[t-1][s_prev] + LOG_TRANSITIONS[s_prev][s]
+                    prob = viterbi[t-1][s_prev] + log_trans[s_prev][s]
                     if prob > max_prob:
                         max_prob = prob
                         best_prev = s_prev
@@ -1337,7 +1664,7 @@ class HMMEngine:
     # DATA FETCHING FROM DATABASE
     # ==========================================================================
 
-    def fetch_observations(self, days=14):
+    def fetch_observations(self, days=14, patient_id=None):
         """
         Fetches observations from database, aggregated into 4-hour windows.
 
@@ -1346,6 +1673,7 @@ class HMMEngine:
 
         Args:
             days: Number of days of history to fetch (default 14)
+            patient_id: Patient identifier to filter data (default None = all data)
 
         Returns:
             List of observation dicts, one per 4-hour window
@@ -1364,9 +1692,10 @@ class HMMEngine:
             t_end = t + window_size
             day_start = t - (t % 86400)  # Start of the day
             
-            # Extract hour for Dawn Phenomenon / Time-Aware Logic (UTC)
+            # Extract hour for Dawn Phenomenon / Time-Aware Logic (SGT = UTC+8)
             dt_obj = datetime.utcfromtimestamp(t)
-            obs = {'hour_of_day': dt_obj.hour}
+            sgt_hour = (dt_obj.hour + 8) % 24  # Singapore Time
+            obs = {'hour_of_day': sgt_hour}
 
             # -----------------------------------------------------------------
             # 1. GLUCOSE METRICS (from glucose_readings or cgm_readings)
@@ -1375,11 +1704,16 @@ class HMMEngine:
             glucose_values = []
 
             try:
-                cgm_rows = cursor.execute("""
-                    SELECT glucose_value
-                    FROM cgm_readings
-                    WHERE timestamp_utc >= ? AND timestamp_utc < ?
-                """, (t, t_end)).fetchall()
+                if patient_id:
+                    cgm_rows = cursor.execute("""
+                        SELECT glucose_value FROM cgm_readings
+                        WHERE user_id = ? AND timestamp_utc >= ? AND timestamp_utc < ?
+                    """, (patient_id, t, t_end)).fetchall()
+                else:
+                    cgm_rows = cursor.execute("""
+                        SELECT glucose_value FROM cgm_readings
+                        WHERE timestamp_utc >= ? AND timestamp_utc < ?
+                    """, (t, t_end)).fetchall()
                 glucose_values = [r['glucose_value'] for r in cgm_rows if r['glucose_value']]
             except sqlite3.Error:
                 pass  # Table may not exist; try fallback
@@ -1387,11 +1721,16 @@ class HMMEngine:
             # Fall back to manual glucose readings
             if not glucose_values:
                 try:
-                    manual_rows = cursor.execute("""
-                        SELECT reading_value
-                        FROM glucose_readings
-                        WHERE reading_timestamp_utc >= ? AND reading_timestamp_utc < ?
-                    """, (t, t_end)).fetchall()
+                    if patient_id:
+                        manual_rows = cursor.execute("""
+                            SELECT reading_value FROM glucose_readings
+                            WHERE user_id = ? AND reading_timestamp_utc >= ? AND reading_timestamp_utc < ?
+                        """, (patient_id, t, t_end)).fetchall()
+                    else:
+                        manual_rows = cursor.execute("""
+                            SELECT reading_value FROM glucose_readings
+                            WHERE reading_timestamp_utc >= ? AND reading_timestamp_utc < ?
+                        """, (t, t_end)).fetchall()
                     glucose_values = [r['reading_value'] for r in manual_rows if r['reading_value']]
                 except sqlite3.Error:
                     pass  # Table may not exist
@@ -1423,18 +1762,24 @@ class HMMEngine:
             # -----------------------------------------------------------------
             try:
                 # 24h Adherence
-                med_row_24h = cursor.execute("""
-                    SELECT COUNT(*) as taken
-                    FROM medication_logs
-                    WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
-                """, (t - 86400, t_end)).fetchone()
-                
-                # 7-day Adherence (Long-term trend)
-                med_row_7d = cursor.execute("""
-                    SELECT COUNT(*) as taken
-                    FROM medication_logs
-                    WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
-                """, (t - 7 * 86400, t_end)).fetchone()
+                if patient_id:
+                    med_row_24h = cursor.execute("""
+                        SELECT COUNT(*) as taken FROM medication_logs
+                        WHERE user_id = ? AND taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
+                    """, (patient_id, t - 86400, t_end)).fetchone()
+                    med_row_7d = cursor.execute("""
+                        SELECT COUNT(*) as taken FROM medication_logs
+                        WHERE user_id = ? AND taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
+                    """, (patient_id, t - 7 * 86400, t_end)).fetchone()
+                else:
+                    med_row_24h = cursor.execute("""
+                        SELECT COUNT(*) as taken FROM medication_logs
+                        WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
+                    """, (t - 86400, t_end)).fetchone()
+                    med_row_7d = cursor.execute("""
+                        SELECT COUNT(*) as taken FROM medication_logs
+                        WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
+                    """, (t - 7 * 86400, t_end)).fetchone()
 
                 scheduled_doses_daily = 2
                 
@@ -1460,11 +1805,16 @@ class HMMEngine:
             # 3. CARBOHYDRATE INTAKE (rolling 24h)
             # -----------------------------------------------------------------
             try:
-                food_row = cursor.execute("""
-                    SELECT SUM(carbs_grams) as total_carbs
-                    FROM food_logs
-                    WHERE timestamp_utc >= ? AND timestamp_utc < ?
-                """, (t - 86400, t_end)).fetchone()
+                if patient_id:
+                    food_row = cursor.execute("""
+                        SELECT SUM(carbs_grams) as total_carbs FROM food_logs
+                        WHERE user_id = ? AND timestamp_utc >= ? AND timestamp_utc < ?
+                    """, (patient_id, t - 86400, t_end)).fetchone()
+                else:
+                    food_row = cursor.execute("""
+                        SELECT SUM(carbs_grams) as total_carbs FROM food_logs
+                        WHERE timestamp_utc >= ? AND timestamp_utc < ?
+                    """, (t - 86400, t_end)).fetchone()
                 obs['carbs_intake'] = food_row['total_carbs'] if food_row and food_row['total_carbs'] else None
             except sqlite3.Error:
                 obs['carbs_intake'] = None
@@ -1474,17 +1824,20 @@ class HMMEngine:
             # -----------------------------------------------------------------
             # Try Fitbit first, then passive_metrics
             try:
-                fitbit_row = cursor.execute("""
-                    SELECT steps FROM fitbit_activity WHERE date = ?
-                """, (day_start,)).fetchone()
+                if patient_id:
+                    fitbit_row = cursor.execute("""
+                        SELECT steps FROM fitbit_activity WHERE user_id = ? AND date = ?
+                    """, (patient_id, day_start)).fetchone()
+                else:
+                    fitbit_row = cursor.execute("""
+                        SELECT steps FROM fitbit_activity WHERE date = ?
+                    """, (day_start,)).fetchone()
 
                 if fitbit_row and fitbit_row['steps']:
                     obs['steps_daily'] = fitbit_row['steps']
                 else:
-                    # Fall back to passive_metrics
                     pass_row = cursor.execute("""
-                        SELECT SUM(step_count) as steps
-                        FROM passive_metrics
+                        SELECT SUM(step_count) as steps FROM passive_metrics
                         WHERE window_start_utc >= ? AND window_end_utc < ?
                     """, (t - 86400, t_end)).fetchone()
                     obs['steps_daily'] = pass_row['steps'] if pass_row and pass_row['steps'] else None
@@ -1495,11 +1848,16 @@ class HMMEngine:
             # 5. RESTING HEART RATE
             # -----------------------------------------------------------------
             try:
-                hr_row = cursor.execute("""
-                    SELECT resting_heart_rate
-                    FROM fitbit_heart_rate
-                    WHERE date = ?
-                """, (day_start,)).fetchone()
+                if patient_id:
+                    hr_row = cursor.execute("""
+                        SELECT resting_heart_rate FROM fitbit_heart_rate
+                        WHERE user_id = ? AND date = ?
+                    """, (patient_id, day_start)).fetchone()
+                else:
+                    hr_row = cursor.execute("""
+                        SELECT resting_heart_rate FROM fitbit_heart_rate
+                        WHERE date = ?
+                    """, (day_start,)).fetchone()
                 obs['resting_hr'] = hr_row['resting_heart_rate'] if hr_row and hr_row['resting_heart_rate'] else None
             except sqlite3.Error:
                 obs['resting_hr'] = None
@@ -1508,11 +1866,16 @@ class HMMEngine:
             # 6. HRV (Heart Rate Variability)
             # -----------------------------------------------------------------
             try:
-                hrv_row = cursor.execute("""
-                    SELECT hrv_rmssd
-                    FROM fitbit_heart_rate
-                    WHERE date = ?
-                """, (day_start,)).fetchone()
+                if patient_id:
+                    hrv_row = cursor.execute("""
+                        SELECT hrv_rmssd FROM fitbit_heart_rate
+                        WHERE user_id = ? AND date = ?
+                    """, (patient_id, day_start)).fetchone()
+                else:
+                    hrv_row = cursor.execute("""
+                        SELECT hrv_rmssd FROM fitbit_heart_rate
+                        WHERE date = ?
+                    """, (day_start,)).fetchone()
                 obs['hrv_rmssd'] = hrv_row['hrv_rmssd'] if hrv_row and hrv_row['hrv_rmssd'] else None
             except sqlite3.Error:
                 obs['hrv_rmssd'] = None
@@ -1521,11 +1884,16 @@ class HMMEngine:
             # 7. SLEEP QUALITY
             # -----------------------------------------------------------------
             try:
-                sleep_row = cursor.execute("""
-                    SELECT sleep_score
-                    FROM fitbit_sleep
-                    WHERE date = ?
-                """, (day_start,)).fetchone()
+                if patient_id:
+                    sleep_row = cursor.execute("""
+                        SELECT sleep_score FROM fitbit_sleep
+                        WHERE user_id = ? AND date = ?
+                    """, (patient_id, day_start)).fetchone()
+                else:
+                    sleep_row = cursor.execute("""
+                        SELECT sleep_score FROM fitbit_sleep
+                        WHERE date = ?
+                    """, (day_start,)).fetchone()
 
                 if sleep_row and sleep_row['sleep_score']:
                     # Convert 0-100 score to 0-10
@@ -1533,8 +1901,7 @@ class HMMEngine:
                 else:
                     # Fall back: derive from screen time (inverse relationship)
                     pass_row = cursor.execute("""
-                        SELECT SUM(screen_time_seconds) as screen_sec
-                        FROM passive_metrics
+                        SELECT SUM(screen_time_seconds) as screen_sec FROM passive_metrics
                         WHERE window_start_utc >= ? AND window_end_utc < ?
                     """, (t - 86400, t_end)).fetchone()
 
@@ -1553,8 +1920,7 @@ class HMMEngine:
             # Use current window's social interactions (not 24h sum which would exceed bounds)
             try:
                 social_row = cursor.execute("""
-                    SELECT social_interactions as social
-                    FROM passive_metrics
+                    SELECT social_interactions as social FROM passive_metrics
                     WHERE window_start_utc >= ? AND window_end_utc <= ?
                     ORDER BY window_start_utc DESC LIMIT 1
                 """, (t, t_end)).fetchone()
@@ -3063,7 +3429,7 @@ def run_tests():
     print(f"TEST SUMMARY: {passed} passed, {failed} failed")
     print("=" * 70)
 
-    if failed == 0:
+    if failed == 0: 
         print("\nALL TESTS PASSED - Engine is ready for competition!")
     else:
         print(f"\nWARNING: {failed} tests failed - Review before submission!")

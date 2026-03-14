@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Node 3A: Merlion Risk Engine
+Bewo 2026 - Node 3A: Merlion Risk Engine
 file: merlion_risk_engine.py
 author: Lead Architect
 
@@ -16,11 +16,13 @@ import time
 import json
 import logging
 
+logger = logging.getLogger("MerlionRiskEngine")
+
 # Try to import Merlion (if installed)
 try:
-    from merlion.models.ensemble.combine import ModelSelector
-    from merlion.models.automl.autosarima import AutoSARIMA
+    from merlion.models.forecast.arima import Arima, ArimaConfig
     from merlion.utils import TimeSeries
+    import pandas as pd
     MERLION_AVAILABLE = True
 except ImportError:
     MERLION_AVAILABLE = False
@@ -113,9 +115,85 @@ class MerlionRiskEngine:
         }
 
     def _calculate_real_merlion_risk(self, history):
-        # Placeholder for when library is installed
-        # This would use TimeSeries.from_list() and ModelSelector
-        return self._calculate_mock_risk(history) # Fallback
+        """
+        Real Merlion ARIMA forecasting on glucose time-series.
+        Uses salesforce-merlion's ARIMA model with order (2,1,1).
+        Falls back to mock if real forecasting fails.
+        """
+        try:
+            data = np.array(history, dtype=float)
+            current_val = float(data[-1])
+            n = len(data)
+
+            # Build time-indexed DataFrame (10-min intervals, typical CGM cadence)
+            now = pd.Timestamp.now()
+            dates = pd.date_range(
+                end=now,
+                periods=n,
+                freq="10min"
+            )
+            df = pd.DataFrame({"glucose": data}, index=dates)
+            ts = TimeSeries.from_pd(df)
+
+            # Train ARIMA(2,1,1) — captures trend + short-term autocorrelation
+            config = ArimaConfig(max_forecast_steps=self.forecast_horizon, order=(2, 1, 1))
+            model = Arima(config)
+            model.train(ts)
+
+            # Forecast next 6 windows (60 min at 10-min intervals)
+            future_dates = pd.date_range(
+                start=dates[-1] + pd.Timedelta("10min"),
+                periods=self.forecast_horizon,
+                freq="10min"
+            )
+            forecast_ts, stderr_ts = model.forecast(time_stamps=future_dates)
+
+            forecast_vals = forecast_ts.to_pd().iloc[:, 0].values
+            stderr_vals = stderr_ts.to_pd().iloc[:, 0].values
+            forecast_curve = [round(float(v), 2) for v in forecast_vals]
+
+            # Velocity from forecast slope (mmol/L per 10-min window)
+            if len(forecast_curve) >= 2:
+                velocity = round(float(forecast_curve[1] - current_val), 2)
+            else:
+                velocity = 0.0
+
+            # Acceleration from forecast curvature
+            if len(forecast_curve) >= 3:
+                v1 = forecast_curve[1] - forecast_curve[0]
+                v2 = forecast_curve[2] - forecast_curve[1]
+                acceleration = round(float(v2 - v1), 3)
+            else:
+                acceleration = 0.0
+
+            # Volatility from historical data
+            volatility = round(float(np.std(data)), 2)
+
+            # Crisis probability: use forecast + stderr for probabilistic risk
+            # Crisis thresholds: hypo < 3.9 mmol/L, hyper > 15.0 mmol/L
+            prob = 0.0
+            for i, (fv, se) in enumerate(zip(forecast_vals, stderr_vals)):
+                se = max(float(se), 0.01)  # avoid div by zero
+                # P(glucose < 3.9) using normal CDF
+                from scipy.stats import norm
+                p_hypo = norm.cdf(3.9, loc=float(fv), scale=se)
+                # P(glucose > 15.0) using normal survival
+                p_hyper = 1.0 - norm.cdf(15.0, loc=float(fv), scale=se)
+                prob = max(prob, p_hypo + p_hyper)
+
+            return {
+                "prob_crisis_45min": round(min(1.0, prob), 4),
+                "volatility_index": volatility,
+                "forecast_curve": forecast_curve,
+                "velocity": velocity,
+                "acceleration": acceleration,
+                "stderr": [round(float(v), 3) for v in stderr_vals],
+                "engine": "MERLION_ARIMA_V2"
+            }
+
+        except Exception as e:
+            logger.warning(f"Real Merlion forecast failed, falling back to mock: {e}")
+            return self._calculate_mock_risk(history)
 
 if __name__ == "__main__":
     # Test Bench

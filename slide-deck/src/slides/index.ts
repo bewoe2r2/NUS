@@ -1,7 +1,10 @@
-export { HeroSlide } from "./01-Hero";
-export { ContextSlide } from "./02-Context";
+export { HookSlide } from "./01-Hook";
+export { ProblemSlide } from "./02-Problem";
 export { SolutionSlide } from "./03-Solution";
-export { FeaturesSlide } from "./04-Features";
-export { HRVSlide } from "./05-HRV";
-export { DefenseSlide } from "./06-Defense";
-export { VerdictSlide } from "./07-Verdict";
+export { ArchitectureSlide } from "./04-Architecture";
+export { PatientSlide } from "./05-Patient";
+export { NurseSlide } from "./06-Nurse";
+export { IntelligenceSlide } from "./07-Intelligence";
+export { SafetySlide } from "./08-Safety";
+export { ImpactSlide } from "./09-Impact";
+export { CloseSlide } from "./10-Close";

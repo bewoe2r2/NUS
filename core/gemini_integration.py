@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Gemini 3.0 Flash Integration
+Bewo 2026 - Gemini 3.0 Flash Integration
 file: gemini_integration.py
 author: Lead Architect
 version: 3.0.0
@@ -63,7 +63,7 @@ class GeminiIntegration:
         self.model_name = self._select_available_model()
         self.max_retries = 2
 
-        self.db_path = "nexus_health.db"
+        self.db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
         print(f"[OK] Gemini Integration initialized with model: {self.model_name}")
 
     def _get_db_connection(self):
@@ -553,11 +553,33 @@ class GeminiIntegration:
             return json.loads(text.strip())
         except Exception as e:
             print(f"SBAR Synthesis Error: {e}")
+            # Generate useful fallback SBAR from available data
+            glucose_avg = metrics.get('glucose_avg', 0)
+            adherence = metrics.get('adherence_pct', 0)
+            steps = metrics.get('steps', 0)
+            situation = f"Patient in {state} state."
+            if glucose_avg > 10:
+                situation += f" Glucose elevated at {glucose_avg:.1f} mmol/L."
+            elif glucose_avg > 0:
+                situation += f" Glucose at {glucose_avg:.1f} mmol/L."
+            background = f"Conditions: {', '.join(conditions) if conditions else 'N/A'}. Medications: {', '.join(medications) if medications else 'N/A'}."
+            assessment = []
+            if state == "CRISIS":
+                assessment.append("Patient in CRISIS state — immediate clinical review recommended.")
+            elif state == "WARNING":
+                assessment.append("Patient in WARNING state — monitor closely for deterioration.")
+            if adherence < 80:
+                assessment.append(f"Medication adherence low at {adherence:.0f}%.")
+            if glucose_avg > 10:
+                assessment.append(f"Hyperglycemia: avg glucose {glucose_avg:.1f} mmol/L exceeds target.")
+            if not assessment:
+                assessment.append(f"Metrics within acceptable range. Continue monitoring.")
+            rec = "Continue current care plan." if state == "STABLE" else "Escalate to attending physician for review."
             return {
-                "Situation": f"Error generating report: {state}",
-                "Background": "N/A",
-                "Assessment": [f"System Error: {str(e)}"],
-                "Recommendation": "Review raw data manually."
+                "Situation": situation,
+                "Background": background,
+                "Assessment": assessment,
+                "Recommendation": rec,
             }
 
 
@@ -779,7 +801,7 @@ class GeminiIntegration:
         # --- STEP 3: STRATEGIC REASONING (GEMINI) ---
         
         prompt = f"""
-        You are NEXUS (Node 2), the Medical Strategist.
+        You are Bewo (Node 2), the Medical Strategist.
         
         INPUTS:
         1. CURRENT STATE (HMM): {state} (Conf: {confidence:.0%})
@@ -1092,7 +1114,7 @@ class GeminiIntegration:
 
         # Construct the prompt
         prompt = f"""
-You are NEXUS, an AI Health Companion delivering a MORNING BRIEFING to an elderly diabetic patient in Singapore.
+You are Bewo, an AI Health Companion delivering a MORNING BRIEFING to an elderly diabetic patient in Singapore.
 
 ═══════════════════════════════════════════════════════════════════════════════
 PATIENT PROFILE
@@ -1244,16 +1266,16 @@ Return JSON:
             conn.close()
 
     # ==========================================================================
-    # AGENTIC NEXUS v4.0 - FULL HMM INTEGRATION + AGENTIC CAPABILITIES
+    # AGENTIC BEWO v4.0 - FULL HMM INTEGRATION + AGENTIC CAPABILITIES
     # ==========================================================================
 
     # Master System Prompt for Agentic AI
     AGENTIC_SYSTEM_PROMPT = """
 ═══════════════════════════════════════════════════════════════════════════════
-NEXUS AGENTIC AI - SYSTEM INSTRUCTIONS v4.0
+BEWO AGENTIC AI - SYSTEM INSTRUCTIONS v4.0
 ═══════════════════════════════════════════════════════════════════════════════
 
-You are NEXUS, an AI Health Companion for elderly diabetic patients in Singapore.
+You are Bewo, an AI Health Companion for elderly diabetic patients in Singapore.
 You have access to comprehensive health intelligence from the HMM (Hidden Markov Model)
 inference engine and can take ACTIONS on behalf of the patient.
 
@@ -1406,7 +1428,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
 
     def generate_agentic_response(self, patient_profile, hmm_engine, observations, user_id='current_user'):
         """
-        [AGENTIC NEXUS v4.0]
+        [AGENTIC BEWO v4.0]
 
         Generates a fully agentic response using ALL available HMM intelligence.
 
@@ -2042,22 +2064,21 @@ Return your response as valid JSON following the format in the system prompt.
     # =========================================================================
     # AGENTIC CAPABILITIES (for AgentRuntime)
     # =========================================================================
-    
-    def ensure_agentic_tables(self):
-        """Ensure database tables for agentic features exist"""
+
+    def _ensure_conversation_table(self):
+        """Ensure conversation_history table exists (called internally)."""
         conn = self._get_db_connection()
-        
-        # Conversation history for multi-turn chats
         conn.execute("""
             CREATE TABLE IF NOT EXISTS conversation_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 patient_id TEXT,
                 timestamp_utc INTEGER,
                 role TEXT,
-                message TEXT
+                message TEXT,
+                hmm_state TEXT,
+                actions_taken TEXT
             )
         """)
-        
         conn.commit()
         conn.close()
     
@@ -2206,7 +2227,7 @@ Return your response as valid JSON following the format in the system prompt.
                 latest_obs = {}
             
             # Build contextual prompt
-            prompt = f"""You are NEXUS, a compassionate AI health companion for {patient_profile.get('name', 'the patient')}.
+            prompt = f"""You are Bewo, a compassionate AI health companion for {patient_profile.get('name', 'the patient')}.
 
 PATIENT CONTEXT:
 - Age: {patient_profile.get('age', 67)}
