@@ -81,7 +81,7 @@ const errcData = [
     costNote: "New value",
     items: [
       "Counterfactual \u201Cwhat-if\u201D motivation (\u201C35% \u2192 12% risk if you take Metformin\u201D)",
-      "16-tool agentic AI (real actions, not just suggestions \u2014 doctor-gated for medication)",
+      "18-tool agentic AI (real actions, not just suggestions \u2014 doctor-gated for medication)",
       "Loss-aversion voucher gamification (S$5/week with decay)",
       "AI-initiated proactive check-ins (no patient trigger needed)",
     ],
@@ -324,7 +324,7 @@ export default function ImpactPage() {
             {
               path: "Path 2", title: "Strategic Groups",
               insight: "Budget apps (free, low engagement) vs. premium clinical systems (expensive, high friction). No middle ground.",
-              bewo: "Bewo is premium capability at budget cost: S$1-5/mo B2G, but with 16 agentic tools and HMM prediction.",
+              bewo: "Bewo is premium capability at budget cost: S$1-5/mo B2G, but with 18 agentic tools and HMM prediction.",
               accent: "text-stable", border: "border-stable/20",
             },
             {
@@ -443,7 +443,7 @@ export default function ImpactPage() {
               </thead>
               <tbody className="text-xs">
                 {[
-                  { lever: "Productivity", purchase: "", delivery: "", use: "16 tools auto-execute actions", supplement: "Weekly auto-reports", maintenance: "OTA model updates", disposal: "" },
+                  { lever: "Productivity", purchase: "", delivery: "", use: "18 tools auto-execute actions", supplement: "Weekly auto-reports", maintenance: "OTA model updates", disposal: "" },
                   { lever: "Simplicity", purchase: "Free app, no hardware needed", delivery: "Auto device pairing", use: "Voice + photo input", supplement: "", maintenance: "Zero config updates", disposal: "One-tap data export" },
                   { lever: "Convenience", purchase: "", delivery: "Instant onboarding", use: "AI-initiated (zero effort)", supplement: "Caregiver dashboard", maintenance: "", disposal: "" },
                   { lever: "Risk Reduction", purchase: "", delivery: "", use: "48h crisis prediction", supplement: "SBAR clinical reports", maintenance: "Continuous recalibration", disposal: "Full audit trail" },
@@ -493,7 +493,7 @@ export default function ImpactPage() {
               },
               {
                 tier: "Enhanced Tier", price: "S$3", period: "/patient/mo",
-                features: ["+ Fitbit auto-sync (passive collection)", "Full 16-tool agent", "Caregiver dashboard", "Weekly auto-reports"],
+                features: ["+ Fitbit auto-sync (passive collection)", "Full 18-tool agent", "Caregiver dashboard", "Weekly auto-reports"],
                 accent: "text-primary", highlight: true,
               },
               {
@@ -606,7 +606,7 @@ export default function ImpactPage() {
               step: "1", title: "Buyer Utility",
               question: "Is there exceptional utility?",
               answer: "YES",
-              detail: "48h crisis prediction (no competitor offers this). 16 agentic tools that take real actions. Zero patient effort via passive sensing. Loss-aversion gamification.",
+              detail: "48h crisis prediction (no competitor offers this). 18 agentic tools that take real actions. Zero patient effort via passive sensing. Loss-aversion gamification.",
               accent: "text-stable", border: "border-stable/30", bg: "bg-stable/6",
             },
             {
@@ -759,7 +759,7 @@ export default function ImpactPage() {
                 zone: "Pioneers",
                 subtitle: "New value curve entirely",
                 players: ["Bewo"],
-                desc: "Predictive (48h HMM). Agentic (16 tools that act). Behavioural (loss-aversion gamification). Culturally contextual (Singlish, hawker food). Creates value curves that don\u2019t exist in the market.",
+                desc: "Predictive (48h HMM). Agentic (18 tools that act). Behavioural (loss-aversion gamification). Culturally contextual (Singlish, hawker food). Creates value curves that don\u2019t exist in the market.",
                 accent: "text-stable", border: "border-stable/30", bg: "bg-stable/6",
               },
             ].map((z) => (
@@ -1012,7 +1012,7 @@ export default function ImpactPage() {
             {
               risk: "Gemini AI hallucinates or gives inappropriate advice",
               severity: "HIGH",
-              mitigation: "AI only selects from 16 predefined tools with constrained parameters. Cannot freestyle medical advice. HMM is deterministic — AI interprets, not diagnoses. Full audit log on every action.",
+              mitigation: "AI only selects from 18 predefined tools with constrained parameters. Cannot freestyle medical advice. HMM is deterministic — AI interprets, not diagnoses. Full audit log on every action.",
               accent: "text-warning", border: "border-warning/20",
             },
           ].map((r) => (

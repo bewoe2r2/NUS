@@ -12,8 +12,8 @@ import random
 import os
 import sys
 
-# Add current directory to path so we can import hmm_engine
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add core directory to path so we can import hmm_engine
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core"))
 from hmm_engine import HMMEngine
 
 DB_PATH = "nexus_health.db"

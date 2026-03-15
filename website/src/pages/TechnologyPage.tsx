@@ -350,13 +350,13 @@ export const TechnologyPage = () => (
       </motion.div>
     </section>
 
-    {/* === 16 AGENTIC TOOLS === */}
+    {/* === 18 AGENTIC TOOLS === */}
     <section style={{ marginBottom: 'var(--space-16)' }}>
       <motion.div variants={fadeInUp} style={{ marginBottom: 'var(--space-8)' }}>
         <span style={{ color: 'var(--accent-primary)', display: 'block', marginBottom: 'var(--space-2)' }}>
           <Activity size={24} />
         </span>
-        <h2>16 Agentic Tools</h2>
+        <h2>18 Agentic Tools</h2>
         <p style={{ maxWidth: '480px', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
           Not just chat responses. Real tools that execute real actions against real systems.
         </p>

@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bewo Health - Patient View</title>
+<style>
+  /* ========== RESET & BASE ========== */
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #171717;
+  }
+
+  body {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 50%, #1e293b 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 0;
+  }
+
+  /* ========== DESIGN TOKENS ========== */
+  :root {
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --card-border: #e5e5e5;
+    --blue-50: #eff6ff;
+    --blue-100: #dbeafe;
+    --blue-500: #3b82f6;
+    --blue-600: #2563eb;
+    --blue-700: #1d4ed8;
+    --green-50: #ecfdf5;
+    --green-100: #d1fae5;
+    --green-500: #10b981;
+    --green-600: #059669;
+    --green-700: #047857;
+    --amber-50: #fffbeb;
+    --amber-100: #fef3c7;
+    --amber-500: #f59e0b;
+    --amber-600: #d97706;
+    --rose-50: #fff1f2;
+    --rose-500: #f43f5e;
+    --purple-50: #faf5ff;
+    --purple-500: #a855f7;
+    --neutral-50: #fafafa;
+    --neutral-100: #f5f5f5;
+    --neutral-200: #e5e5e5;
+    --neutral-300: #d4d4d4;
+    --neutral-400: #a3a3a3;
+    --neutral-500: #737373;
+    --neutral-600: #525252;
+    --neutral-900: #171717;
+    --radius-card: 16px;
+    --radius-inner: 12px;
+    --radius-pill: 9999px;
+    --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.02), 0 10px 15px -3px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.06), 0 20px 25px -5px rgba(0,0,0,0.08);
+    --shadow-fab: 0 8px 24px rgba(59,130,246,0.35);
+  }
+
+  /* ========== DEVICE FRAME ========== */
+  .device-frame {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: var(--bg);
+    border-radius: 40px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08),
+                0 25px 50px -12px rgba(0,0,0,0.5),
+                0 0 80px rgba(59,130,246,0.08);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ========== GLASS HEADER ========== */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    z-index: 100;
+    background: rgba(250, 250, 250, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(229, 229, 229, 0.5);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-brand {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--neutral-900);
+  }
+
+  .header-brand span {
+    color: var(--blue-500);
+  }
+
+  .header-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+  }
+
+  /* ========== MAIN CONTENT ========== */
+  .main-content {
+    padding: 80px 16px 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-in {
+    animation: fadeInUp 0.5s ease-out both;
+  }
+
+  .animate-in:nth-child(1) { animation-delay: 0.05s; }
+  .animate-in:nth-child(2) { animation-delay: 0.1s; }
+  .animate-in:nth-child(3) { animation-delay: 0.15s; }
+  .animate-in:nth-child(4) { animation-delay: 0.2s; }
+  .animate-in:nth-child(5) { animation-delay: 0.25s; }
+  .animate-in:nth-child(6) { animation-delay: 0.3s; }
+
+  /* ========== CARDS (BASE) ========== */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ========== SECTION TITLE ========== */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--neutral-900);
+    letter-spacing: -0.3px;
+    margin-bottom: 12px;
+  }
+
+  /* ========== DAILY INSIGHT (HERO) ========== */
+  .insight-card {
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .insight-card::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    right: -30%;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .insight-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--green-50);
+    color: var(--green-700);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--green-100);
+    margin-bottom: 16px;
+  }
+
+  .insight-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-500);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .insight-risk-label {
+    font-size: 13px;
+    color: var(--neutral-500);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .insight-risk-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--neutral-900);
+    margin-bottom: 8px;
+  }
+
+  .insight-risk-value span {
+    color: var(--green-500);
+  }
+
+  .progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background: var(--neutral-100);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    transition: width 1s ease-out;
+  }
+
+  .progress-bar-fill.green {
+    background: linear-gradient(90deg, var(--green-500), #34d399);
+  }
+
+  .progress-bar-fill.blue {
+    background: linear-gradient(90deg, var(--blue-500), #60a5fa);
+  }
+
+  .progress-bar-fill.amber {
+    background: linear-gradient(90deg, var(--amber-500), #fbbf24);
+  }
+
+  .insight-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green-600);
+    margin-bottom: 16px;
+  }
+
+  .insight-trend svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .insight-message {
+    font-size: 14px;
+    color: var(--neutral-500);
+    line-height: 1.6;
+    border-top: 1px solid var(--neutral-100);
+    padding-top: 14px;
+  }
+
+  /* ========== VOUCHER CARD ========== */
+  .voucher-card {
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdf4 100%);
+    border: 1px solid var(--green-100);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .voucher-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .voucher-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .voucher-amount-label {
+    font-size: 12px;
+    color: var(--neutral-500);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .voucher-amount {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--green-700);
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+  }
+
+  .voucher-streak {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--amber-600);
+    background: var(--amber-50);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--amber-100);
+  }
+
+  .voucher-progress-label {
+    font-size: 12px;
+    color: var(--neutral-500);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .voucher-progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(16,185,129,0.12);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .voucher-progress-fill {
+    width: 70%;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, var(--green-500), #34d399);
+    position: relative;
+  }
+
+  .voucher-progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  .voucher-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--green-500), var(--green-600));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 28px;
+    border: none;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
+  }
+
+  .voucher-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16,185,129,0.35);
+  }
+
+  .voucher-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* ========== BENTO GRID ========== */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .bento-card {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bento-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .bento-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bento-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .bento-icon.glucose {
+    background: var(--rose-50);
+    color: var(--rose-500);
+  }
+
+  .bento-icon.steps {
+    background: var(--blue-50);
+    color: var(--blue-500);
+  }
+
+  .bento-icon.heart {
+    background: var(--rose-50);
+    color: var(--rose-500);
+  }
+
+  .bento-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bento-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .bento-value {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: var(--neutral-900);
+    line-height: 1.2;
+  }
+
+  .bento-value.large {
+    font-size: 28px;
+  }
+
+  .bento-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+  }
+
+  .bento-badge.green {
+    background: var(--green-50);
+    color: var(--green-700);
+    border: 1px solid var(--green-100);
+  }
+
+  .bento-sub {
+    font-size: 12px;
+    color: var(--neutral-400);
+    font-weight: 500;
+  }
+
+  /* ========== SCHEDULE ========== */
+  .schedule-group-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .schedule-group-title svg {
+    width: 14px;
+    height: 14px;
+    color: var(--amber-500);
+  }
+
+  .schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .med-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-inner);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .med-card:hover {
+    transform: translateX(2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .med-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+  }
+
+  .med-card.taken::before {
+    background: linear-gradient(180deg, var(--green-500), #34d399);
+  }
+
+  .med-card.pending::before {
+    background: linear-gradient(180deg, var(--neutral-300), var(--neutral-200));
+  }
+
+  .med-card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .med-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--neutral-900);
+    margin-bottom: 1px;
+  }
+
+  .med-instruction {
+    font-size: 12px;
+    color: var(--neutral-400);
+    font-weight: 400;
+  }
+
+  .med-card.taken .med-name {
+    color: var(--neutral-400);
+    text-decoration: line-through;
+    text-decoration-color: var(--neutral-300);
+  }
+
+  .med-checkbox {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid var(--neutral-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .med-checkbox.checked {
+    background: linear-gradient(135deg, var(--green-500), var(--green-600));
+    border-color: var(--green-500);
+    box-shadow: 0 2px 8px rgba(16,185,129,0.25);
+  }
+
+  .med-checkbox.checked svg {
+    color: #fff;
+  }
+
+  .med-checkbox:not(.checked):hover {
+    border-color: var(--neutral-300);
+    background: var(--neutral-50);
+  }
+
+  /* ========== CARE ASSISTANT (CHAT) ========== */
+  .chat-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  .chat-messages {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .chat-bubble {
+    max-width: 82%;
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.55;
+    border-radius: 18px;
+    position: relative;
+  }
+
+  .chat-bubble.bot {
+    align-self: flex-start;
+    background: var(--neutral-100);
+    color: var(--neutral-900);
+    border-bottom-left-radius: 6px;
+  }
+
+  .chat-bubble.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+    color: #fff;
+    border-bottom-right-radius: 6px;
+  }
+
+  .chat-sender {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--neutral-400);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .chat-sender .bot-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  .chat-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--neutral-100);
+    background: var(--neutral-50);
+  }
+
+  .chat-input {
+    flex: 1;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-pill);
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--card-bg);
+    color: var(--neutral-900);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .chat-input::placeholder {
+    color: var(--neutral-400);
+  }
+
+  .chat-input:focus {
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+  }
+
+  .chat-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .chat-btn.send {
+    background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+  }
+
+  .chat-btn.mic {
+    background: var(--neutral-100);
+    color: var(--neutral-500);
+  }
+
+  .chat-btn:hover {
+    transform: scale(1.05);
+  }
+
+  .chat-btn:active {
+    transform: scale(0.95);
+  }
+
+  .chat-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ========== FAB ========== */
+  .fab-container {
+    position: fixed;
+    bottom: 28px;
+    right: 50%;
+    transform: translateX(calc(430px / 2 - 28px));
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .fab-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    animation: fadeInUp 0.3s ease-out;
+  }
+
+  .fab-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeInUp 0.3s ease-out both;
+  }
+
+  .fab-action:nth-child(1) { animation-delay: 0.1s; }
+  .fab-action:nth-child(2) { animation-delay: 0.05s; }
+  .fab-action:nth-child(3) { animation-delay: 0s; }
+
+  .fab-action-label {
+    background: var(--card-bg);
+    color: var(--neutral-900);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    border: 1px solid var(--card-border);
+  }
+
+  .fab-action-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transition: transform 0.15s ease;
+    color: #fff;
+  }
+
+  .fab-action-btn:hover {
+    transform: scale(1.1);
+  }
+
+  .fab-action-btn.glucose-btn {
+    background: linear-gradient(135deg, var(--rose-500), #e11d48);
+  }
+
+  .fab-action-btn.food-btn {
+    background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+  }
+
+  .fab-action-btn.voice-btn {
+    background: linear-gradient(135deg, var(--purple-500), #7c3aed);
+  }
+
+  .fab-action-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .fab-main {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-fab);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .fab-main:hover {
+    transform: scale(1.08);
+    box-shadow: 0 10px 30px rgba(59,130,246,0.4);
+  }
+
+  .fab-main svg {
+    width: 24px;
+    height: 24px;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 460px) {
+    body {
+      padding: 0;
+      background: var(--bg);
+    }
+
+    .device-frame {
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .header {
+      max-width: 100%;
+    }
+
+    .fab-container {
+      right: 24px;
+      transform: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Device Frame -->
+<div class="device-frame">
+
+  <!-- Glass Header -->
+  <header class="header">
+    <div class="header-brand">Bewo <span>Health</span></div>
+    <div class="header-avatar">T</div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- 1. Daily Insight Card -->
+    <div class="card insight-card animate-in">
+      <div class="insight-badge">
+        <span class="dot"></span>
+        STABLE
+      </div>
+      <div class="insight-risk-label">Merlion Risk Score</div>
+      <div class="insight-risk-value">Merlion Risk: <span>23%</span></div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill green" style="width: 23%"></div>
+      </div>
+      <div class="insight-trend">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        IMPROVING
+      </div>
+      <div class="insight-message">Your numbers look great today, Ah Kow. Keep it up! Your glucose and vitals are within healthy range.</div>
+    </div>
+
+    <!-- 2. Voucher Card -->
+    <div class="card voucher-card animate-in">
+      <div class="voucher-top">
+        <div>
+          <div class="voucher-amount-label">Voucher Balance</div>
+          <div class="voucher-amount">$12.50</div>
+        </div>
+        <div class="voucher-streak">
+          <span style="font-size:16px;">&#128293;</span> 7-day streak
+        </div>
+      </div>
+      <div class="voucher-progress-label">7 of 10 days to next reward</div>
+      <div class="voucher-progress-track">
+        <div class="voucher-progress-fill"></div>
+      </div>
+      <button class="voucher-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Redeem Voucher
+      </button>
+    </div>
+
+    <!-- 3. Overview Section -->
+    <section class="animate-in">
+      <div class="section-title">Overview</div>
+      <div class="bento-grid">
+
+        <!-- Glucose (full width) -->
+        <div class="card bento-card full-width">
+          <div class="bento-header">
+            <div class="bento-icon glucose">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            </div>
+            <span class="bento-badge green">Normal</span>
+          </div>
+          <div class="bento-label">Blood Glucose</div>
+          <div class="bento-value large">6.2 <span style="font-size:16px;font-weight:500;color:var(--neutral-400);">mmol/L</span></div>
+          <div class="progress-bar-track" style="margin-bottom:0;">
+            <div class="progress-bar-fill green" style="width: 62%"></div>
+          </div>
+        </div>
+
+        <!-- Steps -->
+        <div class="card bento-card">
+          <div class="bento-icon steps">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><circle cx="9" cy="3" r="1" fill="currentColor" stroke="none"/><path d="M9 6v2"/><path d="M15 6v2"/><circle cx="15" cy="3" r="1" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <div class="bento-label">Steps</div>
+          <div class="bento-value">4,521</div>
+          <div class="bento-sub">Goal: 8,000</div>
+          <div class="progress-bar-track" style="margin-bottom:0;">
+            <div class="progress-bar-fill blue" style="width: 56%"></div>
+          </div>
+        </div>
+
+        <!-- Heart Rate -->
+        <div class="card bento-card">
+          <div class="bento-icon heart">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div class="bento-label">Heart Rate</div>
+          <div class="bento-value">72 <span style="font-size:14px;font-weight:500;color:var(--neutral-400);">bpm</span></div>
+          <div class="bento-sub">Resting</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. Schedule Section -->
+    <section class="animate-in">
+      <div class="section-title">Schedule</div>
+
+      <!-- Morning -->
+      <div class="schedule-group-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        Morning
+      </div>
+      <div class="schedule-list">
+        <div class="med-card taken">
+          <div class="med-card-info">
+            <div class="med-name">Metformin 500mg</div>
+            <div class="med-instruction">Take with breakfast</div>
+          </div>
+          <div class="med-checkbox checked">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div class="med-card pending">
+          <div class="med-card-info">
+            <div class="med-name">Lisinopril 10mg</div>
+            <div class="med-instruction">Take on empty stomach</div>
+          </div>
+          <div class="med-checkbox">
+            <!-- empty unchecked -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Evening -->
+      <div class="schedule-group-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Evening
+      </div>
+      <div class="schedule-list">
+        <div class="med-card pending">
+          <div class="med-card-info">
+            <div class="med-name">Metformin 500mg</div>
+            <div class="med-instruction">Take with dinner</div>
+          </div>
+          <div class="med-checkbox">
+            <!-- empty unchecked -->
+          </div>
+        </div>
+        <div class="med-card pending">
+          <div class="med-card-info">
+            <div class="med-name">Atorvastatin 20mg</div>
+            <div class="med-instruction">Take before bed</div>
+          </div>
+          <div class="med-checkbox">
+            <!-- empty unchecked -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Care Assistant Section -->
+    <section class="animate-in">
+      <div class="section-title">Care Assistant</div>
+      <div class="chat-container">
+        <div class="chat-messages">
+          <!-- Bot message 1 -->
+          <div>
+            <div class="chat-sender"><span class="bot-dot"></span> Bewo Assistant</div>
+            <div class="chat-bubble bot">Good morning, Ah Kow! How are you feeling today? I see your glucose is looking stable at 6.2 mmol/L.</div>
+          </div>
+          <!-- User message -->
+          <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <div class="chat-bubble user">Feeling good, had my meds this morning</div>
+          </div>
+          <!-- Bot message 2 -->
+          <div>
+            <div class="chat-sender"><span class="bot-dot"></span> Bewo Assistant</div>
+            <div class="chat-bubble bot">Great to hear! Your adherence streak is impressive -- 7 days and counting. Remember to log your lunch later. Keep up the amazing work!</div>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <input class="chat-input" type="text" placeholder="Ask me anything...">
+          <button class="chat-btn send" aria-label="Send message">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <button class="chat-btn mic" aria-label="Voice input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spacer for FAB -->
+    <div style="height: 40px;"></div>
+
+  </main>
+
+  <!-- Floating Action Button (expanded state) -->
+  <div class="fab-container">
+    <div class="fab-actions">
+      <div class="fab-action">
+        <span class="fab-action-label">Log Glucose</span>
+        <button class="fab-action-btn glucose-btn" aria-label="Log Glucose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        </button>
+      </div>
+      <div class="fab-action">
+        <span class="fab-action-label">Log Food</span>
+        <button class="fab-action-btn food-btn" aria-label="Log Food">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </button>
+      </div>
+      <div class="fab-action">
+        <span class="fab-action-label">Voice Check-in</span>
+        <button class="fab-action-btn voice-btn" aria-label="Voice Check-in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="fab-main" aria-label="Quick Actions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>

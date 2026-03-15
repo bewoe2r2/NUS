@@ -1541,11 +1541,11 @@ class HMMEngine:
         # This prevents overconfident predictions with sparse data
         adjusted_confidence = best_prob
         if certainty_index < 0.5:
-            # Significant penalty for very sparse data
+            # Significant penalty for very sparse data (scales from 0.5x to 1.0x)
             adjusted_confidence = best_prob * (0.5 + certainty_index)
         elif certainty_index < 0.8:
-            # Mild penalty for moderately sparse data
-            adjusted_confidence = best_prob * (0.8 + 0.25 * certainty_index)
+            # Mild penalty for moderately sparse data (scales from ~0.9x to ~0.96x)
+            adjusted_confidence = best_prob * (0.7 + 0.325 * certainty_index)
 
         # Interpretation (uses adjusted confidence and certainty)
         if certainty_index < 0.3:
@@ -1761,25 +1761,25 @@ class HMMEngine:
             # Addresses "Markovian" Limitation by injecting history
             # -----------------------------------------------------------------
             try:
-                # 24h Adherence
+                # 24h Adherence (window ends at current bucket start, not next bucket)
                 if patient_id:
                     med_row_24h = cursor.execute("""
                         SELECT COUNT(*) as taken FROM medication_logs
                         WHERE user_id = ? AND taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
-                    """, (patient_id, t - 86400, t_end)).fetchone()
+                    """, (patient_id, t - 86400, t)).fetchone()
                     med_row_7d = cursor.execute("""
                         SELECT COUNT(*) as taken FROM medication_logs
                         WHERE user_id = ? AND taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
-                    """, (patient_id, t - 7 * 86400, t_end)).fetchone()
+                    """, (patient_id, t - 7 * 86400, t)).fetchone()
                 else:
                     med_row_24h = cursor.execute("""
                         SELECT COUNT(*) as taken FROM medication_logs
                         WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
-                    """, (t - 86400, t_end)).fetchone()
+                    """, (t - 86400, t)).fetchone()
                     med_row_7d = cursor.execute("""
                         SELECT COUNT(*) as taken FROM medication_logs
                         WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
-                    """, (t - 7 * 86400, t_end)).fetchone()
+                    """, (t - 7 * 86400, t)).fetchone()
 
                 scheduled_doses_daily = 2
                 
@@ -1809,12 +1809,12 @@ class HMMEngine:
                     food_row = cursor.execute("""
                         SELECT SUM(carbs_grams) as total_carbs FROM food_logs
                         WHERE user_id = ? AND timestamp_utc >= ? AND timestamp_utc < ?
-                    """, (patient_id, t - 86400, t_end)).fetchone()
+                    """, (patient_id, t - 86400, t)).fetchone()
                 else:
                     food_row = cursor.execute("""
                         SELECT SUM(carbs_grams) as total_carbs FROM food_logs
                         WHERE timestamp_utc >= ? AND timestamp_utc < ?
-                    """, (t - 86400, t_end)).fetchone()
+                    """, (t - 86400, t)).fetchone()
                 obs['carbs_intake'] = food_row['total_carbs'] if food_row and food_row['total_carbs'] else None
             except sqlite3.Error:
                 obs['carbs_intake'] = None
@@ -1839,7 +1839,7 @@ class HMMEngine:
                     pass_row = cursor.execute("""
                         SELECT SUM(step_count) as steps FROM passive_metrics
                         WHERE window_start_utc >= ? AND window_end_utc < ?
-                    """, (t - 86400, t_end)).fetchone()
+                    """, (t - 86400, t)).fetchone()
                     obs['steps_daily'] = pass_row['steps'] if pass_row and pass_row['steps'] else None
             except sqlite3.Error:
                 obs['steps_daily'] = None
@@ -1921,7 +1921,7 @@ class HMMEngine:
             try:
                 social_row = cursor.execute("""
                     SELECT social_interactions as social FROM passive_metrics
-                    WHERE window_start_utc >= ? AND window_end_utc <= ?
+                    WHERE window_start_utc >= ? AND window_end_utc < ?
                     ORDER BY window_start_utc DESC LIMIT 1
                 """, (t, t_end)).fetchone()
                 if social_row and social_row['social'] is not None:
@@ -3000,7 +3000,8 @@ class ValidationSuite:
             print(f"  {state:<10} {m['precision']:<12.4f} {m['recall']:<12.4f} {m['specificity']:<12.4f} {m['f1_score']:<10.4f} {m['support']:<8}")
 
         print(f"\n[CONFUSION MATRIX]")
-        print(f"  {'Actual \\ Pred':<15} {'STABLE':<10} {'WARNING':<10} {'CRISIS':<10}")
+        header = 'Actual \\ Pred'
+        print(f"  {header:<15} {'STABLE':<10} {'WARNING':<10} {'CRISIS':<10}")
         print(f"  {'-'*45}")
         for actual in STATES:
             row = metrics['confusion_matrix'][actual]

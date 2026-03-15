@@ -321,7 +321,8 @@ async def get_patient_state(patient_id: str):
         if len(path_states) >= 6:
             state_values = {'STABLE': 0, 'WARNING': 1, 'CRISIS': 2}
             first_avg = sum(state_values.get(s, 0) for s in path_states[:len(path_states)//2]) / (len(path_states)//2)
-            second_avg = sum(state_values.get(s, 0) for s in path_states[len(path_states)//2:]) / (len(path_states)//2)
+            second_half = path_states[len(path_states)//2:]
+            second_avg = sum(state_values.get(s, 0) for s in second_half) / len(second_half)
             if second_avg < first_avg - 0.3:
                 trend = "IMPROVING"
             elif second_avg > first_avg + 0.3:
@@ -635,30 +636,33 @@ def _get_patient_profile(patient_id: str) -> dict:
     }
     try:
         conn = get_db()
-        row = conn.execute(
-            "SELECT user_id, display_name, age, conditions, medications FROM patients WHERE user_id = ?",
-            (patient_id,)
-        ).fetchone()
-        if row:
-            import json as _json
-            conditions = row["conditions"] or ""
-            medications = row["medications"] or ""
-            # Handle JSON-encoded lists
-            try:
-                conditions = ", ".join(_json.loads(conditions)) if conditions.startswith("[") else conditions
-            except Exception:
-                pass
-            try:
-                medications = ", ".join(_json.loads(medications)) if medications.startswith("[") else medications
-            except Exception:
-                pass
-            return {
-                "id": row["user_id"],
-                "name": row["display_name"] or f"Patient {patient_id}",
-                "age": row["age"] if "age" in row.keys() else 67,
-                "conditions": conditions,
-                "medications": medications,
-            }
+        try:
+            row = conn.execute(
+                "SELECT user_id, display_name, age, conditions, medications FROM patients WHERE user_id = ?",
+                (patient_id,)
+            ).fetchone()
+            if row:
+                import json as _json
+                conditions = row["conditions"] or ""
+                medications = row["medications"] or ""
+                # Handle JSON-encoded lists
+                try:
+                    conditions = ", ".join(_json.loads(conditions)) if conditions.startswith("[") else conditions
+                except Exception:
+                    pass
+                try:
+                    medications = ", ".join(_json.loads(medications)) if medications.startswith("[") else medications
+                except Exception:
+                    pass
+                return {
+                    "id": row["user_id"],
+                    "name": row["display_name"] or f"Patient {patient_id}",
+                    "age": row["age"] if "age" in row.keys() else 67,
+                    "conditions": conditions,
+                    "medications": medications,
+                }
+        finally:
+            conn.close()
     except Exception as e:
         logger.warning(f"Could not load patient profile from DB: {e}")
     # Fallback to demo data — never return another patient's data for unknown IDs
@@ -806,7 +810,8 @@ async def get_medications(patient_id: str):
         medications = []
         med_id = 1
         for name in med_names:
-            schedules = MED_DEFAULTS.get(name, [{"dose": "", "time": "08:00", "with_food": False}])
+            base_name = name.split()[0]  # "Metformin 500mg BID" -> "Metformin"
+            schedules = MED_DEFAULTS.get(base_name, [{"dose": "", "time": "08:00", "with_food": False}])
             for sched in schedules:
                 medications.append({"id": med_id, "name": name, "dose": sched["dose"], "time": sched["time"], "with_food": sched["with_food"], "taken": False})
                 med_id += 1
@@ -888,13 +893,11 @@ async def get_voucher(patient_id: str):
         streak_days = voucher.get('streak_days', 0)
         if streak_days == 0:
             try:
-                ar = get_agent_runtime()
-                if ar:
-                    streaks = ar.get_patient_streaks(patient_id)
-                    if isinstance(streaks, dict):
-                        streak_vals = streaks.get('streaks', streaks)
-                        if isinstance(streak_vals, dict):
-                            streak_days = max((v.get('current', 0) if isinstance(v, dict) else 0) for v in streak_vals.values()) if streak_vals else 0
+                streaks = get_patient_streaks(patient_id)
+                if isinstance(streaks, dict):
+                    streak_vals = streaks.get('streaks', streaks)
+                    if isinstance(streak_vals, dict):
+                        streak_days = max((v.get('current', 0) if isinstance(v, dict) else 0) for v in streak_vals.values()) if streak_vals else 0
             except Exception:
                 pass
 
@@ -1933,8 +1936,14 @@ async def get_hmm_params(patient_id: str):
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize on startup"""
+    """Initialize on startup — auto-creates schema and seeds demo data if DB is empty."""
     logger.info("Starting Bewo Health API v4.0 (Diamond v7 + 7 Ceiling Features)...")
+
+    # Auto-initialize schema if database is empty or missing core tables
+    try:
+        _auto_init_database()
+    except Exception as e:
+        logger.warning(f"Auto-init database: {e}")
 
     try:
         gi = get_gemini()
@@ -1948,7 +1957,101 @@ async def startup_event():
     except Exception:
         pass
 
+    # Ensure reminder_type column exists (added by agent_runtime but may not exist yet)
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("ALTER TABLE reminders ADD COLUMN reminder_type TEXT DEFAULT 'general'")
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass  # Column already exists or table doesn't exist yet
+
     logger.info("API ready with AgentRuntime!")
+
+
+def _auto_init_database():
+    """Initialize schema and seed demo data if the database is empty."""
+    schema_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_schema.sql")
+
+    # Check if core tables exist
+    conn = sqlite3.connect(DB_PATH)
+    tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+    has_schema = "patients" in tables and "glucose_readings" in tables
+
+    if not has_schema:
+        logger.info("Database missing core tables — loading schema...")
+        if os.path.exists(schema_path):
+            with open(schema_path, "r", encoding="utf-8") as f:
+                conn.executescript(f.read())
+            logger.info("Schema loaded successfully.")
+        else:
+            logger.warning(f"Schema file not found: {schema_path}")
+            conn.close()
+            return
+
+    # Check if demo data exists
+    patient_count = conn.execute("SELECT COUNT(*) FROM patients").fetchone()[0]
+    if patient_count == 0:
+        logger.info("No patients found — seeding demo data...")
+        _seed_demo_patients(conn)
+
+    glucose_count = conn.execute("SELECT COUNT(*) FROM glucose_readings").fetchone()[0]
+    if glucose_count == 0:
+        logger.info("No glucose data — injecting demo scenario...")
+        conn.close()
+        _seed_demo_scenario()
+    else:
+        conn.close()
+
+
+def _seed_demo_patients(conn):
+    """Insert 3 Singapore demo patients."""
+    demo_patients = [
+        ("demo_user", "Mr. Tan Ah Kow", 67,
+         '["Type 2 Diabetes", "Hypertension"]',
+         '["Metformin 500mg", "Lisinopril 10mg"]', "PREMIUM"),
+        ("patient_002", "Mdm. Lim Siew Eng", 72,
+         '["Type 2 Diabetes", "Chronic Kidney Disease Stage 2"]',
+         '["Metformin 500mg", "Gliclazide 80mg"]', "ENHANCED"),
+        ("patient_003", "Mr. Ahmad bin Ismail", 58,
+         '["Type 2 Diabetes"]',
+         '["Metformin 1000mg"]', "BASIC"),
+    ]
+    for uid, name, age, conds, meds, tier in demo_patients:
+        try:
+            conn.execute(
+                "INSERT OR IGNORE INTO patients (user_id, name, age, conditions, medications, tier) VALUES (?, ?, ?, ?, ?, ?)",
+                (uid, name, age, conds, meds, tier),
+            )
+        except Exception as e:
+            logger.warning(f"Seed patient {uid}: {e}")
+    conn.commit()
+    logger.info("Demo patients seeded.")
+
+
+def _seed_demo_scenario():
+    """Generate and inject a demo scenario using HMM engine."""
+    try:
+        engine = HMMEngine()
+        obs = engine.generate_demo_scenario("demo_intervention_success", days=14)
+
+        # Import inject function
+        scripts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts")
+        sys.path.insert(0, scripts_dir)
+        from inject_data import inject_tiered_scenario_to_db, run_analysis_and_save
+
+        # Temporarily override inject_data's DB_PATH
+        import inject_data
+        original_db = inject_data.DB_PATH
+        inject_data.DB_PATH = DB_PATH
+
+        inject_tiered_scenario_to_db(obs, tier="PREMIUM", days=14)
+        run_analysis_and_save(engine, days=14)
+
+        inject_data.DB_PATH = original_db
+        logger.info("Demo scenario injected successfully.")
+    except Exception as e:
+        logger.warning(f"Demo scenario injection failed: {e}")
 
 if __name__ == "__main__":
     import uvicorn

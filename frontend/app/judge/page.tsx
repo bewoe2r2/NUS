@@ -53,7 +53,8 @@ export default function JudgePage() {
     const [activeTab, setActiveTab] = useState<'overview' | 'patient' | 'nurse' | 'intelligence' | 'tooldemo'>('overview');
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(false);
-    const [showWalkthrough, setShowWalkthrough] = useState(false);
+    const [showWalkthrough, setShowWalkthrough] = useState(true); // Auto-launch for judges
+    const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
 
     // Overview data
     const [patientState, setPatientState] = useState<any>(null);
@@ -182,10 +183,10 @@ export default function JudgePage() {
                         {loading && <Loader2 size={14} className="animate-spin text-zinc-400" />}
                         <button
                             onClick={() => setShowWalkthrough(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                            className={`${walkthroughCompleted ? 'bg-zinc-600 hover:bg-zinc-700' : 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300 ring-offset-2 animate-pulse'} text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm`}
                         >
                             <Play size={12} className="fill-current" />
-                            Guided Demo
+                            {walkthroughCompleted ? 'Replay Demo' : 'Guided Demo'}
                         </button>
                         <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider">
                             JUDGE MODE
@@ -245,7 +246,7 @@ export default function JudgePage() {
 
             {showWalkthrough && (
                 <GuidedWalkthrough
-                    onClose={() => setShowWalkthrough(false)}
+                    onClose={() => { setShowWalkthrough(false); setWalkthroughCompleted(true); }}
                     onTabChange={handleTabChange}
                     onRefresh={handleRefresh}
                 />
@@ -864,10 +865,10 @@ function ToolDemoTab() {
                     addLog({ type: 'info', text: `  ${line.trim()}` });
                 }
             } else {
-                addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING state | B: 72M, T2DM+HTN+HLD, on Metformin+Lisinopril+Atorvastatin+Aspirin | A: Glucose trending up, adherence 60%, rising Merlion velocity | R: Review medication dosage, schedule f/u' });
+                addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING state | B: 67M, T2DM+HTN+HLD, on Metformin+Lisinopril+Atorvastatin+Aspirin | A: Glucose trending up, adherence 60%, rising Merlion velocity | R: Review medication dosage, schedule f/u' });
             }
         } catch {
-            addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING | B: 72M, T2DM+HTN | A: Glucose rising, adherence declining | R: Urgent review needed' });
+            addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING | B: 67M, T2DM+HTN | A: Glucose rising, adherence declining | R: Urgent review needed' });
         }
     };
 
@@ -935,7 +936,7 @@ function ToolDemoTab() {
 
     const runAllTools = async () => {
         addLog({ type: 'system', text: '=== FULL 18-TOOL PIPELINE DEMONSTRATION ===' });
-        addLog({ type: 'system', text: 'Patient: P001 (Mr. Tan Ah Kow, 72M, T2DM + HTN + HLD)' });
+        addLog({ type: 'system', text: 'Patient: P001 (Mr. Tan Ah Kow, 67M, T2DM + HTN + HLD)' });
         addLog({ type: 'system', text: 'Medications: Metformin 500mg BD, Lisinopril 10mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD' });
         addLog({ type: 'system', text: '' });
         await delay(300);

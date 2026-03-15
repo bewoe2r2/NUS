@@ -27,7 +27,7 @@ _~718 words | ~144 wpm = ~4:59_
 >
 > First, a Hidden Markov Model that gives doctors a 48-hour head start before a crisis hits. It reads 9 biomarkers like glucose and heart rate, most collected passively from wearables.
 >
-> Second, 16 AI tools powered by Gemini that don't just suggest, they act. Book appointments. Alert caregivers. Adjust nudge timing. All medication changes are doctor-gated.
+> Second, 18 AI tools powered by Gemini that don't just suggest, they act. Book appointments. Alert caregivers. Adjust nudge timing. All medication changes are doctor-gated.
 >
 > Third, loss-aversion vouchers grounded in Prospect Theory. Patients start with five dollars a week that shrinks if they disengage. They're not earning rewards, they're fighting to keep what they already have.
 
@@ -145,7 +145,7 @@ Total page switches: 0
 |-------------|------------------------|
 | Hidden Markov Model | "gives doctors a 48-hour head start before a crisis hits" |
 | 9 biomarkers | "like glucose and heart rate, most collected passively" |
-| Agentic AI / 16 tools | "don't just suggest, they act. Book an appointment. Alert a caregiver." |
+| Agentic AI / 18 tools | "don't just suggest, they act. Book an appointment. Alert a caregiver." |
 | Prospect Theory | "They're not earning rewards, they're fighting to keep what they already have" |
 | ERRC Framework | Each action tied to cost/value: "which saves nurse hours", "which saves S$8,800 each" |
 | Value curve diverges | "more value for patient AND lower cost for system, simultaneously" |
@@ -182,7 +182,7 @@ Total page switches: 0
 | Feature | Where in script |
 |---------|----------------|
 | HMM Engine (3 states, 9 biomarkers) | What Bewo Does — "9 key biomarkers" + "48h head start" |
-| 16 Agentic AI Tools | What Bewo Does + Demo |
+| 18 Agentic AI Tools | What Bewo Does + Demo |
 | Loss-aversion voucher gamification | What Bewo Does (S$5/wk, decay, Prospect Theory) |
 | Counterfactual "what-if" motivation | Demo ("35% → 12% risk") |
 | Cultural context (hawker food) | Demo (congee with fish) |

@@ -63,7 +63,7 @@ export default function TechnologyPage() {
             </div>
             <h1 className="text-5xl lg:text-6xl max-w-2xl mb-4 leading-[1.08]">How Bewo actually works</h1>
             <p className="text-lg text-ink-secondary max-w-xl leading-relaxed mb-6">
-              Clinically-parameterized prediction engine. Agentic AI with 16 tools.
+              Clinically-parameterized prediction engine. Agentic AI with 18 tools.
               Doctor-gated for clinical decisions. Full audit trail.
             </p>
             <div className="flex gap-6 text-xs font-[family-name:var(--font-mono)]">
@@ -77,7 +77,7 @@ export default function TechnologyPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-warning" />
-                <span className="text-ink-secondary"><span className="font-bold text-warning">16</span> agentic tools</span>
+                <span className="text-ink-secondary"><span className="font-bold text-warning">18</span> agentic tools</span>
               </div>
             </div>
           </motion.div>
@@ -272,14 +272,14 @@ export default function TechnologyPage() {
         <DataFlowViz />
       </section>
 
-      {/* ===== 16 AGENTIC TOOLS ===== */}
+      {/* ===== 18 AGENTIC TOOLS ===== */}
       <section className="max-w-6xl mx-auto px-6 mb-24">
         <motion.div {...fadeUp} className="flex items-center gap-3 mb-8">
           <span className="w-10 h-10 rounded-xl bg-primary-muted text-primary flex items-center justify-center">
             <Activity size={20} />
           </span>
           <div>
-            <h2 className="text-3xl">16 Agentic Tools</h2>
+            <h2 className="text-3xl">18 Agentic Tools</h2>
             <p className="text-sm text-ink-secondary mt-0.5">Real tools executing real actions against real systems. Doctor-gated for medication decisions. Never auto-adjusts dosage.</p>
           </div>
         </motion.div>
@@ -301,6 +301,8 @@ export default function TechnologyPage() {
           <ToolCard icon={Award} name="celebrate_streak" desc="3/7/14/30-day milestones. Voucher bonus + badge unlock." />
           <ToolCard icon={FileText} name="generate_weekly_report" desc="Glucose, steps, adherence, streaks, grade (A/B/C/D). Auto-sent." />
           <ToolCard icon={Settings} name="adjust_nudge_schedule" desc="Shifts reminders to learned optimal response windows." />
+          <ToolCard icon={Shield} name="generate_clinician_summary" desc="Auto SBAR report for nurses. Situation, Background, Assessment, Recommendation." />
+          <ToolCard icon={Zap} name="check_drug_interactions" desc="16 interaction pairs checked. Flags conflicts with current medications before any change." />
         </motion.div>
       </section>
 

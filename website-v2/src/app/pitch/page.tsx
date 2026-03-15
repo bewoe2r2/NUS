@@ -85,7 +85,7 @@ const errcData = [
     costNote: "New value",
     items: [
       "Counterfactual \u201Cwhat-if\u201D motivation (\u201C35% \u2192 12% risk if you take Metformin\u201D)",
-      "16-tool agentic AI (real actions, not just suggestions \u2014 doctor-gated for medication)",
+      "18-tool agentic AI (real actions, not just suggestions \u2014 doctor-gated for medication)",
       "Loss-aversion voucher gamification (S$5/week with decay)",
       "AI-initiated proactive check-ins (no patient trigger needed)",
     ],
@@ -227,12 +227,12 @@ export default function PitchPage() {
             },
             {
               title: "Agentic AI",
-              tag: "16 TOOLS \u00B7 GEMINI FLASH \u00B7 REAL ACTIONS",
-              desc: "Gemini AI reasons over full clinical context and executes from 16 tools: appointments, caregiver alerts, medication reminders, food recommendations, vouchers. Doctor-gated for clinical decisions.",
+              tag: "18 TOOLS \u00B7 GEMINI FLASH \u00B7 REAL ACTIONS",
+              desc: "Gemini AI reasons over full clinical context and executes from 18 tools: appointments, caregiver alerts, medication reminders, food recommendations, vouchers. Doctor-gated for clinical decisions.",
               gradient: "from-stable/8",
               accent: "text-stable",
               border: "border-stable/30",
-              stat: "16",
+              stat: "18",
               statLabel: "AI tools",
             },
             {
@@ -696,7 +696,7 @@ export default function PitchPage() {
               },
               {
                 tier: "Enhanced Tier", price: "S$3", period: "/patient/mo",
-                features: ["+ Fitbit auto-sync (passive collection)", "Full 16-tool agent", "Caregiver dashboard", "Weekly auto-reports"],
+                features: ["+ Fitbit auto-sync (passive collection)", "Full 18-tool agent", "Caregiver dashboard", "Weekly auto-reports"],
                 accent: "text-primary", highlight: true,
               },
               {
@@ -802,7 +802,7 @@ export default function PitchPage() {
               step: "1", title: "Buyer Utility",
               question: "Is there exceptional utility?",
               answer: "YES",
-              detail: "48h crisis prediction (no competitor offers this). 16 agentic tools that take real actions. Zero patient effort via passive sensing. Loss-aversion gamification.",
+              detail: "48h crisis prediction (no competitor offers this). 18 agentic tools that take real actions. Zero patient effort via passive sensing. Loss-aversion gamification.",
               accent: "text-stable", border: "border-stable/30", bg: "bg-stable/6",
             },
             {

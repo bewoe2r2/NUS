@@ -1426,9 +1426,9 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
 → Actions: [ALERT_NURSE priority:critical, ALERT_FAMILY]
 """
 
-    def generate_agentic_response(self, patient_profile, hmm_engine, observations, user_id='current_user'):
+    def generate_agentic_response_full(self, patient_profile, hmm_engine, observations, user_id='current_user'):
         """
-        [AGENTIC BEWO v4.0]
+        [AGENTIC BEWO v4.0 - Full HMM-integrated version]
 
         Generates a fully agentic response using ALL available HMM intelligence.
 
@@ -2286,6 +2286,7 @@ RESPOND IN JSON:
     def _store_conversation(self, patient_id: str, role: str, message: str):
         """Store conversation turn in database"""
         try:
+            self._ensure_conversation_table()
             conn = self._get_db_connection()
             conn.execute("""
                 INSERT INTO conversation_history (patient_id, timestamp_utc, role, message)
@@ -2319,7 +2320,11 @@ if __name__ == "__main__":
         'step_count_avg': 1800,
         'concerning_trends': ['declining activity', 'poor sleep', 'missed check-ins']
     }
-    result = gi.generate_sbar_report(weekly_data)
-    print(result['sbar_text'])
-    print(f"\nRisk Level: {result['risk_level']}")
-    print(f"Recommendations: {result['key_recommendations']}")
+    result = gi.draft_sbar(
+        state="WARNING",
+        metrics=weekly_data,
+        conditions=weekly_data.get('condition', 'Type 2 Diabetes'),
+        medications="Metformin 500mg BID",
+        guidelines="ADA Standards of Care 2024"
+    )
+    print(json.dumps(result, indent=2))

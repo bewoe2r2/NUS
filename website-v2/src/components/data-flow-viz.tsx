@@ -7,7 +7,7 @@ const LAYERS = [
   { id: "input", label: "Data Sources", items: ["CGM Device", "Fitbit/Wearable", "Voice Input", "Meal Photo OCR", "Passive Sensors", "Manual Log"], color: "oklch(0.45 0.12 185)" },
   { id: "process", label: "HMM Engine", items: ["Viterbi Decode", "Monte Carlo (1K paths)", "Counterfactual Engine", "Gaussian Likelihood"], color: "oklch(0.52 0.14 160)" },
   { id: "reason", label: "Gemini AI", items: ["Context Assembly", "Tool Selection", "Mood Detection", "Tone Adaptation"], color: "oklch(0.50 0.12 280)" },
-  { id: "act", label: "16 Agentic Tools", items: ["Book Appointment", "Alert Caregiver", "Award Voucher", "Recommend Food", "Set Reminder", "+11 more"], color: "oklch(0.62 0.14 80)" },
+  { id: "act", label: "18 Agentic Tools", items: ["Book Appointment", "Alert Caregiver", "Award Voucher", "Recommend Food", "Set Reminder", "+13 more"], color: "oklch(0.62 0.14 80)" },
   { id: "audit", label: "Clinical Governance", items: ["Action Audit Log", "SBAR Reports", "Nurse Dashboard", "Weekly Reports"], color: "oklch(0.50 0.02 260)" },
 ];
 

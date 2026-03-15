@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEWO Clinical — Nurse Dashboard</title>
+<style>
+/* ── Reset & Base ────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:#f8fafc;color:#1e293b;height:100%;overflow:hidden;
+  font-size:14px;line-height:1.5;
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes donutDraw{from{stroke-dashoffset:251.3}to{stroke-dashoffset:var(--target)}}
+
+.fade-in{animation:fadeInUp .45s ease-out both}
+.fade-in-d1{animation-delay:.05s}
+.fade-in-d2{animation-delay:.10s}
+.fade-in-d3{animation-delay:.15s}
+.fade-in-d4{animation-delay:.20s}
+.fade-in-d5{animation-delay:.25s}
+.fade-in-d6{animation-delay:.30s}
+.fade-in-d7{animation-delay:.35s}
+
+.pulse-dot{animation:pulse 1.8s ease-in-out infinite}
+
+/* ── Layout Shell ────────────────────────────────────── */
+.layout{display:flex;height:100vh;width:100%}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.sidebar{
+  width:264px;min-width:264px;height:100vh;
+  background:#fff;border-right:1px solid #e2e8f0;
+  display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:40;
+}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid #f1f5f9}
+.sidebar-logo-row{display:flex;align-items:center;gap:10px}
+.sidebar-logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sidebar-logo h1{font-size:15px;font-weight:700;letter-spacing:.5px;color:#1e293b}
+.sidebar-logo p{font-size:11px;color:#94a3b8;margin-top:2px;padding-left:46px}
+
+.sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+.nav-group{margin-bottom:20px}
+.nav-group-label{
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;
+  color:#94a3b8;padding:0 8px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;
+  color:#64748b;cursor:pointer;transition:all .15s;margin-bottom:2px;
+}
+.nav-item:hover:not(.disabled){background:#f8fafc;color:#334155}
+.nav-item.active{background:#eff6ff;color:#3b82f6;font-weight:600}
+.nav-item.disabled{opacity:.42;cursor:not-allowed}
+.nav-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+
+.sidebar-user{
+  padding:16px 16px 20px;border-top:1px solid #f1f5f9;
+  display:flex;align-items:center;gap:12px;
+}
+.sidebar-avatar{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,#3b82f6,#6366f1);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:13px;font-weight:700;flex-shrink:0;
+}
+.sidebar-user-info h4{font-size:13px;font-weight:600;color:#1e293b}
+.sidebar-user-info p{font-size:11px;color:#94a3b8}
+
+/* ── Main Area ───────────────────────────────────────── */
+.main{margin-left:264px;flex:1;display:flex;flex-direction:column;height:100vh}
+
+/* ── Patient Header ──────────────────────────────────── */
+.patient-header{
+  position:sticky;top:0;z-index:30;
+  background:#fff;border-bottom:1px solid #e2e8f0;
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  min-height:60px;
+}
+.patient-info{display:flex;align-items:center;gap:16px}
+.patient-name{font-size:17px;font-weight:700;color:#1e293b}
+.patient-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b}
+.patient-meta span{display:flex;align-items:center;gap:4px}
+.meta-dot{width:3px;height:3px;border-radius:50%;background:#cbd5e1}
+.badge-warning{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;
+  background:#fffbeb;color:#d97706;border:1px solid #fde68a;letter-spacing:.5px;
+}
+.patient-header-right{display:flex;align-items:center;gap:14px}
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;
+  background:#f8fafc;font-size:13px;color:#94a3b8;min-width:200px;
+}
+.notif-btn{
+  position:relative;width:36px;height:36px;border-radius:8px;
+  border:1px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.notif-dot{
+  position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;
+  background:#f43f5e;border:2px solid #fff;
+}
+
+/* ── Content Scroll ──────────────────────────────────── */
+.content{flex:1;overflow-y:auto;padding:24px 28px 48px}
+
+/* ── Card System ─────────────────────────────────────── */
+.card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden;
+}
+.card-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;background:#f8fafc;border-bottom:1px solid #f1f5f9;
+}
+.card-header-icon{
+  width:32px;height:32px;border-radius:8px;background:#eff6ff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.card-header h3{font-size:14px;font-weight:600;color:#1e293b}
+.card-header .card-subtitle{font-size:11px;color:#94a3b8;margin-left:auto}
+.card-body{padding:18px}
+
+/* ── Grid helpers ────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 2fr;gap:20px}
+.section-gap{margin-bottom:22px}
+
+/* ── 14-Day Timeline ─────────────────────────────────── */
+.timeline-strip{
+  display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;
+  scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent;
+}
+.timeline-strip::-webkit-scrollbar{height:5px}
+.timeline-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.day-tile{
+  min-width:72px;border-radius:10px;padding:10px 8px;text-align:center;
+  cursor:pointer;transition:all .18s;position:relative;flex-shrink:0;
+  border:2px solid transparent;
+}
+.day-tile:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.day-tile.selected{border-color:#1e293b;box-shadow:0 0 0 2px rgba(30,41,59,.15)}
+.day-tile .month{font-size:10px;font-weight:600;text-transform:uppercase;opacity:.85}
+.day-tile .day-num{font-size:22px;font-weight:700;line-height:1.2}
+.day-tile .state-icon{margin:4px auto;width:18px;height:18px}
+.day-tile .conf{font-size:10px;font-weight:500;opacity:.8}
+.day-tile .today-dot{
+  position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  width:6px;height:6px;border-radius:50%;background:#3b82f6;
+}
+.tile-stable{background:#ecfdf5;color:#065f46}
+.tile-warning{background:#fffbeb;color:#92400e}
+.tile-crisis{background:#fff1f2;color:#9f1239}
+
+/* ── Selected Day Detail ─────────────────────────────── */
+.detail-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid #f1f5f9;
+}
+.detail-header h3{font-size:16px;font-weight:700}
+.detail-state{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 14px;
+  border-radius:6px;font-size:12px;font-weight:700;
+  background:#fff1f2;color:#e11d48;
+}
+.close-btn{
+  width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;
+  background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:#64748b;font-size:16px;transition:all .15s;
+}
+.close-btn:hover{background:#f8fafc;color:#1e293b}
+
+/* ── Probability Gallery ─────────────────────────────── */
+.prob-gallery{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;
+}
+.prob-card{
+  border:1px solid #f1f5f9;border-radius:10px;padding:12px;
+  background:#fafbfc;
+}
+.prob-card h5{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.prob-card .obs-val{font-size:18px;font-weight:700;color:#3b82f6}
+.prob-card .obs-unit{font-size:11px;color:#94a3b8;font-weight:500}
+.prob-svg{width:100%;height:80px;margin-top:4px}
+
+/* ── Evidence Table ──────────────────────────────────── */
+.evidence-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.evidence-table thead th{
+  text-align:left;padding:10px 14px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;
+  background:#f8fafc;border-bottom:1px solid #f1f5f9;
+}
+.evidence-table thead th:first-child{border-radius:8px 0 0 0}
+.evidence-table thead th:last-child{border-radius:0 8px 0 0}
+.evidence-table tbody td{padding:10px 14px;border-bottom:1px solid #f8fafc}
+.evidence-table tbody tr:hover{background:#fafbfc}
+.weight-bar{
+  display:inline-block;height:6px;border-radius:3px;background:#3b82f6;
+  vertical-align:middle;margin-right:6px;
+}
+.contrib-badge{
+  display:inline-flex;padding:3px 10px;border-radius:5px;
+  font-size:11px;font-weight:600;
+}
+.contrib-critical{background:#fff1f2;color:#e11d48}
+.contrib-warning{background:#fffbeb;color:#d97706}
+.contrib-normal{background:#ecfdf5;color:#059669}
+
+/* ── HMM Section ─────────────────────────────────────── */
+.hmm-section-title{
+  font-size:16px;font-weight:700;color:#1e293b;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+
+/* Donut Chart */
+.donut-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0}
+.donut-legend{display:flex;flex-direction:column;gap:6px;margin-top:14px;width:100%}
+.legend-row{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:8px}
+.legend-label{display:flex;align-items:center;color:#64748b;font-weight:500}
+.legend-val{font-weight:700;color:#1e293b}
+
+/* Heatmap */
+.heatmap{width:100%}
+.heatmap-grid{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:3px;font-size:12px}
+.hm-header{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  text-align:center;padding:6px 4px;color:#64748b;
+}
+.hm-row-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
+  padding:10px 8px;display:flex;align-items:center;color:#64748b;
+}
+.hm-cell{
+  text-align:center;padding:10px 6px;border-radius:6px;
+  font-size:13px;font-weight:700;color:#fff;
+}
+
+/* Monte Carlo */
+.mc-card{position:relative}
+.mc-big-number{
+  position:absolute;top:14px;right:18px;text-align:right;
+}
+.mc-big-number .label{font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.mc-big-number .value{font-size:28px;font-weight:800;color:#e11d48}
+
+/* ── 24h Biometric ───────────────────────────────────── */
+.biometric-chart{position:relative;height:200px;padding:20px 0 0}
+.bio-y-left{
+  position:absolute;left:0;top:0;bottom:30px;width:44px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  font-size:10px;color:#f43f5e;font-weight:600;text-align:right;padding-right:6px;
+}
+.bio-y-right{
+  position:absolute;right:0;top:0;bottom:30px;width:44px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  font-size:10px;color:#3b82f6;font-weight:600;text-align:left;padding-left:6px;
+}
+.bio-plot{margin:0 50px;height:170px;position:relative;border-bottom:1px solid #e2e8f0;border-left:1px solid #e2e8f0}
+.bio-x-labels{
+  display:flex;justify-content:space-between;margin:6px 50px 0;
+  font-size:10px;color:#94a3b8;font-weight:500;
+}
+
+/* ── SBAR ─────────────────────────────────────────────── */
+.sbar-section{margin-bottom:14px}
+.sbar-section:last-child{margin-bottom:0}
+.sbar-label{
+  display:inline-flex;padding:2px 8px;border-radius:4px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:4px;
+}
+.sbar-s{background:#dbeafe;color:#1d4ed8}
+.sbar-b{background:#fef3c7;color:#92400e}
+.sbar-a{background:#fce7f3;color:#9d174d}
+.sbar-r{background:#d1fae5;color:#065f46}
+.sbar-text{font-size:13px;color:#475569;line-height:1.6}
+
+/* ── Drug Interactions ───────────────────────────────── */
+.drug-item{
+  padding:14px;border-radius:10px;margin-bottom:10px;
+}
+.drug-item:last-child{margin-bottom:0}
+.drug-major{background:#fff1f2;border:1px solid #fecdd3}
+.drug-moderate{background:#fffbeb;border:1px solid #fde68a}
+.drug-severity{font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:4px}
+.drug-severity.major{color:#e11d48}
+.drug-severity.moderate{color:#d97706}
+.drug-pair{font-size:13px;font-weight:600;color:#1e293b;margin-bottom:3px}
+.drug-desc{font-size:12px;color:#64748b;margin-bottom:2px}
+.drug-action{font-size:12px;color:#475569;font-weight:500;font-style:italic}
+
+/* ── Triage ──────────────────────────────────────────── */
+.triage-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;border-radius:10px;margin-bottom:8px;
+  border:1px solid #f1f5f9;background:#fafbfc;
+}
+.triage-row:last-child{margin-bottom:0}
+.triage-left{display:flex;align-items:center;gap:12px}
+.triage-id{font-size:13px;font-weight:700;color:#1e293b}
+.triage-state{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.triage-state.crisis{background:#fff1f2;color:#e11d48}
+.triage-state.warning{background:#fffbeb;color:#d97706}
+.triage-state.stable{background:#ecfdf5;color:#059669}
+.triage-urgency{font-size:12px;color:#64748b}
+.triage-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;
+}
+.triage-immediate{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.triage-soon{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.triage-monitor{background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe}
+.triage-dot{width:7px;height:7px;border-radius:50%}
+.triage-dot.red{background:#dc2626}
+.triage-dot.amber{background:#d97706}
+.triage-dot.blue{background:#3b82f6}
+
+/* ── Alerts ──────────────────────────────────────────── */
+.alert-item{padding:12px 14px;border-radius:10px;margin-bottom:8px}
+.alert-item:last-child{margin-bottom:0}
+.alert-critical{background:#fff1f2;border-left:4px solid #f43f5e}
+.alert-high{background:#fffbeb;border-left:4px solid #f59e0b}
+.alert-medium{background:#f8fafc;border-left:4px solid #94a3b8}
+.alert-level{font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:3px}
+.alert-level.crit{color:#e11d48}
+.alert-level.high{color:#d97706}
+.alert-level.med{color:#64748b}
+.alert-msg{font-size:12px;color:#475569;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-row">
+      <div class="sidebar-logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h1>BEWO CLINICAL</h1>
+    </div>
+    <p>Decision Support System</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Dashboard</div>
+      <div class="nav-item active">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+        Overview
+      </div>
+      <div class="nav-item disabled">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+        Live Monitoring
+      </div>
+      <div class="nav-item disabled">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+        HMM Analysis
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Patient Management</div>
+      <div class="nav-item disabled">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+        History Logs
+      </div>
+      <div class="nav-item disabled">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        Alerts &amp; Risks
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">SC</div>
+    <div class="sidebar-user-info">
+      <h4>Sarah Chen, RN</h4>
+      <p>Senior Nurse Lead</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+
+  <!-- Patient Header -->
+  <header class="patient-header">
+    <div class="patient-info">
+      <div>
+        <span class="patient-name">Tan Ah Kow</span>
+        <div class="patient-meta">
+          <span>ID: P001</span>
+          <span class="meta-dot"></span>
+          <span>67 Y.O.</span>
+          <span class="meta-dot"></span>
+          <span>Male</span>
+          <span class="meta-dot"></span>
+          <span>Type 2 Diabetes</span>
+        </div>
+      </div>
+      <div class="badge-warning">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        WARNING
+      </div>
+    </div>
+    <div class="patient-header-right">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Search records...
+      </div>
+      <button class="notif-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Scrollable Content -->
+  <div class="content">
+
+    <!-- ── 14-Day Health Timeline ────────────────── -->
+    <div class="card section-gap fade-in">
+      <div class="card-header">
+        <div class="card-header-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3>14-Day Health Timeline</h3>
+        <span class="card-subtitle">March 1 &ndash; March 14, 2026</span>
+      </div>
+      <div class="card-body">
+        <div class="timeline-strip">
+          <!-- Days 1-10: STABLE -->
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">1</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">94%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">2</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">91%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">3</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">88%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">4</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">92%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">5</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">95%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">6</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">89%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">7</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">90%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">8</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">86%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">9</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">83%</div></div>
+          <div class="day-tile tile-stable"><div class="month">Mar</div><div class="day-num">10</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="conf">78%</div></div>
+          <!-- Days 11-12: WARNING -->
+          <div class="day-tile tile-warning"><div class="month">Mar</div><div class="day-num">11</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="conf">72%</div></div>
+          <div class="day-tile tile-warning"><div class="month">Mar</div><div class="day-num">12</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="conf">68%</div></div>
+          <!-- Day 13: CRISIS (selected) -->
+          <div class="day-tile tile-crisis selected"><div class="month">Mar</div><div class="day-num">13</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div class="conf">85%</div></div>
+          <!-- Day 14: WARNING + today dot -->
+          <div class="day-tile tile-warning"><div class="month">Mar</div><div class="day-num">14</div><div class="state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="conf">61%</div><div class="today-dot"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Selected Day Detail Panel (Day 13) ────── -->
+    <div class="card section-gap fade-in fade-in-d1">
+      <div class="detail-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <h3>Thursday, March 13</h3>
+          <div class="detail-state">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            CRISIS State
+          </div>
+        </div>
+        <button class="close-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="card-body">
+        <!-- Probability Gallery -->
+        <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Probability Distributions</div>
+        <div class="prob-gallery">
+          <!-- Glucose -->
+          <div class="prob-card">
+            <h5>Glucose</h5>
+            <div><span class="obs-val">14.2</span> <span class="obs-unit">mmol/L</span></div>
+            <svg class="prob-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+              <!-- Stable (green) gaussian centered at 6.5 -->
+              <path d="M0,68 C10,68 20,65 35,55 C50,35 55,15 65,8 C75,15 80,35 95,55 C110,65 120,68 130,68" fill="none" stroke="#10b981" stroke-width="1.5" opacity=".6"/>
+              <path d="M0,68 C10,68 20,65 35,55 C50,35 55,15 65,8 C75,15 80,35 95,55 C110,65 120,68 130,68 L130,70 L0,70 Z" fill="#10b981" opacity=".08"/>
+              <!-- Warning (amber) gaussian centered at 10 -->
+              <path d="M40,68 C55,68 65,60 80,48 C90,35 95,18 105,10 C115,18 120,35 130,48 C140,60 150,68 165,68" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+              <path d="M40,68 C55,68 65,60 80,48 C90,35 95,18 105,10 C115,18 120,35 130,48 C140,60 150,68 165,68 L165,70 L40,70 Z" fill="#f59e0b" opacity=".08"/>
+              <!-- Crisis (red) gaussian centered at 14 -->
+              <path d="M90,68 C105,68 115,58 130,42 C140,28 145,14 155,6 C165,14 170,28 180,42 C190,58 195,66 200,68" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity=".6"/>
+              <path d="M90,68 C105,68 115,58 130,42 C140,28 145,14 155,6 C165,14 170,28 180,42 C190,58 195,66 200,68 L200,70 L90,70 Z" fill="#f43f5e" opacity=".08"/>
+              <!-- Observed value line at 14.2 ~ x=157 -->
+              <line x1="157" y1="2" x2="157" y2="68" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <circle cx="157" cy="6" r="3" fill="#3b82f6"/>
+            </svg>
+          </div>
+          <!-- Steps -->
+          <div class="prob-card">
+            <h5>Steps</h5>
+            <div><span class="obs-val">1,200</span> <span class="obs-unit">steps</span></div>
+            <svg class="prob-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+              <!-- Crisis (red) gaussian centered low ~1000 steps -->
+              <path d="M0,68 C5,66 10,58 18,42 C25,28 28,14 35,6 C42,14 45,28 52,42 C60,58 65,66 70,68" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity=".6"/>
+              <path d="M0,68 C5,66 10,58 18,42 C25,28 28,14 35,6 C42,14 45,28 52,42 C60,58 65,66 70,68 L70,70 L0,70 Z" fill="#f43f5e" opacity=".08"/>
+              <!-- Warning (amber) gaussian centered ~3500 -->
+              <path d="M40,68 C55,68 65,58 78,42 C88,28 92,14 100,8 C108,14 112,28 122,42 C135,58 145,68 160,68" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+              <path d="M40,68 C55,68 65,58 78,42 C88,28 92,14 100,8 C108,14 112,28 122,42 C135,58 145,68 160,68 L160,70 L40,70 Z" fill="#f59e0b" opacity=".08"/>
+              <!-- Stable (green) gaussian centered ~7000 -->
+              <path d="M110,68 C125,68 135,58 148,42 C158,28 162,14 170,6 C178,14 182,28 192,48 C196,60 198,66 200,68" fill="none" stroke="#10b981" stroke-width="1.5" opacity=".6"/>
+              <path d="M110,68 C125,68 135,58 148,42 C158,28 162,14 170,6 C178,14 182,28 192,48 C196,60 198,66 200,68 L200,70 L110,70 Z" fill="#10b981" opacity=".08"/>
+              <!-- Observed at 1200 ~ x=38 -->
+              <line x1="38" y1="2" x2="38" y2="68" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <circle cx="38" cy="5" r="3" fill="#3b82f6"/>
+            </svg>
+          </div>
+          <!-- Sleep Hours -->
+          <div class="prob-card">
+            <h5>Sleep Hours</h5>
+            <div><span class="obs-val">4.1</span> <span class="obs-unit">hours</span></div>
+            <svg class="prob-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+              <!-- Crisis (red) centered ~3.5h -->
+              <path d="M0,68 C8,66 15,58 25,42 C32,28 36,14 42,6 C48,14 52,28 62,42 C72,58 78,66 85,68" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity=".6"/>
+              <path d="M0,68 C8,66 15,58 25,42 C32,28 36,14 42,6 C48,14 52,28 62,42 C72,58 78,66 85,68 L85,70 L0,70 Z" fill="#f43f5e" opacity=".08"/>
+              <!-- Warning (amber) centered ~5.5h -->
+              <path d="M35,68 C50,68 60,58 72,42 C82,28 86,14 95,8 C104,14 108,28 118,42 C130,58 140,68 155,68" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+              <path d="M35,68 C50,68 60,58 72,42 C82,28 86,14 95,8 C104,14 108,28 118,42 C130,58 140,68 155,68 L155,70 L35,70 Z" fill="#f59e0b" opacity=".08"/>
+              <!-- Stable (green) centered ~7.5h -->
+              <path d="M100,68 C115,68 125,58 138,42 C148,28 152,14 162,6 C172,14 176,28 186,48 C193,60 197,66 200,68" fill="none" stroke="#10b981" stroke-width="1.5" opacity=".6"/>
+              <path d="M100,68 C115,68 125,58 138,42 C148,28 152,14 162,6 C172,14 176,28 186,48 C193,60 197,66 200,68 L200,70 L100,70 Z" fill="#10b981" opacity=".08"/>
+              <!-- Observed 4.1h ~ x=52 -->
+              <line x1="52" y1="2" x2="52" y2="68" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <circle cx="52" cy="12" r="3" fill="#3b82f6"/>
+            </svg>
+          </div>
+          <!-- HRV -->
+          <div class="prob-card">
+            <h5>HRV</h5>
+            <div><span class="obs-val">28</span> <span class="obs-unit">ms</span></div>
+            <svg class="prob-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+              <!-- Crisis (red) centered low ~25ms -->
+              <path d="M0,68 C8,66 15,55 22,38 C28,25 32,14 38,6 C44,14 48,25 55,38 C62,55 68,66 75,68" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity=".6"/>
+              <path d="M0,68 C8,66 15,55 22,38 C28,25 32,14 38,6 C44,14 48,25 55,38 C62,55 68,66 75,68 L75,70 L0,70 Z" fill="#f43f5e" opacity=".08"/>
+              <!-- Warning (amber) centered ~45ms -->
+              <path d="M45,68 C58,68 68,58 80,42 C90,28 94,14 102,8 C110,14 114,28 124,42 C136,58 146,68 158,68" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+              <path d="M45,68 C58,68 68,58 80,42 C90,28 94,14 102,8 C110,14 114,28 124,42 C136,58 146,68 158,68 L158,70 L45,70 Z" fill="#f59e0b" opacity=".08"/>
+              <!-- Stable (green) centered ~65ms -->
+              <path d="M105,68 C118,68 128,58 140,42 C150,28 155,14 165,6 C175,14 180,28 188,48 C194,60 198,66 200,68" fill="none" stroke="#10b981" stroke-width="1.5" opacity=".6"/>
+              <path d="M105,68 C118,68 128,58 140,42 C150,28 155,14 165,6 C175,14 180,28 188,48 C194,60 198,66 200,68 L200,70 L105,70 Z" fill="#10b981" opacity=".08"/>
+              <!-- Observed 28ms ~ x=42 -->
+              <line x1="42" y1="2" x2="42" y2="68" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <circle cx="42" cy="8" r="3" fill="#3b82f6"/>
+            </svg>
+          </div>
+          <!-- Resting HR -->
+          <div class="prob-card">
+            <h5>Resting HR</h5>
+            <div><span class="obs-val">98</span> <span class="obs-unit">bpm</span></div>
+            <svg class="prob-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+              <!-- Stable (green) centered ~68bpm -->
+              <path d="M0,68 C8,66 15,58 28,42 C38,28 42,14 52,6 C62,14 66,28 76,42 C88,58 95,66 105,68" fill="none" stroke="#10b981" stroke-width="1.5" opacity=".6"/>
+              <path d="M0,68 C8,66 15,58 28,42 C38,28 42,14 52,6 C62,14 66,28 76,42 C88,58 95,66 105,68 L105,70 L0,70 Z" fill="#10b981" opacity=".08"/>
+              <!-- Warning (amber) centered ~82bpm -->
+              <path d="M40,68 C55,68 65,58 78,42 C88,28 92,14 100,8 C108,14 112,28 122,42 C135,58 145,68 160,68" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+              <path d="M40,68 C55,68 65,58 78,42 C88,28 92,14 100,8 C108,14 112,28 122,42 C135,58 145,68 160,68 L160,70 L40,70 Z" fill="#f59e0b" opacity=".08"/>
+              <!-- Crisis (red) centered ~98bpm -->
+              <path d="M100,68 C115,68 125,58 138,42 C148,28 152,14 162,6 C172,14 176,28 186,48 C193,60 197,66 200,68" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity=".6"/>
+              <path d="M100,68 C115,68 125,58 138,42 C148,28 152,14 162,6 C172,14 176,28 186,48 C193,60 197,66 200,68 L200,70 L100,70 Z" fill="#f43f5e" opacity=".08"/>
+              <!-- Observed 98bpm ~ x=162 -->
+              <line x1="162" y1="2" x2="162" y2="68" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <circle cx="162" cy="6" r="3" fill="#3b82f6"/>
+            </svg>
+          </div>
+          <!-- Carbs -->
+          <div class="prob-card">
+            <h5>Carbs Intake</h5>
+            <div><span class="obs-val">280</span> <span class="obs-unit">g</span></div>
+            <svg class="prob-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+              <!-- Stable (green) centered ~180g -->
+              <path d="M0,68 C12,68 25,58 40,42 C52,28 58,14 68,6 C78,14 84,28 96,42 C110,58 122,68 135,68" fill="none" stroke="#10b981" stroke-width="1.5" opacity=".6"/>
+              <path d="M0,68 C12,68 25,58 40,42 C52,28 58,14 68,6 C78,14 84,28 96,42 C110,58 122,68 135,68 L135,70 L0,70 Z" fill="#10b981" opacity=".08"/>
+              <!-- Warning (amber) centered ~250g -->
+              <path d="M60,68 C75,68 88,58 102,42 C112,28 118,14 128,8 C138,14 142,28 152,42 C165,58 175,68 190,68" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+              <path d="M60,68 C75,68 88,58 102,42 C112,28 118,14 128,8 C138,14 142,28 152,42 C165,58 175,68 190,68 L190,70 L60,70 Z" fill="#f59e0b" opacity=".08"/>
+              <!-- Crisis (red) centered ~310g -->
+              <path d="M125,68 C138,68 148,58 158,42 C166,28 170,14 178,6 C186,14 190,30 195,48 C198,60 199,66 200,68" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity=".6"/>
+              <path d="M125,68 C138,68 148,58 158,42 C166,28 170,14 178,6 C186,14 190,30 195,48 C198,60 199,66 200,68 L200,70 L125,70 Z" fill="#f43f5e" opacity=".08"/>
+              <!-- Observed 280g ~ x=155 -->
+              <line x1="155" y1="2" x2="155" y2="68" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <circle cx="155" cy="14" r="3" fill="#3b82f6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Evidence Table -->
+        <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Evidence Breakdown</div>
+        <table class="evidence-table">
+          <thead><tr><th>Feature</th><th>Weight</th><th>Value</th><th>Contribution</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">Glucose</td><td><span class="weight-bar" style="width:70px"></span>35%</td><td>14.2 mmol/L</td><td><span class="contrib-badge contrib-critical">Critical</span></td></tr>
+            <tr><td style="font-weight:600">Steps</td><td><span class="weight-bar" style="width:40px"></span>20%</td><td>1,200 steps</td><td><span class="contrib-badge contrib-critical">Critical</span></td></tr>
+            <tr><td style="font-weight:600">Sleep Hours</td><td><span class="weight-bar" style="width:30px"></span>15%</td><td>4.1 hours</td><td><span class="contrib-badge contrib-warning">Warning</span></td></tr>
+            <tr><td style="font-weight:600">HRV</td><td><span class="weight-bar" style="width:30px"></span>15%</td><td>28 ms</td><td><span class="contrib-badge contrib-critical">Critical</span></td></tr>
+            <tr><td style="font-weight:600">Resting HR</td><td><span class="weight-bar" style="width:20px"></span>10%</td><td>98 bpm</td><td><span class="contrib-badge contrib-warning">Warning</span></td></tr>
+            <tr><td style="font-weight:600">Carbs Intake</td><td><span class="weight-bar" style="width:10px"></span>5%</td><td>280 g</td><td><span class="contrib-badge contrib-warning">Warning</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── HMM Intelligence Center ───────────────── -->
+    <div class="fade-in fade-in-d2 section-gap">
+      <div class="hmm-section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        HMM Intelligence Center
+      </div>
+      <div class="grid-4">
+        <!-- Current State -->
+        <div class="card">
+          <div class="card-header"><div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><h3>Current State</h3></div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <svg width="140" height="140" viewBox="0 0 140 140">
+                <circle cx="70" cy="70" r="54" fill="none" stroke="#f1f5f9" stroke-width="16"/>
+                <!-- Stable: 21% = 75.7 of 360 = dash 339.3, gap rest, rotate -90 -->
+                <!-- Total circumference = 2*pi*54 = 339.3 -->
+                <!-- Stable 21% = 71.25 -->
+                <circle cx="70" cy="70" r="54" fill="none" stroke="#10b981" stroke-width="16"
+                  stroke-dasharray="71.25 268.05" stroke-dashoffset="0"
+                  transform="rotate(-90 70 70)" stroke-linecap="round"/>
+                <!-- Warning 50% = 169.65, offset after stable = -71.25 -->
+                <circle cx="70" cy="70" r="54" fill="none" stroke="#f59e0b" stroke-width="16"
+                  stroke-dasharray="169.65 169.65" stroke-dashoffset="-71.25"
+                  transform="rotate(-90 70 70)"/>
+                <!-- Crisis 29% = 98.4 -->
+                <circle cx="70" cy="70" r="54" fill="none" stroke="#f43f5e" stroke-width="16"
+                  stroke-dasharray="98.4 240.9" stroke-dashoffset="-240.9"
+                  transform="rotate(-90 70 70)"/>
+                <!-- Center text -->
+                <text x="70" y="66" text-anchor="middle" font-size="20" font-weight="800" fill="#1e293b">50%</text>
+                <text x="70" y="82" text-anchor="middle" font-size="10" font-weight="600" fill="#f59e0b">WARNING</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#10b981"></span>Stable</span><span class="legend-val">21%</span></div>
+                <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#f59e0b"></span>Warning</span><span class="legend-val">50%</span></div>
+                <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#f43f5e"></span>Crisis</span><span class="legend-val">29%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transition Dynamics -->
+        <div class="card">
+          <div class="card-header"><div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3>Transition Dynamics</h3></div>
+          <div class="card-body">
+            <div class="heatmap-grid">
+              <!-- Header row -->
+              <div class="hm-header"></div>
+              <div class="hm-header">To S</div>
+              <div class="hm-header">To W</div>
+              <div class="hm-header">To C</div>
+              <!-- STABLE row -->
+              <div class="hm-row-label">Stable</div>
+              <div class="hm-cell" style="background:rgba(16,185,129,.70)">70%</div>
+              <div class="hm-cell" style="background:rgba(16,185,129,.25)">25%</div>
+              <div class="hm-cell" style="background:rgba(16,185,129,.05)">5%</div>
+              <!-- WARNING row -->
+              <div class="hm-row-label">Warning</div>
+              <div class="hm-cell" style="background:rgba(245,158,11,.30)">30%</div>
+              <div class="hm-cell" style="background:rgba(245,158,11,.45)">45%</div>
+              <div class="hm-cell" style="background:rgba(245,158,11,.25)">25%</div>
+              <!-- CRISIS row -->
+              <div class="hm-row-label">Crisis</div>
+              <div class="hm-cell" style="background:rgba(244,63,94,.10)">10%</div>
+              <div class="hm-cell" style="background:rgba(244,63,94,.35)">35%</div>
+              <div class="hm-cell" style="background:rgba(244,63,94,.55)">55%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monte Carlo Forecast -->
+        <div class="card mc-card">
+          <div class="card-header"><div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><h3>Monte Carlo Forecast</h3></div>
+          <div class="card-body" style="position:relative;padding-top:8px">
+            <div class="mc-big-number">
+              <div class="label">48h Risk</div>
+              <div class="value">42.3%</div>
+            </div>
+            <svg viewBox="0 0 500 180" width="100%" height="180" preserveAspectRatio="xMidYMid meet">
+              <!-- Grid lines -->
+              <line x1="40" y1="10" x2="40" y2="150" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="40" y1="150" x2="480" y2="150" stroke="#e2e8f0" stroke-width="1"/>
+              <!-- Horizontal grid -->
+              <line x1="40" y1="10" x2="480" y2="10" stroke="#f8fafc" stroke-width="1"/>
+              <line x1="40" y1="45" x2="480" y2="45" stroke="#f8fafc" stroke-width="1"/>
+              <line x1="40" y1="80" x2="480" y2="80" stroke="#f8fafc" stroke-width="1"/>
+              <line x1="40" y1="115" x2="480" y2="115" stroke="#f8fafc" stroke-width="1"/>
+              <!-- 50% reference line -->
+              <line x1="40" y1="80" x2="480" y2="80" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6,4"/>
+              <text x="35" y="83" text-anchor="end" font-size="9" fill="#94a3b8" font-weight="500">50%</text>
+              <!-- Y-axis labels -->
+              <text x="35" y="14" text-anchor="end" font-size="9" fill="#94a3b8">100%</text>
+              <text x="35" y="118" text-anchor="end" font-size="9" fill="#94a3b8">25%</text>
+              <text x="35" y="153" text-anchor="end" font-size="9" fill="#94a3b8">0%</text>
+              <!-- X-axis labels -->
+              <text x="40" y="168" text-anchor="middle" font-size="9" fill="#94a3b8">+0h</text>
+              <text x="150" y="168" text-anchor="middle" font-size="9" fill="#94a3b8">+12h</text>
+              <text x="260" y="168" text-anchor="middle" font-size="9" fill="#94a3b8">+24h</text>
+              <text x="370" y="168" text-anchor="middle" font-size="9" fill="#94a3b8">+36h</text>
+              <text x="480" y="168" text-anchor="middle" font-size="9" fill="#94a3b8">+48h</text>
+              <!-- Area fill -->
+              <defs>
+                <linearGradient id="mcGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f43f5e" stop-opacity=".35"/>
+                  <stop offset="100%" stop-color="#f43f5e" stop-opacity=".05"/>
+                </linearGradient>
+              </defs>
+              <path d="M40,136 C70,134 100,130 140,126 C180,120 210,114 240,106 C270,96 300,88 340,76 C370,68 410,58 440,50 C460,44 475,40 480,38 L480,150 L40,150 Z" fill="url(#mcGrad)"/>
+              <!-- Line -->
+              <path d="M40,136 C70,134 100,130 140,126 C180,120 210,114 240,106 C270,96 300,88 340,76 C370,68 410,58 440,50 C460,44 475,40 480,38" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Confidence band -->
+              <path d="M40,140 C70,138 100,136 140,132 C180,126 210,122 240,116 C270,108 300,100 340,90 C370,82 410,72 440,62 C460,56 475,52 480,50 L480,26 C475,28 460,32 440,38 C410,44 370,54 340,62 C300,76 270,84 240,96 C210,106 180,114 140,120 C100,124 70,128 40,132 Z" fill="#f43f5e" opacity=".08"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 24-Hour Biometric Trends ──────────────── -->
+    <div class="card section-gap fade-in fade-in-d3">
+      <div class="card-header">
+        <div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <h3>24-Hour Biometric Trends</h3>
+        <span class="card-subtitle">
+          <span style="color:#f43f5e;font-weight:600">&#9644;</span> Glucose (mmol/L)
+          &nbsp;&nbsp;
+          <span style="color:#3b82f6;font-weight:600">&#9632;</span> Steps
+        </span>
+      </div>
+      <div class="card-body">
+        <svg viewBox="0 0 700 220" width="100%" height="220" preserveAspectRatio="xMidYMid meet">
+          <!-- Y axis left (Glucose) -->
+          <text x="30" y="30" text-anchor="end" font-size="10" fill="#f43f5e" font-weight="600">15</text>
+          <text x="30" y="65" text-anchor="end" font-size="10" fill="#f43f5e" font-weight="600">12</text>
+          <text x="30" y="100" text-anchor="end" font-size="10" fill="#f43f5e" font-weight="600">9</text>
+          <text x="30" y="135" text-anchor="end" font-size="10" fill="#f43f5e" font-weight="600">6</text>
+          <text x="30" y="170" text-anchor="end" font-size="10" fill="#f43f5e" font-weight="600">3</text>
+          <text x="30" y="200" text-anchor="end" font-size="10" fill="#f43f5e" font-weight="600">0</text>
+          <!-- Y axis right (Steps) -->
+          <text x="670" y="30" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="600">10k</text>
+          <text x="670" y="100" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="600">5k</text>
+          <text x="670" y="170" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="600">2.5k</text>
+          <text x="670" y="200" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="600">0</text>
+          <!-- Grid -->
+          <line x1="45" y1="195" x2="660" y2="195" stroke="#e2e8f0" stroke-width="1"/>
+          <line x1="45" y1="25" x2="660" y2="25" stroke="#f8fafc" stroke-width="1"/>
+          <line x1="45" y1="60" x2="660" y2="60" stroke="#f8fafc" stroke-width="1"/>
+          <line x1="45" y1="95" x2="660" y2="95" stroke="#f8fafc" stroke-width="1"/>
+          <line x1="45" y1="130" x2="660" y2="130" stroke="#f8fafc" stroke-width="1"/>
+          <line x1="45" y1="165" x2="660" y2="165" stroke="#f8fafc" stroke-width="1"/>
+          <!-- X axis labels -->
+          <text x="95" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">8AM</text>
+          <text x="190" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">10AM</text>
+          <text x="285" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">12PM</text>
+          <text x="380" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">2PM</text>
+          <text x="475" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">4PM</text>
+          <text x="565" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">6PM</text>
+          <text x="655" y="212" text-anchor="middle" font-size="10" fill="#94a3b8">8PM</text>
+
+          <!-- Steps bars (blue) -->
+          <!-- 8AM: 2800 steps -->
+          <rect x="75" y="142" width="40" height="53" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="75" y="142" width="40" height="53" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+          <!-- 10AM: 4200 steps -->
+          <rect x="170" y="112" width="40" height="83" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="170" y="112" width="40" height="83" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+          <!-- 12PM: 1500 steps -->
+          <rect x="265" y="165" width="40" height="30" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="265" y="165" width="40" height="30" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+          <!-- 2PM: 800 steps -->
+          <rect x="360" y="178" width="40" height="17" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="360" y="178" width="40" height="17" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+          <!-- 4PM: 3500 steps -->
+          <rect x="455" y="128" width="40" height="67" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="455" y="128" width="40" height="67" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+          <!-- 6PM: 2200 steps -->
+          <rect x="545" y="152" width="40" height="43" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="545" y="152" width="40" height="43" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+          <!-- 8PM: 900 steps -->
+          <rect x="635" y="176" width="40" height="19" rx="4" fill="#3b82f6" opacity=".18"/>
+          <rect x="635" y="176" width="40" height="19" rx="4" fill="none" stroke="#3b82f6" stroke-width="1" opacity=".4"/>
+
+          <!-- Glucose line -->
+          <!-- Glucose scale: 0=195, 15=25, so y = 195 - (val/15)*170 -->
+          <!-- 6.5=121.3  8.2=102.5  11.5=64.7  9.8=84.1  7.2=113.4  6.8=118.1  7.5=110 -->
+          <defs>
+            <linearGradient id="glucGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f43f5e" stop-opacity=".15"/>
+              <stop offset="100%" stop-color="#f43f5e" stop-opacity=".01"/>
+            </linearGradient>
+          </defs>
+          <path d="M95,121 C130,115 155,108 190,103 C225,90 250,72 285,65 C320,72 345,80 380,84 C415,95 440,108 475,113 C510,116 535,118 565,118 C595,116 625,112 655,110" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M95,121 C130,115 155,108 190,103 C225,90 250,72 285,65 C320,72 345,80 380,84 C415,95 440,108 475,113 C510,116 535,118 565,118 C595,116 625,112 655,110 L655,195 L95,195 Z" fill="url(#glucGrad)"/>
+          <!-- Data points -->
+          <circle cx="95" cy="121" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <circle cx="190" cy="103" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <circle cx="285" cy="65" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <circle cx="380" cy="84" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <circle cx="475" cy="113" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <circle cx="565" cy="118" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <circle cx="655" cy="110" r="4" fill="#fff" stroke="#f43f5e" stroke-width="2"/>
+          <!-- Value labels -->
+          <text x="95" y="113" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">6.5</text>
+          <text x="190" y="95" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">8.2</text>
+          <text x="285" y="57" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">11.5</text>
+          <text x="380" y="76" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">9.8</text>
+          <text x="475" y="105" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">7.2</text>
+          <text x="565" y="110" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">6.8</text>
+          <text x="655" y="102" text-anchor="middle" font-size="9" fill="#f43f5e" font-weight="600">7.5</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ── SBAR + Drug Interactions ──────────────── -->
+    <div class="grid-2 section-gap">
+      <!-- SBAR -->
+      <div class="card fade-in fade-in-d4">
+        <div class="card-header">
+          <div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <h3>SBAR Clinical Report</h3>
+        </div>
+        <div class="card-body">
+          <div class="sbar-section">
+            <div class="sbar-label sbar-s">SITUATION</div>
+            <p class="sbar-text">67-year-old male with Type 2 Diabetes Mellitus, glucose trending at 14.2 mmol/L. HMM state classifier has designated patient status as <strong>CRISIS</strong>.</p>
+          </div>
+          <div class="sbar-section">
+            <div class="sbar-label sbar-b">BACKGROUND</div>
+            <p class="sbar-text">14-day longitudinal analysis shows 3 crisis episodes with increasing frequency. Recent medication adherence measured at 60%. Previous stable baseline glucose 6.5-7.5 mmol/L.</p>
+          </div>
+          <div class="sbar-section">
+            <div class="sbar-label sbar-a">ASSESSMENT</div>
+            <p class="sbar-text">Acute hyperglycemic episode with multi-system deterioration. 48-hour crisis risk projection: <strong>42.3%</strong>. HRV significantly depressed at 28 ms indicating autonomic stress.</p>
+          </div>
+          <div class="sbar-section">
+            <div class="sbar-label sbar-r">RECOMMENDATION</div>
+            <p class="sbar-text">Urgent endocrinology consult recommended. Adjust insulin dosing protocol. Increase glucose monitoring frequency to q2h. Review medication adherence barriers with patient.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drug Interactions -->
+      <div class="card fade-in fade-in-d5">
+        <div class="card-header">
+          <div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <h3>Drug Interaction Check</h3>
+        </div>
+        <div class="card-body">
+          <div class="drug-item drug-major">
+            <div class="drug-severity major">MAJOR INTERACTION</div>
+            <div class="drug-pair">Metformin + Lisinopril</div>
+            <div class="drug-desc">Increased risk of lactic acidosis in renal impairment</div>
+            <div class="drug-action">Monitor renal function closely</div>
+          </div>
+          <div class="drug-item drug-moderate">
+            <div class="drug-severity moderate">MODERATE INTERACTION</div>
+            <div class="drug-pair">Atorvastatin + Metformin</div>
+            <div class="drug-desc">May alter glucose metabolism</div>
+            <div class="drug-action">Monitor glucose levels</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Triage + Alerts ───────────────────────── -->
+    <div class="grid-2 section-gap">
+      <!-- Triage -->
+      <div class="card fade-in fade-in-d6">
+        <div class="card-header">
+          <div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+          <h3>Patient Triage</h3>
+        </div>
+        <div class="card-body">
+          <div class="triage-row">
+            <div class="triage-left">
+              <div>
+                <div class="triage-id">P001 &mdash; Tan Ah Kow</div>
+                <div><span class="triage-state crisis">CRISIS</span> <span class="triage-urgency" style="margin-left:8px">Urgency: 87%</span></div>
+              </div>
+            </div>
+            <div class="triage-badge triage-immediate"><span class="triage-dot red pulse-dot"></span>IMMEDIATE</div>
+          </div>
+          <div class="triage-row">
+            <div class="triage-left">
+              <div>
+                <div class="triage-id">P002 &mdash; Lim Wei Ming</div>
+                <div><span class="triage-state warning">WARNING</span> <span class="triage-urgency" style="margin-left:8px">Urgency: 45%</span></div>
+              </div>
+            </div>
+            <div class="triage-badge triage-soon"><span class="triage-dot amber"></span>SOON</div>
+          </div>
+          <div class="triage-row">
+            <div class="triage-left">
+              <div>
+                <div class="triage-id">P003 &mdash; Siti Nurhaliza</div>
+                <div><span class="triage-state stable">STABLE</span> <span class="triage-urgency" style="margin-left:8px">Urgency: 12%</span></div>
+              </div>
+            </div>
+            <div class="triage-badge triage-monitor"><span class="triage-dot blue"></span>MONITOR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Alerts -->
+      <div class="card fade-in fade-in-d7">
+        <div class="card-header">
+          <div class="card-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <h3>Active Alerts</h3>
+          <span class="card-subtitle" style="background:#fff1f2;color:#e11d48;padding:2px 8px;border-radius:4px;font-weight:700;font-size:10px">3 ACTIVE</span>
+        </div>
+        <div class="card-body">
+          <div class="alert-item alert-critical">
+            <div class="alert-level crit">CRITICAL</div>
+            <div class="alert-msg">Hyperglycemia detected &mdash; glucose 14.2 mmol/L exceeds threshold of 11.1 mmol/L. Immediate clinical review required.</div>
+          </div>
+          <div class="alert-item alert-high">
+            <div class="alert-level high">HIGH</div>
+            <div class="alert-msg">Medication adherence below 70% for 3 consecutive days. Consider patient education and adherence support intervention.</div>
+          </div>
+          <div class="alert-item alert-medium">
+            <div class="alert-level med">MEDIUM</div>
+            <div class="alert-msg">HRV declining trend over past 48 hours. Current reading 28 ms is below normal range (40-100 ms). Monitor autonomic function.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+</body>
+</html>

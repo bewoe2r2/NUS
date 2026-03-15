@@ -61,7 +61,7 @@ export const HomePage = () => (
           </div>
           {[
             { value: '48h', label: 'Crisis prediction window', icon: Brain },
-            { value: '16', label: 'Autonomous agentic tools', icon: Activity },
+            { value: '18', label: 'Autonomous agentic tools', icon: Activity },
             { value: '900K+', label: 'Target diabetics over 60', icon: Users },
             { value: '~40%', label: 'Admission reduction', icon: TrendingUp },
           ].map((m, i) => (
@@ -177,8 +177,8 @@ export const HomePage = () => (
           {
             icon: Activity,
             title: 'Agentic AI Orchestration',
-            detail: '16 AUTONOMOUS TOOLS WIRED TO REAL SYSTEMS',
-            desc: 'Gemini AI reasons over full HMM context and autonomously executes 16 tools: booking appointments, alerting caregivers, adjusting medication schedules. Real actions, not just chat responses.',
+            detail: '18 AUTONOMOUS TOOLS WIRED TO REAL SYSTEMS',
+            desc: 'Gemini AI reasons over full HMM context and autonomously executes 18 tools: booking appointments, alerting caregivers, adjusting medication schedules. Real actions, not just chat responses.',
             accent: 'var(--color-profit)',
           },
           {

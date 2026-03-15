@@ -55,7 +55,7 @@ export default function HomePage() {
 
               <p className="text-lg text-ink-secondary max-w-xl mb-8 leading-relaxed">
                 Hidden Markov Models detect deterioration from passive sensor data.
-                16 AI tools act on clinical context — booking appointments, alerting caregivers,
+                18 AI tools act on clinical context — booking appointments, alerting caregivers,
                 adjusting nudge timing. Doctor-gated for medication decisions. The patient&apos;s job is to live their life.
               </p>
 
@@ -74,7 +74,7 @@ export default function HomePage() {
               <div className="flex gap-4 text-xs font-[family-name:var(--font-mono)]">
                 <span className="text-stable"><span className="font-bold text-sm">48h</span> advance warning</span>
                 <span className="text-border">|</span>
-                <span className="text-primary"><span className="font-bold text-sm">16</span> AI tools</span>
+                <span className="text-primary"><span className="font-bold text-sm">18</span> AI tools</span>
                 <span className="text-border">|</span>
                 <span className="text-warning"><span className="font-bold text-sm">S$3</span> /patient/month</span>
               </div>
@@ -92,7 +92,7 @@ export default function HomePage() {
               {[
                 { icon: Watch, label: "9 Biomarkers", detail: "Glucose avg + variability (CGM), steps, resting HR, HRV, sleep quality (Fitbit), meds adherence, carb intake, social engagement (app)", accent: "text-primary" },
                 { icon: Brain, label: "3-State HMM", detail: "Viterbi + Monte Carlo + Counterfactual inference", accent: "text-stable" },
-                { icon: Zap, label: "16 AI Tools", detail: "Appointments, alerts, vouchers, food recs, check-ins", accent: "text-warning" },
+                { icon: Zap, label: "18 AI Tools", detail: "Appointments, alerts, vouchers, food recs, check-ins", accent: "text-warning" },
                 { icon: Shield, label: "Full Audit Trail", detail: "Auto-SBAR reports, never auto-adjusts medication", accent: "text-primary" },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-3">
@@ -123,7 +123,7 @@ export default function HomePage() {
           {[
             { step: "01", title: "Sense", desc: "9 biomarkers from 3 sources: glucose avg + variability (CGM), steps + resting HR + HRV + sleep quality (Fitbit), meds adherence + carb intake + social engagement (app). Feeds HMM every 4 hours.", accent: "text-primary", border: "border-primary/20" },
             { step: "02", title: "Predict", desc: "Viterbi decoding classifies patient state. 1,000 Monte Carlo trajectories forecast 48-hour crisis probability with 95% confidence intervals.", accent: "text-stable", border: "border-stable/20" },
-            { step: "03", title: "Act", desc: "Gemini AI reasons over clinical context and executes from 16 agentic tools: appointments, alerts, food recs, vouchers, check-ins. Doctor-gated for medication. Full audit trail.", accent: "text-warning", border: "border-warning/20" },
+            { step: "03", title: "Act", desc: "Gemini AI reasons over clinical context and executes from 18 agentic tools: appointments, alerts, food recs, vouchers, check-ins. Doctor-gated for medication. Full audit trail.", accent: "text-warning", border: "border-warning/20" },
           ].map((s) => (
             <motion.div key={s.step} {...childVariant} className={`relative bg-surface-card border ${s.border} rounded-2xl p-6`}>
               <div className={`font-[family-name:var(--font-mono)] text-3xl font-bold ${s.accent} opacity-20 absolute top-4 right-5`}>{s.step}</div>
@@ -266,12 +266,12 @@ export default function HomePage() {
             },
             {
               title: "Agentic AI",
-              tag: "16 TOOLS \u00B7 GEMINI FLASH \u00B7 REAL ACTIONS",
-              desc: "Gemini AI reasons over full clinical context and executes from 16 tools: appointments, caregiver alerts, medication reminders, food recommendations, vouchers. Doctor-gated for clinical decisions.",
+              tag: "18 TOOLS \u00B7 GEMINI FLASH \u00B7 REAL ACTIONS",
+              desc: "Gemini AI reasons over full clinical context and executes from 18 tools: appointments, caregiver alerts, medication reminders, food recommendations, vouchers. Doctor-gated for clinical decisions.",
               gradient: "from-stable/8",
               accent: "text-stable",
               border: "border-stable/30",
-              stat: "16",
+              stat: "18",
               statLabel: "AI tools",
             },
             {
@@ -361,7 +361,7 @@ export default function HomePage() {
         <motion.div {...stagger} className="grid md:grid-cols-2 gap-4">
           {[
             { status: "BUILT", label: "HMM Prediction Engine", detail: "3-state model, 9 orthogonal biomarkers, Viterbi + Monte Carlo + Counterfactual. Runs in Python with clinically-parameterized transition matrices.", accent: "text-stable" },
-            { status: "BUILT", label: "16 Agentic AI Tools", detail: "Full tool execution via Gemini: appointments, alerts, vouchers, food recs, streak tracking, weekly reports, nudge scheduling. Doctor-gated for medication.", accent: "text-stable" },
+            { status: "BUILT", label: "18 Agentic AI Tools", detail: "Full tool execution via Gemini: appointments, alerts, vouchers, food recs, streak tracking, weekly reports, nudge scheduling. Doctor-gated for medication.", accent: "text-stable" },
             { status: "BUILT", label: "Patient Chat Interface", detail: "Singlish-aware conversational AI. Mood detection, adaptive tone, counterfactual motivation. Real tool calls visible in conversation.", accent: "text-stable" },
             { status: "BUILT", label: "Nurse Dashboard + SBAR", detail: "Auto-generated SBAR clinical reports on every state transition. Priority-sorted patient list. One-click escalation.", accent: "text-stable" },
             { status: "BUILT", label: "Voucher Gamification Engine", detail: "Loss-aversion S$5/week with decay. Streak tracking (3/7/14/30-day milestones). Daily challenges scaled to clinical state.", accent: "text-stable" },

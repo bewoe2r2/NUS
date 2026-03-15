@@ -336,7 +336,7 @@ export default function DemoPage() {
         <motion.div {...fadeUp} className="text-center py-12">
           <h2 className="text-3xl mb-3">Dive Into the Architecture</h2>
           <p className="text-ink-secondary mb-6 max-w-md mx-auto">
-            See the exact HMM parameters, transition matrix, and all 16 tools under the hood.
+            See the exact HMM parameters, transition matrix, and all 18 tools under the hood.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
             <Link href="/technology" className="group inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-semibold shadow-lg shadow-primary-glow hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">

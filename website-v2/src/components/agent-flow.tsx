@@ -8,7 +8,7 @@ const STEPS = [
   { id: "hmm", label: "HMM Engine", sub: "Viterbi + Monte Carlo", color: "oklch(0.52 0.14 160)" },
   { id: "ctx", label: "Context Build", sub: "Mood + Streaks + History", color: "oklch(0.62 0.14 80)" },
   { id: "ai", label: "Gemini AI", sub: "Reason + Select Tools", color: "oklch(0.50 0.12 280)" },
-  { id: "exec", label: "Execute", sub: "16 Agentic Tools", color: "oklch(0.52 0.14 160)" },
+  { id: "exec", label: "Execute", sub: "18 Agentic Tools", color: "oklch(0.52 0.14 160)" },
   { id: "audit", label: "Audit Log", sub: "SBAR + Governance", color: "oklch(0.50 0.02 260)" },
 ];
 

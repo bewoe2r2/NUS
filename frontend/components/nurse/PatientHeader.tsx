@@ -5,7 +5,7 @@ import { Bell, Search } from "lucide-react";
 
 export function PatientHeader({
     patientId = "P001",
-    name = "Tan Ah Kau",
+    name = "Tan Ah Kow",
     age = 67,
     status = "STABLE"
 }: {

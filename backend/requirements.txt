@@ -1,3 +1,35 @@
+# ==============================================================================
+# Bewo 2026 - Python Dependencies
+# ==============================================================================
+
+# --- Core API ---
 fastapi>=0.100.0
 uvicorn>=0.20.0
 pydantic>=2.0.0
+python-multipart>=0.0.6          # Required by FastAPI for UploadFile/Form
+
+# --- AI / ML ---
+google-generativeai>=0.3.0       # Gemini API (gemini_integration, sealion_interface)
+numpy>=1.24.0                    # HMM engine, risk engine, tests
+scipy>=1.10.0                    # scipy.stats.norm in merlion_risk_engine
+# salesforce-merlion>=2.0.0      # Optional: time-series forecasting (falls back to mock)
+
+# --- Networking / HTTP ---
+requests>=2.28.0                 # SEA-LION Cloudflare Workers AI calls
+
+# --- Utilities ---
+python-dotenv>=1.0.0             # .env loading for API keys
+qrcode[pil]>=7.4                 # QR code generation (voucher_system)
+Pillow>=9.4.0                    # Image handling (qrcode dependency, OCR upload)
+
+# --- Data ---
+pandas>=1.5.0                    # Merlion risk engine, data processing
+
+# --- Optional (scripts, archive dashboards) ---
+# streamlit>=1.28.0              # Archive Streamlit dashboards
+# plotly>=5.13.0                 # Interactive charts (archive)
+# python-pptx>=0.6.21            # PowerPoint generation (scripts/)
+
+# --- Testing ---
+pytest>=7.2.0                    # Test runner
+hypothesis>=6.70.0               # Property-based testing

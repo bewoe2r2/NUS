@@ -398,15 +398,25 @@ def _exec_set_reminder(args, patient_id, conn, now):
         # Older schema without reminder_type — add column then retry
         try:
             conn.execute("ALTER TABLE reminders ADD COLUMN reminder_type TEXT DEFAULT 'general'")
+            conn.commit()
         except sqlite3.OperationalError:
             pass
-        conn.execute("""
-            INSERT INTO reminders (user_id, reminder_time, message, reminder_type, repeat_type, created_at, status)
-            VALUES (?, ?, ?, ?, ?, ?, 'pending')
-        """, (patient_id, args.get("reminder_time", "08:00"),
-              args.get("message", "Health reminder"),
-              args.get("reminder_type", "general"),
-              args.get("repeat_type", "once"), now))
+        try:
+            conn.execute("""
+                INSERT INTO reminders (user_id, reminder_time, message, reminder_type, repeat_type, created_at, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            """, (patient_id, args.get("reminder_time", "08:00"),
+                  args.get("message", "Health reminder"),
+                  args.get("reminder_type", "general"),
+                  args.get("repeat_type", "once"), now))
+        except sqlite3.OperationalError:
+            # Fallback: insert without reminder_type column
+            conn.execute("""
+                INSERT INTO reminders (user_id, reminder_time, message, repeat_type, created_at, status)
+                VALUES (?, ?, ?, ?, ?, 'pending')
+            """, (patient_id, args.get("reminder_time", "08:00"),
+                  args.get("message", "Health reminder"),
+                  args.get("repeat_type", "once"), now))
     conn.commit()
     return {"success": True, "reminder_time": args.get("reminder_time"),
             "message": args.get("message")}
@@ -868,7 +878,7 @@ def ensure_runtime_tables():
     # Seed P001 (Tan Ah Kow) with full medication list for drug interaction demo
     conn.execute("""
         INSERT OR IGNORE INTO patients (user_id, display_name, conditions, medications, last_hba1c)
-        VALUES ('P001', 'Mr. Tan Ah Kow (72M)', 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
+        VALUES ('P001', 'Mr. Tan Ah Kow (67M)', 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
                 'Metformin 500mg BD, Lisinopril 10mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD', 7.8)
     """)
 
@@ -1350,8 +1360,8 @@ def build_full_hmm_context(hmm_engine, observations: List[Dict], patient_id: str
     if len(path_states) >= 6:
         sv = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
         mid = len(path_states) // 2
-        first_avg = sum(sv.get(s, 0) for s in path_states[:mid]) / mid
-        second_avg = sum(sv.get(s, 0) for s in path_states[mid:]) / (len(path_states) - mid)
+        first_avg = sum(sv.get(s, 0) for s in path_states[:mid]) / max(mid, 1)
+        second_avg = sum(sv.get(s, 0) for s in path_states[mid:]) / max(len(path_states) - mid, 1)
         if second_avg < first_avg - 0.3:
             trend = "IMPROVING"
         elif second_avg > first_avg + 0.3:
@@ -2138,9 +2148,16 @@ def run_agent_loop(
         parsed = _call_gemini(gemini_integration, prompt)
 
         if parsed is None:
-            # Gemini failed — use fallback
+            # Gemini failed — use fallback with safety tool execution
             logger.warning(f"Gemini failed on turn {turn}, using fallback")
             result = _generate_fallback_response(hmm_context, patient_profile)
+            # Execute fallback tool_calls (e.g., nurse alert in CRISIS)
+            for fb_tool in result.get("tool_calls", []):
+                fb_name = fb_tool.get("tool")
+                fb_args = fb_tool.get("args", {})
+                if fb_name:
+                    fb_result = execute_tool(fb_name, fb_args, patient_id, patient_profile)
+                    tool_trace.append({"turn": turn, "tool": fb_name, "args": fb_args, "result": fb_result})
             break
 
         result = parsed
@@ -2202,7 +2219,7 @@ def run_agent_loop(
 
     # Attach tool trace metadata
     result["_tool_trace"] = tool_trace
-    result["_turns_used"] = min(turn + 1, max_turns) if 'turn' in dir() else 1
+    result["_turns_used"] = min(turn + 1, max_turns)
     result["_merlion_45min"] = merlion_risk
 
     return result
@@ -3586,7 +3603,7 @@ def _get_all_patient_ids() -> List[str]:
 def _get_patient_profile_from_db(patient_id: str) -> Dict:
     """Fetch patient profile from DB. Uses explicit column list (no SELECT *)."""
     default_profile = {
-        "id": patient_id, "name": "Patient", "age": 72,
+        "id": patient_id, "name": "Patient", "age": 67,
         "conditions": ["Type 2 Diabetes", "Hypertension", "Hyperlipidemia"],
         "medications": ["Metformin 500mg", "Lisinopril 10mg", "Atorvastatin 20mg", "Aspirin 100mg"]
     }
