@@ -23,7 +23,7 @@ export function PatientHeader({
     };
 
     return (
-        <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between sticky top-0 z-10">
+        <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between sticky top-0 z-10 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
             {/* LEFT: Patient Context */}
             <div className="flex items-center gap-6">
                 <div>

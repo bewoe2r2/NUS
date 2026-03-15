@@ -66,7 +66,7 @@ export function VoucherCard() {
             <motion.div
                 whileTap={{ scale: 0.98 }}
                 onClick={handleRedeem}
-                className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6 flex items-center justify-between relative overflow-hidden"
+                className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6 flex items-center justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]"
             >
                 {/* Background Decor */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-accent-50 rounded-full translate-x-1/3 -translate-y-1/3 opacity-50 blur-2xl pointer-events-none"></div>

@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bewo — Predictive Chronic Disease Management</title>
+  <meta name="description" content="HMM-powered crisis prediction + 18 agentic AI tools for Singapore's 200,000+ elderly diabetics. 48-hour advance warning. Doctor-gated clinical decisions." />
+  <meta name="keywords" content="healthcare, AI, chronic disease, diabetes, Singapore, HMM, predictive, agentic AI" />
+  <meta property="og:title" content="Bewo — Predicting Health Crises 48 Hours Early" />
+  <meta property="og:description" content="Hidden Markov Models + 18 agentic AI tools. 9 orthogonal biomarkers. Transforming reactive chronic disease management into proactive care." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Bewo Health" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── CSS Custom Properties (Design System) ── */
+    :root {
+      --color-ink: oklch(0.18 0.02 260);
+      --color-ink-secondary: oklch(0.44 0.015 260);
+      --color-ink-muted: oklch(0.58 0.008 260);
+
+      --color-surface: oklch(0.985 0.004 80);
+      --color-surface-raised: oklch(0.97 0.006 80);
+      --color-surface-card: oklch(1 0 0);
+      --color-surface-inset: oklch(0.94 0.008 260);
+
+      --color-primary: oklch(0.45 0.12 185);
+      --color-primary-hover: oklch(0.38 0.14 185);
+      --color-primary-muted: oklch(0.45 0.12 185 / 0.08);
+      --color-primary-glow: oklch(0.45 0.12 185 / 0.20);
+
+      --color-accent: oklch(0.58 0.14 25);
+      --color-accent-muted: oklch(0.58 0.14 25 / 0.08);
+
+      --color-stable: oklch(0.52 0.14 160);
+      --color-warning: oklch(0.62 0.14 80);
+      --color-crisis: oklch(0.52 0.16 25);
+
+      --color-border: oklch(0.88 0.006 260);
+      --color-border-subtle: oklch(0.93 0.003 80);
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ── Reset & Base ── */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--color-surface);
+      color: var(--color-ink);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      text-wrap: balance;
+    }
+
+    p { text-wrap: pretty; }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    ::selection {
+      background: var(--color-primary-muted);
+      color: var(--color-primary);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: oklch(0.80 0.005 260); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: oklch(0.65 0.005 260); }
+
+    img { max-width: 100%; display: block; }
+
+    /* ── Layout Utilities ── */
+    .container {
+      max-width: 1152px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    /* ── Keyframes ── */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    @keyframes float-delayed {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fade-in-right {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ── Reveal Animation Classes ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+    }
+
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .stagger-child {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
+    }
+
+    .stagger-child.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: oklch(0.985 0.004 80 / 0.8);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .navbar-inner {
+      max-width: 1152px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px var(--color-primary-glow);
+    }
+
+    .logo-icon svg {
+      width: 16px;
+      height: 16px;
+      color: white;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-name {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--color-ink);
+      line-height: 1;
+    }
+
+    .logo-subtitle {
+      font-size: 9px;
+      color: var(--color-ink-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-ink-muted);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--color-ink);
+      background: var(--color-surface-raised);
+    }
+
+    .nav-link.active {
+      background: var(--color-primary-muted);
+      color: var(--color-primary);
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 2px;
+      background: var(--color-primary);
+      border-radius: 9999px;
+    }
+
+    .nav-link svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Mobile hamburger */
+    .mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: var(--color-ink);
+    }
+
+    .mobile-toggle svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ── Hero Section ── */
+    .hero {
+      position: relative;
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .hero-blob-1 {
+      position: absolute;
+      top: -128px;
+      right: -128px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, oklch(0.45 0.12 185 / 0.10), oklch(0.52 0.14 160 / 0.05), transparent);
+      filter: blur(80px);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-blob-2 {
+      position: absolute;
+      bottom: 0;
+      left: 25%;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: linear-gradient(225deg, oklch(0.52 0.14 160 / 0.08), transparent);
+      filter: blur(80px);
+      animation: float-delayed 6s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+
+    .hero-grid-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.03;
+      background-image:
+        linear-gradient(oklch(0.45 0.12 185) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(0.45 0.12 185) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      padding: 6rem 0;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    .badge-primary {
+      background: var(--color-primary-muted);
+      color: var(--color-primary);
+    }
+
+    .badge-stable {
+      background: oklch(0.52 0.14 160 / 0.08);
+      color: var(--color-stable);
+    }
+
+    .badge-warning {
+      background: oklch(0.62 0.14 80 / 0.08);
+      color: var(--color-warning);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-stable);
+      animation: pulse-slow 3s ease-in-out infinite;
+    }
+
+    .hero-title {
+      font-size: 3.75rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.08;
+    }
+
+    .gradient-text {
+      position: relative;
+      display: inline-block;
+    }
+
+    .gradient-text span {
+      background: linear-gradient(90deg, var(--color-primary), var(--color-stable), var(--color-accent));
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient-shift 8s ease-in-out infinite;
+    }
+
+    .gradient-text::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-stable), var(--color-accent));
+      border-radius: 9999px;
+      opacity: 0.4;
+      background-size: 200% 100%;
+      animation: gradient-shift 8s ease-in-out infinite;
+    }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--color-ink-secondary);
+      max-width: 36rem;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+      font-family: var(--font-body);
+      font-weight: 400;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+      box-shadow: 0 4px 16px var(--color-primary-glow);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 8px 24px var(--color-primary-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:hover svg {
+      transform: translateX(2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--color-primary);
+      border: 1px solid oklch(0.45 0.12 185 / 0.3);
+    }
+
+    .btn-outline:hover {
+      background: var(--color-primary-muted);
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      align-items: center;
+    }
+
+    .quick-stats .stat-value {
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+
+    .stat-stable { color: var(--color-stable); }
+    .stat-primary { color: var(--color-primary); }
+    .stat-warning { color: var(--color-warning); }
+    .stat-divider { color: var(--color-border); }
+
+    /* ── System at a Glance Card ── */
+    .glance-card {
+      background: var(--color-surface-card);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .glance-title {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--color-ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+    }
+
+    .glance-items {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .glance-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .glance-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--color-surface-raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .glance-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .glance-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .glance-detail {
+      font-size: 0.75rem;
+      color: var(--color-ink-secondary);
+      line-height: 1.5;
+    }
+
+    .text-primary { color: var(--color-primary); }
+    .text-stable { color: var(--color-stable); }
+    .text-warning { color: var(--color-warning); }
+    .text-crisis { color: var(--color-crisis); }
+    .text-accent { color: var(--color-accent); }
+
+    /* ── Section Styling ── */
+    .section {
+      margin-bottom: 4rem;
+    }
+
+    .section-large {
+      margin-bottom: 6rem;
+    }
+
+    .section-header {
+      margin-bottom: 2rem;
+    }
+
+    .section-header .badge {
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.875rem;
+      color: var(--color-ink-secondary);
+      margin-top: 0.5rem;
+      max-width: 32rem;
+      line-height: 1.6;
+    }
+
+    /* ── How It Works Cards ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    .step-card {
+      position: relative;
+      background: var(--color-surface-card);
+      border: 1px solid;
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .step-card.border-primary { border-color: oklch(0.45 0.12 185 / 0.2); }
+    .step-card.border-stable { border-color: oklch(0.52 0.14 160 / 0.2); }
+    .step-card.border-warning { border-color: oklch(0.62 0.14 80 / 0.2); }
+
+    .step-number {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-family: var(--font-mono);
+      font-size: 1.875rem;
+      font-weight: 700;
+      opacity: 0.15;
+    }
+
+    .step-title {
+      font-size: 1.25rem;
+      font-family: var(--font-display);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+      font-size: 0.875rem;
+      color: var(--color-ink-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── Human Cost Section (Dark) ── */
+    .human-cost {
+      position: relative;
+      padding: 5rem 0;
+      margin: 4rem 0;
+    }
+
+    .human-cost-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, oklch(0.14 0.03 260), oklch(0.16 0.04 260), oklch(0.12 0.03 260));
+      border-radius: 24px;
+      margin: 0 1.5rem;
+      overflow: hidden;
+    }
+
+    .human-cost-glow {
+      position: absolute;
+      top: 0;
+      right: 25%;
+      width: 500px;
+      height: 500px;
+      background: oklch(0.45 0.12 185 / 0.06);
+      border-radius: 50%;
+      filter: blur(100px);
+    }
+
+    .human-cost-content {
+      max-width: 1152px;
+      margin: 0 auto;
+      padding: 0 3rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .human-cost-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: var(--color-crisis);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+
+    .human-cost-title {
+      font-size: 2.5rem;
+      color: white;
+      margin-bottom: 1rem;
+      max-width: 32rem;
+    }
+
+    .human-cost-subtitle {
+      color: oklch(0.65 0.015 260);
+      max-width: 32rem;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .comparison-card {
+      background: oklch(0.18 0.04 260);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid;
+      border-top-width: 3px;
+    }
+
+    .comparison-card.without {
+      border-color: oklch(0.52 0.16 25 / 0.2);
+      border-top-color: var(--color-crisis);
+    }
+
+    .comparison-card.with {
+      border-color: oklch(0.52 0.14 160 / 0.2);
+      border-top-color: var(--color-stable);
+    }
+
+    .comparison-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 12px;
+      font-size: 0.875rem;
+      color: oklch(0.70 0.01 260);
+    }
+
+    .timeline-time {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.75rem;
+      width: 40px;
+      flex-shrink: 0;
+    }
+
+    .timeline-time.muted { color: oklch(0.50 0.01 260); }
+
+    .comparison-total {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid oklch(0.25 0.03 260);
+      text-align: center;
+    }
+
+    .comparison-total .amount {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    .comparison-total .note {
+      font-size: 0.75rem;
+      color: oklch(0.45 0.01 260);
+      margin-left: 0.5rem;
+    }
+
+    .savings-banner {
+      background: oklch(0.22 0.04 260);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid oklch(0.28 0.04 260);
+      text-align: center;
+    }
+
+    .savings-banner .label {
+      color: oklch(0.70 0.01 260);
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .savings-banner .amount {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.875rem;
+      color: white;
+    }
+
+    .savings-banner .detail {
+      font-size: 0.75rem;
+      color: oklch(0.50 0.01 260);
+    }
+
+    /* ── Device Integration ── */
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .device-card {
+      background: var(--color-surface-card);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .device-card:hover {
+      box-shadow: 0 4px 24px oklch(0 0 0 / 0.06);
+    }
+
+    .device-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .device-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .device-icon.bg-primary { background: var(--color-primary-muted); color: var(--color-primary); }
+    .device-icon.bg-stable { background: oklch(0.52 0.14 160 / 0.08); color: var(--color-stable); }
+    .device-icon.bg-warning { background: oklch(0.62 0.14 80 / 0.08); color: var(--color-warning); }
+    .device-icon.bg-accent { background: var(--color-accent-muted); color: var(--color-accent); }
+
+    .device-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .device-desc {
+      font-size: 0.875rem;
+      color: var(--color-ink-secondary);
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .device-tier {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Three Pillars ── */
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    .pillar-card {
+      position: relative;
+      border: 1px solid;
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .pillar-card:hover {
+      box-shadow: 0 8px 32px oklch(0 0 0 / 0.06);
+    }
+
+    .pillar-card.primary-gradient {
+      background: linear-gradient(180deg, oklch(0.45 0.12 185 / 0.06) 0%, transparent 100%);
+      border-color: oklch(0.45 0.12 185 / 0.3);
+    }
+
+    .pillar-card.stable-gradient {
+      background: linear-gradient(180deg, oklch(0.52 0.14 160 / 0.06) 0%, transparent 100%);
+      border-color: oklch(0.52 0.14 160 / 0.3);
+    }
+
+    .pillar-card.warning-gradient {
+      background: linear-gradient(180deg, oklch(0.62 0.14 80 / 0.06) 0%, transparent 100%);
+      border-color: oklch(0.62 0.14 80 / 0.3);
+    }
+
+    .pillar-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+    }
+
+    .pillar-title {
+      font-size: 1.25rem;
+      font-family: var(--font-display);
+      margin-bottom: 0.5rem;
+    }
+
+    .pillar-desc {
+      font-size: 0.875rem;
+      color: var(--color-ink-secondary);
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+
+    .pillar-stat-row {
+      border-top: 1px solid var(--color-border-subtle);
+      padding-top: 0.75rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .pillar-stat {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    .pillar-stat-label {
+      font-size: 0.75rem;
+      color: var(--color-ink-muted);
+    }
+
+    /* ── Behavioral Engine ── */
+    .behavior-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .behavior-card {
+      background: var(--color-surface-card);
+      border: 1px solid;
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .behavior-card.border-primary { border-color: oklch(0.45 0.12 185 / 0.2); }
+    .behavior-card.border-stable { border-color: oklch(0.52 0.14 160 / 0.2); }
+    .behavior-card.border-warning { border-color: oklch(0.62 0.14 80 / 0.2); }
+
+    .behavior-tag {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    .behavior-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .behavior-desc {
+      font-size: 0.875rem;
+      color: var(--color-ink-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── Progress Section ── */
+    .progress-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .progress-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--color-surface-card);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+    }
+
+    .progress-status {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      flex-shrink: 0;
+      width: 40px;
+      padding-top: 2px;
+    }
+
+    .progress-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-ink);
+      margin-bottom: 2px;
+    }
+
+    .progress-detail {
+      font-size: 0.75rem;
+      color: var(--color-ink-secondary);
+      line-height: 1.55;
+    }
+
+    /* ── CTA Section ── */
+    .cta-section {
+      text-align: center;
+      padding: 4rem 0;
+      position: relative;
+      margin-bottom: 4rem;
+    }
+
+    .cta-glow {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, oklch(0.45 0.12 185 / 0.05), oklch(0.52 0.14 160 / 0.03), transparent);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .cta-content {
+      position: relative;
+    }
+
+    .cta-title {
+      font-size: 1.875rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .cta-subtitle {
+      color: var(--color-ink-secondary);
+      margin-bottom: 2rem;
+      max-width: 28rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-large {
+      padding: 16px 32px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid var(--color-border-subtle);
+      padding: 2rem 0;
+      margin-top: 6rem;
+    }
+
+    .footer-content {
+      text-align: center;
+    }
+
+    .footer-main {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--color-ink-muted);
+    }
+
+    .footer-sub {
+      font-size: 10px;
+      color: oklch(0.58 0.008 260 / 0.6);
+      margin-top: 4px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+
+      .hero-title {
+        font-size: 3rem;
+      }
+
+      .steps-grid,
+      .pillar-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .device-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: var(--color-surface-card);
+        border-bottom: 1px solid var(--color-border);
+        padding: 1rem;
+        flex-direction: column;
+        gap: 4px;
+        box-shadow: 0 8px 32px oklch(0 0 0 / 0.08);
+      }
+
+      .nav-links.open {
+        display: flex;
+      }
+
+      .nav-link.active::after {
+        display: none;
+      }
+
+      .mobile-toggle {
+        display: block;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .hero-title {
+        font-size: 2.25rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+      }
+
+      .comparison-grid,
+      .behavior-grid,
+      .progress-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .device-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .human-cost-content {
+        padding: 0 1.5rem;
+      }
+
+      .human-cost-title {
+        font-size: 1.75rem;
+      }
+
+      .quick-stats {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pillar-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="logo-link">
+        <span class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
+        <div class="logo-text">
+          <span class="logo-name">BEWO</span>
+          <span class="logo-subtitle">Predictive Care</span>
+        </div>
+      </a>
+
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html" class="nav-link active">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Overview
+        </a>
+        <a href="impact.html" class="nav-link">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          Blue Ocean
+        </a>
+        <a href="demo.html" class="nav-link">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Product
+        </a>
+        <a href="technology.html" class="nav-link">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+          Technology
+        </a>
+        <a href="pitch.html" class="nav-link">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Pitch
+        </a>
+        <a href="present.html" class="nav-link">
+          <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          Present
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero-bg">
+        <div class="hero-blob-1"></div>
+        <div class="hero-blob-2"></div>
+        <div class="hero-grid-pattern"></div>
+      </div>
+
+      <div class="container hero-content">
+        <div class="hero-grid">
+          <div class="reveal">
+            <div class="badge badge-primary" style="margin-bottom: 1.5rem;">
+              <span class="pulse-dot"></span>
+              Blue Ocean Competition 2026
+            </div>
+
+            <h1 class="hero-title">
+              Predicting health crises
+              <span class="gradient-text"><span>48 hours early</span></span>
+            </h1>
+
+            <p class="hero-subtitle">
+              Hidden Markov Models detect deterioration from passive sensor data.
+              18 AI tools act on clinical context &mdash; booking appointments, alerting caregivers,
+              adjusting nudge timing. Doctor-gated for medication decisions. The patient's job is to live their life.
+            </p>
+
+            <div class="hero-buttons">
+              <a href="demo.html" class="btn btn-primary">
+                See Product Demo
+                <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+              <a href="technology.html" class="btn btn-outline">
+                Technical Deep-Dive
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+
+            <div class="quick-stats">
+              <span class="stat-stable"><span class="stat-value">48h</span> advance warning</span>
+              <span class="stat-divider">|</span>
+              <span class="stat-primary"><span class="stat-value">18</span> AI tools</span>
+              <span class="stat-divider">|</span>
+              <span class="stat-warning"><span class="stat-value">S$3</span> /patient/month</span>
+            </div>
+          </div>
+
+          <!-- System at a Glance -->
+          <div class="glance-card reveal-right">
+            <div class="glance-title">System at a Glance</div>
+            <div class="glance-items">
+
+              <div class="glance-item">
+                <span class="glance-icon text-primary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><polyline points="12 9 12 12 13.5 13.5"/><path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"/></svg>
+                </span>
+                <div>
+                  <div class="glance-label text-primary">9 Biomarkers</div>
+                  <div class="glance-detail">Glucose avg + variability (CGM), steps, resting HR, HRV, sleep quality (Fitbit), meds adherence, carb intake, social engagement (app)</div>
+                </div>
+              </div>
+
+              <div class="glance-item">
+                <span class="glance-icon text-stable">
+                  <svg viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3" fill="none"/></svg>
+                </span>
+                <div>
+                  <div class="glance-label text-stable">3-State HMM</div>
+                  <div class="glance-detail">Viterbi + Monte Carlo + Counterfactual inference</div>
+                </div>
+              </div>
+
+              <div class="glance-item">
+                <span class="glance-icon text-warning">
+                  <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
+                <div>
+                  <div class="glance-label text-warning">18 AI Tools</div>
+                  <div class="glance-detail">Appointments, alerts, vouchers, food recs, check-ins</div>
+                </div>
+              </div>
+
+              <div class="glance-item">
+                <span class="glance-icon text-primary">
+                  <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </span>
+                <div>
+                  <div class="glance-label text-primary">Full Audit Trail</div>
+                  <div class="glance-detail">Auto-SBAR reports, never auto-adjusts medication</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="container section">
+      <div class="section-header reveal">
+        <div class="badge badge-primary">How It Works</div>
+        <h2 class="section-title">Three steps. Zero patient effort.</h2>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card border-primary stagger-child" data-delay="0">
+          <div class="step-number text-primary">01</div>
+          <h3 class="step-title">Sense</h3>
+          <p class="step-desc">9 biomarkers from 3 sources: glucose avg + variability (CGM), steps + resting HR + HRV + sleep quality (Fitbit), meds adherence + carb intake + social engagement (app). Feeds HMM every 4 hours.</p>
+        </div>
+        <div class="step-card border-stable stagger-child" data-delay="80">
+          <div class="step-number text-stable">02</div>
+          <h3 class="step-title">Predict</h3>
+          <p class="step-desc">Viterbi decoding classifies patient state. 1,000 Monte Carlo trajectories forecast 48-hour crisis probability with 95% confidence intervals.</p>
+        </div>
+        <div class="step-card border-warning stagger-child" data-delay="160">
+          <div class="step-number text-warning">03</div>
+          <h3 class="step-title">Act</h3>
+          <p class="step-desc">Gemini AI reasons over clinical context and executes from 18 agentic tools: appointments, alerts, food recs, vouchers, check-ins. Doctor-gated for medication. Full audit trail.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== THE HUMAN COST ===== -->
+    <section class="human-cost">
+      <div class="human-cost-bg">
+        <div class="human-cost-glow"></div>
+      </div>
+
+      <div class="human-cost-content">
+        <div class="reveal">
+          <div class="human-cost-label">The Human Cost</div>
+          <h2 class="human-cost-title">Mdm. Tan is 68. She has Type 2 Diabetes.</h2>
+          <p class="human-cost-subtitle">
+            She lives alone in a Toa Payoh HDB flat. Her daughter works full-time. Her polyclinic nurse manages 600 other patients. This is what her next crisis looks like.
+          </p>
+        </div>
+
+        <div class="comparison-grid">
+          <!-- WITHOUT BEWO -->
+          <div class="comparison-card without stagger-child" data-delay="0">
+            <div class="comparison-label text-crisis">WITHOUT BEWO</div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <span class="timeline-time muted">6 AM</span>
+                <span>Glucose spikes to 14 mmol/L. Nobody notices.</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time muted">2 PM</span>
+                <span>Misses afternoon Metformin. No reminder.</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-warning">9 PM</span>
+                <span>Feels dizzy, ignores it. No one to call.</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-crisis">3 AM</span>
+                <span>Collapses. Daughter finds her the next morning.</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-crisis">ER</span>
+                <span>3-day hospital stay. S$8,800 mean inpatient cost for admitted T2DM patients (PLOS One / NHG 2015). Could have been prevented.</span>
+              </div>
+            </div>
+            <div class="comparison-total">
+              <span class="amount text-crisis">S$8,800</span>
+              <span class="note">avg admission with complications (PLOS One 2015)</span>
+            </div>
+          </div>
+
+          <!-- WITH BEWO -->
+          <div class="comparison-card with stagger-child" data-delay="120">
+            <div class="comparison-label text-stable">WITH BEWO</div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <span class="timeline-time text-stable">6 AM</span>
+                <span>CGM detects spike. HMM shifts state to WARNING (72% confidence).</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-stable">8 AM</span>
+                <span>AI initiates check-in: &ldquo;Good morning! Your glucose is high. Want me to book Dr. Lee?&rdquo;</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-stable">2 PM</span>
+                <span>Adaptive reminder fires at her optimal response time. She takes Metformin.</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-primary">4 PM</span>
+                <span>Counterfactual shown: &ldquo;Risk dropped 35% &rarr; 12% because you took your medication.&rdquo;</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-time text-primary">9 PM</span>
+                <span>Glucose stabilizes. Daughter gets a &ldquo;all clear&rdquo; notification. Streak: 7 days.</span>
+              </div>
+            </div>
+            <div class="comparison-total">
+              <span class="amount text-stable">S$0</span>
+              <span class="note">crisis prevented. She stays home.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="savings-banner reveal">
+          <div class="label">One prevented admission saves</div>
+          <div class="amount">S$8,800</div>
+          <div class="detail">That funds 2,900+ patient-months of Bewo at S$3/mo. ROI at scale is immediate.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DEVICE INTEGRATION ===== -->
+    <section class="container section-large">
+      <div class="section-header reveal">
+        <div class="badge badge-primary">Device Integration</div>
+        <h2 class="section-title">Data from devices, not manual entry</h2>
+        <p class="section-subtitle">
+          Bewo connects to CGM devices and Fitbit wearables for automatic health data.
+          Patients can also use voice check-ins, photo OCR, or manual logging.
+        </p>
+      </div>
+
+      <div class="device-grid">
+        <div class="device-card stagger-child" data-delay="0">
+          <div class="device-icon bg-primary">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><polyline points="12 9 12 12 13.5 13.5"/><path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"/></svg>
+          </div>
+          <h3 class="device-title">CGM</h3>
+          <p class="device-desc">Interstitial glucose every 5 min (FreeStyle Libre, Dexcom G7). Feeds 2 HMM features: glucose_avg and glucose_variability (CV%).</p>
+          <span class="device-tier text-primary">PREMIUM</span>
+        </div>
+
+        <div class="device-card stagger-child" data-delay="80">
+          <div class="device-icon bg-stable">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h3 class="device-title">Fitbit</h3>
+          <p class="device-desc">4 HMM features auto-synced: steps_daily, resting_hr, hrv_rmssd (autonomic function), sleep_quality. All via Fitbit Web API.</p>
+          <span class="device-tier text-stable">ENHANCED</span>
+        </div>
+
+        <div class="device-card stagger-child" data-delay="160">
+          <div class="device-icon bg-warning">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <h3 class="device-title">App Input</h3>
+          <p class="device-desc">2 HMM features: meds_adherence (tap-to-confirm or auto-detect), carbs_intake (meal photo OCR via Gemini Vision or manual log).</p>
+          <span class="device-tier text-warning">ALL TIERS</span>
+        </div>
+
+        <div class="device-card stagger-child" data-delay="240">
+          <div class="device-icon bg-accent">
+            <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </div>
+          <h3 class="device-title">Social + Mood</h3>
+          <p class="device-desc">1 HMM feature: social_engagement (calls, messages, app interactions). Plus text-based mood detection for tone-aware AI responses.</p>
+          <span class="device-tier text-accent">BASIC</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== THREE PILLARS ===== -->
+    <section class="container section-large">
+      <div class="section-header reveal">
+        <div class="badge badge-stable">Innovation Pillars</div>
+        <h2 class="section-title">Three layers working together</h2>
+      </div>
+
+      <div class="pillar-grid">
+        <div class="pillar-card primary-gradient stagger-child" data-delay="0">
+          <div class="pillar-tag text-primary">VITERBI + MONTE CARLO + COUNTERFACTUAL</div>
+          <h3 class="pillar-title">HMM Prediction</h3>
+          <p class="pillar-desc">Viterbi decoding on 9 orthogonal biomarkers (each captures a distinct health dimension). 1,000 Monte Carlo trajectories for 48h crisis prediction. Counterfactual "what-if" scenarios show exact risk reduction.</p>
+          <div class="pillar-stat-row">
+            <span class="pillar-stat text-primary">48h</span>
+            <span class="pillar-stat-label">advance warning</span>
+          </div>
+        </div>
+
+        <div class="pillar-card stable-gradient stagger-child" data-delay="80">
+          <div class="pillar-tag text-stable">18 TOOLS &middot; GEMINI FLASH &middot; REAL ACTIONS</div>
+          <h3 class="pillar-title">Agentic AI</h3>
+          <p class="pillar-desc">Gemini AI reasons over full clinical context and executes from 18 tools: appointments, caregiver alerts, medication reminders, food recommendations, vouchers. Doctor-gated for clinical decisions.</p>
+          <div class="pillar-stat-row">
+            <span class="pillar-stat text-stable">18</span>
+            <span class="pillar-stat-label">AI tools</span>
+          </div>
+        </div>
+
+        <div class="pillar-card warning-gradient stagger-child" data-delay="160">
+          <div class="pillar-tag text-warning">PROSPECT THEORY + NUDGE + FOGG + SDT</div>
+          <h3 class="pillar-title">Behavioral Science</h3>
+          <p class="pillar-desc">Loss-aversion voucher gamification (S$5/week with decay). Adaptive nudge timing learned from response patterns. Mood-aware tone. Daily challenges scaled to clinical state.</p>
+          <div class="pillar-stat-row">
+            <span class="pillar-stat text-warning">4</span>
+            <span class="pillar-stat-label">peer-reviewed frameworks</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BEHAVIORAL ENGINE ===== -->
+    <section class="container section-large">
+      <div class="section-header reveal">
+        <div class="badge badge-warning">Behavioral Engine</div>
+        <h2 class="section-title">Why patients actually stay</h2>
+        <p class="section-subtitle">
+          Technology predicts crises. Behavioral science prevents them. Every interaction is designed around four peer-reviewed frameworks.
+        </p>
+      </div>
+
+      <div class="behavior-grid">
+        <div class="behavior-card border-primary stagger-child" data-delay="0">
+          <span class="behavior-tag text-primary">SOCIAL PROOF</span>
+          <h3 class="behavior-title">Anonymised Peer Comparison</h3>
+          <p class="behavior-desc">"Patients like you in the top 20% take their medication within 15 minutes of the reminder." Social proof from anonymised cohort data. Patients see where they rank &mdash; without seeing anyone else's data.</p>
+        </div>
+
+        <div class="behavior-card border-stable stagger-child" data-delay="80">
+          <span class="behavior-tag text-stable">PROSPECT THEORY</span>
+          <h3 class="behavior-title">Loss-Aversion Vouchers</h3>
+          <p class="behavior-desc">Start at S$5/week. Decays S$0.25 per missed action. Patients work to keep what they have, not earn what they don't. Loss aversion is 2-2.5x stronger than equivalent gains (Kahneman &amp; Tversky 1979).</p>
+        </div>
+
+        <div class="behavior-card border-warning stagger-child" data-delay="160">
+          <span class="behavior-tag text-warning">SELF-DETERMINATION</span>
+          <h3 class="behavior-title">Adaptive Daily Challenges</h3>
+          <p class="behavior-desc">"Walk 2,000 steps today" for WARNING state. "Try a low-GI hawker meal" for STABLE. Difficulty scales with clinical state. Completion feeds streak + voucher + engagement score.</p>
+        </div>
+
+        <div class="behavior-card border-primary stagger-child" data-delay="240">
+          <span class="behavior-tag text-primary">FOGG MODEL</span>
+          <h3 class="behavior-title">Optimal Nudge Timing</h3>
+          <p class="behavior-desc">Reminders shift to when the patient actually responds. Mdm. Tan responds to medication reminders 85% of the time at 7 PM, 12% at 9 AM. The AI learns and adapts per-patient.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CURRENT PROGRESS ===== -->
+    <section class="container section-large">
+      <div class="section-header reveal">
+        <div class="badge badge-stable">Current Progress</div>
+        <h2 class="section-title">What we've built</h2>
+        <p class="section-subtitle">
+          Working system, not a pitch deck. Every component below is implemented and functional.
+        </p>
+      </div>
+
+      <div class="progress-grid">
+        <div class="progress-item stagger-child" data-delay="0">
+          <span class="progress-status text-stable">BUILT</span>
+          <div>
+            <div class="progress-label">HMM Prediction Engine</div>
+            <div class="progress-detail">3-state model, 9 orthogonal biomarkers, Viterbi + Monte Carlo + Counterfactual. Runs in Python with clinically-parameterized transition matrices.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="60">
+          <span class="progress-status text-stable">BUILT</span>
+          <div>
+            <div class="progress-label">18 Agentic AI Tools</div>
+            <div class="progress-detail">Full tool execution via Gemini: appointments, alerts, vouchers, food recs, streak tracking, weekly reports, nudge scheduling. Doctor-gated for medication.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="120">
+          <span class="progress-status text-stable">BUILT</span>
+          <div>
+            <div class="progress-label">Patient Chat Interface</div>
+            <div class="progress-detail">Singlish-aware conversational AI. Mood detection, adaptive tone, counterfactual motivation. Real tool calls visible in conversation.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="180">
+          <span class="progress-status text-stable">BUILT</span>
+          <div>
+            <div class="progress-label">Nurse Dashboard + SBAR</div>
+            <div class="progress-detail">Auto-generated SBAR clinical reports on every state transition. Priority-sorted patient list. One-click escalation.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="240">
+          <span class="progress-status text-stable">BUILT</span>
+          <div>
+            <div class="progress-label">Voucher Gamification Engine</div>
+            <div class="progress-detail">Loss-aversion S$5/week with decay. Streak tracking (3/7/14/30-day milestones). Daily challenges scaled to clinical state.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="300">
+          <span class="progress-status text-stable">BUILT</span>
+          <div>
+            <div class="progress-label">Caregiver Alert System</div>
+            <div class="progress-detail">3-tier escalation (push, SMS, voice). Rate-limited fatigue detection. Configurable detail levels per family member.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="360">
+          <span class="progress-status text-warning">NEXT</span>
+          <div>
+            <div class="progress-label">Polyclinic Pilot</div>
+            <div class="progress-detail">Targeting SingHealth polyclinic partnership for real-world validation with 50-100 patients. Seeking Smart Nation grant co-funding.</div>
+          </div>
+        </div>
+
+        <div class="progress-item stagger-child" data-delay="420">
+          <span class="progress-status text-warning">NEXT</span>
+          <div>
+            <div class="progress-label">HealthHub API Integration</div>
+            <div class="progress-detail">Government health records platform for appointment booking and medical history context. API documentation reviewed.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="container">
+      <div class="cta-section reveal">
+        <div class="cta-glow"></div>
+        <div class="cta-content">
+          <h2 class="cta-title">See Bewo in Action</h2>
+          <p class="cta-subtitle">
+            Walk through a real patient interaction with Bewo's agentic AI in action.
+          </p>
+          <div class="cta-buttons">
+            <a href="demo.html" class="btn btn-primary btn-large">
+              Product Walkthrough
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+            <a href="impact.html" class="btn btn-outline btn-large">
+              Blue Ocean Analysis
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <p class="footer-main">Bewo 2026 &mdash; HMM + Agentic AI for Chronic Disease Management</p>
+      <p class="footer-sub">Blue Ocean Competition 2026</p>
+    </div>
+  </footer>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    // Mobile nav toggle
+    document.getElementById('mobileToggle').addEventListener('click', function() {
+      document.getElementById('navLinks').classList.toggle('open');
+    });
+
+    // Close mobile nav on link click
+    document.querySelectorAll('.nav-link').forEach(function(link) {
+      link.addEventListener('click', function() {
+        document.getElementById('navLinks').classList.remove('open');
+      });
+    });
+
+    // IntersectionObserver for reveal animations
+    (function() {
+      var observerOptions = {
+        root: null,
+        rootMargin: '-60px 0px',
+        threshold: 0.1
+      };
+
+      // Reveal elements (fade up)
+      var revealObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal, .reveal-right').forEach(function(el) {
+        revealObserver.observe(el);
+      });
+
+      // Stagger children
+      var staggerObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var delay = parseInt(entry.target.getAttribute('data-delay') || '0', 10);
+            setTimeout(function() {
+              entry.target.classList.add('visible');
+            }, delay);
+            staggerObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '-40px 0px',
+        threshold: 0.08
+      });
+
+      document.querySelectorAll('.stagger-child').forEach(function(el) {
+        staggerObserver.observe(el);
+      });
+    })();
+  </script>
+
+</body>
+</html>

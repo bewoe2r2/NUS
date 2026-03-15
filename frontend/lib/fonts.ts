@@ -1,16 +1,16 @@
 
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 
-export const geistSans = Geist({
+export const geistSans = Plus_Jakarta_Sans({
     variable: "--font-geist-sans",
     subsets: ["latin"],
-    display: "swap", // Ensure text is visible during load
-    weight: ["300", "400", "500", "600", "700"], // Load specific weights for optimization
+    display: "swap",
+    weight: ["400", "500", "600", "700", "800"],
 });
 
-export const geistMono = Geist_Mono({
+export const geistMono = JetBrains_Mono({
     variable: "--font-geist-mono",
     subsets: ["latin"],
     display: "swap",
-    weight: ["400", "500"],
+    weight: ["400", "500", "600"],
 });

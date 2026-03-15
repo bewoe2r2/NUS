@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AdminSidebar } from '@/components/judge/AdminSidebar';
 import { GuidedWalkthrough } from '@/components/judge/GuidedWalkthrough';
 import { api } from '@/lib/api';
+import PatientView from '@/app/page';
+import NurseDashboard from '@/app/nurse/page';
 import {
     Activity,
     Brain,
@@ -55,6 +57,7 @@ export default function JudgePage() {
     const [loading, setLoading] = useState(false);
     const [showWalkthrough, setShowWalkthrough] = useState(true); // Auto-launch for judges
     const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Overview data
     const [patientState, setPatientState] = useState<any>(null);
@@ -130,7 +133,7 @@ export default function JudgePage() {
     }, []);
 
     useEffect(() => {
-        fetchOverviewData();
+        if (activeTab === 'overview') fetchOverviewData();
         if (activeTab === 'intelligence') fetchIntelligenceData();
     }, [refreshKey, fetchOverviewData, fetchIntelligenceData, activeTab]);
 
@@ -139,9 +142,9 @@ export default function JudgePage() {
     };
 
     const handleTabChange = (tab: typeof activeTab) => {
+        // Only setActiveTab — the useEffect handles data fetching.
+        // This prevents double-fetch flicker when the walkthrough switches tabs.
         setActiveTab(tab);
-        if (tab === 'intelligence') fetchIntelligenceData();
-        if (tab === 'overview') fetchOverviewData();
     };
 
     const tabs = [
@@ -154,12 +157,12 @@ export default function JudgePage() {
 
     return (
         <div className="flex h-screen overflow-hidden bg-zinc-50 font-sans">
-            <AdminSidebar onScenarioInjected={handleRefresh} />
+            <AdminSidebar onScenarioInjected={handleRefresh} onCollapsedChange={setSidebarCollapsed} />
 
-            <div className="flex-1 ml-80 h-full overflow-hidden flex flex-col">
+            <div className={`flex-1 ${sidebarCollapsed ? 'ml-14' : 'ml-80'} transition-all duration-300 h-full overflow-hidden flex flex-col`}>
                 {/* TOP BAR */}
-                <div className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0">
-                    <div className="flex items-center gap-1">
+                <div className="h-14 bg-white border-b border-zinc-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex items-center justify-between px-6 shrink-0">
+                    <div id="tab-bar-group" className="flex items-center gap-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -170,7 +173,7 @@ export default function JudgePage() {
                                     className={`px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
                                         ${isActive
                                             ? 'bg-zinc-900 text-white shadow-sm'
-                                            : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100'
+                                            : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
                                         }`}
                                 >
                                     <Icon size={14} />
@@ -188,7 +191,7 @@ export default function JudgePage() {
                             <Play size={12} className="fill-current" />
                             {walkthroughCompleted ? 'Replay Demo' : 'Guided Demo'}
                         </button>
-                        <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider">
+                        <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
                             JUDGE MODE
                         </span>
                     </div>
@@ -207,23 +210,15 @@ export default function JudgePage() {
                         />
                     )}
                     {activeTab === 'patient' && (
-                        <div className="h-full">
-                            <iframe
-                                key={refreshKey}
-                                src="/"
-                                className="w-full h-full border-0"
-                                style={{ maxWidth: '430px', margin: '0 auto', display: 'block', height: 'calc(100vh - 56px)' }}
-                            />
+                        <div className="h-full flex justify-center items-start bg-slate-900 p-4 overflow-auto">
+                            <div className="w-[430px] min-h-[700px] rounded-3xl overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,0.4)]">
+                                <PatientView />
+                            </div>
                         </div>
                     )}
                     {activeTab === 'nurse' && (
-                        <div className="h-full">
-                            <iframe
-                                key={refreshKey}
-                                src="/nurse"
-                                className="w-full h-full border-0"
-                                style={{ height: 'calc(100vh - 56px)' }}
-                            />
+                        <div className="h-full overflow-auto">
+                            <NurseDashboard />
                         </div>
                     )}
                     {activeTab === 'intelligence' && (
@@ -284,7 +279,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             </div>
 
             {/* STATE CARDS */}
-            <div className="grid grid-cols-4 gap-4">
+            <div id="state-cards-grid" className="grid grid-cols-4 gap-4">
                 <StateCard
                     label="HMM State"
                     value={state}
@@ -312,8 +307,9 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             </div>
 
             {/* SBAR REPORT */}
-            {clinicianSummary && (
-                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+            <div id="sbar-section" className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+              {clinicianSummary ? (
+                <>
                     <div className="flex items-center gap-2 mb-4">
                         <FileText size={18} className="text-blue-600" />
                         <h2 className="text-lg font-bold text-zinc-900">SBAR Clinical Report</h2>
@@ -324,37 +320,54 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                         if (typeof clinicianSummary === 'string') {
                             return <pre className="text-sm text-zinc-700 whitespace-pre-wrap font-sans leading-relaxed">{clinicianSummary}</pre>;
                         }
+
+                        const sbarColorMap: Record<string, string> = {
+                            situation: 'border-l-blue-500',
+                            background: 'border-l-violet-500',
+                            assessment: 'border-l-amber-500',
+                            recommendation: 'border-l-emerald-500',
+                        };
+                        const sbarLabelColorMap: Record<string, string> = {
+                            situation: 'text-blue-600',
+                            background: 'text-violet-600',
+                            assessment: 'text-amber-600',
+                            recommendation: 'text-emerald-600',
+                        };
+
                         if (sbarData && typeof sbarData === 'object') {
                             return (
-                                <div className="text-sm text-zinc-500">
+                                <div className="grid grid-cols-2 gap-4">
                                     {Object.entries(sbarData).map(([key, val]) => (
-                                        <div key={key} className="mb-3">
-                                            <span className="font-semibold text-zinc-800 uppercase text-xs tracking-wider">{key}: </span>
-                                            <span className="text-zinc-600">{Array.isArray(val) ? (val as string[]).join('; ') : typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
+                                        <div key={key} className={`p-4 bg-zinc-50 rounded-lg border border-zinc-100 border-l-[3px] ${sbarColorMap[key.toLowerCase()] || 'border-l-zinc-400'}`}>
+                                            <div className={`font-semibold uppercase text-xs tracking-wider mb-2 ${sbarLabelColorMap[key.toLowerCase()] || 'text-zinc-800'}`}>{key}</div>
+                                            <div className="text-sm text-zinc-600 leading-relaxed">{Array.isArray(val) ? (val as string[]).join('; ') : typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</div>
                                         </div>
                                     ))}
                                 </div>
                             );
                         }
-                        // Fallback: render non-metadata keys
+                        // Fallback: render non-metadata keys in 2x2 grid
                         return (
-                            <div className="text-sm text-zinc-500">
+                            <div className="grid grid-cols-2 gap-4">
                                 {Object.entries(clinicianSummary).filter(([key]) => !['success', 'patient_id', 'period_days'].includes(key)).map(([key, val]) => (
-                                    <div key={key} className="mb-3">
-                                        <span className="font-semibold text-zinc-800 uppercase text-xs tracking-wider">{key}: </span>
-                                        <span className="text-zinc-600">{typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
+                                    <div key={key} className={`p-4 bg-zinc-50 rounded-lg border border-zinc-100 border-l-[3px] ${sbarColorMap[key.toLowerCase()] || 'border-l-zinc-400'}`}>
+                                        <div className={`font-semibold uppercase text-xs tracking-wider mb-2 ${sbarLabelColorMap[key.toLowerCase()] || 'text-zinc-800'}`}>{key}</div>
+                                        <div className="text-sm text-zinc-600 leading-relaxed">{typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</div>
                                     </div>
                                 ))}
                             </div>
                         );
                     })()}
-                </div>
-            )}
+                </>
+              ) : (
+                <p className="text-sm text-zinc-400 italic py-4 text-center">Run a simulation to generate SBAR report</p>
+              )}
+            </div>
 
             {/* TRIAGE + DRUG INTERACTIONS */}
             <div className="grid grid-cols-2 gap-6">
                 {/* TRIAGE */}
-                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                <div id="triage-section" className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                         <Users size={18} className="text-indigo-600" />
                         <h2 className="text-lg font-bold text-zinc-900">Nurse Triage</h2>
@@ -487,7 +500,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                 <p className="text-sm text-zinc-500 mt-1">Deep visibility into agent reasoning, memory, safety, and learning</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div id="intel-grid" className="grid grid-cols-2 gap-6">
                 {/* AGENT MEMORY */}
                 <IntelCard title="Agent Memory" icon={<Brain size={16} />} color="indigo">
                     {agentMemory && agentMemory.length > 0 ? (
@@ -1083,7 +1096,7 @@ function ToolDemoTab() {
             </div>
 
             {/* TOOL BUTTONS */}
-            <div className="grid grid-cols-3 gap-3">
+            <div id="tool-grid" className="grid grid-cols-3 gap-3">
                 {DEMO_TOOLS.map((tool) => {
                     const Icon = tool.icon;
                     const isRunAll = tool.id === 'run_all';
@@ -1118,7 +1131,7 @@ function ToolDemoTab() {
             </div>
 
             {/* TERMINAL OUTPUT */}
-            <div className="bg-zinc-950 rounded-xl border border-zinc-800 overflow-hidden">
+            <div id="tool-terminal" className="bg-zinc-950 rounded-xl border border-zinc-800 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
                     <div className="flex items-center gap-2">
                         <div className="flex gap-1.5">
@@ -1166,15 +1179,15 @@ function ToolDemoTab() {
 // ============================================================================
 function StateCard({ label, value, color, icon }: { label: string; value: string | number; color: string; icon: React.ReactNode }) {
     const colorMap: Record<string, string> = {
-        emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-        amber: 'bg-amber-50 border-amber-200 text-amber-700',
-        rose: 'bg-rose-50 border-rose-200 text-rose-700',
-        blue: 'bg-blue-50 border-blue-200 text-blue-700',
+        emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700 border-t-emerald-500',
+        amber: 'bg-amber-50 border-amber-200 text-amber-700 border-t-amber-500',
+        rose: 'bg-rose-50 border-rose-200 text-rose-700 border-t-rose-500',
+        blue: 'bg-blue-50 border-blue-200 text-blue-700 border-t-blue-500',
     };
     const cls = colorMap[color] || colorMap.emerald;
 
     return (
-        <div className={`p-4 rounded-xl border shadow-sm ${cls}`}>
+        <div className={`p-4 rounded-xl border border-t-[3px] shadow-sm transition-all duration-150 hover:-translate-y-[3px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${cls}`}>
             <div className="flex items-center gap-2 mb-2 opacity-70">{icon}<span className="text-xs font-medium">{label}</span></div>
             <div className="text-2xl font-bold">{value}</div>
         </div>
@@ -1195,7 +1208,7 @@ function IntelCard({ title, icon, color, children }: { title: string; icon: Reac
     };
 
     return (
-        <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm">
+        <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm transition-all duration-150 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
             <div className="flex items-center gap-2 mb-4">
                 <span className={colorMap[color] || 'text-zinc-600'}>{icon}</span>
                 <h3 className="text-sm font-bold text-zinc-900">{title}</h3>

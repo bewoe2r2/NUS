@@ -60,15 +60,15 @@ export default function NurseDashboard() {
             try {
                 setLoading(true);
                 const [stateRes, analysisRes, sbar, drugs, triageRes, alerts] = await Promise.all([
-                    api.getPatientState("P001"),
-                    api.getPatientAnalysis("P001"),
+                    api.getPatientState("P001").catch(() => null),
+                    api.getPatientAnalysis("P001").catch(() => null),
                     api.getClinicianSummary("P001").catch(() => null),
                     api.getDrugInteractions("P001").catch(() => null),
                     api.getNurseTriage().catch(() => null),
                     api.getNurseAlerts().catch(() => []),
                 ]);
                 setPatientState(stateRes);
-                setAnalysisHistory(analysisRes.history as DayAnalysis[]);
+                setAnalysisHistory((analysisRes?.history as DayAnalysis[]) || []);
                 setClinicianSummary(sbar);
                 setDrugInteractions(drugs);
                 setTriage(triageRes);
@@ -150,7 +150,7 @@ export default function NurseDashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-slate-50 text-blue-600">
+            <div className="flex items-center justify-center h-full min-h-[400px] bg-slate-50 text-blue-600">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="animate-spin h-10 w-10" />
                     <span className="text-sm font-semibold tracking-wider text-slate-500">LOADING CLINICAL DATA...</span>
@@ -161,7 +161,7 @@ export default function NurseDashboard() {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-screen bg-slate-50 text-rose-600">
+            <div className="flex items-center justify-center h-full min-h-[400px] bg-slate-50 text-rose-600">
                 <div className="flex flex-col items-center gap-4 max-w-md text-center">
                     <AlertCircle className="h-12 w-12" />
                     <h2 className="text-xl font-bold">Connection Error</h2>
@@ -176,15 +176,17 @@ export default function NurseDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+        <div className="h-full bg-slate-50 text-slate-800 font-sans">
             {/* Main Content - Full width since sidebar is in layout */}
-            <main className="flex flex-col min-h-screen">
+            <main className="flex flex-col h-full">
+                <div id="nurse-header">
                 <PatientHeader
                     patientId="P001"
                     name="Tan Ah Kow"
                     age={67}
                     status={patientState?.current_state || "STABLE"}
                 />
+                </div>
 
                 {/* Scrollable Dashboard Content */}
                 <div className="flex-1 p-6 overflow-y-auto">
@@ -197,17 +199,24 @@ export default function NurseDashboard() {
 
                         {/* === SECTION 1: 14-Day Timeline === */}
                         {timelineDays.length > 0 && (
-                            <ClinicalCard
-                                icon={<Calendar size={18} />}
-                                title="14-Day Health Timeline"
-                                subtitle="Click a day to view detailed HMM analysis"
+                            <motion.div
+                                id="nurse-timeline"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
                             >
-                                <TimelineStrip
-                                    days={timelineDays}
-                                    selectedDate={selectedDate}
-                                    onSelectDate={setSelectedDate}
-                                />
-                            </ClinicalCard>
+                                <ClinicalCard
+                                    icon={<Calendar size={18} />}
+                                    title="14-Day Health Timeline"
+                                    subtitle="Click a day to view detailed HMM analysis"
+                                >
+                                    <TimelineStrip
+                                        days={timelineDays}
+                                        selectedDate={selectedDate}
+                                        onSelectDate={setSelectedDate}
+                                    />
+                                </ClinicalCard>
+                            </motion.div>
                         )}
 
                         {/* === SECTION 2: Selected Day Detail (if any) === */}
@@ -215,7 +224,8 @@ export default function NurseDashboard() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm"
+                                transition={{ delay: 0.15 }}
+                                className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm transition-all duration-150 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-[2px]"
                             >
                                 <div className="flex items-start justify-between mb-6">
                                     <div>
@@ -401,13 +411,13 @@ export default function NurseDashboard() {
                         )}
 
                         {/* === SECTION 3: HMM Intelligence Center === */}
-                        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                        <div id="nurse-hmm-center" className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                             {/* State Probability */}
                             <motion.div
                                 className="xl:col-span-1"
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.1 }}
+                                transition={{ delay: 0.2 }}
                             >
                                 <ClinicalCard
                                     title="Current State"
@@ -423,7 +433,7 @@ export default function NurseDashboard() {
                                 className="xl:col-span-1"
                                 initial={{ opacity: 0, x: -5 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.15 }}
+                                transition={{ delay: 0.25 }}
                             >
                                 <HMMTransitionHeatmap matrix={patientState?.transition_matrix} />
                             </motion.div>
@@ -433,7 +443,7 @@ export default function NurseDashboard() {
                                 className="xl:col-span-2"
                                 initial={{ opacity: 0, x: 0 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.2 }}
+                                transition={{ delay: 0.3 }}
                             >
                                 <HMMSurvivalChart
                                     data={patientState?.survival_curve}
@@ -446,7 +456,7 @@ export default function NurseDashboard() {
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
+                            transition={{ delay: 0.35 }}
                         >
                             <ClinicalCard
                                 icon={<TrendingUp size={18} />}
@@ -464,7 +474,7 @@ export default function NurseDashboard() {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.35 }}
+                                transition={{ delay: 0.4 }}
                             >
                                 <ClinicalCard
                                     icon={<FileText size={18} />}
@@ -479,23 +489,31 @@ export default function NurseDashboard() {
                                                     return <pre className="whitespace-pre-wrap font-sans">{clinicianSummary}</pre>;
                                                 }
                                                 if (sbarData && typeof sbarData === 'object') {
+                                                    const entries = Object.entries(sbarData);
+                                                    const sbarColors: Record<string, string> = {
+                                                        situation: 'text-rose-600',
+                                                        background: 'text-blue-600',
+                                                        assessment: 'text-amber-600',
+                                                        recommendation: 'text-emerald-600',
+                                                    };
                                                     return (
-                                                        <div className="space-y-3">
-                                                            {Object.entries(sbarData).map(([key, val]) => (
-                                                                <div key={key}>
-                                                                    <span className="font-bold text-slate-800 text-xs uppercase tracking-wider">{key}: </span>
-                                                                    <span className="text-slate-600">{Array.isArray(val) ? (val as string[]).join('; ') : typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
+                                                        <div className={entries.length === 4 ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-3"}>
+                                                            {entries.map(([key, val]) => (
+                                                                <div key={key} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                                                    <span className={`font-bold text-[10px] uppercase tracking-widest block mb-1 ${sbarColors[key.toLowerCase()] || 'text-slate-500'}`}>{key}</span>
+                                                                    <span className="text-slate-600 text-sm leading-relaxed">{Array.isArray(val) ? (val as string[]).join('; ') : typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
                                                     );
                                                 }
+                                                const fallbackEntries = Object.entries(clinicianSummary).filter(([key]) => !['success', 'patient_id', 'period_days'].includes(key));
                                                 return (
-                                                    <div className="space-y-3">
-                                                        {Object.entries(clinicianSummary).filter(([key]) => !['success', 'patient_id', 'period_days'].includes(key)).map(([key, val]) => (
-                                                            <div key={key}>
-                                                                <span className="font-bold text-slate-800 text-xs uppercase tracking-wider">{key}: </span>
-                                                                <span className="text-slate-600">{typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
+                                                    <div className={fallbackEntries.length === 4 ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-3"}>
+                                                        {fallbackEntries.map(([key, val]) => (
+                                                            <div key={key} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                                                <span className="font-bold text-[10px] uppercase tracking-widest block mb-1 text-slate-500">{key}</span>
+                                                                <span className="text-slate-600 text-sm leading-relaxed">{typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -514,7 +532,7 @@ export default function NurseDashboard() {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
+                                transition={{ delay: 0.45 }}
                             >
                                 <ClinicalCard
                                     icon={<Pill size={18} />}
@@ -524,7 +542,7 @@ export default function NurseDashboard() {
                                     {drugInteractions?.interactions && drugInteractions.interactions.length > 0 ? (
                                         <div className="space-y-3">
                                             {drugInteractions.interactions.map((ix: any, i: number) => (
-                                                <div key={i} className="p-3 rounded-lg border border-slate-100 bg-slate-50">
+                                                <div key={i} className="p-3 rounded-lg border border-slate-100 bg-slate-50 transition-transform duration-150 hover:translate-x-[2px]">
                                                     <div className="flex items-center gap-2 mb-1.5">
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                                             ix.severity === 'CONTRAINDICATED' ? 'bg-rose-100 text-rose-700' :
@@ -561,7 +579,7 @@ export default function NurseDashboard() {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.45 }}
+                                transition={{ delay: 0.5 }}
                             >
                                 <ClinicalCard
                                     icon={<Users size={18} />}
@@ -570,17 +588,33 @@ export default function NurseDashboard() {
                                 >
                                     {triage?.patients && triage.patients.length > 0 ? (
                                         <div className="space-y-2">
-                                            {triage.patients.map((p: any, i: number) => (
-                                                <div key={p.patient_id || i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
+                                            {triage.patients.map((p: any, i: number) => {
+                                                const urgencyPct = Math.round((p.urgency_score || 0) * 100);
+                                                const barColor =
+                                                    p.triage_category === 'IMMEDIATE' ? 'bg-rose-500' :
+                                                    p.triage_category === 'SOON' ? 'bg-amber-500' :
+                                                    p.triage_category === 'MONITOR' ? 'bg-blue-500' : 'bg-emerald-500';
+                                                return (
+                                                <div key={p.patient_id || i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 transition-all duration-150 hover:shadow-sm">
                                                     <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                                                         p.triage_category === 'IMMEDIATE' ? 'bg-rose-500 animate-pulse' :
                                                         p.triage_category === 'SOON' ? 'bg-amber-500' :
                                                         p.triage_category === 'MONITOR' ? 'bg-blue-500' : 'bg-emerald-500'
                                                     }`} />
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-semibold text-slate-800">{p.patient_id}</div>
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <div className="text-sm font-semibold text-slate-800">{p.patient_id}</div>
+                                                            <span className="text-[10px] text-slate-500 font-mono">{urgencyPct}%</span>
+                                                        </div>
+                                                        {/* Urgency bar */}
+                                                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-1.5">
+                                                            <div
+                                                                className={`h-full rounded-full ${barColor}`}
+                                                                style={{ width: `${urgencyPct}%` }}
+                                                            />
+                                                        </div>
                                                         <div className="text-xs text-slate-500">
-                                                            {p.state} | Urgency: {((p.urgency_score || 0) * 100).toFixed(0)}%
+                                                            {p.state}
                                                         </div>
                                                         {p.sbar_line && (
                                                             <div className="text-xs text-slate-600 mt-1 bg-white p-2 rounded border border-slate-100">
@@ -588,15 +622,16 @@ export default function NurseDashboard() {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                                                        p.triage_category === 'IMMEDIATE' ? 'bg-rose-100 text-rose-700' :
-                                                        p.triage_category === 'SOON' ? 'bg-amber-100 text-amber-700' :
+                                                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 tracking-wide ${
+                                                        p.triage_category === 'IMMEDIATE' ? 'bg-rose-500 text-white' :
+                                                        p.triage_category === 'SOON' ? 'bg-amber-400 text-amber-900' :
                                                         p.triage_category === 'MONITOR' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
                                                     }`}>
                                                         {p.triage_category}
                                                     </span>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <p className="text-sm text-slate-400 italic py-4 text-center">
@@ -610,7 +645,7 @@ export default function NurseDashboard() {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
+                                transition={{ delay: 0.55 }}
                             >
                                 <ClinicalCard
                                     icon={<Shield size={18} />}

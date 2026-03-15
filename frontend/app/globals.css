@@ -1,75 +1,55 @@
 @import "tailwindcss";
+@config "../tailwind.config.ts";
 
 @layer base {
   :root {
     /* ========================================================================
        1. NEUTRAL SCALE (Cool Grey - Technocratic)
-       Target Hue: 240 (Cool Blue-Grey)
-       L = Lightness, C = Chroma, H = Hue
        ======================================================================== */
     --neutral-0: oklch(100% 0 0);
-    /* Pure White */
     --neutral-50: oklch(98% 0.002 240);
-    /* App Background */
     --neutral-100: oklch(95% 0.005 240);
-    /* Sub-layer */
     --neutral-200: oklch(90% 0.01 240);
-    /* Borders - Subtle */
     --neutral-300: oklch(82% 0.015 240);
-    /* Borders - Strong */
     --neutral-400: oklch(70% 0.02 240);
-    /* Icons / Muted Text */
     --neutral-500: oklch(55% 0.025 240);
-    /* Secondary Text */
     --neutral-600: oklch(45% 0.03 240);
-    /* Body Text */
     --neutral-700: oklch(35% 0.035 240);
     --neutral-800: oklch(20% 0.04 240);
-    /* Headings */
     --neutral-900: oklch(12% 0.05 240);
-    /* Deep Contrast */
     --neutral-950: oklch(8% 0.05 240);
-    /* Black alternative */
 
     /* ========================================================================
        2. ACCENT SCALE (Medical Blue - Trust & Clarity)
-       Target Hue: 250 (Royal Blue)
        ======================================================================== */
     --accent-50: oklch(97% 0.02 250);
     --accent-100: oklch(94% 0.04 250);
-    /* Highlight backgrounds */
     --accent-200: oklch(88% 0.06 250);
     --accent-300: oklch(80% 0.10 250);
     --accent-400: oklch(70% 0.15 250);
     --accent-500: oklch(60% 0.20 250);
-    /* PRIMARY BRAND COLOR */
     --accent-600: oklch(50% 0.22 250);
-    /* Hover State */
     --accent-700: oklch(42% 0.20 250);
-    /* Active State */
     --accent-800: oklch(35% 0.18 250);
     --accent-900: oklch(25% 0.15 250);
 
     /* ========================================================================
-       3. SEMANTIC SCALES (Function-driven)
+       3. SEMANTIC SCALES
        ======================================================================== */
-    /* SUCCESS (Teal-Green: 155) */
     --success-bg: oklch(96% 0.03 155);
     --success-text: oklch(55% 0.15 155);
     --success-solid: oklch(62% 0.18 155);
 
-    /* WARNING (Amber: 85) */
     --warning-bg: oklch(97% 0.04 85);
     --warning-text: oklch(65% 0.15 85);
     --warning-solid: oklch(75% 0.16 85);
 
-    /* ERROR (Crimson: 25) */
     --error-bg: oklch(97% 0.02 25);
     --error-text: oklch(60% 0.20 25);
     --error-solid: oklch(60% 0.22 25);
 
     /* ========================================================================
-       4. RADIUS SYSTEM (Apple-style continuous curves)
+       4. RADIUS SYSTEM
        ======================================================================== */
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -79,7 +59,7 @@
     --radius-full: 9999px;
 
     /* ========================================================================
-       5. SHADOW SYSTEM (Layered, Colored)
+       5. SHADOW SYSTEM (Refined, Layered)
        ======================================================================== */
     --shadow-subtle:
       0 1px 2px oklch(0% 0 0 / 0.03),
@@ -88,6 +68,10 @@
     --shadow-card:
       0 4px 6px -1px oklch(0% 0 0 / 0.02),
       0 10px 15px -3px oklch(0% 0 0 / 0.04);
+
+    --shadow-card-hover:
+      0 8px 24px oklch(0% 0 0 / 0.08),
+      0 0 0 1px oklch(0% 0 0 / 0.03);
 
     --shadow-float:
       0 20px 25px -5px oklch(0% 0 0 / 0.05),
@@ -102,6 +86,15 @@
     --glass-surface: oklch(100% 0 0 / 0.85);
     --glass-border: oklch(100% 0 0 / 0.4);
     --glass-blur: 20px;
+
+    /* ========================================================================
+       7. SHADCN/UI COMPATIBILITY TOKENS
+       ======================================================================== */
+    --background: var(--neutral-0);
+    --foreground: var(--neutral-900);
+    --ring: var(--accent-500);
+    --popover: var(--neutral-0);
+    --popover-foreground: var(--neutral-900);
   }
 
   body {
@@ -110,14 +103,22 @@
     font-family: var(--font-geist-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Prevent iOS rubber banding on body, allow on scroll containers */
     overscroll-behavior-y: none;
+    /* Subtle grain texture for depth */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
   }
+
+  /* Refined scrollbars */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--neutral-300); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--neutral-400); }
+  * { scrollbar-width: thin; scrollbar-color: var(--neutral-300) transparent; }
 }
 
 @layer utilities {
 
-  /* ELITE UTILITIES */
+  /* Glass effects */
   .glass-panel {
     background: var(--glass-surface);
     backdrop-filter: blur(var(--glass-blur));
@@ -130,6 +131,7 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--neutral-200);
+    box-shadow: 0 1px 8px oklch(0% 0 0 / 0.03);
   }
 
   .text-balance {
@@ -143,5 +145,118 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Staggered entrance animations (replaces tailwindcss-animate) */
+  .animate-in {
+    animation-name: animate-in;
+    animation-duration: 700ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-fill-mode: backwards;
+  }
+
+  .fade-in {
+    --tw-enter-opacity: 0;
+  }
+
+  .slide-in-from-bottom-4 {
+    --tw-enter-translate-y: 1rem;
+  }
+
+  .fill-mode-backwards {
+    animation-fill-mode: backwards;
+  }
+
+  @keyframes animate-in {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: scale(var(--tw-enter-scale, 1)) translateX(var(--tw-enter-translate-x, 0)) translateY(var(--tw-enter-translate-y, 0));
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateX(0) translateY(0);
+    }
+  }
+
+  /* Dark scrollbar variant */
+  .dark-scroll::-webkit-scrollbar-thumb { background: #3f3f46; }
+  .dark-scroll { scrollbar-color: #3f3f46 transparent; }
+
+  /* Shadcn/Radix animation utilities for tooltips, etc. */
+  .fade-in-0 {
+    --tw-enter-opacity: 0;
+  }
+
+  .zoom-in-95 {
+    --tw-enter-scale: 0.95;
+  }
+
+  .zoom-in {
+    --tw-enter-scale: 0.95;
+  }
+
+  .fade-out-0 {
+    --tw-exit-opacity: 0;
+  }
+
+  .zoom-out-95 {
+    --tw-exit-scale: 0.95;
+  }
+
+  .slide-in-from-top-2 {
+    --tw-enter-translate-y: -0.5rem;
+  }
+
+  .slide-in-from-bottom-2 {
+    --tw-enter-translate-y: 0.5rem;
+  }
+
+  .slide-in-from-left-2 {
+    --tw-enter-translate-x: -0.5rem;
+  }
+
+  .slide-in-from-right-2 {
+    --tw-enter-translate-x: 0.5rem;
+  }
+
+  .animate-out {
+    animation-name: animate-out;
+    animation-duration: 150ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes animate-out {
+    to {
+      opacity: var(--tw-exit-opacity, 1);
+      transform: scale(var(--tw-exit-scale, 1)) translateX(var(--tw-exit-translate-x, 0)) translateY(var(--tw-exit-translate-y, 0));
+    }
+  }
+
+  /* Walkthrough scrim — sits above everything */
+  .wt-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    background: rgba(0, 0, 0, 0.32);
+    transition: opacity 0.5s ease;
+  }
+
+  /* Walkthrough highlight ring — fixed overlay that tracks target element position.
+     Does NOT modify the target element's styles (no z-index, no position changes).
+     Rendered by GuidedWalkthrough as a separate div. */
+  .wt-highlight-ring {
+    position: fixed;
+    z-index: 191;
+    border-radius: 14px;
+    pointer-events: none;
+    border: 2px solid oklch(60% 0.20 250 / 0.7);
+    box-shadow: 0 0 20px oklch(60% 0.20 250 / 0.15);
+    transition:
+      top 0.7s cubic-bezier(0.22,1,0.36,1),
+      left 0.7s cubic-bezier(0.22,1,0.36,1),
+      width 0.7s cubic-bezier(0.22,1,0.36,1),
+      height 0.7s cubic-bezier(0.22,1,0.36,1),
+      opacity 0.4s ease;
   }
 }

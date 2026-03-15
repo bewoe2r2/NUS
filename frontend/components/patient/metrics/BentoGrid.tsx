@@ -37,7 +37,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
         >
             {/* GLUCOSE - LARGE CELL */}
             <motion.div variants={fadeInUp} className="col-span-2">
-                <Card className="p-6 flex flex-col justify-between h-full bg-white relative overflow-hidden group hover:border-accent-200 transition-colors">
+                <Card className="p-6 flex flex-col justify-between h-full bg-white relative overflow-hidden group hover:border-accent-200 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
                     <div className="flex justify-between items-start z-10">
                         <div className="flex items-center gap-2 text-neutral-500 font-medium text-sm uppercase tracking-wider">
                             <Activity size={16} />
@@ -69,7 +69,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
 
             {/* STEPS */}
             <motion.div variants={fadeInUp}>
-                <Card className="p-5 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
+                <Card className="p-5 flex flex-col justify-between h-32 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
                     <div className="text-neutral-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                         <Footprints size={14} /> Activity
                     </div>
@@ -82,7 +82,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
 
             {/* HEART RATE */}
             <motion.div variants={fadeInUp}>
-                <Card className="p-5 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
+                <Card className="p-5 flex flex-col justify-between h-32 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
                     <div className="text-neutral-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                         <Heart size={14} /> Heart Rate
                     </div>

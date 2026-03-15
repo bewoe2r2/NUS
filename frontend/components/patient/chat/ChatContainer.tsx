@@ -81,7 +81,7 @@ export function ChatContainer() {
     };
 
     return (
-        <Card className="flex flex-col h-[500px] w-full border-none shadow-card overflow-hidden bg-white/50 backdrop-blur-sm">
+        <Card className="flex flex-col h-[500px] w-full border-none shadow-card overflow-hidden bg-white/50 backdrop-blur-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
 
             {/* HEADER */}
             <div className="px-4 py-3 border-b border-neutral-100 bg-white/80 backdrop-blur-md flex items-center justify-between z-10 sticky top-0">

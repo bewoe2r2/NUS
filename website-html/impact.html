@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impact — BEWO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-paper: oklch(0.985 0.003 90); --bg-raised: oklch(0.97 0.005 90);
+      --bg-card: oklch(1 0 0); --bg-inset: oklch(0.94 0.008 260);
+      --text-ink: oklch(0.18 0.03 260); --text-secondary: oklch(0.42 0.02 260); --text-muted: oklch(0.58 0.01 260);
+      --accent-primary: oklch(0.42 0.14 265); --accent-hover: oklch(0.36 0.16 265); --accent-muted: oklch(0.42 0.14 265 / 0.08);
+      --color-profit: oklch(0.52 0.12 160); --color-loss: oklch(0.52 0.12 25); --color-warning: oklch(0.62 0.14 80);
+      --border-default: oklch(0.86 0.008 260); --border-subtle: oklch(0.92 0.004 90);
+      --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
+      --text-lg: 1.25rem; --text-xl: 1.5rem; --text-2xl: 2rem;
+      --text-3xl: 2.5rem; --text-4xl: 3.25rem;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+      --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+      --shadow-sm: 0 1px 2px oklch(0.18 0.03 260 / 0.06);
+      --shadow-md: 0 4px 16px oklch(0.18 0.03 260 / 0.08);
+      --shadow-lg: 0 8px 32px oklch(0.18 0.03 260 / 0.10);
+      --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --duration-fast: 150ms; --duration-base: 250ms;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-paper); color: var(--text-ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--text-ink); }
+    h1 { font-size: var(--text-4xl); } h2 { font-size: var(--text-2xl); } h3 { font-size: var(--text-xl); } h4 { font-size: var(--text-lg); }
+    p { color: var(--text-secondary); line-height: 1.6; }
+    a { color: var(--accent-primary); text-decoration: none; transition: color var(--duration-fast) var(--ease-out); }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 var(--space-6); }
+    .site-header { border-bottom: 1px solid var(--border-subtle); padding: var(--space-4) 0; background: var(--bg-paper); position: sticky; top: 0; z-index: 10; }
+    .site-header__inner { display: flex; justify-content: space-between; align-items: center; }
+    .site-header__brand { text-decoration: none; }
+    .site-header__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; line-height: 1; color: var(--text-ink); letter-spacing: -0.01em; }
+    .site-header__tagline { font-size: var(--text-xs); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: var(--space-1); display: block; }
+    .site-nav { display: flex; gap: var(--space-8); }
+    .site-nav__link { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: var(--text-muted); font-size: var(--text-sm); font-weight: 500; padding-bottom: var(--space-1); border-bottom: 2px solid transparent; transition: color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out); }
+    .site-nav__link:hover { color: var(--text-ink); text-decoration: none; }
+    .site-nav__link--active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+    .site-footer { border-top: 1px solid var(--border-subtle); padding: var(--space-8) 0; margin-top: var(--space-16); text-align: center; }
+    .site-footer__text { font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); }
+    .card { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: var(--space-6); transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out); }
+    .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .card--accent { border-left: 4px solid var(--accent-primary); }
+    .section-dark { background: oklch(0.18 0.04 265); border-radius: var(--radius-lg); padding: var(--space-12) var(--space-8); color: oklch(0.90 0.01 265); }
+    .section-dark h2, .section-dark h3, .section-dark h4 { color: oklch(0.96 0.005 265); }
+    .section-dark p { color: oklch(0.75 0.015 265); }
+    .badge { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-radius: 96px; font-size: var(--text-xs); font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.02em; }
+    .badge--accent { background: var(--accent-muted); color: var(--accent-primary); }
+    .badge--profit { background: oklch(0.52 0.12 160 / 0.08); color: var(--color-profit); }
+    .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-6); border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; text-decoration: none; cursor: pointer; border: none; min-height: 44px; transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out); }
+    .btn:hover { text-decoration: none; transform: translateY(-1px); }
+    .btn--primary { background: var(--accent-primary); color: oklch(0.99 0 0); box-shadow: 0 2px 8px oklch(0.42 0.14 265 / 0.25); }
+    .btn--primary:hover { background: var(--accent-hover); box-shadow: 0 4px 16px oklch(0.42 0.14 265 / 0.35); }
+    .hero { background: oklch(0.96 0.015 265); border-radius: var(--radius-lg); padding: var(--space-16) var(--space-12); margin-bottom: var(--space-12); position: relative; overflow: hidden; }
+    .hero::after { content: ''; position: absolute; top: -32px; right: -64px; width: 384px; height: 384px; background: radial-gradient(circle, oklch(0.42 0.14 265 / 0.04) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+
+    /* Stat block */
+    .stat-block { text-align: center; padding: var(--space-8) var(--space-6); background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-lg); position: relative; overflow: hidden; transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out); }
+    .stat-block:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stat-block::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent-primary), var(--color-profit)); }
+    .stat-block__value { font-size: var(--text-2xl); font-family: var(--font-mono); font-weight: 700; color: var(--text-ink); margin-bottom: var(--space-1); }
+    .stat-block__label { font-size: var(--text-sm); font-weight: 600; color: var(--text-ink); margin-bottom: var(--space-1); }
+    .stat-block__sub { font-size: var(--text-xs); color: var(--text-muted); }
+
+    .icon-box { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0; }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.08s; }
+    .reveal-delay-2 { transition-delay: 0.16s; }
+    .reveal-delay-3 { transition-delay: 0.24s; }
+    .reveal-delay-4 { transition-delay: 0.32s; }
+
+    .mobile-nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: var(--space-2); color: var(--text-ink); }
+
+    /* Radar chart via SVG */
+    .radar-chart { max-width: 100%; height: auto; }
+
+    @media (max-width: 1024px) { .container { max-width: 768px; } }
+    @media (max-width: 768px) {
+      h1 { font-size: var(--text-3xl); } h2 { font-size: var(--text-xl); }
+      .container { padding: 0 var(--space-4); }
+      .hero { padding: var(--space-8) var(--space-6); }
+      .section-dark { padding: var(--space-8) var(--space-6); }
+      .site-nav { display: none; }
+      .site-nav.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-paper); border-bottom: 1px solid var(--border-subtle); padding: var(--space-4) var(--space-6); gap: var(--space-4); z-index: 20; }
+      .mobile-nav-toggle { display: block; }
+      .metrics-grid { grid-template-columns: 1fr !important; }
+      .errc-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</head>
+<body>
+  <div style="min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- HEADER -->
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="index.html" class="site-header__brand">
+          <span class="site-header__title">BEWO</span>
+          <span class="site-header__tagline">Predictive Chronic Care</span>
+        </a>
+        <button class="mobile-nav-toggle" onclick="document.querySelector('.site-nav').classList.toggle('open')" aria-label="Toggle navigation">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <nav class="site-nav">
+          <a href="index.html" class="site-nav__link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            Overview
+          </a>
+          <a href="technology.html" class="site-nav__link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+            Technology
+          </a>
+          <a href="impact.html" class="site-nav__link site-nav__link--active">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            Impact
+          </a>
+          <a href="demo.html" class="site-nav__link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Product
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main style="flex: 1; padding-top: var(--space-8); padding-bottom: var(--space-8);">
+      <div class="container">
+
+        <!-- HERO -->
+        <section class="hero reveal" style="margin-bottom: var(--space-16);">
+          <div style="position: relative; z-index: 1;">
+            <div class="badge badge--profit" style="margin-bottom: var(--space-4);">Blue Ocean Strategy</div>
+            <h1 style="max-width: 640px; margin-bottom: var(--space-4);">Creating uncontested market space</h1>
+            <p style="max-width: 540px; font-size: var(--text-lg); line-height: 1.6;">
+              Bewo doesn't compete with existing solutions. It combines capabilities
+              that no other platform offers together, making competition irrelevant.
+            </p>
+          </div>
+        </section>
+
+        <!-- IMPACT METRICS -->
+        <div class="metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); margin-bottom: var(--space-16);">
+          <div class="stat-block reveal reveal-delay-1">
+            <span class="icon-box" style="background: oklch(0.52 0.12 160 / 0.08); color: var(--color-profit); margin-bottom: var(--space-3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+            </span>
+            <div class="stat-block__value">~40%</div>
+            <div class="stat-block__label">Fewer Admissions</div>
+            <div class="stat-block__sub">48h advance crisis prediction</div>
+          </div>
+          <div class="stat-block reveal reveal-delay-2">
+            <span class="icon-box" style="background: var(--accent-muted); color: var(--accent-primary); margin-bottom: var(--space-3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <div class="stat-block__value">60%</div>
+            <div class="stat-block__label">Nurse Time Saved</div>
+            <div class="stat-block__sub">Autonomous triage + routing</div>
+          </div>
+          <div class="stat-block reveal reveal-delay-3">
+            <span class="icon-box" style="background: oklch(0.62 0.14 80 / 0.08); color: var(--color-warning); margin-bottom: var(--space-3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <div class="stat-block__value">85%</div>
+            <div class="stat-block__label">Patient Retention</div>
+            <div class="stat-block__sub">vs. 58% industry average</div>
+          </div>
+          <div class="stat-block reveal reveal-delay-4">
+            <span class="icon-box" style="background: oklch(0.52 0.12 25 / 0.08); color: var(--color-loss); margin-bottom: var(--space-3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <div class="stat-block__value">$1,200</div>
+            <div class="stat-block__label">Saved Per Patient/Year</div>
+            <div class="stat-block__sub">Avoided ER + readmissions</div>
+          </div>
+        </div>
+
+        <!-- STRATEGY CANVAS -->
+        <section style="margin-bottom: var(--space-16);">
+          <div class="reveal" style="margin-bottom: var(--space-8);">
+            <div class="badge badge--accent" style="margin-bottom: var(--space-3);">Strategy Canvas</div>
+            <h2>Value Curve Comparison</h2>
+            <p style="max-width: 480px; font-size: var(--text-sm); margin-top: var(--space-2);">
+              Bewo vs. traditional clinic care vs. existing health apps across 8 factors.
+            </p>
+          </div>
+
+          <div class="card reveal" style="padding: var(--space-8);">
+            <!-- Pure CSS/HTML horizontal bar chart comparison -->
+            <div style="margin-bottom: var(--space-6);">
+              <div style="display: flex; gap: var(--space-6); font-size: var(--text-xs); font-family: var(--font-mono); margin-bottom: var(--space-4);">
+                <span style="display: flex; align-items: center; gap: var(--space-2);"><span style="width: 12px; height: 12px; border-radius: 2px; background: var(--accent-primary); display: inline-block;"></span> Bewo</span>
+                <span style="display: flex; align-items: center; gap: var(--space-2);"><span style="width: 12px; height: 12px; border-radius: 2px; background: var(--color-loss); display: inline-block;"></span> Traditional</span>
+                <span style="display: flex; align-items: center; gap: var(--space-2);"><span style="width: 12px; height: 12px; border-radius: 2px; background: oklch(0.78 0.01 265); display: inline-block;"></span> Health Apps</span>
+              </div>
+            </div>
+
+            <div id="chart-bars">
+              <!-- Crisis Prediction -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Crisis Prediction</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="95%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div>
+                    <span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">95</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="10%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div>
+                    <span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">10</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="20%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div>
+                    <span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">20</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Agentic Actions -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Agentic Actions</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="90%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">90</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="5%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">5</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="15%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">15</span></div>
+                </div>
+              </div>
+              <!-- Behavioral Science -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Behavioral Science</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="85%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">85</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="15%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">15</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="40%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">40</span></div>
+                </div>
+              </div>
+              <!-- Caregiver Support -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Caregiver Support</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="80%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">80</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="60%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">60</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="25%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">25</span></div>
+                </div>
+              </div>
+              <!-- Cultural Adaptation -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Cultural Adaptation</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="85%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">85</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="30%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">30</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="35%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">35</span></div>
+                </div>
+              </div>
+              <!-- Clinical Integration -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Clinical Integration</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="75%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">75</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="80%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">80</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="20%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">20</span></div>
+                </div>
+              </div>
+              <!-- Patient Engagement -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Patient Engagement</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="90%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">90</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="25%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">25</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="50%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">50</span></div>
+                </div>
+              </div>
+              <!-- Cost Efficiency -->
+              <div style="margin-bottom: 0;">
+                <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">Cost Efficiency</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="85%" style="height: 100%; background: var(--accent-primary); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">85</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="30%" style="height: 100%; background: var(--color-loss); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">30</span></div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);"><div style="height: 14px; background: var(--bg-raised); border-radius: var(--radius-sm); flex: 1; overflow: hidden;"><div class="bar-fill" data-width="60%" style="height: 100%; background: oklch(0.78 0.01 265); border-radius: var(--radius-sm); width: 0; transition: width 0.8s var(--ease-out);"></div></div><span style="font-size: var(--text-xs); font-family: var(--font-mono); width: 28px; text-align: right;">60</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ERRC GRID -->
+        <section class="section-dark reveal" style="margin-bottom: var(--space-16);">
+          <h2 style="margin-bottom: var(--space-2);">ERRC Grid</h2>
+          <p style="max-width: 440px; font-size: var(--text-sm); margin-bottom: var(--space-8);">
+            Eliminate-Reduce-Raise-Create applied to chronic disease management.
+          </p>
+          <div class="errc-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+            <!-- ELIMINATE -->
+            <div class="reveal reveal-delay-1" style="background: oklch(0.22 0.04 265); border: 1px solid oklch(0.32 0.04 265); border-radius: var(--radius-lg); padding: var(--space-6); border-top: 3px solid var(--color-loss);">
+              <div style="font-size: var(--text-sm); font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.08em; color: var(--color-loss); margin-bottom: var(--space-4);">ELIMINATE</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-loss); font-size: var(--text-xs);">&#9656;</span> Manual glucose log reviews by nurses</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-loss); font-size: var(--text-xs);">&#9656;</span> Reactive-only crisis response</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-loss); font-size: var(--text-xs);">&#9656;</span> One-size-fits-all reminders</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-loss); font-size: var(--text-xs);">&#9656;</span> Alert fatigue from undifferentiated notifications</div>
+            </div>
+            <!-- REDUCE -->
+            <div class="reveal reveal-delay-2" style="background: oklch(0.22 0.04 265); border: 1px solid oklch(0.32 0.04 265); border-radius: var(--radius-lg); padding: var(--space-6); border-top: 3px solid var(--color-warning);">
+              <div style="font-size: var(--text-sm); font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.08em; color: var(--color-warning); margin-bottom: var(--space-4);">REDUCE</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-warning); font-size: var(--text-xs);">&#9656;</span> Preventable hospital admissions (-40%)</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-warning); font-size: var(--text-xs);">&#9656;</span> Nurse workload per patient (-60%)</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-warning); font-size: var(--text-xs);">&#9656;</span> Patient disengagement rate (&lt;15%)</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-warning); font-size: var(--text-xs);">&#9656;</span> Time-to-intervention after deterioration</div>
+            </div>
+            <!-- RAISE -->
+            <div class="reveal reveal-delay-3" style="background: oklch(0.22 0.04 265); border: 1px solid oklch(0.32 0.04 265); border-radius: var(--radius-lg); padding: var(--space-6); border-top: 3px solid var(--accent-primary);">
+              <div style="font-size: var(--text-sm); font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.08em; color: var(--accent-primary); margin-bottom: var(--space-4);">RAISE</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--accent-primary); font-size: var(--text-xs);">&#9656;</span> Prediction accuracy (48h advance warning)</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--accent-primary); font-size: var(--text-xs);">&#9656;</span> Personalization (mood, timing, culture)</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--accent-primary); font-size: var(--text-xs);">&#9656;</span> Caregiver quality of life</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--accent-primary); font-size: var(--text-xs);">&#9656;</span> Clinical audit transparency</div>
+            </div>
+            <!-- CREATE -->
+            <div class="reveal reveal-delay-4" style="background: oklch(0.22 0.04 265); border: 1px solid oklch(0.32 0.04 265); border-radius: var(--radius-lg); padding: var(--space-6); border-top: 3px solid var(--color-profit);">
+              <div style="font-size: var(--text-sm); font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.08em; color: var(--color-profit); margin-bottom: var(--space-4);">CREATE</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-profit); font-size: var(--text-xs);">&#9656;</span> Counterfactual "what-if" motivation</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-profit); font-size: var(--text-xs);">&#9656;</span> Autonomous multi-tool workflows</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; border-bottom: 1px solid oklch(0.30 0.04 265); display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-profit); font-size: var(--text-xs);">&#9656;</span> Loss-aversion voucher gamification</div>
+              <div style="font-size: var(--text-sm); color: oklch(0.78 0.01 265); padding: var(--space-2) 0; display: flex; align-items: center; gap: var(--space-2);"><span style="color: var(--color-profit); font-size: var(--text-xs);">&#9656;</span> AI-initiated proactive check-ins</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SCALABILITY ROADMAP -->
+        <section style="margin-bottom: var(--space-16);">
+          <div class="reveal" style="margin-bottom: var(--space-8);">
+            <div class="badge badge--profit" style="margin-bottom: var(--space-3);">Growth Path</div>
+            <h2>Scalability Roadmap</h2>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+            <!-- Phase 1 -->
+            <div class="card card--accent reveal reveal-delay-1" style="border-left-color: var(--accent-primary); display: grid; grid-template-columns: 48px 1fr; gap: var(--space-4); align-items: start;">
+              <span class="icon-box" style="width: 48px; height: 48px; background: var(--accent-muted); color: var(--accent-primary);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              <div>
+                <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--accent-primary); margin-bottom: var(--space-1);">Phase 1 — 2026-2027</div>
+                <h3 style="margin-bottom: var(--space-1);">Singapore</h3>
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: var(--text-xl); margin-bottom: var(--space-2);">900K</div>
+                <p style="font-size: var(--text-sm); line-height: 1.5;">Diabetics over 60. HealthHub integration. Polyclinic pilot partnerships.</p>
+              </div>
+            </div>
+            <!-- Phase 2 -->
+            <div class="card card--accent reveal reveal-delay-2" style="border-left-color: var(--color-profit); display: grid; grid-template-columns: 48px 1fr; gap: var(--space-4); align-items: start;">
+              <span class="icon-box" style="width: 48px; height: 48px; background: oklch(0.52 0.12 160 / 0.08); color: var(--color-profit);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </span>
+              <div>
+                <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--color-profit); margin-bottom: var(--space-1);">Phase 2 — 2028-2029</div>
+                <h3 style="margin-bottom: var(--space-1);">ASEAN</h3>
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: var(--text-xl); margin-bottom: var(--space-2);">50M</div>
+                <p style="font-size: var(--text-sm); line-height: 1.5;">Malaysia, Thailand, Indonesia. HMM retraining for regional clinical patterns.</p>
+              </div>
+            </div>
+            <!-- Phase 3 -->
+            <div class="card card--accent reveal reveal-delay-3" style="border-left-color: var(--color-warning); display: grid; grid-template-columns: 48px 1fr; gap: var(--space-4); align-items: start;">
+              <span class="icon-box" style="width: 48px; height: 48px; background: oklch(0.62 0.14 80 / 0.08); color: var(--color-warning);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+              </span>
+              <div>
+                <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--color-warning); margin-bottom: var(--space-1);">Phase 3 — 2030+</div>
+                <h3 style="margin-bottom: var(--space-1);">Multi-Chronic</h3>
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: var(--text-xl); margin-bottom: var(--space-2);">4+ conditions</div>
+                <p style="font-size: var(--text-sm); line-height: 1.5;">Hypertension, COPD, heart failure. Same agentic architecture, new emission models.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <div class="reveal" style="text-align: center; padding: var(--space-12) 0;">
+          <h2 style="margin-bottom: var(--space-4);">See the Product</h2>
+          <p style="margin-bottom: var(--space-6); font-size: var(--text-base);">
+            Walk through a real patient interaction with Bewo's AI agent.
+          </p>
+          <a href="demo.html" class="btn btn--primary">
+            Product Walkthrough
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="site-footer__text">Bewo Health 2026 — Predictive AI for Singapore's Aging Population</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          entry.target.querySelectorAll('.bar-fill').forEach(bar => {
+            setTimeout(() => { bar.style.width = bar.dataset.width; }, 200);
+          });
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

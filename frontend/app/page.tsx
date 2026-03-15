@@ -84,10 +84,10 @@ export default function Home() {
       </header>
 
       {/* 2. BODY CONTENT */}
-      <div className="pt-24 px-6 max-w-md mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="pt-24 px-6 max-w-md mx-auto space-y-8">
 
         {/* STATUS ORGANISM */}
-        <section>
+        <section id="patient-insight" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:50ms] fill-mode-backwards">
           <DailyInsightCard
             state={data.current_state}
             riskScore={data.risk_score}
@@ -97,12 +97,12 @@ export default function Home() {
         </section>
 
         {/* REWARDS */}
-        <section>
+        <section id="patient-voucher" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:120ms] fill-mode-backwards">
           <VoucherCard />
         </section>
 
         {/* METRICS ORGANISM */}
-        <section>
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:200ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Overview</h2>
           <BentoGrid
             biometrics={data.biometrics}
@@ -110,24 +110,26 @@ export default function Home() {
         </section>
 
         {/* MEDICATION ORGANISM */}
-        <section>
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Schedule</h2>
           <MedicationList />
         </section>
 
         {/* CHAT ORGANISM */}
-        <section>
+        <section id="patient-chat" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:400ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Care Assistant</h2>
           <ChatContainer />
         </section>
       </div>
 
       {/* 3. INTERACTION LAYERS */}
+      <div id="patient-actions-area">
       <ActionMenu
         onLogGlucose={() => setShowGlucose(true)}
         onLogFood={() => setShowFood(true)}
         onVoiceCheckIn={() => setShowVoice(true)}
       />
+      </div>
 
       <GlucoseModal isOpen={showGlucose} onClose={() => setShowGlucose(false)} />
       <FoodModal isOpen={showFood} onClose={() => setShowFood(false)} />

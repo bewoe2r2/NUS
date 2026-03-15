@@ -15,7 +15,8 @@ scipy>=1.10.0                    # scipy.stats.norm in merlion_risk_engine
 # salesforce-merlion>=2.0.0      # Optional: time-series forecasting (falls back to mock)
 
 # --- Networking / HTTP ---
-requests>=2.28.0                 # SEA-LION Cloudflare Workers AI calls
+openai>=1.0.0                    # SEA-LION Official API client (OpenAI-compatible)
+requests>=2.28.0                 # Cloudflare Workers AI fallback
 
 # --- Utilities ---
 python-dotenv>=1.0.0             # .env loading for API keys

@@ -89,6 +89,19 @@ const config: Config = {
                 mono: ["var(--font-geist-mono)", "monospace"],
                 display: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
             },
+            backgroundColor: {
+                "glass-surface": "var(--glass-surface)",
+                "popover": "var(--popover)",
+            },
+            textColor: {
+                "popover-foreground": "var(--popover-foreground)",
+            },
+            ringOffsetColor: {
+                "background": "var(--background)",
+            },
+            ringColor: {
+                "ring": "var(--ring)",
+            },
             fontSize: {
                 h1: ["40px", { lineHeight: "48px", fontWeight: "800" }],
                 h2: ["32px", { lineHeight: "40px", fontWeight: "700" }],

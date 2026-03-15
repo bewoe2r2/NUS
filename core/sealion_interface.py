@@ -3,23 +3,31 @@ Bewo 2026 - Node 3B: SEA-LION Interface (The Cultural Translator)
 file: sealion_interface.py
 
 This module represents the 'Cultural Layer' of the Diamond Architecture.
-It calls the REAL SEA-LION v4 27B model via Cloudflare Workers AI,
-with fallback to Gemini-powered simulation if Cloudflare creds are missing.
+It calls the REAL SEA-LION v4 27B model via AI Singapore's official API,
+with fallback to Cloudflare Workers AI, then Gemini simulation.
 
 OBJECTIVE:
 Reduce 'Social Distance' between AI and Patient.
 Translation is not just linguistic; it is SEMIOTIC (Cultural Symbols).
 
 Backend priority:
-1. Cloudflare Workers AI → SEA-LION v4 27B (real model)
-2. Gemini mock (prompt-engineered Singlish)
-3. Offline string append
+1. AI Singapore Official API → SEA-LION v4 27B (api.sea-lion.ai)
+2. Cloudflare Workers AI → SEA-LION v4 27B (fallback)
+3. Gemini mock (prompt-engineered Singlish)
+4. Offline string append
 """
 
 import json
 import os
 import requests
 from dotenv import load_dotenv
+
+# Try to import OpenAI client (for SEA-LION official API)
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
 
 # Try to import google.generativeai (fallback backend)
 try:
@@ -28,8 +36,10 @@ try:
 except ImportError:
     GENAI_AVAILABLE = False
 
-# SEA-LION model on Cloudflare Workers AI
-SEALION_MODEL = "@cf/aisingapore/gemma-sea-lion-v4-27b-it"
+# Model identifiers
+SEALION_API_MODEL = "aisingapore/Gemma-SEA-LION-v4-27B-IT"
+SEALION_CF_MODEL = "@cf/aisingapore/gemma-sea-lion-v4-27b-it"
+SEALION_API_BASE = "https://api.sea-lion.ai/v1"
 
 # The linguistic schema prompt — shared across backends
 SINGLISH_SYSTEM_PROMPT = """You are SEA-LION (Southeast Asian Languages In One Network).
@@ -65,22 +75,34 @@ class SeaLionInterface:
     def __init__(self, api_key=None):
         load_dotenv()
 
-        # Cloudflare Workers AI credentials (primary backend)
+        # --- Backend 1: AI Singapore Official API (primary) ---
+        self.sealion_api_key = os.getenv('SEALION_API_KEY')
+        self.sealion_client = None
+        if OPENAI_AVAILABLE and self.sealion_api_key:
+            self.sealion_client = OpenAI(
+                api_key=self.sealion_api_key,
+                base_url=SEALION_API_BASE
+            )
+
+        # --- Backend 2: Cloudflare Workers AI (fallback) ---
         self.cf_account_id = os.getenv('CLOUDFLARE_ACCOUNT_ID')
         self.cf_auth_token = os.getenv('CLOUDFLARE_AUTH_TOKEN')
         self.use_cloudflare = bool(self.cf_account_id and self.cf_auth_token)
 
-        # Gemini fallback
+        # --- Backend 3: Gemini mock (last resort) ---
         self.gemini_key = api_key or os.getenv('GEMINI_API_KEY')
         self.gemini_model = None
-        if GENAI_AVAILABLE and self.gemini_key and not self.use_cloudflare:
+        if GENAI_AVAILABLE and self.gemini_key and not self.sealion_client and not self.use_cloudflare:
             genai.configure(api_key=self.gemini_key)
             self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
-        if self.use_cloudflare:
+        # Log which backend is active
+        if self.sealion_client:
+            print(f"SEA-LION: Using REAL SEA-LION v4 27B via Official API ({SEALION_API_BASE})")
+        elif self.use_cloudflare:
             print("SEA-LION: Using REAL SEA-LION v4 27B via Cloudflare Workers AI")
         elif self.gemini_model:
-            print("SEA-LION: Using Gemini mock (Cloudflare creds not set)")
+            print("SEA-LION: Using Gemini mock (no SEA-LION API key set)")
         else:
             print("SEA-LION: Running in OFFLINE mode")
 
@@ -88,7 +110,7 @@ class SeaLionInterface:
         """
         Translates a clinical message into a specific Cultural Register.
 
-        Backend priority: Cloudflare SEA-LION → Gemini mock → offline mock.
+        Backend priority: Official API → Cloudflare → Gemini mock → offline mock.
 
         Args:
             core_message (str): The medical strategy (e.g., "Glucose is high, eat carbs")
@@ -102,6 +124,12 @@ class SeaLionInterface:
             dialect=target_dialect.upper(),
             mood=mood.upper()
         )
+
+        # Try AI Singapore Official API (real SEA-LION)
+        if self.sealion_client:
+            result = self._call_sealion_api(system_prompt, core_message)
+            if result:
+                return result
 
         # Try Cloudflare Workers AI (real SEA-LION)
         if self.use_cloudflare:
@@ -118,9 +146,26 @@ class SeaLionInterface:
         # Final fallback: offline mock
         return self._offline_mock(core_message, mood)
 
+    def _call_sealion_api(self, system_prompt, user_message):
+        """Call real SEA-LION v4 27B via AI Singapore Official API (OpenAI-compatible)."""
+        try:
+            response = self.sealion_client.chat.completions.create(
+                model=SEALION_API_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"SEA-LION API: Request failed: {e}")
+            return None
+
     def _call_cloudflare(self, system_prompt, user_message):
         """Call real SEA-LION v4 27B via Cloudflare Workers AI REST API."""
-        url = f"https://api.cloudflare.com/client/v4/accounts/{self.cf_account_id}/ai/run/{SEALION_MODEL}"
+        url = f"https://api.cloudflare.com/client/v4/accounts/{self.cf_account_id}/ai/run/{SEALION_CF_MODEL}"
         headers = {"Authorization": f"Bearer {self.cf_auth_token}"}
         payload = {
             "messages": [
@@ -137,16 +182,13 @@ class SeaLionInterface:
             if data.get("success") and data.get("result"):
                 result = data["result"]
 
-                # OpenAI chat completion format (choices[].message.content)
                 if isinstance(result, dict) and "choices" in result:
                     content = result["choices"][0]["message"]["content"]
                     return content.strip()
 
-                # Simple response format (result.response)
                 if isinstance(result, dict) and "response" in result:
                     return result["response"].strip()
 
-                # Raw string
                 if isinstance(result, str):
                     return result.strip()
 
@@ -206,6 +248,12 @@ Write it as a warm, clear message to a family member in Singlish. 2-3 sentences 
             mood="CONCERNED"
         )
 
+        # Try official API first
+        if self.sealion_client:
+            result = self._call_sealion_api(system_prompt, user_message)
+            if result:
+                return result
+
         if self.use_cloudflare:
             result = self._call_cloudflare(system_prompt, user_message)
             if result:
@@ -220,8 +268,10 @@ Write it as a warm, clear message to a family member in Singlish. 2-3 sentences 
 
     def get_backend_info(self):
         """Returns which backend is active — useful for debugging and demo."""
-        if self.use_cloudflare:
-            return {"backend": "cloudflare_sealion_v4_27b", "model": SEALION_MODEL, "status": "real"}
+        if self.sealion_client:
+            return {"backend": "sealion_official_api", "model": SEALION_API_MODEL, "status": "real", "api_base": SEALION_API_BASE}
+        elif self.use_cloudflare:
+            return {"backend": "cloudflare_sealion_v4_27b", "model": SEALION_CF_MODEL, "status": "real"}
         elif self.gemini_model:
             return {"backend": "gemini_mock", "model": "gemini-2.0-flash-exp", "status": "simulated"}
         else:

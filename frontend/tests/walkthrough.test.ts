@@ -75,17 +75,17 @@ const EXPECTED_STEPS: StepSpec[] = [
   { id: "closing", phase: "SUMMARY", title: "Before Crisis. Not After.", subtitle: "A working system. Not a prototype. Not a pitch deck.", hasBody: true, hasInsight: true, hasIcon: true },
 ];
 
-// Phase groupings from the source (lines 439-449)
+// Phase groupings from the source (GuidedWalkthrough.tsx phases array)
 const EXPECTED_PHASES = [
   { name: "Intro", steps: [0, 1] },
-  { name: "Crisis", steps: [2, 3, 4, 5, 6] },
-  { name: "Nurse", steps: [7, 8, 9, 10] },
-  { name: "Patient", steps: [11, 12, 13, 14] },
-  { name: "Recovery", steps: [15, 16, 17] },
-  { name: "Tools", steps: [18, 19] },
-  { name: "AI", steps: [20, 21] },
-  { name: "Explore", steps: [22] },
-  { name: "Close", steps: [23] },
+  { name: "Crisis", steps: [2, 3, 4, 5] },
+  { name: "Nurse", steps: [6, 7, 8] },
+  { name: "Patient", steps: [9, 10, 11, 12] },
+  { name: "Recovery", steps: [13, 14, 15] },
+  { name: "Tools", steps: [16, 17] },
+  { name: "AI", steps: [18, 19] },
+  { name: "Explore", steps: [20] },
+  { name: "Close", steps: [21] },
 ];
 
 // ---------------------------------------------------------------------------
@@ -93,8 +93,8 @@ const EXPECTED_PHASES = [
 // ---------------------------------------------------------------------------
 
 describe("walkthrough step definitions", () => {
-  it("has exactly 24 steps", () => {
-    expect(EXPECTED_STEPS).toHaveLength(24);
+  it("has exactly 22 steps", () => {
+    expect(EXPECTED_STEPS).toHaveLength(22);
   });
 
   it("every step has a unique id", () => {
@@ -133,13 +133,13 @@ describe("walkthrough step definitions", () => {
 });
 
 describe("phase groupings", () => {
-  it("phase groupings cover all 24 steps exactly once", () => {
+  it("phase groupings cover all 22 steps exactly once", () => {
     const allStepIndices = EXPECTED_PHASES.flatMap((p) => p.steps);
-    expect(allStepIndices).toHaveLength(24);
+    expect(allStepIndices).toHaveLength(22);
 
-    // Should be [0, 1, 2, ..., 23] in order
+    // Should be [0, 1, 2, ..., 21] in order
     const sorted = [...allStepIndices].sort((a, b) => a - b);
-    expect(sorted).toEqual(Array.from({ length: 24 }, (_, i) => i));
+    expect(sorted).toEqual(Array.from({ length: 22 }, (_, i) => i));
   });
 
   it("phase indices are contiguous (no gaps or overlaps)", () => {

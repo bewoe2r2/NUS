@@ -39,7 +39,7 @@ function formatDate(dateStr: string): { day: string; month: string } {
 
 export function TimelineStrip({ days, selectedDate, onSelectDate }: TimelineStripProps) {
     return (
-        <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
+        <div className="w-full overflow-x-auto pb-2 no-scrollbar">
             <div className="flex gap-2 min-w-max px-1">
                 {days.map((day, index) => {
                     const config = stateConfig[day.state];

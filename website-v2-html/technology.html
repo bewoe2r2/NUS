@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technology — Bewo Predictive Care</title>
+<meta name="description" content="HMM-powered crisis prediction + 18 agentic AI tools for Singapore's 200,000+ elderly diabetics. 48-hour advance warning. Doctor-gated clinical decisions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: oklch(0.985 0.004 80);
+  color: oklch(0.18 0.02 260);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --primary: oklch(0.45 0.12 185);
+  --primary-muted: oklch(0.45 0.12 185 / 0.08);
+  --primary-glow: oklch(0.45 0.12 185 / 0.25);
+  --stable: oklch(0.52 0.14 160);
+  --warning: oklch(0.62 0.14 80);
+  --crisis: oklch(0.52 0.16 25);
+  --surface: oklch(0.985 0.004 80);
+  --surface-card: oklch(0.995 0.002 80);
+  --surface-raised: oklch(0.97 0.004 80);
+  --ink: oklch(0.18 0.02 260);
+  --ink-secondary: oklch(0.44 0.015 260);
+  --ink-muted: oklch(0.55 0.01 260);
+  --border: oklch(0.88 0.005 80);
+  --border-subtle: oklch(0.92 0.004 80);
+  --font-display: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; color: var(--ink); }
+h1 { font-size: clamp(2.5rem, 5vw, 3.75rem); line-height: 1.08; }
+h2 { font-size: 1.875rem; line-height: 1.2; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+a { text-decoration: none; color: inherit; }
+table { border-collapse: collapse; }
+
+/* ===== ANIMATIONS ===== */
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.stagger-child {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stagger-child.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== LAYOUT ===== */
+.container { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
+.section-gap { margin-bottom: 6rem; }
+
+/* ===== NAV ===== */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  background: oklch(0.985 0.004 80 / 0.8);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.nav-inner {
+  max-width: 72rem; margin: 0 auto; padding: 0 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 4rem;
+}
+.nav-logo { display: flex; align-items: center; gap: 0.625rem; }
+.nav-logo-icon {
+  width: 2rem; height: 2rem; border-radius: 0.5rem;
+  background: var(--primary); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+.nav-logo-icon svg { width: 16px; height: 16px; color: white; }
+.nav-logo-text { display: flex; flex-direction: column; }
+.nav-logo-title {
+  font-family: var(--font-display); font-size: 1.25rem; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--ink); line-height: 1;
+}
+.nav-logo-sub {
+  font-size: 9px; color: var(--ink-muted); letter-spacing: 0.15em;
+  text-transform: uppercase; margin-top: 2px;
+}
+.nav-links { display: flex; align-items: center; gap: 0.25rem; }
+.nav-link {
+  position: relative; display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; border-radius: 0.5rem;
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--ink-muted);
+  transition: all 0.2s ease;
+}
+.nav-link:hover { color: var(--ink); background: var(--surface-raised); }
+.nav-link.active { background: var(--primary-muted); color: var(--primary); }
+.nav-link.active::after {
+  content: ''; position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
+  width: 1.5rem; height: 2px; background: var(--primary); border-radius: 1px;
+}
+.nav-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ===== HERO ===== */
+.hero {
+  position: relative; padding: 5rem 0; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; top: 0; left: 33%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, oklch(0.45 0.12 185 / 0.08), transparent 70%);
+  border-radius: 50%; filter: blur(60px); pointer-events: none;
+}
+.hero-dots {
+  position: absolute; inset: 0; opacity: 0.025; pointer-events: none;
+  background-image: radial-gradient(oklch(0.45 0.12 185) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.375rem 0.75rem; border-radius: 9999px;
+  background: var(--primary-muted); color: var(--primary);
+  font-size: 0.75rem; font-family: var(--font-mono); font-weight: 500;
+  margin-bottom: 1rem;
+}
+.hero h1 { max-width: 36rem; margin-bottom: 1rem; }
+.hero-desc {
+  font-size: 1.125rem; color: var(--ink-secondary);
+  max-width: 32rem; line-height: 1.7; margin-bottom: 1.5rem;
+}
+.hero-stats {
+  display: flex; gap: 1.5rem; font-size: 0.75rem; font-family: var(--font-mono);
+  flex-wrap: wrap;
+}
+.hero-stat { display: flex; align-items: center; gap: 0.5rem; color: var(--ink-secondary); }
+.hero-stat .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.hero-stat strong { font-weight: 700; }
+
+/* ===== HMM VISUALIZER ===== */
+.hmm-viz {
+  background: oklch(0.10 0.03 260); border-radius: 1rem;
+  border: 1px solid oklch(0.22 0.04 260); padding: 1.5rem; overflow: hidden;
+}
+.hmm-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
+.hmm-subtitle {
+  font-size: 0.75rem; font-family: var(--font-mono);
+  color: oklch(0.50 0.02 260); text-transform: uppercase; letter-spacing: 0.1em;
+}
+.hmm-title {
+  color: white; font-weight: 700; font-size: 1.125rem;
+  font-family: var(--font-mono); margin-top: 0.25rem;
+}
+.hmm-window {
+  font-size: 0.75rem; font-family: var(--font-mono);
+  color: oklch(0.45 0.02 260);
+}
+.hmm-svg { width: 100%; min-height: 160px; }
+.hmm-transitions {
+  margin-top: 0.75rem; display: flex; align-items: center; gap: 1rem;
+  font-size: 0.75rem; font-family: var(--font-mono); flex-wrap: wrap;
+}
+.hmm-transitions-label { color: oklch(0.50 0.02 260); }
+.hmm-trans-item { display: flex; align-items: center; gap: 0.375rem; }
+.hmm-trans-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Biomarker bars */
+.biomarkers {
+  margin-top: 1.5rem; border-top: 1px solid oklch(0.22 0.03 260); padding-top: 1rem;
+}
+.biomarkers-title {
+  font-size: 0.75rem; font-family: var(--font-mono);
+  color: oklch(0.50 0.02 260); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.75rem;
+}
+.biomarker-row {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.375rem;
+}
+.biomarker-label {
+  font-size: 0.75rem; color: oklch(0.70 0.01 260); width: 130px;
+  flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.biomarker-bar-bg {
+  flex: 1; height: 10px; background: oklch(0.18 0.03 260);
+  border-radius: 5px; overflow: hidden;
+}
+.biomarker-bar {
+  height: 100%; border-radius: 5px; width: 0;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.biomarker-bar.animated { /* width set by JS */ }
+.biomarker-pct {
+  font-size: 10px; font-family: var(--font-mono);
+  color: oklch(0.65 0.01 260); width: 28px; text-align: right; font-weight: 600;
+}
+.biomarker-ref {
+  font-size: 9px; color: oklch(0.40 0.01 260); width: 80px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ===== SECTION HEADING with icon ===== */
+.section-head {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
+}
+.section-icon {
+  width: 2.5rem; height: 2.5rem; border-radius: 0.75rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.section-icon.primary { background: var(--primary-muted); color: var(--primary); }
+.section-icon.stable { background: oklch(0.52 0.14 160 / 0.08); color: var(--stable); }
+.section-head-text h2 { margin-bottom: 0; }
+.section-head-text p {
+  font-size: 0.875rem; color: var(--ink-secondary); margin-top: 0.125rem;
+}
+
+/* ===== 9 FEATURES TABLE ===== */
+.features-card {
+  margin-top: 2rem; background: var(--surface-card);
+  border: 1px solid var(--border); border-radius: 1rem; overflow: hidden;
+}
+.features-header {
+  padding: 1.5rem; border-bottom: 1px solid var(--border);
+}
+.features-header-label {
+  font-size: 0.75rem; font-family: var(--font-mono); color: var(--primary);
+  font-weight: 700; letter-spacing: 0.15em; margin-bottom: 0.25rem;
+}
+.features-header-desc {
+  font-size: 0.875rem; color: var(--ink-secondary);
+}
+.features-table-wrap { overflow-x: auto; }
+.features-table { width: 100%; font-size: 0.875rem; }
+.features-table thead tr { border-bottom: 1px solid var(--border); }
+.features-table th {
+  padding: 0.75rem; text-align: left;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.1em;
+}
+.features-table th:first-child { padding-left: 1.5rem; }
+.features-table th:last-child { padding-right: 1.5rem; }
+.features-table tbody tr { border-bottom: 1px solid var(--border-subtle); }
+.features-table tbody tr:last-child { border-bottom: none; }
+.features-table td { padding: 0.75rem; font-size: 0.75rem; }
+.features-table td:first-child { padding-left: 1.5rem; }
+.features-table td:last-child { padding-right: 1.5rem; }
+.features-table .feat-name {
+  font-family: var(--font-mono); font-weight: 600; color: var(--ink);
+}
+.features-table .feat-dim { color: var(--ink-secondary); }
+.features-table .feat-source {
+  color: var(--primary); font-family: var(--font-mono); font-weight: 500;
+}
+.features-table .feat-weight {
+  font-family: var(--font-mono); font-weight: 700; color: var(--stable);
+}
+.features-table .feat-ref { color: var(--ink-muted); }
+
+/* ===== MONTE CARLO VIZ ===== */
+.mc-viz {
+  background: oklch(0.10 0.03 260); border-radius: 1rem;
+  border: 1px solid oklch(0.22 0.04 260); padding: 1.5rem; overflow: hidden;
+}
+.mc-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
+}
+.mc-subtitle {
+  font-size: 0.75rem; font-family: var(--font-mono);
+  color: oklch(0.50 0.02 260); text-transform: uppercase; letter-spacing: 0.1em;
+}
+.mc-title {
+  color: white; font-weight: 700; font-size: 1.125rem;
+  font-family: var(--font-mono); margin-top: 0.25rem;
+}
+.mc-risk { text-align: right; }
+.mc-risk-label {
+  font-size: 0.75rem; font-family: var(--font-mono); color: oklch(0.50 0.02 260);
+}
+.mc-risk-value {
+  font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono);
+}
+.mc-risk-level {
+  font-size: 10px; font-family: var(--font-mono); margin-top: 2px;
+}
+.mc-svg { width: 100%; min-height: 180px; }
+.mc-legend {
+  margin-top: 0.75rem; display: flex; align-items: center; gap: 1.25rem;
+  font-size: 10px; font-family: var(--font-mono); color: oklch(0.50 0.02 260);
+  flex-wrap: wrap;
+}
+.mc-legend-item { display: flex; align-items: center; gap: 0.375rem; }
+.mc-legend-line { width: 16px; height: 2px; border-radius: 1px; }
+.mc-legend-scale { margin-left: auto; }
+
+/* ===== THREE ALGORITHMS (DARK) ===== */
+.algos-section {
+  position: relative; padding: 5rem 0; margin-bottom: 6rem;
+}
+.algos-bg {
+  position: absolute; inset: 0; margin: 0 1.5rem;
+  background: linear-gradient(135deg, oklch(0.14 0.03 260), oklch(0.16 0.04 260), oklch(0.12 0.03 260));
+  border-radius: 1.5rem; overflow: hidden;
+}
+.algos-bg-glow {
+  position: absolute; bottom: 0; left: 33%;
+  width: 400px; height: 400px;
+  background: oklch(0.45 0.12 185 / 0.05);
+  border-radius: 50%; filter: blur(100px);
+}
+.algos-inner { max-width: 72rem; margin: 0 auto; padding: 0 3rem; position: relative; z-index: 1; }
+.algos-header { margin-bottom: 2.5rem; }
+.algos-header h2 { color: white; margin-bottom: 0.5rem; }
+.algos-header p { font-size: 0.875rem; color: oklch(0.65 0.015 260); }
+.algos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+@media (max-width: 768px) { .algos-grid { grid-template-columns: 1fr; } }
+.algo-card {
+  background: oklch(0.20 0.04 260); border-radius: 1rem; padding: 1.5rem;
+  border: 1px solid oklch(0.28 0.04 260);
+  transition: border-color 0.3s ease;
+}
+.algo-card:hover { border-color: oklch(0.35 0.05 260); }
+.algo-card h4 {
+  font-family: var(--font-display); color: white; margin-bottom: 0.5rem;
+}
+.algo-card .algo-desc {
+  font-size: 0.875rem; color: oklch(0.65 0.015 260); line-height: 1.6; margin-bottom: 0.75rem;
+}
+.algo-card .algo-detail {
+  font-size: 0.75rem; color: oklch(0.50 0.01 260); line-height: 1.6; margin-bottom: 1rem;
+}
+.algo-badge {
+  display: inline-block; font-size: 10px; font-family: var(--font-mono); font-weight: 600;
+  padding: 0.25rem 0.625rem; border-radius: 0.375rem;
+  background: oklch(0.45 0.12 185 / 0.12); color: oklch(0.68 0.10 185);
+}
+
+/* ===== WHY HMM ===== */
+.why-hmm {
+  background: linear-gradient(90deg, oklch(0.45 0.12 185 / 0.06), transparent);
+  border: 1px solid oklch(0.45 0.12 185 / 0.2);
+  border-radius: 1rem; padding: 1.5rem;
+}
+.why-hmm-label {
+  font-size: 0.75rem; font-family: var(--font-mono); color: var(--primary);
+  font-weight: 700; letter-spacing: 0.15em; margin-bottom: 0.5rem;
+}
+.why-hmm-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 0 2rem;
+}
+@media (max-width: 768px) { .why-hmm-grid { grid-template-columns: 1fr; } }
+.why-hmm-item { padding: 0.5rem 0; font-size: 0.875rem; }
+.why-hmm-item strong { font-weight: 600; color: var(--ink); }
+.why-hmm-item span { color: var(--ink-secondary); }
+
+/* ===== SBAR REPORT ===== */
+.sbar-card {
+  background: var(--surface-card); border: 1px solid var(--border);
+  border-radius: 1rem; padding: 1.5rem; max-width: 48rem;
+  font-family: var(--font-mono); font-size: 0.875rem;
+}
+.sbar-header {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;
+}
+.sbar-header svg { color: var(--primary); width: 16px; height: 16px; }
+.sbar-header span { font-weight: 700; color: var(--primary); }
+.sbar-row {
+  display: flex; gap: 0.75rem; padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sbar-row:last-child { border-bottom: none; }
+.sbar-letter {
+  width: 1.75rem; height: 1.75rem; border-radius: 0.5rem;
+  background: var(--primary-muted); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-weight: 700; font-size: 0.75rem;
+}
+.sbar-content strong { font-weight: 600; color: var(--ink); }
+.sbar-content span { color: var(--ink-secondary); }
+
+/* ===== DATA FLOW VIZ ===== */
+.dataflow-viz {
+  background: oklch(0.10 0.03 260); border-radius: 1rem;
+  border: 1px solid oklch(0.22 0.04 260); padding: 1.5rem; overflow: hidden;
+}
+.dataflow-title {
+  font-size: 0.75rem; font-family: var(--font-mono);
+  color: oklch(0.50 0.02 260); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 1.25rem;
+}
+.dataflow-layers { display: flex; flex-direction: column; gap: 0; }
+.dataflow-connector {
+  display: flex; justify-content: center; margin: -2px 0;
+}
+.dataflow-connector-line {
+  width: 2px; height: 16px;
+  background: oklch(0.25 0.03 260);
+  transition: background 0.5s ease;
+}
+.dataflow-connector-line.active { background: var(--layer-color, oklch(0.45 0.12 185)); }
+.dataflow-layer {
+  border-radius: 0.75rem; padding: 1rem;
+  border: 1px solid oklch(0.22 0.03 260);
+  background: oklch(0.14 0.03 260);
+  transition: background 0.5s ease, border-color 0.5s ease;
+  opacity: 0; transform: translateX(-20px);
+  transition: opacity 0.4s ease, transform 0.4s ease, background 0.5s ease, border-color 0.5s ease;
+}
+.dataflow-layer.visible { opacity: 1; transform: translateX(0); }
+.dataflow-layer.active {
+  background: var(--layer-bg, oklch(0.14 0.03 260));
+  border-color: var(--layer-border, oklch(0.22 0.03 260));
+}
+.dataflow-layer-header {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;
+}
+.dataflow-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: oklch(0.30 0.03 260);
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+.dataflow-layer.active .dataflow-dot {
+  background: var(--layer-color, oklch(0.45 0.12 185));
+  box-shadow: 0 0 8px var(--layer-glow, oklch(0.45 0.12 185 / 0.6));
+}
+.dataflow-layer-label {
+  font-size: 0.75rem; font-family: var(--font-mono); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: oklch(0.45 0.02 260);
+  transition: color 0.5s ease;
+}
+.dataflow-layer.active .dataflow-layer-label { color: var(--layer-color, oklch(0.45 0.12 185)); }
+.dataflow-items {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: 1.25rem;
+}
+.dataflow-item {
+  font-size: 11px; font-family: var(--font-mono);
+  padding: 0.25rem 0.625rem; border-radius: 0.375rem;
+  background: oklch(0.18 0.03 260);
+  color: oklch(0.40 0.02 260);
+  border: 1px solid oklch(0.22 0.03 260);
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  opacity: 0; transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.dataflow-item.visible { opacity: 1; transform: scale(1); }
+.dataflow-layer.active .dataflow-item.visible {
+  background: var(--layer-item-bg, oklch(0.18 0.03 260));
+  color: oklch(0.80 0.01 260);
+  border-color: var(--layer-item-border, oklch(0.22 0.03 260));
+}
+
+/* ===== TOOL CARDS ===== */
+.tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+@media (max-width: 768px) { .tools-grid { grid-template-columns: 1fr; } }
+.tool-card {
+  display: flex; gap: 0.75rem; padding: 1rem;
+  border-radius: 0.75rem; border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.tool-card:hover {
+  box-shadow: 0 4px 12px oklch(0.18 0.02 260 / 0.08);
+  border-color: oklch(0.45 0.12 185 / 0.2);
+}
+.tool-icon {
+  width: 2.25rem; height: 2.25rem; border-radius: 0.5rem;
+  background: var(--primary-muted); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: transform 0.2s ease;
+}
+.tool-card:hover .tool-icon { transform: scale(1.1); }
+.tool-icon svg { width: 16px; height: 16px; }
+.tool-name {
+  font-size: 0.875rem; font-weight: 600; font-family: var(--font-mono);
+  color: var(--ink); margin-bottom: 0.125rem;
+}
+.tool-desc {
+  font-size: 0.75rem; color: var(--ink-secondary); line-height: 1.5;
+}
+
+/* ===== CTA ===== */
+.cta-section { text-align: center; padding: 3rem 0; margin-bottom: 4rem; }
+.cta-section h2 { margin-bottom: 0.75rem; }
+.cta-section p { color: var(--ink-secondary); margin-bottom: 1.5rem; max-width: 28rem; margin-left: auto; margin-right: auto; }
+.cta-buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 1rem 2rem; background: var(--primary); color: white;
+  border-radius: 0.75rem; font-weight: 600; font-size: 0.95rem;
+  box-shadow: 0 4px 16px var(--primary-glow);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.btn-primary:hover { box-shadow: 0 6px 24px var(--primary-glow); transform: translateY(-2px); }
+.btn-primary svg { transition: transform 0.2s ease; }
+.btn-primary:hover svg { transform: translateX(2px); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 1rem 2rem; border: 1px solid oklch(0.45 0.12 185 / 0.3);
+  color: var(--primary); border-radius: 0.75rem;
+  font-weight: 600; font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+.btn-secondary:hover { background: var(--primary-muted); }
+
+/* ===== FOOTER ===== */
+.site-footer {
+  border-top: 1px solid var(--border-subtle); padding: 2rem 0; margin-top: 6rem;
+}
+.site-footer .container { text-align: center; }
+.footer-main {
+  font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-muted);
+}
+.footer-sub {
+  font-size: 10px; color: oklch(0.55 0.01 260 / 0.6); margin-top: 0.25rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: 2.25rem; }
+  .hero-stats { flex-direction: column; gap: 0.5rem; }
+  .algos-inner { padding: 0 1.5rem; }
+  .features-table { font-size: 0.75rem; }
+}
+
+/* Mobile nav toggle */
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--ink); }
+@media (max-width: 768px) {
+  .nav-toggle { display: flex; align-items: center; justify-content: center; }
+  .nav-links {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    flex-direction: column; padding: 0.5rem;
+  }
+  .nav-links.open { display: flex; }
+  .nav-link { justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="nav-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+      </span>
+      <div class="nav-logo-text">
+        <span class="nav-logo-title">BEWO</span>
+        <span class="nav-logo-sub">Predictive Care</span>
+      </div>
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        Overview
+      </a>
+      <a href="impact.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Blue Ocean
+      </a>
+      <a href="demo.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        Product
+      </a>
+      <a href="technology.html" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+        Technology
+      </a>
+      <a href="pitch.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Pitch
+      </a>
+      <a href="present.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Present
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-dots"></div>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="fade-up">
+      <div class="hero-badge">Technical Architecture</div>
+      <h1>How Bewo actually works</h1>
+      <p class="hero-desc">
+        Clinically-parameterized prediction engine. Agentic AI with 18 tools.
+        Doctor-gated for clinical decisions. Full audit trail.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="dot" style="background:var(--stable)"></span>
+          <span><strong style="color:var(--stable)">3</strong> inference algorithms</span>
+        </div>
+        <div class="hero-stat">
+          <span class="dot" style="background:var(--primary)"></span>
+          <span><strong style="color:var(--primary)">9</strong> biomarkers</span>
+        </div>
+        <div class="hero-stat">
+          <span class="dot" style="background:var(--warning)"></span>
+          <span><strong style="color:var(--warning)">18</strong> agentic tools</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HMM STATE MACHINE ===== -->
+<section class="container section-gap">
+  <div class="section-head fade-up">
+    <div class="section-icon primary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8Z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div class="section-head-text">
+      <h2>Hidden Markov Model</h2>
+      <p>Click states to explore. Clinically-informed transition matrix from published parameters.</p>
+    </div>
+  </div>
+
+  <!-- HMM Visualizer -->
+  <div class="hmm-viz fade-up" id="hmm-viz">
+    <div class="hmm-header">
+      <div>
+        <div class="hmm-subtitle">Hidden Markov Model &mdash; 3 Clinical States</div>
+        <div class="hmm-title" id="hmm-state-label">STABLE &mdash; Well-controlled. Target ranges met.</div>
+      </div>
+      <div class="hmm-window">4-hour observation window</div>
+    </div>
+
+    <svg viewBox="0 0 680 200" class="hmm-svg" id="hmm-svg"></svg>
+
+    <div class="hmm-transitions" id="hmm-transitions"></div>
+
+    <!-- 9 Biomarker weights -->
+    <div class="biomarkers" id="biomarkers">
+      <div class="biomarkers-title">9 Clinically-Weighted Input Features</div>
+      <div id="biomarker-bars"></div>
+    </div>
+  </div>
+
+  <!-- 9 Orthogonal Features Table -->
+  <div class="features-card fade-up">
+    <div class="features-header">
+      <div class="features-header-label">9 ORTHOGONAL FEATURES</div>
+      <div class="features-header-desc">Each feature captures a distinct health dimension with minimal correlation to others. Weights sum to 1.0.</div>
+    </div>
+    <div class="features-table-wrap">
+      <table class="features-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Dimension</th>
+            <th>Source</th>
+            <th>Weight</th>
+            <th>Clinical Ref</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="feat-name">glucose_avg</td><td class="feat-dim">Glycemic Control</td><td class="feat-source">CGM</td><td class="feat-weight">25%</td><td class="feat-ref">ADA 2024: Target &lt;7.0 mmol/L</td></tr>
+          <tr><td class="feat-name">glucose_variability</td><td class="feat-dim">Glycemic Stability</td><td class="feat-source">CGM</td><td class="feat-weight">10%</td><td class="feat-ref">CV% &lt;36% = stable (Danne 2017)</td></tr>
+          <tr><td class="feat-name">meds_adherence</td><td class="feat-dim">Medication Compliance</td><td class="feat-source">App</td><td class="feat-weight">18%</td><td class="feat-ref">UKPDS: 10% drop = 0.5% HbA1c rise</td></tr>
+          <tr><td class="feat-name">carbs_intake</td><td class="feat-dim">Dietary Input</td><td class="feat-source">Photo OCR / Manual</td><td class="feat-weight">7%</td><td class="feat-ref">ADA: 45-60g carbs/meal</td></tr>
+          <tr><td class="feat-name">steps_daily</td><td class="feat-dim">Physical Activity</td><td class="feat-source">Fitbit / Phone</td><td class="feat-weight">8%</td><td class="feat-ref">WHO: 7000+ steps = 50-70% mortality reduction</td></tr>
+          <tr><td class="feat-name">resting_hr</td><td class="feat-dim">Cardiovascular</td><td class="feat-source">Fitbit</td><td class="feat-weight">5%</td><td class="feat-ref">Normal elderly: 60-80 bpm</td></tr>
+          <tr><td class="feat-name">hrv_rmssd</td><td class="feat-dim">Autonomic Function</td><td class="feat-source">Fitbit</td><td class="feat-weight">7%</td><td class="feat-ref">ARIC: Low HRV predicts neuropathy</td></tr>
+          <tr><td class="feat-name">sleep_quality</td><td class="feat-dim">Sleep / Recovery</td><td class="feat-source">Fitbit</td><td class="feat-weight">10%</td><td class="feat-ref">DiaBeatIt: Poor sleep = +23% glucose var</td></tr>
+          <tr><td class="feat-name">social_engagement</td><td class="feat-dim">Psychosocial</td><td class="feat-source">App (calls, msgs)</td><td class="feat-weight">10%</td><td class="feat-ref">Lancet 2020: Isolation = 2x depression</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MONTE CARLO ===== -->
+<section class="container section-gap">
+  <div class="section-head fade-up">
+    <div class="section-icon stable">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+    <div class="section-head-text">
+      <h2>48-Hour Crisis Prediction</h2>
+      <p>1,000 stochastic trajectories simulate where the patient is heading. Returns crisis probability, expected time-to-crisis, and 95% confidence interval.</p>
+    </div>
+  </div>
+
+  <!-- Monte Carlo Viz -->
+  <div class="mc-viz fade-up" id="mc-viz">
+    <div class="mc-header">
+      <div>
+        <div class="mc-subtitle">Monte Carlo Simulation</div>
+        <div class="mc-title">1,000 Future Trajectories (sample: 30)</div>
+      </div>
+      <div class="mc-risk">
+        <div class="mc-risk-label">Crisis Probability</div>
+        <div class="mc-risk-value" id="mc-risk-value" style="color:oklch(0.52 0.14 160)">0%</div>
+        <div class="mc-risk-level" id="mc-risk-level" style="color:oklch(0.52 0.14 160)">LOW</div>
+      </div>
+    </div>
+
+    <svg viewBox="0 0 640 200" class="mc-svg" id="mc-svg"></svg>
+
+    <div class="mc-legend">
+      <span class="mc-legend-item"><span class="mc-legend-line" style="background:oklch(0.52 0.14 160)"></span> Stable trajectory</span>
+      <span class="mc-legend-item"><span class="mc-legend-line" style="background:oklch(0.52 0.16 25)"></span> Crisis trajectory</span>
+      <span class="mc-legend-item"><span class="mc-legend-line" style="background:oklch(0.62 0.14 80);height:3px"></span> Mean path</span>
+      <span class="mc-legend-scale">Risk: LOW &lt;15% | MEDIUM 15-30% | HIGH 30-50% | CRITICAL &gt;50%</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THREE ALGORITHMS (DARK) ===== -->
+<section class="algos-section">
+  <div class="algos-bg"><div class="algos-bg-glow"></div></div>
+  <div class="algos-inner">
+    <div class="algos-header fade-up">
+      <h2>Three Inference Algorithms</h2>
+      <p>Layered analysis for maximum clinical accuracy.</p>
+    </div>
+    <div class="algos-grid">
+      <div class="algo-card stagger-child">
+        <h4>Viterbi Decoding</h4>
+        <p class="algo-desc">O(N&sup2;&times;T) dynamic programming. Finds the most likely hidden state sequence given observed biomarkers. Returns state classification with confidence score.</p>
+        <p class="algo-detail">Log-space computation prevents underflow. Missing data handled via marginalization.</p>
+        <span class="algo-badge">EXACT INFERENCE</span>
+      </div>
+      <div class="algo-card stagger-child">
+        <h4>Monte Carlo Simulation</h4>
+        <p class="algo-desc">Stochastic forward simulation through the transition matrix. Quantifies crisis probability, expected time-to-crisis, and IQR/95% confidence intervals.</p>
+        <p class="algo-detail">Risk levels: LOW (&lt;15%), MEDIUM (15-30%), HIGH (30-50%), CRITICAL (&gt;50%).</p>
+        <span class="algo-badge">1,000 PATHS &middot; 48H</span>
+      </div>
+      <div class="algo-card stagger-child">
+        <h4>Counterfactual Engine</h4>
+        <p class="algo-desc">Bayesian intervention simulation. "What if patient takes Metformin?" &mdash; modifies observations and re-runs Monte Carlo to show exact risk reduction.</p>
+        <p class="algo-detail">Interventions: take_medication, adjust_carbs, increase_activity. Shows % risk reduction.</p>
+        <span class="algo-badge">WHAT-IF ANALYSIS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY HMM ===== -->
+<section class="container section-gap">
+  <div class="why-hmm fade-up">
+    <div class="why-hmm-label">WHY HMM, NOT DEEP LEARNING?</div>
+    <div class="why-hmm-grid">
+      <div class="why-hmm-item">
+        <strong>Why not LSTMs or Transformers? </strong>
+        <span>A nurse can read &ldquo;WARNING state, 72% confidence, 0.35 transition to CRISIS.&rdquo; She cannot read a 512-dimensional embedding. Clinical trust requires interpretability.</span>
+      </div>
+      <div class="why-hmm-item">
+        <strong>Don&rsquo;t you need big data? </strong>
+        <span>HMMs work with structured clinical parameters from existing literature (ADA 2024, UKPDS, Lancet). No million-patient training dataset required.</span>
+      </div>
+      <div class="why-hmm-item">
+        <strong>What about accuracy? </strong>
+        <span>For structured, low-dimensional time-series with clear clinical semantics, HMMs provide competitive accuracy while maintaining full interpretability.</span>
+      </div>
+      <div class="why-hmm-item">
+        <strong>Regulatory implications? </strong>
+        <span>Explainable AI has a faster HSA pathway than black-box models. We can deploy while competitors are still filing for SaMD classification.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SBAR + CLINICAL GOVERNANCE ===== -->
+<section class="container section-gap">
+  <div class="fade-up" style="margin-bottom:2rem;">
+    <div class="hero-badge">Clinical Governance</div>
+    <h2>Auto-Generated SBAR Reports</h2>
+    <p style="font-size:0.875rem;color:var(--ink-secondary);margin-top:0.25rem;max-width:32rem;">
+      Triggered on every state transition. Nurses get structured clinical handoff.
+    </p>
+  </div>
+
+  <div class="sbar-card fade-up">
+    <div class="sbar-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>SBAR Clinical Report &mdash; Auto-Generated</span>
+    </div>
+    <div class="sbar-row">
+      <span class="sbar-letter">S</span>
+      <div class="sbar-content"><strong>Situation: </strong><span>Patient in WARNING state (72% confidence). 45% crisis probability within 48h.</span></div>
+    </div>
+    <div class="sbar-row">
+      <span class="sbar-letter">B</span>
+      <div class="sbar-content"><strong>Background: </strong><span>Glucose averaged 11.2 mmol/L (target &lt;7.0). Med adherence dropped to 60%. Steps declining 3 consecutive days.</span></div>
+    </div>
+    <div class="sbar-row">
+      <span class="sbar-letter">A</span>
+      <div class="sbar-content"><strong>Assessment: </strong><span>Early deterioration pattern. Medication timing issue likely. Glucose variability CV% 38% (above 36% threshold).</span></div>
+    </div>
+    <div class="sbar-row">
+      <span class="sbar-letter">R</span>
+      <div class="sbar-content"><strong>Recommendation: </strong><span>Urgent appointment within 3 days. Review medication schedule. Counterfactual: Metformin compliance reduces risk 45% to 18%.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DATA PIPELINE ===== -->
+<section class="container section-gap">
+  <div class="section-head fade-up">
+    <div class="section-icon primary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="section-head-text">
+      <h2>End-to-End Pipeline</h2>
+      <p>From device data to real-world action in seconds. Full audit trail for clinical governance.</p>
+    </div>
+  </div>
+
+  <!-- Data Flow Viz -->
+  <div class="dataflow-viz fade-up" id="dataflow-viz">
+    <div class="dataflow-title">End-to-End Data Pipeline</div>
+    <div class="dataflow-layers" id="dataflow-layers"></div>
+  </div>
+</section>
+
+<!-- ===== 18 AGENTIC TOOLS ===== -->
+<section class="container section-gap">
+  <div class="section-head fade-up">
+    <div class="section-icon primary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="section-head-text">
+      <h2>18 Agentic Tools</h2>
+      <p>Real tools executing real actions against real systems. Doctor-gated for medication decisions. Never auto-adjusts dosage.</p>
+    </div>
+  </div>
+
+  <div class="tools-grid" id="tools-grid"></div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="container">
+  <div class="cta-section fade-up">
+    <h2>See It All Working Together</h2>
+    <p>Watch the AI agent interact with a real patient, execute tools, and generate clinical reports.</p>
+    <div class="cta-buttons">
+      <a href="demo.html" class="btn-primary">
+        Product Demo
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="impact.html" class="btn-secondary">
+        Blue Ocean Analysis
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-main">Bewo 2026 &mdash; HMM + Agentic AI for Chronic Disease Management</p>
+    <p class="footer-sub">Blue Ocean Competition 2026</p>
+  </div>
+</footer>
+
+<script>
+// ===== IntersectionObserver for scroll animations =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      // Stagger children
+      const children = entry.target.querySelectorAll('.stagger-child');
+      children.forEach((child, i) => {
+        setTimeout(() => child.classList.add('visible'), i * 60);
+      });
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '-60px' });
+
+document.querySelectorAll('.fade-up, .stagger-child').forEach((el) => {
+  if (!el.closest('.stagger-child') || el.classList.contains('stagger-child')) {
+    observer.observe(el);
+  }
+});
+
+// Also observe algo cards and tool cards independently for stagger
+document.querySelectorAll('.algos-grid, .tools-grid').forEach(grid => {
+  const gridObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const cards = entry.target.children;
+        Array.from(cards).forEach((card, i) => {
+          setTimeout(() => card.classList.add('visible'), i * 60);
+        });
+        gridObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '-60px' });
+  gridObs.observe(grid);
+});
+
+// ===== HMM VISUALIZER =====
+(function() {
+  const STATES = [
+    { id: "stable", label: "STABLE", color: "oklch(0.52 0.14 160)", x: 120, y: 100, desc: "Well-controlled. Target ranges met." },
+    { id: "warning", label: "WARNING", color: "oklch(0.62 0.14 80)", x: 340, y: 100, desc: "Early deterioration. Intervention window." },
+    { id: "crisis", label: "CRISIS", color: "oklch(0.52 0.16 25)", x: 560, y: 100, desc: "Acute decompensation. Urgent review." },
+  ];
+  const TRANSITIONS = [
+    { from: 0, to: 0, prob: 0.920, label: "92.0%" },
+    { from: 0, to: 1, prob: 0.075, label: "7.5%" },
+    { from: 0, to: 2, prob: 0.005, label: "0.5%" },
+    { from: 1, to: 0, prob: 0.250, label: "25.0%" },
+    { from: 1, to: 1, prob: 0.650, label: "65.0%" },
+    { from: 1, to: 2, prob: 0.100, label: "10.0%" },
+    { from: 2, to: 0, prob: 0.010, label: "1.0%" },
+    { from: 2, to: 1, prob: 0.150, label: "15.0%" },
+    { from: 2, to: 2, prob: 0.840, label: "84.0%" },
+  ];
+  const BIOMARKERS = [
+    { label: "Glucose Avg", weight: 0.25, ref: "ADA 2024" },
+    { label: "Med Adherence", weight: 0.18, ref: "UKPDS" },
+    { label: "Glucose Variability", weight: 0.10, ref: "Danne 2017" },
+    { label: "Sleep Quality", weight: 0.10, ref: "DiaBeatIt" },
+    { label: "Social Engagement", weight: 0.10, ref: "Lancet 2020" },
+    { label: "Steps Daily", weight: 0.08, ref: "WHO / Lancet 2022" },
+    { label: "HRV RMSSD", weight: 0.07, ref: "ARIC Study" },
+    { label: "Carb Intake", weight: 0.07, ref: "ADA" },
+    { label: "Resting HR", weight: 0.05, ref: "Clinical" },
+  ];
+  const R = 40;
+  let activeState = 0;
+  let particles = [];
+  let particleId = 0;
+
+  function buildSVG() {
+    const svg = document.getElementById('hmm-svg');
+    svg.innerHTML = '';
+    const ns = 'http://www.w3.org/2000/svg';
+
+    // Defs
+    const defs = document.createElementNS(ns, 'defs');
+    STATES.forEach(s => {
+      const grad = document.createElementNS(ns, 'radialGradient');
+      grad.id = 'glow-' + s.id;
+      const stop1 = document.createElementNS(ns, 'stop');
+      stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', s.color); stop1.setAttribute('stop-opacity', '0.4');
+      const stop2 = document.createElementNS(ns, 'stop');
+      stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', s.color); stop2.setAttribute('stop-opacity', '0');
+      grad.appendChild(stop1); grad.appendChild(stop2);
+      defs.appendChild(grad);
+    });
+    svg.appendChild(defs);
+
+    // Transition arrows
+    TRANSITIONS.filter(t => t.from !== t.to && t.prob > 0.01).forEach(t => {
+      const from = STATES[t.from], to = STATES[t.to];
+      const dx = to.x - from.x, dy = to.y - from.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const nx = dx/dist, ny = dy/dist;
+      const offset = t.from < t.to ? -12 : 12;
+      const x1 = from.x + nx*(R+4), y1 = from.y + ny*(R+4) + offset;
+      const x2 = to.x - nx*(R+4), y2 = to.y - ny*(R+4) + offset;
+      const midX = (x1+x2)/2, midY = (y1+y2)/2 + offset*0.8;
+      const isHL = t.from === activeState;
+
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', isHL ? STATES[t.from].color : 'oklch(0.30 0.03 260)');
+      path.setAttribute('stroke-width', isHL ? '2' : '1');
+      if (!isHL) path.setAttribute('stroke-dasharray', '4 4');
+      path.setAttribute('opacity', isHL ? '0.8' : '0.3');
+      path.style.transition = 'all 0.5s ease';
+      svg.appendChild(path);
+
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', x2); dot.setAttribute('cy', y2); dot.setAttribute('r', '3');
+      dot.setAttribute('fill', isHL ? STATES[t.from].color : 'oklch(0.30 0.03 260)');
+      dot.setAttribute('opacity', isHL ? '0.8' : '0.3');
+      svg.appendChild(dot);
+
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', midX); text.setAttribute('y', midY - 4);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', isHL ? 'white' : 'oklch(0.45 0.02 260)');
+      text.setAttribute('font-size', '9');
+      text.setAttribute('font-family', "'JetBrains Mono', monospace");
+      text.setAttribute('font-weight', isHL ? '700' : '400');
+      text.style.transition = 'all 0.5s ease';
+      text.textContent = t.label;
+      svg.appendChild(text);
+    });
+
+    // Particles
+    particles.forEach(p => {
+      const from = STATES[p.from], to = STATES[p.to];
+      const offset = p.from < p.to ? -12 : 12;
+      const dx = to.x - from.x, dy = to.y - from.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const nx = dx/dist, ny = dy/dist;
+      const x1 = from.x + nx*(R+4), y1 = from.y + ny*(R+4) + offset;
+      const x2 = to.x - nx*(R+4), y2 = to.y - ny*(R+4) + offset;
+      const t = p.progress;
+      const cx = x1 + (x2-x1)*t;
+      const cy = y1 + (y2-y1)*t + offset*0.8*Math.sin(Math.PI*t);
+
+      const circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+      circle.setAttribute('r', '2.5');
+      circle.setAttribute('fill', STATES[p.from].color);
+      circle.setAttribute('opacity', (0.8 - p.progress*0.5).toString());
+      svg.appendChild(circle);
+    });
+
+    // State nodes
+    STATES.forEach((state, i) => {
+      const isActive = activeState === i;
+      const g = document.createElementNS(ns, 'g');
+      g.style.cursor = 'pointer';
+      g.addEventListener('click', () => { activeState = i; render(); });
+
+      if (isActive) {
+        const glow = document.createElementNS(ns, 'circle');
+        glow.setAttribute('cx', state.x); glow.setAttribute('cy', state.y);
+        glow.setAttribute('r', R+12);
+        glow.setAttribute('fill', `url(#glow-${state.id})`);
+        const anim = document.createElementNS(ns, 'animate');
+        anim.setAttribute('attributeName', 'r');
+        anim.setAttribute('values', `${R+10};${R+18};${R+10}`);
+        anim.setAttribute('dur', '2s'); anim.setAttribute('repeatCount', 'indefinite');
+        glow.appendChild(anim);
+        g.appendChild(glow);
+      }
+
+      const circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('cx', state.x); circle.setAttribute('cy', state.y);
+      circle.setAttribute('r', R);
+      circle.setAttribute('fill', isActive ? state.color.replace(')', ' / 0.19)').replace('oklch(', 'oklch(') : 'oklch(0.16 0.03 260)');
+      // Simpler fill for active
+      if (isActive) circle.setAttribute('fill', 'rgba(0,0,0,0.25)');
+      circle.setAttribute('stroke', state.color);
+      circle.setAttribute('stroke-width', isActive ? '3' : '1.5');
+      circle.style.transition = 'all 0.4s ease';
+      g.appendChild(circle);
+
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', state.x); text.setAttribute('y', state.y + 1);
+      text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('fill', isActive ? 'white' : 'oklch(0.65 0.02 260)');
+      text.setAttribute('font-size', '13'); text.setAttribute('font-weight', '700');
+      text.setAttribute('font-family', "'JetBrains Mono', monospace");
+      text.textContent = state.label;
+      g.appendChild(text);
+
+      const selfTrans = TRANSITIONS.find(t => t.from === i && t.to === i);
+      const selfText = document.createElementNS(ns, 'text');
+      selfText.setAttribute('x', state.x); selfText.setAttribute('y', state.y + R + 18);
+      selfText.setAttribute('text-anchor', 'middle');
+      selfText.setAttribute('fill', 'oklch(0.45 0.02 260)');
+      selfText.setAttribute('font-size', '9');
+      selfText.setAttribute('font-family', "'JetBrains Mono', monospace");
+      selfText.textContent = 'self: ' + (selfTrans ? selfTrans.label : '');
+      g.appendChild(selfText);
+
+      svg.appendChild(g);
+    });
+  }
+
+  function updateTransitions() {
+    const el = document.getElementById('hmm-transitions');
+    const label = document.getElementById('hmm-state-label');
+    label.textContent = STATES[activeState].label + ' \u2014 ' + STATES[activeState].desc;
+
+    const active = TRANSITIONS.filter(t => t.from === activeState && t.from !== t.to);
+    let html = '<span class="hmm-transitions-label">From ' + STATES[activeState].label + ':</span>';
+    active.forEach(t => {
+      html += '<span class="hmm-trans-item"><span class="hmm-trans-dot" style="background:' + STATES[t.to].color + '"></span><span style="color:' + STATES[t.to].color + '">' + STATES[t.to].label + ' ' + t.label + '</span></span>';
+    });
+    el.innerHTML = html;
+  }
+
+  function buildBiomarkers() {
+    const container = document.getElementById('biomarker-bars');
+    let html = '';
+    BIOMARKERS.forEach(b => {
+      const w = b.weight * 400;
+      const opacity = 0.4 + b.weight * 2;
+      html += `<div class="biomarker-row">
+        <span class="biomarker-label">${b.label}</span>
+        <div class="biomarker-bar-bg">
+          <div class="biomarker-bar" data-width="${w}" style="background:oklch(0.45 0.12 185 / ${opacity})"></div>
+        </div>
+        <span class="biomarker-pct">${(b.weight*100).toFixed(0)}%</span>
+        <span class="biomarker-ref">${b.ref}</span>
+      </div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function animateBiomarkers() {
+    document.querySelectorAll('.biomarker-bar').forEach(bar => {
+      const w = bar.dataset.width;
+      setTimeout(() => { bar.style.width = w + '%'; }, 200);
+    });
+  }
+
+  function render() {
+    buildSVG();
+    updateTransitions();
+  }
+
+  // Init
+  buildBiomarkers();
+  render();
+
+  // Auto-cycle states
+  setInterval(() => { activeState = (activeState + 1) % 3; render(); }, 3000);
+
+  // Particle animation
+  setInterval(() => {
+    particles = particles.map(p => ({ ...p, progress: p.progress + 0.025 })).filter(p => p.progress < 1);
+    if (particles.length < 5) {
+      const cross = TRANSITIONS.filter(t => t.from !== t.to && t.prob > 0.01);
+      const t = cross[Math.floor(Math.random() * cross.length)];
+      particles.push({ id: particleId++, from: t.from, to: t.to, progress: 0 });
+    }
+    buildSVG();
+  }, 40);
+
+  // Animate biomarker bars on scroll
+  const bioObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { animateBiomarkers(); bioObs.unobserve(entry.target); }
+    });
+  }, { threshold: 0.2 });
+  bioObs.observe(document.getElementById('biomarkers'));
+})();
+
+// ===== MONTE CARLO VIZ =====
+(function() {
+  const NUM_PATHS = 30, STEPS = 40;
+  const CRISIS_COLOR = "oklch(0.52 0.16 25)";
+  const STABLE_COLOR = "oklch(0.52 0.14 160)";
+  const MEAN_COLOR = "oklch(0.62 0.14 80)";
+
+  function generatePath(startY) {
+    const path = [startY];
+    for (let i = 1; i < STEPS; i++) {
+      const drift = (Math.random() - 0.48) * 8;
+      path.push(Math.max(2, Math.min(16, path[i-1] + drift)));
+    }
+    return path;
+  }
+
+  const paths = Array.from({ length: NUM_PATHS }, () => generatePath(7.5 + (Math.random()-0.5)*2));
+
+  const W = 640, H = 200, padX = 40, padY = 20;
+  const chartW = W - padX*2, chartH = H - padY*2;
+  const minV = 2, maxV = 16;
+
+  function toX(step) { return padX + (step/(STEPS-1))*chartW; }
+  function toY(v) { return padY + (1 - (v-minV)/(maxV-minV))*chartH; }
+
+  function drawMC(progress) {
+    const svg = document.getElementById('mc-svg');
+    const ns = 'http://www.w3.org/2000/svg';
+    svg.innerHTML = '';
+    const visibleSteps = Math.floor(progress * STEPS);
+
+    // Crisis zone bg
+    const crisisRect = document.createElementNS(ns, 'rect');
+    crisisRect.setAttribute('x', padX); crisisRect.setAttribute('y', toY(16));
+    crisisRect.setAttribute('width', chartW); crisisRect.setAttribute('height', toY(11)-toY(16));
+    crisisRect.setAttribute('fill', CRISIS_COLOR); crisisRect.setAttribute('opacity', '0.06');
+    crisisRect.setAttribute('rx', '4');
+    svg.appendChild(crisisRect);
+
+    const crisisLabel = document.createElementNS(ns, 'text');
+    crisisLabel.setAttribute('x', padX+chartW-4); crisisLabel.setAttribute('y', toY(16)+14);
+    crisisLabel.setAttribute('fill', CRISIS_COLOR); crisisLabel.setAttribute('font-size', '9');
+    crisisLabel.setAttribute('font-family', "'JetBrains Mono', monospace");
+    crisisLabel.setAttribute('opacity', '0.5'); crisisLabel.setAttribute('text-anchor', 'end');
+    crisisLabel.textContent = 'CRISIS ZONE (>11 mmol/L)';
+    svg.appendChild(crisisLabel);
+
+    // Target zone bg
+    const targetRect = document.createElementNS(ns, 'rect');
+    targetRect.setAttribute('x', padX); targetRect.setAttribute('y', toY(7));
+    targetRect.setAttribute('width', chartW); targetRect.setAttribute('height', toY(3.9)-toY(7));
+    targetRect.setAttribute('fill', STABLE_COLOR); targetRect.setAttribute('opacity', '0.04');
+    targetRect.setAttribute('rx', '4');
+    svg.appendChild(targetRect);
+
+    const targetLabel = document.createElementNS(ns, 'text');
+    targetLabel.setAttribute('x', padX+chartW-4); targetLabel.setAttribute('y', toY(3.9)-4);
+    targetLabel.setAttribute('fill', STABLE_COLOR); targetLabel.setAttribute('font-size', '9');
+    targetLabel.setAttribute('font-family', "'JetBrains Mono', monospace");
+    targetLabel.setAttribute('opacity', '0.4'); targetLabel.setAttribute('text-anchor', 'end');
+    targetLabel.textContent = 'TARGET (4-7 mmol/L)';
+    svg.appendChild(targetLabel);
+
+    // Grid lines
+    [4, 7, 11, 14].forEach(v => {
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', padX); line.setAttribute('y1', toY(v));
+      line.setAttribute('x2', padX+chartW); line.setAttribute('y2', toY(v));
+      line.setAttribute('stroke', 'oklch(0.22 0.03 260)'); line.setAttribute('stroke-dasharray', '2 4');
+      svg.appendChild(line);
+
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', padX-6); text.setAttribute('y', toY(v)+3);
+      text.setAttribute('fill', 'oklch(0.40 0.02 260)'); text.setAttribute('font-size', '9');
+      text.setAttribute('font-family', "'JetBrains Mono', monospace"); text.setAttribute('text-anchor', 'end');
+      text.textContent = v;
+      svg.appendChild(text);
+    });
+
+    // Time labels
+    [['Now', padX, 'start'], ['24h', padX+chartW/2, 'middle'], ['48h', padX+chartW, 'end']].forEach(([label, x, anchor]) => {
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', x); text.setAttribute('y', H-2);
+      text.setAttribute('fill', 'oklch(0.40 0.02 260)'); text.setAttribute('font-size', '9');
+      text.setAttribute('font-family', "'JetBrains Mono', monospace"); text.setAttribute('text-anchor', anchor);
+      text.textContent = label;
+      svg.appendChild(text);
+    });
+
+    // Paths
+    let crisisCount = 0;
+    paths.forEach(path => {
+      const visible = path.slice(0, visibleSteps);
+      if (visible.length < 2) return;
+      const isCrisis = visible.some(v => v > 11);
+      if (isCrisis) crisisCount++;
+      let d = `M ${toX(0)} ${toY(visible[0])}`;
+      for (let i = 1; i < visible.length; i++) d += ` L ${toX(i)} ${toY(visible[i])}`;
+      const p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d); p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', isCrisis ? CRISIS_COLOR : STABLE_COLOR);
+      p.setAttribute('stroke-width', '1'); p.setAttribute('opacity', '0.25');
+      p.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(p);
+    });
+
+    // Mean path
+    if (visibleSteps > 1) {
+      const meanPath = [];
+      for (let s = 0; s < visibleSteps; s++) {
+        meanPath.push(paths.reduce((sum, p) => sum + p[s], 0) / paths.length);
+      }
+      let d = `M ${toX(0)} ${toY(meanPath[0])}`;
+      for (let i = 1; i < meanPath.length; i++) d += ` L ${toX(i)} ${toY(meanPath[i])}`;
+      const p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d); p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', MEAN_COLOR); p.setAttribute('stroke-width', '2.5');
+      p.setAttribute('stroke-linecap', 'round'); p.setAttribute('opacity', '0.9');
+      svg.appendChild(p);
+    }
+
+    // Update risk display
+    const crisisPercent = visibleSteps > 0 ? Math.round((crisisCount/NUM_PATHS)*100) : 0;
+    const riskLevel = crisisPercent > 50 ? 'CRITICAL' : crisisPercent > 30 ? 'HIGH' : crisisPercent > 15 ? 'MEDIUM' : 'LOW';
+    const riskColor = crisisPercent > 30 ? CRISIS_COLOR : crisisPercent > 15 ? MEAN_COLOR : STABLE_COLOR;
+
+    document.getElementById('mc-risk-value').textContent = crisisPercent + '%';
+    document.getElementById('mc-risk-value').style.color = riskColor;
+    document.getElementById('mc-risk-level').textContent = riskLevel;
+    document.getElementById('mc-risk-level').style.color = riskColor;
+  }
+
+  // Animate on scroll
+  let animated = false;
+  const mcObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !animated) {
+        animated = true;
+        const start = performance.now();
+        const duration = 2000;
+        function animate(now) {
+          const elapsed = now - start;
+          const p = Math.min(elapsed / duration, 1);
+          drawMC(p);
+          if (p < 1) requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+        mcObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '-40px' });
+  mcObs.observe(document.getElementById('mc-viz'));
+
+  // Initial draw
+  drawMC(0);
+})();
+
+// ===== DATA FLOW VIZ =====
+(function() {
+  const LAYERS = [
+    { id: "input", label: "Data Sources", items: ["CGM Device", "Fitbit/Wearable", "Voice Input", "Meal Photo OCR", "Passive Sensors", "Manual Log"], color: "oklch(0.45 0.12 185)" },
+    { id: "process", label: "HMM Engine", items: ["Viterbi Decode", "Monte Carlo (1K paths)", "Counterfactual Engine", "Gaussian Likelihood"], color: "oklch(0.52 0.14 160)" },
+    { id: "reason", label: "Gemini AI", items: ["Context Assembly", "Tool Selection", "Mood Detection", "Tone Adaptation"], color: "oklch(0.50 0.12 280)" },
+    { id: "act", label: "18 Agentic Tools", items: ["Book Appointment", "Alert Caregiver", "Award Voucher", "Recommend Food", "Set Reminder", "+13 more"], color: "oklch(0.62 0.14 80)" },
+    { id: "audit", label: "Clinical Governance", items: ["Action Audit Log", "SBAR Reports", "Nurse Dashboard", "Weekly Reports"], color: "oklch(0.50 0.02 260)" },
+  ];
+
+  const container = document.getElementById('dataflow-layers');
+  let html = '';
+  LAYERS.forEach((layer, i) => {
+    if (i > 0) {
+      html += `<div class="dataflow-connector"><div class="dataflow-connector-line" id="df-conn-${i}"></div></div>`;
+    }
+    html += `<div class="dataflow-layer" id="df-layer-${i}" style="--layer-color:${layer.color};--layer-bg:${layer.color}12;--layer-border:${layer.color}40;--layer-glow:${layer.color}60;--layer-item-bg:${layer.color}15;--layer-item-border:${layer.color}25;transition-delay:${0.15*i}s;">
+      <div class="dataflow-layer-header">
+        <div class="dataflow-dot"></div>
+        <span class="dataflow-layer-label">${layer.label}</span>
+      </div>
+      <div class="dataflow-items">
+        ${layer.items.map((item, j) => `<span class="dataflow-item" style="transition-delay:${0.08*j}s">${item}</span>`).join('')}
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+
+  // Animate on scroll
+  const dfObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        LAYERS.forEach((_, i) => {
+          setTimeout(() => {
+            const layer = document.getElementById('df-layer-' + i);
+            layer.classList.add('visible', 'active');
+            const items = layer.querySelectorAll('.dataflow-item');
+            items.forEach((item, j) => {
+              setTimeout(() => item.classList.add('visible'), j * 80);
+            });
+            if (i > 0) {
+              document.getElementById('df-conn-' + i).classList.add('active');
+              document.getElementById('df-conn-' + i).style.setProperty('--layer-color', LAYERS[i-1].color);
+              document.getElementById('df-conn-' + i).style.background = LAYERS[i-1].color;
+            }
+          }, 400 + i * 600);
+        });
+        dfObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '-60px' });
+  dfObs.observe(document.getElementById('dataflow-viz'));
+})();
+
+// ===== 18 AGENTIC TOOLS =====
+(function() {
+  const tools = [
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>', name: "book_appointment", desc: "Lloyd's algorithm slot optimization. Blind booking (privacy). HealthHub API." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>', name: "send_caregiver_alert", desc: "3-tier escalation: push, SMS, voice call. Rate-limited to prevent caregiver fatigue." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>', name: "calculate_counterfactual", desc: 'HMM-powered what-if: medication, carb reduction, activity. Shows exact risk %.' },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>', name: "suggest_medication_adjustment", desc: "Dose recommendations for DOCTOR review only. Never auto-adjusts." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>', name: "set_reminder", desc: "Medication, glucose, exercise, hydration. Adaptive timing from response patterns." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>', name: "alert_nurse", desc: "SBAR auto-attached. Priority routing to nurse dashboard." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', name: "alert_family", desc: "Configurable detail level. Fatigue detection prevents alert overload." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>', name: "award_voucher_bonus", desc: "Loss-aversion: S$5/week with decay. Prospect theory framing." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>', name: "request_medication_video", desc: "Personalized education video. Encouraging framing for elderly." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>', name: "suggest_activity", desc: "Walk, tai chi, breathing, social call. Context-aware by time + mobility." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', name: "escalate_to_doctor", desc: "Full HMM snapshot + SBAR attached. Formal clinical escalation." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>', name: "recommend_food", desc: "Singapore hawker center options. Glycemic impact per dish. Cultural." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8Z"/><circle cx="12" cy="10" r="3"/></svg>', name: "schedule_proactive_checkin", desc: "AI-initiated. Risk-rising, inactivity, mood-based triggers." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>', name: "celebrate_streak", desc: "3/7/14/30-day milestones. Voucher bonus + badge unlock." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>', name: "generate_weekly_report", desc: "Glucose, steps, adherence, streaks, grade (A/B/C/D). Auto-sent." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>', name: "adjust_nudge_schedule", desc: "Shifts reminders to learned optimal response windows." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>', name: "generate_clinician_summary", desc: "Auto SBAR report for nurses. Situation, Background, Assessment, Recommendation." },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', name: "check_drug_interactions", desc: "16 interaction pairs checked. Flags conflicts with current medications before any change." },
+  ];
+
+  const grid = document.getElementById('tools-grid');
+  let html = '';
+  tools.forEach(t => {
+    html += `<div class="tool-card stagger-child">
+      <div class="tool-icon">${t.icon}</div>
+      <div>
+        <div class="tool-name">${t.name}</div>
+        <div class="tool-desc">${t.desc}</div>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+})();
+</script>
+</body>
+</html>
