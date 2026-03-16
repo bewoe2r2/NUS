@@ -1,0 +1,478 @@
+{
+  "section_a": {
+    "easy": {
+      "accuracy": 0.9733333333333334,
+      "ci_95": [
+        0.9621870570065223,
+        0.9812579754940518
+      ],
+      "adjacent_accuracy": 0.9991111111111111,
+      "brier_score": 0.0749629340977778,
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.994579945799458,
+          "recall": 0.9786666666666667,
+          "specificity": 0.9973333333333333,
+          "f1": 0.9865591397849464,
+          "tp": 367,
+          "fp": 2,
+          "fn": 8
+        },
+        "WARNING": {
+          "precision": 0.9368686868686869,
+          "recall": 0.9893333333333333,
+          "specificity": 0.9666666666666667,
+          "f1": 0.9623865110246433,
+          "tp": 371,
+          "fp": 25,
+          "fn": 4
+        },
+        "CRISIS": {
+          "precision": 0.9916666666666667,
+          "recall": 0.952,
+          "specificity": 0.996,
+          "f1": 0.9714285714285714,
+          "tp": 357,
+          "fp": 3,
+          "fn": 18
+        }
+      },
+      "auc_per_class": {
+        "STABLE": 1.0,
+        "WARNING": 0.9994986666666664,
+        "CRISIS": 1.0
+      },
+      "mean_confidence": 0.8773288,
+      "n_patients": 1125
+    },
+    "medium": {
+      "accuracy": 0.928,
+      "ci_95": [
+        0.9113940240263081,
+        0.9416928926854786
+      ],
+      "adjacent_accuracy": 0.9973333333333333,
+      "brier_score": 0.09801573113777771,
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.9836956521739131,
+          "recall": 0.9653333333333334,
+          "specificity": 0.992,
+          "f1": 0.9744279946164199,
+          "tp": 362,
+          "fp": 6,
+          "fn": 13
+        },
+        "WARNING": {
+          "precision": 0.8413793103448276,
+          "recall": 0.976,
+          "specificity": 0.908,
+          "f1": 0.9037037037037038,
+          "tp": 366,
+          "fp": 69,
+          "fn": 9
+        },
+        "CRISIS": {
+          "precision": 0.9813664596273292,
+          "recall": 0.8426666666666667,
+          "specificity": 0.992,
+          "f1": 0.9067431850789096,
+          "tp": 316,
+          "fp": 6,
+          "fn": 59
+        }
+      },
+      "auc_per_class": {
+        "STABLE": 1.0,
+        "WARNING": 0.9963484444444441,
+        "CRISIS": 0.9999680000000001
+      },
+      "mean_confidence": 0.8808362666666667,
+      "n_patients": 1125
+    },
+    "hard": {
+      "accuracy": 0.936,
+      "ci_95": [
+        0.9201613406036677,
+        0.9488711259531992
+      ],
+      "adjacent_accuracy": 0.9973333333333333,
+      "brier_score": 0.09623562173333328,
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.9865951742627346,
+          "recall": 0.9813333333333333,
+          "specificity": 0.9933333333333333,
+          "f1": 0.9839572192513367,
+          "tp": 368,
+          "fp": 5,
+          "fn": 7
+        },
+        "WARNING": {
+          "precision": 0.8558139534883721,
+          "recall": 0.9813333333333333,
+          "specificity": 0.9173333333333333,
+          "f1": 0.9142857142857143,
+          "tp": 368,
+          "fp": 62,
+          "fn": 7
+        },
+        "CRISIS": {
+          "precision": 0.984472049689441,
+          "recall": 0.8453333333333334,
+          "specificity": 0.9933333333333333,
+          "f1": 0.9096126255380201,
+          "tp": 317,
+          "fp": 5,
+          "fn": 58
+        }
+      },
+      "auc_per_class": {
+        "STABLE": 1.0,
+        "WARNING": 0.9952568888888885,
+        "CRISIS": 1.0
+      },
+      "mean_confidence": 0.8952413333333333,
+      "n_patients": 1125
+    },
+    "adversarial": {
+      "accuracy": 0.8933333333333333,
+      "ci_95": [
+        0.8739372842989904,
+        0.9100522497507825
+      ],
+      "adjacent_accuracy": 0.9973333333333333,
+      "brier_score": 0.14814197989333355,
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.9552631578947368,
+          "recall": 0.968,
+          "specificity": 0.9773333333333334,
+          "f1": 0.9615894039735099,
+          "tp": 363,
+          "fp": 17,
+          "fn": 12
+        },
+        "WARNING": {
+          "precision": 0.7841409691629956,
+          "recall": 0.9493333333333334,
+          "specificity": 0.8693333333333333,
+          "f1": 0.858866103739445,
+          "tp": 356,
+          "fp": 98,
+          "fn": 19
+        },
+        "CRISIS": {
+          "precision": 0.9828178694158075,
+          "recall": 0.7626666666666667,
+          "specificity": 0.9933333333333333,
+          "f1": 0.8588588588588588,
+          "tp": 286,
+          "fp": 5,
+          "fn": 89
+        }
+      },
+      "auc_per_class": {
+        "STABLE": 0.9999715555555556,
+        "WARNING": 0.9750968888888889,
+        "CRISIS": 1.0
+      },
+      "mean_confidence": 0.8857029333333334,
+      "n_patients": 1125
+    },
+    "overall": {
+      "accuracy": 0.9326666666666666,
+      "ci_95": [
+        0.9249694711589812,
+        0.9396257668262978
+      ],
+      "brier_score": 0.10433906671555566,
+      "n_patients": 4500,
+      "mean_confidence": 0.8847773333333332
+    }
+  },
+  "section_b": {
+    "ece": 0.05782120000000003,
+    "n_patients": 1500,
+    "reliability_diagram": {
+      "0.5-0.6": {
+        "count": 122,
+        "avg_conf": 0.5493377049180329,
+        "avg_acc": 0.6885245901639344,
+        "gap": 0.1391868852459015
+      },
+      "0.6-0.7": {
+        "count": 118,
+        "avg_conf": 0.6531449152542373,
+        "avg_acc": 0.7542372881355932,
+        "gap": 0.10109237288135586
+      },
+      "0.7-0.8": {
+        "count": 134,
+        "avg_conf": 0.7531447761194026,
+        "avg_acc": 0.9104477611940298,
+        "gap": 0.15730298507462726
+      },
+      "0.8-0.9": {
+        "count": 172,
+        "avg_conf": 0.8595267441860465,
+        "avg_acc": 1.0,
+        "gap": 0.14047325581395353
+      },
+      "0.9-1.0": {
+        "count": 954,
+        "avg_conf": 0.9710879454926624,
+        "avg_acc": 0.9842767295597484,
+        "gap": 0.013188784067086012
+      }
+    }
+  },
+  "section_c": {
+    "boundary_adjacent_accuracy": 1.0,
+    "contradictory_warning_rate": 0.54,
+    "contradictory_non_crisis_rate": 0.56,
+    "single_feature_perturbation": [
+      {
+        "feature": "glucose_avg",
+        "flip_rate": 1.0,
+        "weight": 0.25
+      },
+      {
+        "feature": "glucose_variability",
+        "flip_rate": 1.0,
+        "weight": 0.1
+      },
+      {
+        "feature": "meds_adherence",
+        "flip_rate": 1.0,
+        "weight": 0.18
+      },
+      {
+        "feature": "carbs_intake",
+        "flip_rate": 0.0,
+        "weight": 0.07
+      },
+      {
+        "feature": "steps_daily",
+        "flip_rate": 0.0,
+        "weight": 0.08
+      },
+      {
+        "feature": "resting_hr",
+        "flip_rate": 0.0,
+        "weight": 0.05
+      },
+      {
+        "feature": "hrv_rmssd",
+        "flip_rate": 0.0,
+        "weight": 0.07
+      },
+      {
+        "feature": "sleep_quality",
+        "flip_rate": 0.0,
+        "weight": 0.1
+      },
+      {
+        "feature": "social_engagement",
+        "flip_rate": 0.0,
+        "weight": 0.1
+      }
+    ]
+  },
+  "section_d": {
+    "Stable \u2192 Warning": 1.0,
+    "Stable \u2192 Warning \u2192 Crisis": 1.0,
+    "Crisis \u2192 Warning \u2192 Stable": 0.96,
+    "Stable \u2192 Sudden Crisis": 1.0,
+    "Crisis \u2192 Recovery": 0.96,
+    "spike_absorption_rate": 0.99,
+    "seq_len_1": 0.9333333333333333,
+    "seq_len_2": 0.9933333333333333,
+    "seq_len_4": 0.9866666666666667,
+    "seq_len_8": 1.0,
+    "seq_len_12": 0.9866666666666667,
+    "seq_len_24": 1.0,
+    "seq_len_48": 1.0
+  },
+  "section_e": {
+    "crisis_tpr": 0.874,
+    "crisis_tpr_ci": [
+      0.842031642241812,
+      0.9002651430970722
+    ],
+    "false_alarm_rate": 0.002,
+    "hypo_Level 1 (3.0-3.9)": 1.0,
+    "hypo_Level 2 (<3.0)": 1.0,
+    "hypo_Severe (<2.0)": 1.0,
+    "safety_Extreme hyperglycemia": true,
+    "safety_Severe hypoglycemia": true,
+    "safety_Tachycardia": true,
+    "safety_Very low HRV": true,
+    "safety_Complete med non-adherence": true
+  },
+  "section_f": {
+    "missing_0": 0.9233333333333333,
+    "missing_10": 0.8933333333333333,
+    "missing_20": 0.8666666666666667,
+    "missing_30": 0.81,
+    "missing_40": 0.7733333333333333,
+    "missing_50": 0.6866666666666666,
+    "missing_60": 0.6133333333333333,
+    "missing_70": 0.5533333333333333,
+    "missing_80": 0.48333333333333334,
+    "without_glucose_avg": 0.7666666666666667,
+    "without_glucose_variability": 0.9,
+    "without_meds_adherence": 0.86,
+    "without_carbs_intake": 0.92,
+    "without_steps_daily": 0.9133333333333333,
+    "without_resting_hr": 0.92,
+    "without_hrv_rmssd": 0.9333333333333333,
+    "without_sleep_quality": 0.9133333333333333,
+    "without_social_engagement": 0.92
+  },
+  "section_g": {
+    "well_controlled_elderly": {
+      "exact_accuracy": 1.0,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "STABLE",
+      "prediction_distribution": {
+        "STABLE": 200,
+        "WARNING": 0,
+        "CRISIS": 0
+      }
+    },
+    "brittle_diabetic": {
+      "exact_accuracy": 0.825,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "WARNING",
+      "prediction_distribution": {
+        "WARNING": 165,
+        "STABLE": 35,
+        "CRISIS": 0
+      }
+    },
+    "socially_isolated_elder": {
+      "exact_accuracy": 0.945,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "WARNING",
+      "prediction_distribution": {
+        "STABLE": 11,
+        "WARNING": 189,
+        "CRISIS": 0
+      }
+    },
+    "medication_noncompliant": {
+      "exact_accuracy": 0.255,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "CRISIS",
+      "prediction_distribution": {
+        "WARNING": 149,
+        "CRISIS": 51,
+        "STABLE": 0
+      }
+    },
+    "acute_infection": {
+      "exact_accuracy": 0.61,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "CRISIS",
+      "prediction_distribution": {
+        "WARNING": 78,
+        "CRISIS": 122,
+        "STABLE": 0
+      }
+    },
+    "post_exercise_spike": {
+      "exact_accuracy": 1.0,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "STABLE",
+      "prediction_distribution": {
+        "STABLE": 200,
+        "WARNING": 0,
+        "CRISIS": 0
+      }
+    },
+    "dawn_phenomenon": {
+      "exact_accuracy": 0.15,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "WARNING",
+      "prediction_distribution": {
+        "STABLE": 170,
+        "WARNING": 30,
+        "CRISIS": 0
+      }
+    },
+    "steroid_induced_hyperglycemia": {
+      "exact_accuracy": 0.77,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "CRISIS",
+      "prediction_distribution": {
+        "CRISIS": 154,
+        "WARNING": 46,
+        "STABLE": 0
+      }
+    },
+    "weekend_binge_eater": {
+      "exact_accuracy": 1.0,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "WARNING",
+      "prediction_distribution": {
+        "WARNING": 200,
+        "STABLE": 0,
+        "CRISIS": 0
+      }
+    },
+    "hypoglycemia_unaware": {
+      "exact_accuracy": 0.61,
+      "adjacent_accuracy": 1.0,
+      "expected_state": "WARNING",
+      "prediction_distribution": {
+        "WARNING": 122,
+        "STABLE": 78,
+        "CRISIS": 0
+      }
+    }
+  },
+  "section_h": {
+    "low_glucose_baseline": {
+      "before": 0.9965,
+      "after": 1.0,
+      "improvement": 0.0034999999999999476
+    },
+    "high_glucose_baseline": {
+      "before": 0.9838,
+      "after": 0.9999,
+      "improvement": 0.016100000000000003
+    },
+    "athletic_low_hr": {
+      "before": 0.9996,
+      "after": 1.0,
+      "improvement": 0.00039999999999995595
+    },
+    "sedentary_high_hr": {
+      "before": 0.9835,
+      "after": 0.9999,
+      "improvement": 0.01639999999999997
+    },
+    "baum_welch_converged": true
+  },
+  "section_i": {
+    "risk_ordering_correct": true,
+    "risk_values": {
+      "STABLE": 20.533333333333335,
+      "WARNING": 40.6,
+      "CRISIS": 100.0
+    },
+    "intervention_risk_reduction": 0.053943376943850006,
+    "multi_intervention_risk": 9.573658648534054e-06,
+    "risk_monotonicity": true
+  },
+  "section_j": {
+    "majority_class_accuracy": 0.3333333333333333,
+    "glucose_threshold_accuracy": 0.9483333333333334,
+    "weighted_scoring_accuracy": 0.8616666666666667,
+    "hmm_accuracy": 0.9433333333333334,
+    "hmm_advantage_majority": 0.6100000000000001,
+    "hmm_advantage_glucose": -0.0050000000000000044,
+    "hmm_advantage_weighted": 0.08166666666666667
+  }
+}
