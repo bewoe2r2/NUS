@@ -1188,9 +1188,9 @@ async def get_all_patients():
         # Query patients from DB, fallback to demo list
         patients = []
         try:
-            rows = conn.execute("SELECT user_id, display_name, age FROM patients").fetchall()
+            rows = conn.execute("SELECT user_id, name, age FROM patients").fetchall()
             for r in rows:
-                patients.append({"id": r["user_id"], "name": r["display_name"] or f"Patient {r['user_id']}", "age": r["age"] if "age" in r.keys() else 67})
+                patients.append({"id": r["user_id"], "name": r["name"] or f"Patient {r['user_id']}", "age": r["age"] if "age" in r.keys() else 67})
         except Exception:
             pass
         if not patients:
