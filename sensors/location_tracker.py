@@ -80,8 +80,8 @@ class LocationTracker:
         
         if row:
             # Aggregate time, keep max dist
-            new_time = row[1] + self.time_at_home_seconds
-            new_max = max(row[2], self.max_dist_km)
+            new_time = (row[1] or 0) + self.time_at_home_seconds
+            new_max = max(row[2] or 0, self.max_dist_km)
             cursor.execute("""
                 UPDATE passive_metrics 
                 SET time_at_home_seconds = ?, max_distance_from_home_km = ? 

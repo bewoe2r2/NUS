@@ -1579,7 +1579,7 @@ class HMMEngine:
                 return 'WARNING'
 
         # Check HRV (low HRV = autonomic stress)
-        hrv = obs.get('hrv')
+        hrv = obs.get('hrv_rmssd')
         if hrv is not None:
             if hrv < 15:
                 return 'WARNING'
@@ -1597,7 +1597,7 @@ class HMMEngine:
                 return 'WARNING'
 
         # Check carbs intake (very high)
-        carbs = obs.get('carbs_daily')
+        carbs = obs.get('carbs_intake')
         if carbs is not None:
             if carbs > 300:
                 return 'WARNING'

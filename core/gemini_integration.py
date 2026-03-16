@@ -327,6 +327,7 @@ class GeminiIntegration:
                     MAX(datetime(taken_timestamp_utc, 'unixepoch', 'localtime')) as last_taken
                 FROM medication_logs
                 WHERE taken_timestamp_utc >= ?
+                AND (user_id IS NULL OR user_id = 'P001')
                 GROUP BY medication_name
             """, (start_time,)).fetchall()
 

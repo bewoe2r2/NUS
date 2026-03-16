@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS voucher_tracker (
     user_id TEXT NOT NULL DEFAULT 'user',
     week_start_utc INTEGER NOT NULL,
     current_value REAL NOT NULL DEFAULT 5.00,
+    bonus_earned REAL DEFAULT 0,
     penalties_json TEXT DEFAULT '[]',
     created_at_utc INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -356,16 +357,99 @@ CREATE TABLE IF NOT EXISTS caregiver_contacts (
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS agent_memory (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
+    patient_id TEXT NOT NULL,
     memory_type TEXT NOT NULL,  -- episodic / semantic / preference
-    content TEXT NOT NULL,
-    timestamp_utc INTEGER NOT NULL,
-    relevance_score REAL DEFAULT 1.0
+    key TEXT NOT NULL,
+    value_json TEXT NOT NULL,
+    confidence REAL DEFAULT 0.5,
+    created_at INTEGER,
+    updated_at INTEGER,
+    source TEXT DEFAULT 'conversation',
+    consolidated INTEGER DEFAULT 0,
+    UNIQUE(patient_id, memory_type, key)
 );
-CREATE INDEX IF NOT EXISTS idx_agent_memory_user ON agent_memory(user_id, memory_type);
+CREATE INDEX IF NOT EXISTS idx_agent_memory_patient ON agent_memory(patient_id, memory_type);
 
 -- ==============================================================================
 -- 19. Update hmm_states to include new columns
 -- ==============================================================================
 -- Add columns if they don't exist (SQLite doesn't support IF NOT EXISTS for ALTER)
 -- These will be created fresh if table is recreated
+
+-- ==============================================================================
+-- 20. Runtime agent tables (required by agent_runtime.py)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS reminders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    reminder_time TEXT,
+    message TEXT,
+    reminder_type TEXT DEFAULT 'general',
+    repeat_type TEXT DEFAULT 'once',
+    created_at INTEGER,
+    status TEXT DEFAULT 'pending'
+);
+
+CREATE TABLE IF NOT EXISTS family_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    timestamp_utc INTEGER,
+    message TEXT,
+    include_metrics INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'pending'
+);
+
+CREATE TABLE IF NOT EXISTS nurse_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    timestamp_utc INTEGER,
+    priority TEXT,
+    reason TEXT,
+    status TEXT DEFAULT 'pending',
+    sbar_json TEXT
+);
+
+CREATE TABLE IF NOT EXISTS doctor_escalations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    timestamp_utc INTEGER,
+    reason TEXT,
+    metrics_snapshot TEXT,
+    status TEXT DEFAULT 'pending',
+    sbar_json TEXT
+);
+
+CREATE TABLE IF NOT EXISTS appointment_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    timestamp_utc INTEGER,
+    appointment_type TEXT,
+    urgency TEXT,
+    reason TEXT,
+    status TEXT DEFAULT 'pending'
+);
+
+CREATE TABLE IF NOT EXISTS medication_video_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    timestamp_utc INTEGER,
+    medication_name TEXT,
+    status TEXT DEFAULT 'pending'
+);
+
+CREATE TABLE IF NOT EXISTS clinical_notes_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT,
+    timestamp_utc INTEGER,
+    note_type TEXT,
+    content TEXT
+);
+
+CREATE TABLE IF NOT EXISTS caregiver_responses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    alert_id INTEGER,
+    caregiver_id TEXT,
+    response_type TEXT,
+    message TEXT,
+    timestamp_utc INTEGER
+);

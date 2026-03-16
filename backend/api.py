@@ -133,10 +133,6 @@ async def security_middleware(request: Request, call_next):
     now = time.time()
     if client_ip in _rate_limit_store:
         _rate_limit_store[client_ip] = [t for t in _rate_limit_store[client_ip] if now - t < RATE_LIMIT_WINDOW]
-    # Prune empty entries to prevent unbounded memory growth (BUG-13)
-    if not _rate_limit_store[client_ip]:
-        del _rate_limit_store[client_ip]
-        _rate_limit_store[client_ip] = []
     else:
         _rate_limit_store[client_ip] = []
 
@@ -284,7 +280,6 @@ def get_gemini():
         return _cached_gemini
     try:
         gi = GeminiIntegration()
-        gi.ensure_agentic_tables()
         _cached_gemini = gi
         return _cached_gemini
     except Exception as e:
@@ -304,8 +299,8 @@ def get_voucher_system():
 # =============================================================================
 
 @app.get("/")
-def health_check():
-    """Health check endpoint"""
+def root_health_check():
+    """Root health check endpoint"""
     return {"status": "ok", "system": "Bewo Health API v2.0"}
 
 @app.get("/patient/{patient_id}/state", response_model=PatientStateResponse)
@@ -1568,7 +1563,7 @@ async def run_hmm_analysis():
                 window_obs = observations[window_start:i+1]
 
                 if window_obs:
-                    result = engine.run_inference(window_obs)
+                    result = engine.run_inference(window_obs, patient_id=patient_id)
 
                     conn.execute("""
                         INSERT INTO hmm_states (timestamp_utc, detected_state, confidence_score,
@@ -1680,7 +1675,7 @@ async def get_agent_memory(patient_id: str):
         # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
         conn = sqlite3.connect(db)
-        conn.row_factory = _sql.Row
+        conn.row_factory = sqlite3.Row
         rows = conn.execute(
             "SELECT * FROM agent_memory WHERE patient_id = ? ORDER BY updated_at DESC", (patient_id,)
         ).fetchall()
@@ -1781,7 +1776,7 @@ async def get_safety_log(patient_id: str):
         # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
         conn = sqlite3.connect(db)
-        conn.row_factory = _sql.Row
+        conn.row_factory = sqlite3.Row
         rows = conn.execute("""
             SELECT * FROM agent_actions_log
             WHERE patient_id = ? AND action_type = 'safety_flag'
@@ -1825,7 +1820,7 @@ async def get_proactive_history(patient_id: str):
         # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
         conn = sqlite3.connect(db)
-        conn.row_factory = _sql.Row
+        conn.row_factory = sqlite3.Row
         rows = conn.execute("""
             SELECT * FROM proactive_checkins WHERE patient_id = ?
             ORDER BY created_at DESC LIMIT 50
@@ -1859,7 +1854,7 @@ async def caregiver_dashboard(patient_id: str):
         # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
         conn = sqlite3.connect(db)
-        conn.row_factory = _sql.Row
+        conn.row_factory = sqlite3.Row
         alerts = conn.execute("""
             SELECT * FROM caregiver_alerts WHERE patient_id = ?
             ORDER BY timestamp_utc DESC LIMIT 20
@@ -1987,13 +1982,6 @@ async def startup_event():
         _auto_init_database()
     except Exception as e:
         logger.warning(f"Auto-init database: {e}")
-
-    try:
-        gi = get_gemini()
-        if gi:
-            gi.ensure_agentic_tables()
-    except Exception:
-        pass
 
     try:
         ensure_runtime_tables()

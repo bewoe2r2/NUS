@@ -93,7 +93,7 @@ class ScreenTimeTracker:
         """, (hour_start,)).fetchone()
         
         if row:
-            new_val = row[1] + screen_seconds
+            new_val = (row[1] or 0) + screen_seconds
             cursor.execute("UPDATE passive_metrics SET screen_time_seconds = ? WHERE id = ?", (new_val, row[0]))
         else:
              cursor.execute("""

@@ -87,7 +87,7 @@ class VoucherSystem:
         conn.execute("""
             UPDATE voucher_tracker
             SET current_value = ?
-            WHERE user_id = ? AND week_start_utc >= ?
+            WHERE user_id = ? AND week_start_utc = ?
         """, (new_value, user_id, int(voucher['week_start'].timestamp())))
         conn.commit()
         conn.close()

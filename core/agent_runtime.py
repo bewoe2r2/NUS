@@ -320,7 +320,7 @@ def execute_tool(tool_name: str, tool_args: Dict, patient_id: str, patient_profi
 
 def _exec_book_appointment(args, patient_id, conn, now):
     """Blind booking: sends only urgency + clinical category, never patient ID."""
-    from tools.appointment_booking import book_appointment_tool
+    from appointment_booking import book_appointment_tool
     result = book_appointment_tool(
         patient_id=patient_id,
         urgency=args.get("urgency", "routine"),
@@ -341,7 +341,7 @@ def _exec_book_appointment(args, patient_id, conn, now):
 
 def _exec_caregiver_alert(args, patient_id, conn, now):
     """Three-tier alert with rate limiting and escalation."""
-    from tools.caregiver_alerts import send_tiered_alert_tool
+    from caregiver_alerts import send_tiered_alert_tool
     result = send_tiered_alert_tool(
         patient_id=patient_id,
         message=args.get("message", "Health update"),
@@ -353,7 +353,7 @@ def _exec_caregiver_alert(args, patient_id, conn, now):
 
 def _exec_counterfactual(args, patient_id):
     """Run HMM what-if simulation."""
-    from tools.clinical_interventions import calculate_counterfactual_tool
+    from clinical_interventions import calculate_counterfactual_tool
     params = args.get("intervention_params", {})
     if isinstance(params, str):
         try:
@@ -370,7 +370,7 @@ def _exec_counterfactual(args, patient_id):
 
 def _exec_medication_suggestion(args, patient_id):
     """Generate medication recommendation for doctor review."""
-    from tools.clinical_interventions import suggest_medication_adjustment_tool
+    from clinical_interventions import suggest_medication_adjustment_tool
     factors = args.get("hmm_factors", {})
     if isinstance(factors, str):
         try:
@@ -853,6 +853,79 @@ def ensure_runtime_tables():
         )
     """)
     conn.execute("""
+        CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            reminder_time TEXT,
+            message TEXT,
+            reminder_type TEXT DEFAULT 'general',
+            repeat_type TEXT DEFAULT 'once',
+            created_at INTEGER,
+            status TEXT DEFAULT 'pending'
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS family_alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            timestamp_utc INTEGER,
+            message TEXT,
+            include_metrics INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'pending'
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS nurse_alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            timestamp_utc INTEGER,
+            priority TEXT,
+            reason TEXT,
+            status TEXT DEFAULT 'pending',
+            sbar_json TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS doctor_escalations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            timestamp_utc INTEGER,
+            reason TEXT,
+            metrics_snapshot TEXT,
+            status TEXT DEFAULT 'pending',
+            sbar_json TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS appointment_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            timestamp_utc INTEGER,
+            appointment_type TEXT,
+            urgency TEXT,
+            reason TEXT,
+            status TEXT DEFAULT 'pending'
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS medication_video_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            timestamp_utc INTEGER,
+            medication_name TEXT,
+            status TEXT DEFAULT 'pending'
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS clinical_notes_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id TEXT,
+            timestamp_utc INTEGER,
+            note_type TEXT,
+            content TEXT
+        )
+    """)
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS medication_adherence (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             patient_id TEXT NOT NULL,
@@ -867,7 +940,7 @@ def ensure_runtime_tables():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS patients (
             user_id TEXT PRIMARY KEY,
-            display_name TEXT,
+            name TEXT,
             age INTEGER,
             conditions TEXT,
             medications TEXT,
@@ -877,9 +950,9 @@ def ensure_runtime_tables():
     """)
     # Seed P001 (Tan Ah Kow) with full medication list for drug interaction demo
     conn.execute("""
-        INSERT OR IGNORE INTO patients (user_id, display_name, conditions, medications, last_hba1c)
+        INSERT OR IGNORE INTO patients (user_id, name, conditions, medications)
         VALUES ('P001', 'Mr. Tan Ah Kow (67M)', 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
-                'Metformin 500mg BD, Lisinopril 10mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD', 7.8)
+                'Metformin 500mg BD, Lisinopril 10mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD')
     """)
 
     # Ensure daily_insights table exists (used by gemini_integration caching)
@@ -917,6 +990,15 @@ def ensure_runtime_tables():
     except sqlite3.OperationalError:
         try:
             conn.execute("ALTER TABLE patients ADD COLUMN age INTEGER")
+        except sqlite3.OperationalError:
+            pass
+
+    # Migrate voucher_tracker: add bonus_earned if missing
+    try:
+        conn.execute("SELECT bonus_earned FROM voucher_tracker LIMIT 1")
+    except sqlite3.OperationalError:
+        try:
+            conn.execute("ALTER TABLE voucher_tracker ADD COLUMN bonus_earned REAL DEFAULT 0")
         except sqlite3.OperationalError:
             pass
 
@@ -1407,7 +1489,7 @@ def build_agent_prompt(
 
     # Format top factors
     factors_text = "\n".join(
-        f"  {i}. {f['feature']}: {f['value']:.2f} (weight: {f['weight']:.2f}, "
+        f"  {i}. {f.get('feature', 'unknown')}: {f.get('value', 0):.2f} (weight: {f.get('weight', 0):.2f}, "
         f"state impact: {f.get('log_prob_ratio', 'N/A')})"
         for i, f in enumerate(hmm_context.get("top_factors", []), 1)
     ) or "  No factor data"
@@ -1813,7 +1895,7 @@ Return valid JSON:
     patient_id = patient_profile.get("id", "P001")
 
     factors_text = "\n".join(
-        f"  {i}. {f['feature']}: {f['value']:.2f} (weight: {f['weight']:.2f})"
+        f"  {i}. {f.get('feature', 'unknown')}: {f.get('value', 0):.2f} (weight: {f.get('weight', 0):.2f})"
         for i, f in enumerate(hmm_context.get("top_factors", []), 1)
     ) or "  No factor data"
 
@@ -3622,15 +3704,13 @@ def _get_patient_profile_from_db(patient_id: str) -> Dict:
         conn.row_factory = sqlite3.Row
         # Explicit columns — never SELECT *, prevents accidental PII leakage
         row = conn.execute(
-            "SELECT user_id, display_name, age, conditions, medications FROM patients WHERE user_id = ?",
+            "SELECT user_id, name, age, conditions, medications FROM patients WHERE user_id = ?",
             (patient_id,)
         ).fetchone()
         conn.close()
         if row:
             profile = dict(row)
             profile["id"] = patient_id
-            if "display_name" in profile:
-                profile["name"] = profile["display_name"]
             for field in ["conditions", "medications"]:
                 if field in profile and isinstance(profile[field], str):
                     try:
@@ -3713,7 +3793,7 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
                 if last_action and last_action != datetime.now().strftime("%Y-%m-%d"):
                     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
                     if last_action == yesterday:
-                        triggers.append({"type": "streak_save", "reason": f"{streak_type} streak ({data['current']} days) at risk — no action today"})
+                        triggers.append({"type": "streak_save", "reason": f"{streak_type} streak ({data.get('current', 0)} days) at risk — no action today"})
                         break
     except Exception:
         pass

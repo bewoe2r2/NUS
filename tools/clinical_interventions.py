@@ -19,8 +19,14 @@ COUNTERFACTUAL EXAMPLES:
 import logging
 import json
 import os
+import sys
 from typing import Dict, Any, Optional
 import copy
+
+# Ensure core/ is on path for HMMEngine import
+_core_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core")
+if _core_path not in sys.path:
+    sys.path.insert(0, _core_path)
 
 logger = logging.getLogger(__name__)
 
@@ -78,9 +84,6 @@ def calculate_counterfactual_tool(
     logger.info(f"Calculating counterfactual: {intervention} for {patient_id}")
     
     try:
-        # Import here to avoid circular dependency
-        import sys
-        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core"))
         from hmm_engine import HMMEngine
         
         engine = HMMEngine()

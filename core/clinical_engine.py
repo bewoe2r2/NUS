@@ -86,12 +86,12 @@ class ClinicalEngine:
             # In a real system, we'd fetch the persistent HMM state. 
             # For now, we instantiate/retrieve logic associated with the user/demo.
             # Assuming HMM state is stored or re-computed from recent observations.
-            observations = self.hmm_engine.fetch_observations(days=14)
+            observations = self.hmm_engine.fetch_observations(days=14, patient_id=user_id)
             if not observations or len(observations) == 0:
                  state = "STABLE"
                  probs = [1.0, 0.0, 0.0]
             else:
-                 results = self.hmm_engine.run_inference(observations)
+                 results = self.hmm_engine.run_inference(observations, patient_id=user_id)
                  state = results['current_state']
                  state_probs_dict = results['state_probabilities']
                  probs = [state_probs_dict.get(s, 0.0) for s in STATES]
