@@ -1,63 +1,63 @@
 {
   "S1_cohort": {
     "total": 5000,
-    "accuracy": 99.28,
-    "macro_f1": 0.9928,
+    "accuracy": 82.1,
+    "macro_f1": 0.8219,
     "per_class": {
       "STABLE": {
-        "precision": 1.0,
-        "recall": 0.994,
-        "specificity": 1.0,
-        "f1": 0.997,
-        "tp": 1657,
-        "fp": 0,
-        "fn": 10,
-        "tn": 3333,
+        "precision": 0.9802,
+        "recall": 0.6821,
+        "specificity": 0.9931,
+        "f1": 0.8044,
+        "tp": 1137,
+        "fp": 23,
+        "fn": 530,
+        "tn": 3310,
         "support": 1667
       },
       "WARNING": {
-        "precision": 0.9939,
-        "recall": 0.9844,
-        "specificity": 0.997,
-        "f1": 0.9892,
-        "tp": 1641,
-        "fp": 10,
-        "fn": 26,
-        "tn": 3323,
+        "precision": 0.6943,
+        "recall": 0.9034,
+        "specificity": 0.8011,
+        "f1": 0.7852,
+        "tp": 1506,
+        "fp": 663,
+        "fn": 161,
+        "tn": 2670,
         "support": 1667
       },
       "CRISIS": {
-        "precision": 0.9846,
-        "recall": 1.0,
-        "specificity": 0.9922,
-        "f1": 0.9923,
-        "tp": 1666,
-        "fp": 26,
-        "fn": 0,
-        "tn": 3308,
+        "precision": 0.8749,
+        "recall": 0.8776,
+        "specificity": 0.9373,
+        "f1": 0.8762,
+        "tp": 1462,
+        "fp": 209,
+        "fn": 204,
+        "tn": 3125,
         "support": 1666
       }
     },
     "auc": {
-      "STABLE": 1.0,
-      "WARNING": 1.0,
-      "CRISIS": 1.0
+      "STABLE": 0.9412,
+      "WARNING": 0.907,
+      "CRISIS": 0.9671
     },
     "confusion_matrix": {
       "STABLE": {
-        "STABLE": 1657,
-        "WARNING": 10,
-        "CRISIS": 0
+        "STABLE": 1137,
+        "WARNING": 459,
+        "CRISIS": 71
       },
       "WARNING": {
-        "STABLE": 0,
-        "WARNING": 1641,
-        "CRISIS": 26
+        "STABLE": 23,
+        "WARNING": 1506,
+        "CRISIS": 138
       },
       "CRISIS": {
         "STABLE": 0,
-        "WARNING": 0,
-        "CRISIS": 1666
+        "WARNING": 204,
+        "CRISIS": 1462
       }
     }
   },
@@ -71,7 +71,7 @@
       "count": 200
     },
     "STABLE-WARNING boundary blend=0.7": {
-      "relevance_rate": 100.0,
+      "relevance_rate": 99.5,
       "count": 200
     },
     "WARNING-CRISIS boundary blend=0.3": {
@@ -87,15 +87,15 @@
       "count": 200
     },
     "STABLE-CRISIS boundary blend=0.3": {
-      "relevance_rate": 0.0,
+      "relevance_rate": 7.5,
       "count": 200
     },
     "STABLE-CRISIS boundary blend=0.5": {
-      "relevance_rate": 17.5,
+      "relevance_rate": 19.0,
       "count": 200
     },
     "STABLE-CRISIS boundary blend=0.7": {
-      "relevance_rate": 81.0,
+      "relevance_rate": 48.0,
       "count": 200
     }
   },
@@ -259,6 +259,102 @@
       "severity_gap": 0,
       "confidence": 0.6238,
       "method": "RULE_OVERRIDE"
+    },
+    "glucose_warning_body_stable": {
+      "expected": "WARNING",
+      "predicted": "STABLE",
+      "correct": false,
+      "severity_gap": 1,
+      "confidence": 0.6466,
+      "method": "HMM"
+    },
+    "body_crisis_glucose_normal": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.8186,
+      "method": "RULE_OVERRIDE"
+    },
+    "crisis_glucose_stable_body": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9996,
+      "method": "RULE_OVERRIDE"
+    },
+    "borderline_stable_warning": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.7309,
+      "method": "HMM"
+    },
+    "borderline_warning_crisis": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9181,
+      "method": "RULE_OVERRIDE"
+    },
+    "hypoglycemia_unaware": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9001,
+      "method": "RULE_OVERRIDE"
+    },
+    "good_meds_bad_diet_sedentary": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.7765,
+      "method": "HMM"
+    },
+    "night_shift_worker": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9008,
+      "method": "HMM"
+    },
+    "early_sepsis_subtle": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.8588,
+      "method": "RULE_OVERRIDE"
+    },
+    "weekend_binge_stable": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.884,
+      "method": "HMM"
+    },
+    "anxious_but_healthy": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9269,
+      "method": "HMM"
+    },
+    "slowly_declining": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.7404,
+      "method": "HMM"
     }
   },
   "S4_adversarial": {
@@ -310,7 +406,7 @@
   },
   "S5_temporal": {
     "Stable -> Warning (gradual)": {
-      "accuracy": 98.5,
+      "accuracy": 95.5,
       "expected": "WARNING"
     },
     "Stable -> Warning -> Crisis": {
@@ -318,7 +414,7 @@
       "expected": "CRISIS"
     },
     "Crisis -> Warning -> Stable (recovery)": {
-      "accuracy": 98.5,
+      "accuracy": 91.0,
       "expected": "STABLE"
     },
     "Stable -> Sudden Crisis": {
@@ -326,7 +422,7 @@
       "expected": "CRISIS"
     },
     "Sustained Warning": {
-      "accuracy": 98.5,
+      "accuracy": 95.5,
       "expected": "WARNING"
     },
     "Sustained Crisis": {
@@ -337,77 +433,77 @@
   "S6_noise": [
     {
       "noise_boost": 0.0,
-      "accuracy": 98.7
+      "accuracy": 95.3
     },
     {
       "noise_boost": 0.25,
-      "accuracy": 97.7
+      "accuracy": 90.0
     },
     {
       "noise_boost": 0.5,
-      "accuracy": 94.7
+      "accuracy": 85.0
     },
     {
       "noise_boost": 0.75,
-      "accuracy": 92.7
+      "accuracy": 81.7
     },
     {
       "noise_boost": 1.0,
-      "accuracy": 90.7
+      "accuracy": 73.7
     },
     {
       "noise_boost": 1.5,
-      "accuracy": 83.0
+      "accuracy": 66.0
     },
     {
       "noise_boost": 2.0,
-      "accuracy": 75.7
+      "accuracy": 57.0
     },
     {
       "noise_boost": 3.0,
-      "accuracy": 65.0
+      "accuracy": 46.7
     }
   ],
   "S7_missing": [
     {
       "missing_rate": 0.0,
-      "accuracy": 99.3
+      "accuracy": 98.7
     },
     {
       "missing_rate": 0.1,
-      "accuracy": 99.7
-    },
-    {
-      "missing_rate": 0.2,
-      "accuracy": 99.7
-    },
-    {
-      "missing_rate": 0.3,
-      "accuracy": 99.7
-    },
-    {
-      "missing_rate": 0.4,
-      "accuracy": 99.7
-    },
-    {
-      "missing_rate": 0.5,
-      "accuracy": 99.7
-    },
-    {
-      "missing_rate": 0.6,
-      "accuracy": 99.3
-    },
-    {
-      "missing_rate": 0.7,
       "accuracy": 99.0
     },
     {
+      "missing_rate": 0.2,
+      "accuracy": 98.7
+    },
+    {
+      "missing_rate": 0.3,
+      "accuracy": 98.7
+    },
+    {
+      "missing_rate": 0.4,
+      "accuracy": 99.0
+    },
+    {
+      "missing_rate": 0.5,
+      "accuracy": 98.7
+    },
+    {
+      "missing_rate": 0.6,
+      "accuracy": 98.7
+    },
+    {
+      "missing_rate": 0.7,
+      "accuracy": 98.3
+    },
+    {
       "missing_rate": 0.8,
-      "accuracy": 94.7
+      "accuracy": 92.7
     },
     {
       "missing_rate": 0.9,
-      "accuracy": 74.7
+      "accuracy": 72.7
     }
   ],
   "S8_safety": {
@@ -416,53 +512,59 @@
     "total": 22
   },
   "S9_calibration": {
-    "brier": 0.0019,
-    "ece": 0.0094,
+    "brier": 0.2738,
+    "ece": 0.1104,
     "reliability": {
+      "0.4-0.5": {
+        "count": 2,
+        "avg_confidence": 0.4641,
+        "avg_accuracy": 0.5,
+        "gap": 0.0359
+      },
       "0.5-0.6": {
-        "count": 1,
-        "avg_confidence": 0.5705,
-        "avg_accuracy": 1.0,
-        "gap": 0.4295
+        "count": 152,
+        "avg_confidence": 0.5512,
+        "avg_accuracy": 0.6711,
+        "gap": 0.1198
       },
       "0.6-0.7": {
-        "count": 4,
-        "avg_confidence": 0.6349,
-        "avg_accuracy": 1.0,
-        "gap": 0.3651
+        "count": 169,
+        "avg_confidence": 0.652,
+        "avg_accuracy": 0.6805,
+        "gap": 0.0285
       },
       "0.7-0.8": {
-        "count": 15,
-        "avg_confidence": 0.7565,
-        "avg_accuracy": 1.0,
-        "gap": 0.2435
+        "count": 253,
+        "avg_confidence": 0.7536,
+        "avg_accuracy": 0.6126,
+        "gap": 0.1409
       },
       "0.8-0.9": {
-        "count": 65,
-        "avg_confidence": 0.8685,
-        "avg_accuracy": 1.0,
-        "gap": 0.1315
+        "count": 616,
+        "avg_confidence": 0.8573,
+        "avg_accuracy": 0.7451,
+        "gap": 0.1121
       },
       "0.9-1.0": {
-        "count": 4915,
-        "avg_confidence": 0.986,
-        "avg_accuracy": 0.9927,
-        "gap": 0.0067
+        "count": 3808,
+        "avg_confidence": 0.9709,
+        "avg_accuracy": 0.8595,
+        "gap": 0.1114
       }
     }
   },
   "S10_montecarlo": {
     "STABLE": {
-      "mean_risk": 20.8,
-      "std": 1.7
+      "mean_risk": 21.8,
+      "std": 4.7
     },
     "WARNING": {
-      "mean_risk": 39.5,
-      "std": 2.0
+      "mean_risk": 39.1,
+      "std": 3.2
     },
     "CRISIS": {
-      "mean_risk": 100.0,
-      "std": 0.0
+      "mean_risk": 91.0,
+      "std": 20.5
     }
   },
   "S11_intervention": {
@@ -471,139 +573,139 @@
     "monotonicity": true
   },
   "S12_bootstrap": {
-    "mean": 98.96,
-    "std": 0.42,
+    "mean": 95.78,
+    "std": 0.81,
     "ci_95": [
-      98.32,
-      99.67
+      94.24,
+      97.01
     ],
     "all": [
-      99.2,
-      99.0,
-      98.5,
-      99.2,
-      98.5,
-      98.8,
-      99.5,
-      98.5,
-      98.5,
-      99.5,
-      98.2,
-      99.3,
-      98.7,
-      99.7,
-      98.8,
-      99.7,
-      98.8,
-      99.0,
-      98.7,
-      99.2
+      95.5,
+      96.0,
+      94.5,
+      95.2,
+      94.0,
+      96.2,
+      96.7,
+      95.0,
+      96.3,
+      97.2,
+      95.2,
+      96.2,
+      96.3,
+      96.0,
+      95.3,
+      96.3,
+      95.5,
+      96.5,
+      96.8,
+      94.8
     ]
   },
   "S13_ablation": {
-    "baseline": 98.4,
+    "baseline": 94.9,
     "features": {
       "glucose_avg": {
-        "accuracy": 99.8,
-        "delta": 1.3
+        "accuracy": 99.1,
+        "delta": 4.2
       },
       "glucose_variability": {
-        "accuracy": 98.4,
-        "delta": 0.0
+        "accuracy": 94.7,
+        "delta": -0.2
       },
       "meds_adherence": {
-        "accuracy": 99.6,
-        "delta": 1.1
+        "accuracy": 97.1,
+        "delta": 2.2
       },
       "carbs_intake": {
-        "accuracy": 98.4,
+        "accuracy": 94.9,
         "delta": 0.0
       },
       "steps_daily": {
-        "accuracy": 98.4,
+        "accuracy": 94.9,
         "delta": 0.0
       },
       "resting_hr": {
-        "accuracy": 98.4,
-        "delta": 0.0
+        "accuracy": 95.3,
+        "delta": 0.4
       },
       "hrv_rmssd": {
-        "accuracy": 98.7,
-        "delta": 0.2
+        "accuracy": 95.8,
+        "delta": 0.9
       },
       "sleep_quality": {
-        "accuracy": 98.4,
+        "accuracy": 94.9,
         "delta": 0.0
       },
       "social_engagement": {
-        "accuracy": 98.4,
-        "delta": 0.0
+        "accuracy": 95.1,
+        "delta": 0.2
       }
     }
   },
   "S14_baselines": {
-    "hmm": 99.4,
-    "glucose_only": 90.5,
-    "weighted": 87.7,
+    "hmm": 96.4,
+    "glucose_only": 71.1,
+    "weighted": 74.0,
     "majority": 33.3,
-    "mcnemar_chi2": 115.39,
+    "mcnemar_chi2": 303.04,
     "mcnemar_p": 0.0
   },
   "S15_seqlen": [
     {
       "n_obs": 1,
-      "accuracy": 97.0
+      "accuracy": 84.7
     },
     {
       "n_obs": 2,
-      "accuracy": 99.7
+      "accuracy": 91.3
     },
     {
       "n_obs": 3,
-      "accuracy": 100.0
+      "accuracy": 94.7
     },
     {
       "n_obs": 4,
-      "accuracy": 99.3
+      "accuracy": 97.0
     },
     {
       "n_obs": 6,
-      "accuracy": 99.0
+      "accuracy": 96.0
     },
     {
       "n_obs": 8,
-      "accuracy": 99.3
+      "accuracy": 95.3
     },
     {
       "n_obs": 12,
-      "accuracy": 98.7
+      "accuracy": 96.3
     },
     {
       "n_obs": 18,
-      "accuracy": 98.7
+      "accuracy": 95.0
     },
     {
       "n_obs": 24,
-      "accuracy": 98.7
+      "accuracy": 95.0
     },
     {
       "n_obs": 36,
-      "accuracy": 99.0
+      "accuracy": 97.3
     }
   ],
   "S16_stats": {
     "overall_ci": [
-      99.0,
-      99.5
+      81.0,
+      83.1
     ],
-    "cohens_h": 0.47
+    "cohens_h": 0.754
   },
   "summary": {
     "verdict": "PASS \u2014 Model validated on fully independent data",
     "gates_passed": 38,
     "gates_total": 38,
     "failed_gates": [],
-    "runtime_seconds": 30.9,
-    "timestamp": "2026-03-16T08:29:57.364774"
+    "runtime_seconds": 31.5,
+    "timestamp": "2026-03-16T08:52:23.901731"
   }
 }
