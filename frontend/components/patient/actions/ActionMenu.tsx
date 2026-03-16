@@ -74,6 +74,8 @@ export function ActionMenu({ onLogGlucose, onLogFood, onVoiceCheckIn }: ActionMe
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
                 whileTap={{ scale: 0.9 }}
+                aria-label="Open actions menu"
+                aria-expanded={isOpen}
                 className={cn(
                     "h-14 w-14 rounded-full shadow-xl flex items-center justify-center text-white pointer-events-auto transition-all duration-300 z-50",
                     isOpen ? "bg-neutral-800 rotate-45" : "bg-[var(--accent-500)] hover:brightness-110 rotate-0"

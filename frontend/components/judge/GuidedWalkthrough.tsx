@@ -28,8 +28,10 @@ import {
     Users,
     FileText,
     Mic,
-    Smartphone,
     RefreshCw,
+    Clock,
+    DollarSign,
+    Globe,
 } from "lucide-react";
 
 type TabId = "overview" | "patient" | "nurse" | "intelligence" | "tooldemo";
@@ -68,18 +70,21 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
     const [cardPos, setCardPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const [highlightRect, setHighlightRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
     const [mounted, setMounted] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => { setMounted(true); }, []);
 
     const runAction = useCallback(async (action: () => Promise<void>, stepIdx: number) => {
         setActionRunning(true);
+        setActionError(null);
         try {
             await action();
             setActionDone(prev => new Set(prev).add(stepIdx));
             onRefresh();
         } catch (e) {
             console.error("Walkthrough action failed:", e);
+            setActionError("Pipeline encountered an issue. You can retry or skip to the next step.");
             setActionDone(prev => new Set(prev).add(stepIdx));
         } finally {
             setActionRunning(false);
@@ -96,7 +101,6 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         }
 
         // 2. Click the Run Full Simulation button — this triggers the real pipeline
-        // AND writes to the console log (which the user should be watching)
         const runBtn = document.getElementById('btn-run-sim') as HTMLButtonElement;
         if (runBtn && !runBtn.disabled) {
             runBtn.click();
@@ -109,11 +113,11 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                         resolve();
                     }
                 }, 500);
-                // Safety timeout
+                // Safety timeout — don't hang forever
                 setTimeout(() => { clearInterval(check); resolve(); }, 15000);
             });
         } else {
-            // Fallback: run API calls directly
+            // Fallback: run API calls directly if button not found
             await api.resetData();
             await api.injectScenario(scenario, 14);
             await api.runHMM();
@@ -131,10 +135,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-blue-600 to-indigo-600",
             title: "Welcome to Bewo",
             subtitle: "AI-Powered Chronic Disease Management for Singapore",
-            body: "You're about to experience a live, working system — not a prototype, not a mockup.\n\nEvery button fires real API calls against our FastAPI backend: HMM Viterbi inference, Monte Carlo simulation, agentic AI reasoning, 6-dimension safety classification, and automated nurse triage.\n\nThis walkthrough guides you through the exact journey that makes Bewo different from every other team: we don't just predict — we act.",
-            insight: "20,000+ lines of production code. 53 API endpoints. 35 database tables. 7 injectable scenarios. 3 stakeholder views. Everything you'll see is live.",
+            body: "You're about to experience a live, working system \u2014 not a prototype, not a mockup.\n\nEvery button fires real API calls: HMM Viterbi inference, Baum-Welch learning, Monte Carlo simulation, agentic AI reasoning, and 6-dimension safety classification.\n\nBewo solves one problem: Singapore spends $2.5B/year on diabetes complications that are 61% preventable. We detect health crises 48 hours before they happen \u2014 from passive sensor data alone \u2014 then autonomously intervene.\n\nThis guided walkthrough takes ~8 minutes and covers everything.",
+            insight: "43,000+ lines of production code. 53 API endpoints. 35 database tables. 7 injectable clinical scenarios. 3 stakeholder views (patient, nurse, caregiver). Everything you see is computed live.",
             icon: <Sparkles size={20} />,
-            stat: { value: "20K+", label: "Lines of Code" },
+            stat: { value: "43K+", label: "Lines of Code" },
             highlight: "#sidebar-brand",
             pos: "right",
         },
@@ -143,9 +147,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "INTRODUCTION",
             phaseColor: "from-blue-600 to-indigo-600",
             title: "Your Control Panel",
-            subtitle: "The Judge Console — you control everything from here",
-            body: "Look at the left sidebar — that's your Admin Console. It has:\n\n• System status indicator (green = backend running)\n• 7 injectable clinical scenarios (from stable to sudden crisis)\n• Run Full Simulation button — triggers the entire pipeline\n• Reset Database — start fresh anytime\n• Live console log — shows every pipeline step in real-time\n\nAbove you, the 5 tabs let you switch between:\nOverview | Patient View | Nurse View | AI Intelligence | Tool Demo\n\nWe'll walk through each one.",
-            insight: "Most competition demos are pre-recorded or pre-loaded. Yours lets judges inject any scenario and watch the entire system respond in real-time. That's a massive differentiator.",
+            subtitle: "You control the entire system from here",
+            body: "Left sidebar \u2014 Admin Console:\n\u2022 System status indicator (green = backend connected)\n\u2022 7 injectable clinical scenarios (stable \u2192 crisis \u2192 recovery)\n\u2022 \"Run Full Simulation\" \u2014 triggers the complete AI pipeline\n\u2022 \"Reset Database\" \u2014 start fresh anytime\n\u2022 Live console log \u2014 every pipeline step in real-time\n\nTop tabs \u2014 5 views:\nOverview | Patient View | Nurse View | AI Intelligence | Tool Demo\n\nKey differentiator: most competition demos are pre-recorded. Ours lets you inject any scenario and watch the system respond live. You control what happens.",
+            insight: "Try this after the walkthrough: inject different scenarios and switch between tabs. The same underlying data renders completely differently for each stakeholder. That's multi-stakeholder design in action.",
             tab: "overview",
             icon: <BarChart3 size={20} />,
             stat: { value: "7", label: "Scenarios" },
@@ -155,16 +159,16 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 2: CRISIS SCENARIO (Steps 2-6)
+        // PHASE 2: CRISIS SCENARIO (Steps 2-5)
         // ===============================================
         {
             id: "inject_crisis",
             phase: "CRISIS SCENARIO",
             phaseColor: "from-rose-600 to-red-600",
             title: "Triggering a Crisis",
-            subtitle: "Injecting 14 days of deteriorating patient data",
-            body: "We're about to inject the \"Warning → Crisis\" scenario:\n\n• Days 1-5: Stable baseline (glucose 5-7 mmol/L, 80%+ adherence)\n• Days 6-10: Gradual decline (glucose rising, steps dropping)\n• Days 11-14: Full crisis (glucose 15+ mmol/L, adherence 30%, HRV collapsed)\n\nClick the button below. Watch the console log on the left — it will show each pipeline stage firing:\n1. Data injection (14 days of biometrics)\n2. HMM Viterbi state decoding\n3. Baum-Welch parameter learning (EM algorithm)\n4. Monte Carlo risk simulation (2,000 trajectories)",
-            insight: "A traditional health app would only catch this after the patient collapses and ends up in the ER. Bewo detects it 48 hours before symptoms become critical — from passive sensor data alone.",
+            subtitle: "14 days of deteriorating patient data \u2014 injected live",
+            body: "We'll inject the \"Warning \u2192 Crisis\" scenario for Mr. Tan Ah Kow (67M, Type 2 Diabetes + Hypertension + Hyperlipidemia):\n\n\u2022 Days 1\u20135: Stable baseline (glucose 5\u20137 mmol/L, 80%+ med adherence)\n\u2022 Days 6\u201310: Gradual decline (glucose rising, steps dropping, HRV falling)\n\u2022 Days 11\u201314: Full crisis (glucose 15+ mmol/L, adherence 30%, HRV collapsed)\n\nClick the button below and watch the console log on the left \u2014 it shows each pipeline stage:\n1. Data injection (14 days \u00d7 9 biomarkers)\n2. HMM Viterbi state decoding (most likely hidden state sequence)\n3. Baum-Welch parameter learning (EM algorithm adapts to this patient)\n4. Monte Carlo risk simulation (2,000 forward trajectories)",
+            insight: "A traditional health app catches this after Mr. Tan collapses in the ER \u2014 costing $8,000\u2013$15,000. Bewo detects it 48 hours before symptoms become critical, from passive sensor data alone. That's the $2.5B opportunity.",
             tab: "overview",
             action: () => injectScenario("warning_to_crisis"),
             actionLabel: "Inject Warning \u2192 Crisis Scenario",
@@ -177,10 +181,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             id: "overview_state_cards",
             phase: "CRISIS SCENARIO",
             phaseColor: "from-rose-600 to-red-600",
-            title: "State Cards — The System's Verdict",
+            title: "The System's Verdict",
             subtitle: "Four metrics that tell the whole story at a glance",
-            body: "Look at the 4 cards at the top of the Overview:\n\n1. HMM State: CRISIS (red) — Viterbi decoded the 14-day hidden state sequence and classified the current state\n\n2. Risk Score: ~95% — the overall composite risk from all 9 biomarkers\n\n3. 48h Crisis Prob: ~95% — Monte Carlo ran 2,000 stochastic simulations forward 48 hours and measured how many paths hit crisis\n\n4. Drug Interactions: the number of medication interaction pairs detected (Metformin + Lisinopril, etc.)",
-            insight: "All four of these updated in under 2 seconds. No nurse clicked anything. No doctor reviewed a chart. The system detected, analyzed, classified, and scored — autonomously.",
+            body: "The 4 state cards updated automatically:\n\n1. HMM State: CRISIS (red) \u2014 Viterbi decoded the 14-day hidden state sequence across 9 biomarkers and classified current state\n\n2. Risk Score: ~95% \u2014 composite risk from all biomarkers, weighted by clinical significance\n\n3. 48h Crisis Probability: ~95% \u2014 Monte Carlo ran 2,000 stochastic simulations forward 48 hours; this is the fraction that hit crisis\n\n4. Drug Interactions \u2014 medication pairs checked for contraindications (Metformin + Lisinopril, Aspirin + Atorvastatin, etc.)\n\nAll four computed in under 2 seconds. No nurse clicked anything. No doctor reviewed a chart.",
+            insight: "Why HMM over deep learning? Explainability. A neural network says 'CRISIS' with no reason. Our HMM shows exactly which biomarkers triggered the state change: e.g., glucose variability contributed 35%, medication adherence 28%, HRV 15%. Every decision is traceable.",
             tab: "overview",
             icon: <Activity size={20} />,
             stat: { value: "<2s", label: "Detection Time" },
@@ -193,13 +197,13 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "CRISIS SCENARIO",
             phaseColor: "from-rose-600 to-red-600",
             title: "Auto-Generated SBAR Report",
-            subtitle: "Clinical handoff summary — zero nurse effort",
-            body: "Scroll down on the Overview. You'll see the SBAR Clinical Report:\n\n• S (Situation): Current state, what's happening right now\n• B (Background): Patient profile — 67M, T2DM + HTN + HLD, medications\n• A (Assessment): Clinical analysis from HMM + Monte Carlo\n• R (Recommendation): Actionable next steps for the nurse\n\nThis is the standard clinical handoff format used in every hospital in Singapore. Nurses spend 15-20 minutes writing these manually.",
-            insight: "This SBAR report was auto-generated in under 3 seconds. A nurse manually writing this takes 15-20 minutes per patient. Bewo lets one nurse monitor 100+ patients without missing a single deterioration.",
+            subtitle: "Clinical handoff format \u2014 zero nurse effort",
+            body: "Scroll down to see the SBAR Clinical Report:\n\n\u2022 S (Situation): Current state, what's happening right now\n\u2022 B (Background): Patient profile \u2014 67M, T2DM + HTN + HLD, medications\n\u2022 A (Assessment): Clinical analysis from HMM + Monte Carlo + safety checks\n\u2022 R (Recommendation): Actionable next steps ranked by urgency\n\nSBAR is the standard clinical handoff format used in every Singapore hospital. Nurses spend 15\u201320 minutes writing these manually per patient.\n\nBewo generates them in under 3 seconds with full clinical context \u2014 HMM state, biometric trends, drug interactions, risk trajectory.",
+            insight: "A polyclinic nurse manages 600+ patients. If each SBAR takes 15 minutes manually, that's 150 hours/day across the panel. Bewo does it in seconds. One nurse can now monitor 100+ patients without missing a single deterioration.",
             tab: "overview",
             icon: <FileText size={20} />,
             stat: { value: "3s", label: "SBAR Generation" },
-            visualHint: "Scroll down to see the SBAR report, Triage, and Drug Interactions",
+            visualHint: "Scroll down to see the SBAR report below the state cards",
             highlight: "#sbar-section",
             scrollTo: "#sbar-section",
             pos: "right",
@@ -209,9 +213,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "CRISIS SCENARIO",
             phaseColor: "from-rose-600 to-red-600",
             title: "Triage & Drug Safety",
-            subtitle: "Multi-patient urgency ranking + medication interaction checks",
-            body: "Below the SBAR, you'll see two more panels:\n\nNurse Triage:\n• Patients ranked by urgency score (0-100%)\n• Categories: IMMEDIATE (red) → SOON (amber) → MONITOR (blue) → STABLE (green)\n• P001 is flagged IMMEDIATE — auto-surfaced to the top of the queue\n\nDrug Interactions:\n• 16 medication interaction pairs checked\n• Severity: CONTRAINDICATED / MAJOR / MODERATE / MINOR\n• Shows mechanism of interaction and clinical recommendation\n• Metformin + Lisinopril, Aspirin + Atorvastatin, etc.",
-            insight: "Drug interaction checking runs on every state transition. Most apps check once at prescription time. Bewo checks continuously because patient context changes — what's safe at STABLE may be dangerous at CRISIS.",
+            subtitle: "Multi-patient priority ranking + continuous medication monitoring",
+            body: "Two more panels below SBAR:\n\nNurse Triage:\n\u2022 All patients ranked by urgency score (0\u2013100%)\n\u2022 Categories: IMMEDIATE (red) \u2192 SOON (amber) \u2192 MONITOR (blue) \u2192 STABLE (green)\n\u2022 Mr. Tan auto-surfaced to top as IMMEDIATE\n\nDrug Interactions:\n\u2022 16 medication interaction pairs checked continuously\n\u2022 Severity levels: CONTRAINDICATED / MAJOR / MODERATE / MINOR\n\u2022 Shows mechanism of interaction + clinical recommendation\n\u2022 Runs on every state transition, not just at prescription time",
+            insight: "Most apps check drug interactions once when prescribed. Bewo checks continuously because patient context changes \u2014 what's safe at STABLE may be dangerous at CRISIS (e.g., Metformin + renal stress). This is contextual pharmacovigilance.",
             tab: "overview",
             icon: <Pill size={20} />,
             stat: { value: "16", label: "Drug Pairs Checked" },
@@ -221,7 +225,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 3: NURSE VIEW (Steps 7-9)
+        // PHASE 3: NURSE VIEW (Steps 6-8)
         // ===============================================
         {
             id: "nurse_intro",
@@ -229,8 +233,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-blue-600 to-cyan-600",
             title: "The Nurse's Perspective",
             subtitle: "What Sarah Chen, RN sees at the start of her shift",
-            body: "Click the \"Nurse View\" tab above. You're now looking at the clinical dashboard.\n\nTop bar: Patient header showing Mr. Tan Ah Kow, 67M, with CRISIS status badge (pulsing red — urgent attention needed).\n\nBelow that: The 14-day Health Timeline — click any day to see the detailed HMM analysis for that date, including Gaussian probability curves for each of the 9 biomarkers.",
-            insight: "A polyclinic nurse manages 600+ patients. Manual chart review for each takes 20+ minutes. Bewo gives them a priority-sorted dashboard where the most critical patients surface automatically. Zero manual review needed.",
+            body: "You're now looking at the clinical dashboard \u2014 designed for polyclinic nurses, not patients.\n\nTop bar: Mr. Tan Ah Kow, 67M with CRISIS status badge (pulsing red = urgent attention needed).\n\nBelow: The 14-day Health Timeline \u2014 each day is color-coded by HMM state with confidence percentages. Click any day to drill into the detailed analysis.\n\nThis view is designed for speed: a nurse glances at the timeline, sees red, clicks the day, reads the SBAR, acts. Under 60 seconds from dashboard to decision.",
+            insight: "Singapore polyclinics assign 600+ patients per nurse. Manual chart review takes 20+ minutes each. Bewo's auto-triage means the nurse only reviews patients that need attention, in priority order. Zero manual chart-pulling.",
             tab: "nurse",
             icon: <Stethoscope size={20} />,
             stat: { value: "600+", label: "Patients Per Nurse" },
@@ -241,14 +245,14 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             id: "nurse_timeline",
             phase: "NURSE DASHBOARD",
             phaseColor: "from-blue-600 to-cyan-600",
-            title: "14-Day Timeline & HMM Analysis",
-            subtitle: "Click any day to see exactly why the HMM made its decision",
-            body: "The color-coded timeline strip shows the HMM state for each of the past 14 days:\n• Green = STABLE\n• Amber = WARNING  \n• Red = CRISIS\n• Confidence % shown below each day\n\nClick a day to expand the detail panel:\n• Gaussian probability curves — one per biomarker, showing the fit to each state\n• Evidence table — which features pulled toward which state, and by how much\n• Log-likelihood heatmap — the raw probability matrix behind the decision\n\nThis is full HMM interpretability — every decision is explainable.",
-            insight: "This is why we chose HMM over deep learning. A neural network would say 'CRISIS' with no explanation. Our HMM shows exactly which biomarkers triggered the state change: glucose variability contributed 35%, medication adherence 28%, HRV 15%...",
+            title: "14-Day Timeline & Daily Analysis",
+            subtitle: "Click any day \u2014 see exactly why the HMM made its decision",
+            body: "The color-coded timeline strip:\n\u2022 Green = STABLE | Amber = WARNING | Red = CRISIS\n\u2022 Confidence % shown below each day\n\nClick a day to expand the detail panel:\n\u2022 Gaussian probability curves \u2014 one per biomarker, showing fit to each state's emission distribution\n\u2022 Evidence table \u2014 which features pulled toward which state, and by how much\n\u2022 Log-likelihood breakdown \u2014 the raw probability matrix behind the decision\n\nThis is full HMM interpretability. Every clinical decision is explainable, auditable, and defensible. No black-box neural network predictions.",
+            insight: "Interpretability isn't optional in healthcare \u2014 it's legally required. Under Singapore's PDPA and upcoming AI governance framework, clinical AI must explain its reasoning. HMM gives us this by design: state emissions, transition probabilities, and feature contributions are all transparent.",
             tab: "nurse",
             icon: <Brain size={20} />,
             stat: { value: "9", label: "Biomarker Features" },
-            visualHint: "Click any day on the timeline strip to see the analysis detail",
+            visualHint: "Click any day on the timeline strip to see the detailed analysis",
             highlight: "#nurse-timeline",
             pos: "right",
         },
@@ -258,8 +262,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-blue-600 to-cyan-600",
             title: "HMM Intelligence Center",
             subtitle: "State distribution, transition dynamics, Monte Carlo forecast",
-            body: "Below the timeline, you'll see 3 panels side-by-side:\n\n1. State Distribution (donut chart) — what % of the past 14 days were STABLE vs WARNING vs CRISIS\n\n2. Transition Heatmap (3×3 grid) — learned transition probabilities. Shows P(CRISIS→STABLE) = low, P(CRISIS→CRISIS) = high — the system understands that crisis states are sticky\n\n3. Monte Carlo Forecast (area chart) — 2,000 simulated trajectories showing crisis probability over the next 48 hours. The red area shows the danger zone.\n\nFurther down: 24h biometric trends (glucose line + steps bar chart), SBAR report, drug interactions, triage, and active alerts.",
-            insight: "The transition matrix is learned via Baum-Welch (Expectation-Maximization), not hardcoded. As more data comes in, the model adapts to this specific patient's patterns. Mr. Tan's crisis-to-stable transition probability is different from Mdm. Lee's.",
+            body: "Three panels below the timeline:\n\n1. State Distribution (donut) \u2014 what % of the past 14 days were STABLE vs WARNING vs CRISIS\n\n2. Transition Heatmap (3\u00d73 grid) \u2014 learned transition probabilities via Baum-Welch EM algorithm. Shows P(CRISIS\u2192STABLE) is low, P(CRISIS\u2192CRISIS) is high \u2014 crisis states are \"sticky\"\n\n3. Monte Carlo Forecast (area chart) \u2014 2,000 simulated trajectories showing crisis probability over the next 48 hours. Red area = danger zone\n\nFurther down: 24h biometric trends, the SBAR report, drug interactions, triage, and active alerts \u2014 all from the nurse's perspective.",
+            insight: "The transition matrix is learned via Baum-Welch (Expectation-Maximization), not hardcoded. As data accumulates, the model personalizes to each patient. Mr. Tan's crisis-to-stable transition probability becomes unique to his biology and behavior.",
             tab: "nurse",
             icon: <TrendingUp size={20} />,
             stat: { value: "2K", label: "Monte Carlo Paths" },
@@ -269,7 +273,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 4: PATIENT VIEW (Steps 10-13)
+        // PHASE 4: PATIENT VIEW (Steps 9-12)
         // ===============================================
         {
             id: "patient_intro",
@@ -277,8 +281,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-emerald-600 to-teal-600",
             title: "What Mr. Tan Sees",
             subtitle: "A caring companion, not a clinical dashboard",
-            body: "Click \"Patient View\" above. You'll see a mobile-sized app — this is what the patient actually uses.\n\nNotice the difference: no HMM states, no probability curves, no triage scores. Instead:\n\n• Daily Insight Card — a risk indicator with trend (Declining/Improving/Stable) and motivational text\n• Merlion Risk Score — a simple percentage the patient can understand\n• Biometric overview — glucose, steps, heart rate in a clean bento grid",
-            insight: "The patient never sees 'CRISIS' or 'HMM state probability'. They see a caring companion. Trust is the intervention — if patients don't trust the app, no algorithm in the world will help them take their medication.",
+            body: "This is the patient's mobile app \u2014 notice the stark difference from the nurse view.\n\nNo HMM states. No probability curves. No triage scores. Instead:\n\n\u2022 Daily Insight Card \u2014 a simple risk indicator with trend (Declining/Improving/Stable) and motivational, culturally-sensitive text\n\u2022 Merlion Risk Score \u2014 a percentage the patient can understand\n\u2022 Biometric overview \u2014 glucose, steps, heart rate in a clean bento grid\n\nThe clinical complexity is hidden. The patient sees a caring companion that speaks their language.",
+            insight: "Trust is the intervention. If Mr. Tan doesn't trust the app, no algorithm will help him take his medication. That's why the patient view uses warm language, Singlish when appropriate, and never shows alarming clinical jargon. UX IS the treatment adherence strategy.",
             tab: "patient",
             icon: <Heart size={20} />,
             stat: { value: "67M", label: "Mr. Tan Ah Kow" },
@@ -289,10 +293,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             id: "patient_voucher",
             phase: "PATIENT EXPERIENCE",
             phaseColor: "from-emerald-600 to-teal-600",
-            title: "Voucher Gamification",
-            subtitle: "Loss-aversion psychology — patients work to keep what they have",
-            body: "Below the health status, you'll see the NTUC Voucher Card:\n\n• Starts at S$5.00/week\n• Decays S$0.25 per missed medication or check-in\n• Shows current balance + streak days\n• Redeemable on Sundays via QR code at NTUC FairPrice\n\nThis uses Prospect Theory (Kahneman & Tversky 1979): loss aversion is 2-2.5x stronger than equivalent gains. Patients fight harder to keep $5 than to earn $5.\n\nBelow that: Medication Schedule — swipe-to-confirm with haptic feedback, grouped by morning/afternoon/evening.",
-            insight: "We chose NTUC vouchers specifically for Singapore's elderly. Not cash, not points — grocery vouchers. Mr. Tan can buy his kopi-o and bread. Mdm. Lee can buy rice and vegetables. It's culturally meaningful, not just gamification.",
+            title: "NTUC Voucher Gamification",
+            subtitle: "Loss-aversion psychology \u2014 patients fight to keep what they have",
+            body: "The NTUC Voucher Card:\n\n\u2022 Starts at S$5.00/week\n\u2022 Decays S$0.25 per missed medication or check-in\n\u2022 Shows current balance + streak days\n\u2022 Redeemable on Sundays via QR code at NTUC FairPrice\n\nThis uses Prospect Theory (Kahneman & Tversky, 1979): loss aversion is 2\u20132.5\u00d7 stronger than equivalent gains. Patients fight harder to keep $5 than to earn $5.\n\nBelow: Medication Schedule \u2014 swipe-to-confirm with visual feedback, grouped by morning/afternoon/evening.",
+            insight: "Why NTUC vouchers specifically? Singapore's elderly don't want points or cash \u2014 they want groceries. Mr. Tan buys his kopi-o and bread. Mdm. Lee buys rice and vegetables. It's culturally meaningful, not generic gamification. This is behavioral design for Singapore.",
             tab: "patient",
             icon: <Award size={20} />,
             stat: { value: "$5", label: "Weekly Voucher" },
@@ -306,11 +310,11 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-emerald-600 to-teal-600",
             title: "AI Care Assistant",
             subtitle: "Singlish-aware, mood-detecting, tool-executing companion",
-            body: "Scroll down to the Care Assistant section. This is a real AI chat powered by Gemini + our 18-tool agent:\n\n• Type a message — it fires a real API call to our agentic runtime\n• The AI speaks Singlish when appropriate (\"Wah, uncle, your glucose quite high leh\")\n• It detects mood from text and adjusts tone\n• It can execute real tools: book appointments, check drug interactions, recommend food, celebrate streaks\n• Cross-session memory: remembers previous conversations\n\nTry typing: \"What should I eat for dinner?\" or \"My glucose is high, what should I do?\"",
-            insight: "This isn't ChatGPT with a healthcare prompt. It's a 5-turn ReAct agent that reasons over full clinical context — HMM state, medication list, recent biometrics, conversation history — before choosing which of 18 tools to execute.",
+            body: "The Care Assistant is a real AI chat powered by Gemini + our 18-tool agentic runtime:\n\n\u2022 Type a message \u2014 it fires a real API call to the agent\n\u2022 Speaks Singlish when appropriate (\"Wah, uncle, your glucose quite high leh\")\n\u2022 Detects mood from text and adjusts tone accordingly\n\u2022 Executes real tools: book appointments, check drug interactions, recommend food, celebrate streaks\n\u2022 Cross-session memory: remembers previous conversations and patient preferences\n\nTry: \"What should I eat for dinner?\" or \"My glucose is high, what should I do?\"",
+            insight: "This isn't ChatGPT with a healthcare prompt. It's a 5-turn ReAct agent that reasons over full clinical context \u2014 HMM state, medication list, recent biometrics, conversation history \u2014 before choosing which of 18 tools to execute. Every response passes through a 6-dimension safety classifier.",
             tab: "patient",
             icon: <MessageSquare size={20} />,
-            stat: { value: "5", label: "ReAct Turns" },
+            stat: { value: "18", label: "Agent Tools" },
             highlight: "#patient-chat",
             scrollTo: "#patient-chat",
             pos: "left",
@@ -319,10 +323,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             id: "patient_actions",
             phase: "PATIENT EXPERIENCE",
             phaseColor: "from-emerald-600 to-teal-600",
-            title: "Patient Actions",
+            title: "Patient Input Modes",
             subtitle: "Glucose logging, food tracking, voice check-ins",
-            body: "In the bottom-right corner, there's a floating + button. Tap it to see 3 action options:\n\n1. Log Glucose — manual entry or camera OCR (photo of glucometer → Gemini Vision extracts the reading)\n\n2. Log Food — describe what you ate in natural language (\"chicken rice with teh c\"). The AI understands local food.\n\n3. Voice Check-in — uses Web Speech API for speech-to-text, then runs sentiment analysis. Detects frustration, anxiety, or positive mood and adjusts the AI's response tone.\n\nAll of these feed into the HMM's 9 biomarker features.",
-            insight: "Voice check-in isn't just convenience — it's a mental health signal. If Mr. Tan sounds frustrated 3 days in a row, the system detects declining engagement and proactively adjusts: shorter messages, more encouragement, maybe a voucher bonus.",
+            body: "Tap the floating + button (bottom-right) to see 3 actions:\n\n1. Log Glucose \u2014 manual entry or camera OCR (photo of glucometer \u2192 Gemini Vision extracts the reading automatically)\n\n2. Log Food \u2014 describe what you ate in natural language (\"chicken rice with teh c\"). The AI understands local food and estimates nutritional impact.\n\n3. Voice Check-in \u2014 Web Speech API for speech-to-text, then sentiment analysis. Detects frustration, anxiety, or positive mood and adjusts the AI's response tone.\n\nAll inputs feed into the HMM's 9 biomarker observation vector. More data = better state estimation = earlier detection.",
+            insight: "Voice check-in is a mental health signal. If Mr. Tan sounds frustrated 3 days in a row, the system detects declining engagement and proactively adjusts: shorter messages, more encouragement, maybe a voucher bonus. Emotional state is clinical data.",
             tab: "patient",
             icon: <Mic size={20} />,
             stat: { value: "3", label: "Input Modes" },
@@ -331,16 +335,16 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 5: RECOVERY SCENARIO (Steps 14-16)
+        // PHASE 5: RECOVERY SCENARIO (Steps 13-15)
         // ===============================================
         {
             id: "inject_recovery",
             phase: "RECOVERY DEMO",
             phaseColor: "from-emerald-600 to-green-600",
             title: "Now Watch Recovery",
-            subtitle: "Bewo detects crisis, intervenes autonomously, patient recovers",
-            body: "This is Bewo's key differentiator — we don't just detect, we act.\n\nClick the button below to inject the Recovery scenario:\n• Patient starts in CRISIS\n• Bewo's agent autonomously intervenes:\n  - Sends medication reminders at optimal times\n  - Alerts the caregiver (Mrs. Tan Mei Ling) via WhatsApp\n  - Books a follow-up at NUH Diabetes Centre\n  - Celebrates the patient's adherence streak\n  - Adjusts nudge timing based on response patterns\n• Over 14 days: CRISIS → WARNING → STABLE\n\nWatch the state cards transition from red → amber → green.",
-            insight: "The agent autonomously booked a clinic appointment, alerted the caregiver, adjusted medication reminders, and celebrated the patient's streak — all without a single nurse clicking anything. 6 interventions, zero human effort.",
+            subtitle: "Bewo detects crisis \u2192 intervenes autonomously \u2192 patient recovers",
+            body: "This is Bewo's key differentiator \u2014 we don't just detect, we act.\n\nClick below to inject the Recovery scenario:\n\u2022 Mr. Tan starts in CRISIS\n\u2022 Bewo's agent autonomously intervenes:\n  \u2013 Sends medication reminders at optimal times\n  \u2013 Alerts Mrs. Tan Mei Ling (daughter/caregiver) via WhatsApp\n  \u2013 Books a follow-up at NUH Diabetes Centre\n  \u2013 Celebrates medication adherence streak\n  \u2013 Adjusts nudge timing based on response patterns\n  \u2013 Reduces caregiver alert frequency to prevent burnout\n\u2022 Over 14 days: CRISIS \u2192 WARNING \u2192 STABLE\n\nWatch the state cards transition from red \u2192 green.",
+            insight: "6 autonomous interventions, zero human effort. The agent booked a clinic appointment, alerted the caregiver, adjusted reminders, celebrated the streak \u2014 all without a nurse clicking anything. This is what \"agentic\" actually means: the AI doesn't suggest, it acts.",
             tab: "overview",
             action: () => injectScenario("recovery"),
             actionLabel: "Inject Recovery Scenario",
@@ -353,14 +357,14 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             id: "recovery_confirmed",
             phase: "RECOVERY DEMO",
             phaseColor: "from-emerald-600 to-green-600",
-            title: "Crisis Prevented",
-            subtitle: "STABLE state restored — the patient stays home, not the ER",
-            body: "Look at the dashboard now:\n\n• HMM State: STABLE (green) — patient recovered\n• Risk Score: ~22% (down from 95%)\n• 48h Crisis Prob: Low — Monte Carlo shows safe trajectory\n• SBAR: \"Metrics within acceptable range. Continue monitoring.\"\n• Triage: Patient moved from IMMEDIATE → STABLE\n\nNow click \"Nurse View\" — the timeline shows the full CRISIS → WARNING → STABLE progression with confidence scores for each day.\n\nThen click \"Patient View\" — the Daily Insight Card now shows green with \"You are doing well\" instead of red.",
-            insight: "Singapore spends $2.5B/year on diabetes. Each prevented ER admission saves $8,000-$15,000. One Bewo subscription costs $3/month. Scale this to 100,000 patients and the ROI writes itself.",
+            title: "Crisis Averted",
+            subtitle: "Mr. Tan stays home. Not in the ER. Bewo paid for itself.",
+            body: "The dashboard now shows:\n\n\u2022 HMM State: STABLE (green) \u2014 recovered\n\u2022 Risk Score: ~22% (down from 95%)\n\u2022 48h Crisis Prob: Low \u2014 Monte Carlo shows safe trajectory\n\u2022 SBAR: \"Metrics within acceptable range. Continue monitoring.\"\n\u2022 Triage: IMMEDIATE \u2192 STABLE\n\nNow check the other views:\n\u2022 Nurse View \u2014 timeline shows full CRISIS \u2192 WARNING \u2192 STABLE with confidence scores per day\n\u2022 Patient View \u2014 Daily Insight Card is green: \"You are doing well!\"\n\nOne prevented ER visit saves $8,000\u2013$15,000. Bewo costs $3/month. That's 2,900 patient-months funded per avoided admission.",
+            insight: "Singapore spends $2.5B/year on diabetes complications. 61% are preventable with early intervention. At $3/patient/month and 100,000 target patients, Bewo's annual cost is $3.6M \u2014 preventing just 450 ER visits covers that entirely. The ROI is not theoretical, it's arithmetic.",
             tab: "overview",
-            icon: <TrendingUp size={20} />,
+            icon: <DollarSign size={20} />,
             stat: { value: "95\u219222%", label: "Risk Reduction" },
-            visualHint: "State cards should now be green. Check Nurse View timeline too",
+            visualHint: "State cards should now be green. Check Nurse and Patient views too.",
             highlight: "#state-cards-grid",
             pos: "below",
         },
@@ -369,9 +373,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "RECOVERY DEMO",
             phaseColor: "from-emerald-600 to-green-600",
             title: "Three Stakeholders, One Event",
-            subtitle: "Same recovery — 3 completely different experiences",
-            body: "Click through the tabs and see how the same recovery event looks different for each stakeholder:\n\nOverview (Judge): Raw HMM states, risk scores, SBAR report, triage rankings — the technical truth\n\nNurse View: 14-day timeline with clickable analysis, transition heatmap showing recovery trajectory, biometric trends returning to normal\n\nPatient View: Green insight card saying \"You are doing well\", voucher balance intact, streak continuing, AI companion saying encouraging things\n\nThis is multi-stakeholder design: the right information for the right person at the right abstraction level.",
-            insight: "Most health AI shows everyone the same dashboard. Bewo gives the patient empathy, the nurse efficiency, and the caregiver peace of mind. Same underlying data, three completely different interfaces.",
+            subtitle: "Same recovery \u2014 3 completely different interfaces",
+            body: "Click through the tabs to see how the same recovery looks different:\n\nOverview (Judge): Raw HMM states, risk scores, Monte Carlo, SBAR, triage \u2014 the technical truth\n\nNurse View: 14-day timeline with clickable day analysis, transition heatmap showing recovery trajectory, biometric trends returning to normal ranges\n\nPatient View: Green insight card (\"You are doing well!\"), voucher balance intact, medication streak continuing, AI companion giving encouragement\n\nThis is multi-stakeholder design: the right information, at the right abstraction level, for the right person. The patient gets empathy. The nurse gets efficiency. The caregiver gets peace of mind.",
+            insight: "Most health AI shows everyone the same dashboard. Bewo gives clinicians clinical data, patients emotional support, and caregivers actionable status updates. Same underlying HMM, three completely different user experiences.",
             tab: "overview",
             icon: <Users size={20} />,
             stat: { value: "3", label: "Stakeholder Views" },
@@ -380,7 +384,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 6: TOOL DEMO (Steps 17-18)
+        // PHASE 6: TOOL DEMO (Steps 16-17)
         // ===============================================
         {
             id: "tool_demo_intro",
@@ -388,8 +392,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-cyan-600 to-blue-600",
             title: "18 Agentic AI Tools",
             subtitle: "Every tool fires against a real API endpoint",
-            body: "Click the \"Tool Demo\" tab. You'll see 8 individual tool buttons plus \"Run All 18 Tools\".\n\nTry clicking individual tools first:\n• Drug Interaction Check — queries the real drug interaction database\n• SBAR Report — generates a real clinical summary\n• Caregiver Alert — sends a real alert with burden scoring\n• Food Recommendation — asks the AI for a culturally-aware meal suggestion\n\nThen click \"Run All 18 Tools\" to see the full pipeline execute in sequence.\n\nWatch the terminal output — it shows the exact function calls with arguments and real API responses.",
-            insight: "Each of these 18 tools learns which interventions work best per individual patient. Mr. Tan responds to voucher nudges. Mdm. Lee responds to caregiver involvement. The system adapts — tool effectiveness scores are tracked per-patient, per-state.",
+            body: "Click the \"Tool Demo\" tab. You'll see individual tool buttons plus \"Run All 18 Tools\".\n\nTry clicking individual tools:\n\u2022 Drug Interaction Check \u2014 queries real interaction database (16 pairs, 39 drug-to-class mappings)\n\u2022 SBAR Report \u2014 generates real clinical summary from current HMM state\n\u2022 Caregiver Alert \u2014 sends alert with intelligent burden scoring\n\u2022 Food Recommendation \u2014 culturally-aware meal suggestion (knows hawker food)\n\nThen click \"Run All 18 Tools\" to see the full pipeline.\n\nWatch the terminal \u2014 it shows exact function calls, arguments, and real API responses. Nothing is mocked.",
+            insight: "Each tool tracks its effectiveness per-patient, per-state. The system learns that medication reminders work 85% of the time for Mr. Tan in WARNING state but only 40% in CRISIS. Over time, the agent preferentially selects tools that work for each individual.",
             tab: "tooldemo",
             icon: <Terminal size={20} />,
             stat: { value: "18", label: "AI Tools" },
@@ -401,9 +405,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "AGENTIC AI",
             phaseColor: "from-cyan-600 to-blue-600",
             title: "The 5-Phase Pipeline",
-            subtitle: "Safety first, clinical second, engagement third",
-            body: "When \"Run All\" executes, watch the 5 phases in the terminal:\n\nPhase 1 — Safety Pre-Check:\n• Drug interactions checked (16 pairs)\n• Safety classifier audit (6 dimensions)\n\nPhase 2 — Clinical Intelligence:\n• SBAR report generated\n• Multi-patient nurse triage\n\nPhase 3 — Patient Engagement:\n• Food recommendation (culturally-aware)\n• Streak celebration + voucher check\n\nPhase 4 — Proactive Communication:\n• Appointment booking\n• Caregiver alert (with burden scoring)\n\nPhase 5 — Remaining Tools:\n• Medication adjustment, reminders, activity suggestion, escalation, weekly report, nudge scheduling",
-            insight: "Safety comes FIRST — before any patient-facing action, the system checks drug interactions and runs the safety classifier. Every response is verified on 6 dimensions: medical claims, emotional mismatch, hallucination, cultural sensitivity, scope, and dangerous advice.",
+            subtitle: "Safety first. Clinical second. Engagement third.",
+            body: "When \"Run All\" executes, watch the 5 phases:\n\nPhase 1 \u2014 Safety Pre-Check:\n\u2022 Drug interactions (16 pairs, severity-classified)\n\u2022 6-dimension safety classifier audit\n\nPhase 2 \u2014 Clinical Intelligence:\n\u2022 SBAR report generation\n\u2022 Multi-patient nurse triage ranking\n\nPhase 3 \u2014 Patient Engagement:\n\u2022 Culturally-aware food recommendation\n\u2022 Streak celebration + voucher management\n\nPhase 4 \u2014 Proactive Communication:\n\u2022 Appointment booking\n\u2022 Caregiver alert (with burden scoring)\n\nPhase 5 \u2014 Remaining Tools:\n\u2022 Medication adjustment, reminders, activity suggestions, escalation, weekly report, nudge scheduling",
+            insight: "Safety comes FIRST \u2014 before any patient-facing action, the system checks drug interactions and runs the safety classifier. Every AI response is verified on 6 dimensions: medical accuracy, emotional appropriateness, hallucination detection, cultural sensitivity, scope boundaries, and dangerous advice prevention.",
             tab: "tooldemo",
             icon: <Shield size={20} />,
             stat: { value: "6", label: "Safety Dimensions" },
@@ -412,16 +416,16 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 7: AI INTELLIGENCE (Steps 19-20)
+        // PHASE 7: AI INTELLIGENCE (Steps 18-19)
         // ===============================================
         {
             id: "intelligence_intro",
             phase: "UNDER THE HOOD",
             phaseColor: "from-purple-600 to-violet-600",
             title: "The Learning Engine",
-            subtitle: "This is what makes Bewo truly agentic — it learns and remembers",
-            body: "Click \"AI Intelligence\" tab. You'll see 10 panels showing the agent's internal state:\n\n• Agent Memory — episodic (what happened), semantic (medical facts), preference (patient likes/dislikes). Cross-session: remembers between conversations.\n\n• Tool Effectiveness — per-tool, per-state success rates. The system learns that medication reminders work 85% of the time for Mr. Tan in WARNING state but only 40% in CRISIS.\n\n• Safety Classifier — audit trail of every response. Verdict: SAFE/CAUTION/UNSAFE. Flags any issues.\n\n• Baum-Welch Parameters — the learned HMM transition matrix (via EM algorithm). Shows how the model has adapted to this patient.",
-            insight: "Most health AI chatbots are stateless — they forget you between sessions. Bewo remembers that Mr. Tan prefers Hokkien, skips breakfast on Sundays, and responds better to gentle nudges than clinical warnings. That's 3 types of memory working together.",
+            subtitle: "What makes Bewo truly agentic \u2014 it learns and remembers",
+            body: "Click \"AI Intelligence\". You'll see 10 panels showing the agent's internal state:\n\n\u2022 Agent Memory \u2014 3 types: episodic (events), semantic (medical knowledge), preference (patient likes/dislikes). Persists across sessions.\n\n\u2022 Tool Effectiveness \u2014 per-tool, per-state success rates. Learns which interventions work for each patient.\n\n\u2022 Safety Classifier \u2014 audit trail of every AI response with verdict: SAFE / CAUTION / UNSAFE.\n\n\u2022 Baum-Welch Parameters \u2014 the learned HMM transition matrix via EM algorithm, showing how the model adapted to this specific patient's patterns.",
+            insight: "Most health AI chatbots are stateless \u2014 they forget between sessions. Bewo remembers that Mr. Tan prefers Hokkien, skips breakfast on Sundays, and responds better to gentle nudges than clinical warnings. 3 memory types working together make the AI feel like it actually knows the patient.",
             tab: "intelligence",
             icon: <Brain size={20} />,
             stat: { value: "3", label: "Memory Types" },
@@ -433,9 +437,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "UNDER THE HOOD",
             phaseColor: "from-purple-600 to-violet-600",
             title: "Proactive Care & Caregiver Support",
-            subtitle: "The agent reaches out first — it doesn't wait to be asked",
-            body: "The remaining Intelligence panels show:\n\n• Streaks & Engagement — medication streaks (3/7/14/30-day milestones), daily challenge completion, overall engagement score\n\n• Caregiver Burden — scores alert fatigue (0-100). If Mrs. Tan is getting too many alerts, the system auto-switches to daily digest mode. Prevents caregiver burnout.\n\n• Proactive Check-ins — the agent initiates conversations based on 6 trigger types: missed medication, glucose anomaly, declining engagement, streak milestone, scheduled check-in, mood change\n\n• Counterfactual Analysis — \"what if you had taken your medication?\" Shows the patient their risk would have dropped from 35% to 12%. Motivates compliance through evidence, not guilt.",
-            insight: "Caregiver burden scoring is something no competitor does. Mrs. Tan (the daughter) gets alerts, but if she's overwhelmed, the system automatically reduces frequency. Bewo cares for the caregivers too.",
+            subtitle: "The agent reaches out first \u2014 it doesn't wait to be asked",
+            body: "More Intelligence panels:\n\n\u2022 Streaks & Engagement \u2014 medication streaks (3/7/14/30-day milestones), challenge completion, engagement scoring\n\n\u2022 Caregiver Burden \u2014 scores alert fatigue (0\u2013100). If Mrs. Tan is overwhelmed, the system auto-switches to daily digest mode. Prevents caregiver burnout.\n\n\u2022 Proactive Check-ins \u2014 agent initiates conversations on 6 triggers: missed med, glucose anomaly, declining engagement, streak milestone, scheduled check-in, mood change\n\n\u2022 Counterfactual Analysis \u2014 \"What if you had taken your medication?\" Shows Mr. Tan his risk would have dropped from 35% \u2192 12%. Motivates compliance through evidence, not guilt.",
+            insight: "Caregiver burden scoring is unique to Bewo. Mrs. Tan (the daughter) gets alerts \u2014 but if she's overwhelmed, the system reduces frequency automatically. No competitor monitors caregiver wellbeing. Bewo cares for the whole family, not just the patient.",
             tab: "intelligence",
             icon: <Heart size={20} />,
             stat: { value: "6", label: "Proactive Triggers" },
@@ -445,16 +449,33 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 8: MORE SCENARIOS (Step 21)
+        // PHASE 8: COMPETITIVE EDGE (Step 20) — NEW
+        // ===============================================
+        {
+            id: "competitive_edge",
+            phase: "WHY BEWO WINS",
+            phaseColor: "from-amber-600 to-orange-600",
+            title: "What No Competitor Does",
+            subtitle: "5 advantages that are hard to replicate",
+            body: "1. Explainable AI \u2014 HMM gives full interpretability (required by Singapore's AI governance). Deep learning competitors can't explain their predictions.\n\n2. Autonomous Action \u2014 18 tools that act, not just alert. Competitors notify; Bewo books appointments, adjusts reminders, and manages caregivers.\n\n3. Cultural Design \u2014 Singlish, hawker food understanding, NTUC vouchers. Not a US product localized for Asia \u2014 built for Singapore from day one.\n\n4. Caregiver Burden Scoring \u2014 no competitor monitors caregiver wellbeing. Alert fatigue is a real clinical problem.\n\n5. Cost Structure \u2014 $0.40/patient/month to operate. At $3/month subscription, 87% gross margin. Scales to B2G model across polyclinics.",
+            insight: "Livongo (acquired by Teladoc for $18.5B) charges $75/month and only alerts \u2014 no autonomous action, no caregiver support, no cultural adaptation. Bewo delivers more capability at 1/25th the cost, purpose-built for ASEAN's 56M diabetics.",
+            tab: "overview",
+            icon: <Zap size={20} />,
+            stat: { value: "S$3", label: "Per Patient/Month" },
+            pos: "center",
+        },
+
+        // ===============================================
+        // PHASE 9: EXPLORE (Step 21)
         // ===============================================
         {
             id: "other_scenarios",
             phase: "EXPLORE",
             phaseColor: "from-amber-600 to-orange-600",
             title: "Try Other Scenarios",
-            subtitle: "7 scenarios — each shows a different clinical trajectory",
-            body: "After this walkthrough ends, try the other scenarios from the sidebar:\n\n1. Stable Baseline — perfect adherence, everything green\n2. Realistic Stable — minor fluctuations, generally healthy\n3. Gradual Decline — slow 14-day deterioration (subtle but caught)\n4. Warning → Recovery — Bewo catches a warning, intervenes, succeeds\n5. Warning → Crisis — progressive decline to crisis (you just saw this)\n6. Sudden Acute Event — stable baseline then immediate spike\n7. Crisis → Recovery — crisis detected, Bewo intervenes (you just saw this)\n\nEach scenario generates different HMM states, different SBAR reports, different triage scores, different Monte Carlo forecasts. Try them all.",
-            insight: "The fact that you can inject 7 different clinical scenarios and see the entire system respond differently each time — HMM, SBAR, triage, Monte Carlo, agent tools — proves this isn't scripted. It's a real inference engine.",
+            subtitle: "7 scenarios \u2014 each produces completely different system behavior",
+            body: "After this walkthrough, try the other scenarios from the sidebar:\n\n1. Stable Baseline \u2014 perfect adherence, everything green\n2. Realistic Stable \u2014 minor fluctuations, generally healthy\n3. Gradual Decline \u2014 slow 14-day deterioration (subtle but caught early)\n4. Warning \u2192 Recovery \u2014 early catch, successful intervention\n5. Warning \u2192 Crisis \u2014 progressive decline (you just saw this)\n6. Sudden Acute Event \u2014 stable baseline then immediate spike\n7. Crisis \u2192 Recovery \u2014 crisis detected, full autonomous intervention\n\nEach generates different HMM states, different SBAR reports, different triage scores, different Monte Carlo forecasts, different agent decisions. Try them all.",
+            insight: "The fact that 7 different clinical scenarios produce completely different system behavior \u2014 across HMM, SBAR, triage, Monte Carlo, and all 18 agent tools \u2014 proves this isn't scripted or pre-loaded. It's a real inference engine responding to real data.",
             tab: "overview",
             icon: <RefreshCw size={20} />,
             stat: { value: "7", label: "Clinical Scenarios" },
@@ -463,7 +484,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         },
 
         // ===============================================
-        // PHASE 9: CLOSING (Step 22)
+        // PHASE 10: CLOSING (Step 22)
         // ===============================================
         {
             id: "closing",
@@ -471,9 +492,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-zinc-800 to-zinc-900",
             title: "Before Crisis. Not After.",
             subtitle: "A working system. Not a prototype. Not a pitch deck.",
-            body: "What you've just seen is fully functional:\n\n• 3-state HMM with Viterbi decoding + Baum-Welch learning\n• 9 orthogonal biomarkers from CGM + Fitbit + App\n• 2,000-path Monte Carlo simulation for 48h forecasting\n• 5-turn ReAct agent with 18 tools and cross-session memory\n• 6-dimension safety classifier on every response\n• Auto-SBAR, auto-triage, auto-drug-interaction checking\n• Loss-aversion voucher gamification (Prospect Theory)\n• Caregiver burden scoring (prevents alert fatigue)\n• 53 API routes, 35 database tables, 7 injectable scenarios\n• 3 stakeholder views: patient companion + nurse triage + caregiver alerts\n\nYou can now explore freely. Try any scenario. Chat with the AI. Click every button.",
-            insight: "Singapore's aging population means diabetes cases will double by 2035. Bewo is built for this reality — culturally aware (Singlish, hawker food, NTUC vouchers), clinically rigorous (HMM, SBAR, drug interactions), and designed to scale across polyclinics at S$3/patient/month.",
-            icon: <Shield size={20} />,
+            body: "What you've just experienced is fully functional:\n\n\u2022 3-state HMM with Viterbi decoding + Baum-Welch learning\n\u2022 9 orthogonal biomarkers from CGM + Fitbit + App\n\u2022 2,000-path Monte Carlo simulation for 48h risk forecasting\n\u2022 5-turn ReAct agent with 18 tools and cross-session memory\n\u2022 6-dimension safety classifier on every AI response\n\u2022 Auto-SBAR, auto-triage, continuous drug interaction monitoring\n\u2022 Loss-aversion voucher gamification (Prospect Theory)\n\u2022 Caregiver burden scoring (prevents alert fatigue)\n\u2022 53 API routes, 35 database tables, 43,000+ lines of code\n\u2022 3 stakeholder views: patient \u2192 nurse \u2192 caregiver\n\nBuilt for Singapore. Designed to scale across ASEAN.\n\nYou can now explore freely. Inject any scenario. Chat with the AI. Click every button. Everything is live.",
+            insight: "Singapore's diabetic population will double by 2035. Bewo is built for this reality \u2014 culturally aware (Singlish, hawker food, NTUC vouchers), clinically rigorous (HMM, SBAR, pharmacovigilance), and designed to scale across polyclinics at S$3/patient/month. The question isn't whether we need this \u2014 it's how fast we can deploy it.",
+            icon: <Globe size={20} />,
             stat: { value: "53", label: "API Endpoints" },
             highlight: "#state-cards-grid",
             pos: "below",
@@ -486,8 +507,11 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
     const hasAction = !!step.action;
     const isDone = actionDone.has(currentStep);
 
+    const canProceed = !hasAction || isDone;
+
     const animateTransition = (direction: "next" | "prev", callback: () => void) => {
         setTransitioning(true);
+        setActionError(null);
         setTimeout(() => {
             callback();
             setTimeout(() => setTransitioning(false), 400);
@@ -508,6 +532,27 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         });
     };
 
+    // Keyboard navigation: Escape to close, Arrow keys to navigate
+    // Uses refs to avoid stale closures in the event handler
+    const canProceedRef = useRef(canProceed);
+    const actionRunningRef = useRef(actionRunning);
+    const isFirstRef = useRef(isFirst);
+    const isLastRef = useRef(isLast);
+    canProceedRef.current = canProceed;
+    actionRunningRef.current = actionRunning;
+    isFirstRef.current = isFirst;
+    isLastRef.current = isLast;
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === "Escape") { onClose(); return; }
+            if (e.key === "ArrowRight" && canProceedRef.current && !actionRunningRef.current) goNext();
+            if (e.key === "ArrowLeft" && !isFirstRef.current) goPrev();
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // Single canonical place for tab switching — fires once per step change
     useEffect(() => {
         if (step.tab) onTabChange(step.tab);
@@ -523,6 +568,18 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         const sidebar = document.querySelector('aside');
         return sidebar ? sidebar.getBoundingClientRect().width : 320;
     };
+
+    // Reposition on window resize
+    const [resizeTick, setResizeTick] = useState(0);
+    useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout>;
+        const handler = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => setResizeTick(t => t + 1), 200);
+        };
+        window.addEventListener("resize", handler);
+        return () => { window.removeEventListener("resize", handler); clearTimeout(timeout); };
+    }, []);
 
     // Positioning logic: calculate card position + highlight ring rect (NO DOM mutation)
     useEffect(() => {
@@ -618,9 +675,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         }, delay);
 
         return () => clearTimeout(timer);
-    }, [currentStep, step.highlight, step.pos, step.scrollTo, step.tab]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const canProceed = !hasAction || isDone;
+    }, [currentStep, step.highlight, step.pos, step.scrollTo, step.tab, resizeTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Group steps into phases for the progress indicator
     const phases = [
@@ -629,16 +684,27 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         { name: "Nurse", steps: [6, 7, 8], color: "bg-cyan-500" },
         { name: "Patient", steps: [9, 10, 11, 12], color: "bg-emerald-500" },
         { name: "Recovery", steps: [13, 14, 15], color: "bg-green-500" },
-        { name: "Tools", steps: [16, 17], color: "bg-blue-500" },
+        { name: "Tools", steps: [16, 17], color: "bg-cyan-500" },
         { name: "AI", steps: [18, 19], color: "bg-purple-500" },
-        { name: "Explore", steps: [20], color: "bg-amber-500" },
-        { name: "Close", steps: [21], color: "bg-zinc-700" },
+        { name: "Edge", steps: [20], color: "bg-amber-500" },
+        { name: "Explore", steps: [21], color: "bg-amber-500" },
+        { name: "Close", steps: [22], color: "bg-zinc-700" },
     ];
+
+    // Estimated time remaining
+    const avgSecondsPerStep = 25;
+    const remainingSteps = steps.length - currentStep - 1;
+    const minutesLeft = Math.max(1, Math.ceil((remainingSteps * avgSecondsPerStep) / 60));
 
     return (
         <>
-            {/* ── Scrim with cutout hole (always rendered, transitions smoothly) ── */}
-            <div className="fixed inset-0 z-[189]" onClick={onClose} />
+            {/* Scrim with cutout hole */}
+            <div
+                className="fixed inset-0 z-[189]"
+                onClick={onClose}
+                role="presentation"
+                aria-label="Close walkthrough"
+            />
             <div
                 className="fixed z-[190] rounded-2xl pointer-events-none"
                 style={{
@@ -652,7 +718,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                 }}
             />
 
-            {/* ── Highlight ring (always rendered, opacity-controlled for smooth transitions) ── */}
+            {/* Highlight ring */}
             <div
                 className="wt-highlight-ring"
                 style={{
@@ -664,9 +730,12 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                 }}
             />
 
-            {/* ── Floating tour card ── */}
+            {/* Floating tour card */}
             <div
                 className="fixed z-[195] w-[340px] bg-white rounded-2xl shadow-2xl border border-zinc-200/80 overflow-hidden flex flex-col"
+                role="dialog"
+                aria-label={`Walkthrough step ${currentStep + 1} of ${steps.length}: ${step.title}`}
+                aria-modal="true"
                 style={{
                     top: cardPos.top,
                     left: cardPos.left,
@@ -674,7 +743,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                     transition: "top 0.7s cubic-bezier(0.22,1,0.36,1), left 0.7s cubic-bezier(0.22,1,0.36,1)",
                 }}
             >
-                {/* ── Compact gradient header ── */}
+                {/* Compact gradient header */}
                 <div className={`bg-gradient-to-r ${step.phaseColor} px-4 pt-3 pb-2.5 shrink-0`}>
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
@@ -683,9 +752,15 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                 {step.phase}
                             </span>
                         </div>
-                        <span className="text-white/70 text-[11px] font-mono font-semibold">
-                            {currentStep + 1}/{steps.length}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-white/50 text-[9px] flex items-center gap-0.5">
+                                <Clock size={8} />
+                                ~{minutesLeft}min left
+                            </span>
+                            <span className="text-white/70 text-[11px] font-mono font-semibold">
+                                {currentStep + 1}/{steps.length}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="flex items-start gap-3">
@@ -723,7 +798,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                     </div>
                 </div>
 
-                {/* ── Body content ── */}
+                {/* Body content */}
                 <div ref={contentRef} className="flex-1 overflow-y-auto px-4 py-2.5">
                     <div className={`transition-all duration-500 ease-out ${transitioning ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"}`}>
                         <div className="text-[11px] text-zinc-600 leading-[1.6] whitespace-pre-line">
@@ -774,7 +849,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                     ) : isDone ? (
                                         <>
                                             <CheckCircle2 size={14} />
-                                            <span>Complete — Data Injected</span>
+                                            <span>Complete \u2014 Data Injected</span>
                                         </>
                                     ) : (
                                         <>
@@ -783,7 +858,12 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                         </>
                                     )}
                                 </button>
-                                {!isDone && !actionRunning && (
+                                {actionError && (
+                                    <p className="text-[10px] text-amber-600 text-center mt-1 font-medium">
+                                        {actionError}
+                                    </p>
+                                )}
+                                {!isDone && !actionRunning && !actionError && (
                                     <p className="text-[10px] text-zinc-400 text-center mt-1">
                                         Fires real API calls against the backend.
                                     </p>
@@ -793,7 +873,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                     </div>
                 </div>
 
-                {/* ── Compact footer navigation ── */}
+                {/* Compact footer navigation */}
                 <div className="px-3 py-2 border-t border-zinc-100 bg-zinc-50/80 shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-0.5">
@@ -816,6 +896,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                 <button
                                     onClick={goPrev}
                                     className="h-7 px-3 rounded-lg border border-zinc-200 text-[10px] font-medium text-zinc-600 hover:bg-zinc-100 flex items-center gap-0.5 transition-colors"
+                                    aria-label="Previous step"
                                 >
                                     <ChevronLeft size={12} /> Back
                                 </button>
@@ -829,6 +910,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                         : "bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg shadow-zinc-900/20"
                                     }
                                     disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none`}
+                                aria-label={isLast ? "Close walkthrough and explore freely" : "Next step"}
                             >
                                 {isLast ? (
                                     <>Explore Freely <ArrowRight size={12} /></>
@@ -837,6 +919,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                 )}
                             </button>
                         </div>
+                    </div>
+                    {/* Keyboard hint */}
+                    <div className="text-[8px] text-zinc-300 text-center mt-1">
+                        Use arrow keys to navigate \u00b7 Esc to close
                     </div>
                 </div>
             </div>

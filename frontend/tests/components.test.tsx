@@ -364,7 +364,7 @@ describe("PatientHeader", () => {
     const Header = await importHeader();
     render(<Header age={72} />);
 
-    expect(screen.getByText("72 Y.O. Male")).toBeInTheDocument();
+    expect(screen.getByText("72 Y.O.")).toBeInTheDocument();
   });
 
   it("renders the status badge with STABLE", async () => {

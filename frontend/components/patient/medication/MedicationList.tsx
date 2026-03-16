@@ -54,17 +54,24 @@ export function MedicationList() {
     }, []);
 
     const handleToggle = async (id: number) => {
-        // Optimistic Update
-        setMeds(prev => prev.map(m => m.id === id ? { ...m, taken: !m.taken } : m));
-
-        try {
-            const target = meds.find(m => m.id === id);
+        let targetName = "";
+        let newTaken = false;
+        setMeds(prev => {
+            const target = prev.find(m => m.id === id);
             if (target) {
-                await api.logMedication(target.name, !target.taken);
+                targetName = target.name;
+                newTaken = !target.taken;
             }
-        } catch (e) {
-            console.error("Sync failed", e);
-            fetchMeds(); // Revert on failure
+            return prev.map(m => m.id === id ? { ...m, taken: !m.taken } : m);
+        });
+        if (targetName) {
+            try {
+                await api.logMedication(targetName, newTaken);
+            } catch (err) {
+                console.error(err);
+                // Revert on failure
+                setMeds(prev => prev.map(m => m.id === id ? { ...m, taken: !newTaken } : m));
+            }
         }
     };
 

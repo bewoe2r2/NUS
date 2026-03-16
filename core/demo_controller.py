@@ -20,7 +20,11 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from hmm_engine import HMMEngine
-from inject_data import inject_tiered_scenario_to_db, run_analysis_and_save
+try:
+    from inject_data import inject_tiered_scenario_to_db, run_analysis_and_save
+except ImportError:
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts'))
+    from inject_data import inject_tiered_scenario_to_db, run_analysis_and_save
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 

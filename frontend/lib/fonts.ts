@@ -2,14 +2,14 @@
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 
 export const jakartaSans = Plus_Jakarta_Sans({
-    variable: "--font-jakarta-sans",
+    variable: "--font-geist-sans",
     subsets: ["latin"],
     display: "swap",
     weight: ["400", "500", "600", "700", "800"],
 });
 
 export const jetbrainsMono = JetBrains_Mono({
-    variable: "--font-jetbrains-mono",
+    variable: "--font-geist-mono",
     subsets: ["latin"],
     display: "swap",
     weight: ["400", "500", "600"],

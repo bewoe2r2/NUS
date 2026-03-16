@@ -13,8 +13,6 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     env_file:
       - .env
-    volumes:
-      - db-data:/app/database
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
@@ -23,6 +21,3 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-volumes:
-  db-data:
-    driver: local

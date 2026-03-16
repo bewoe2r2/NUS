@@ -75,37 +75,40 @@ class StepCounter:
         if self.step_count == 0:
             return # Optimization: Don't write zeros repeatedly if idle
             
+        conn = None
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            
+
             now = int(time.time())
             hour_start = now - (now % 3600)
-            
+
             # Check existing row for this hour window, then upsert
             row = cursor.execute("""
-                SELECT id, step_count FROM passive_metrics 
-                WHERE window_start_utc = ? 
+                SELECT id, step_count FROM passive_metrics
+                WHERE window_start_utc = ?
                 ORDER BY id DESC LIMIT 1
             """, (hour_start,)).fetchone()
-            
+
             if row:
-                new_total = row[1] + self.step_count
-                cursor.execute("UPDATE passive_metrics SET step_count = ? WHERE id = ?", (new_total, row[0]))
+                new_total = (row[1] or 0) + self.step_count
+                cursor.execute("UPDATE passive_metrics SET step_count = ?, window_end_utc = ? WHERE id = ?", (new_total, now, row[0]))
             else:
                 cursor.execute("""
                     INSERT INTO passive_metrics (window_start_utc, window_end_utc, step_count)
                     VALUES (?, ?, ?)
                 """, (hour_start, now, self.step_count))
-            
+
             conn.commit()
-            conn.close()
-            
+
             print(f"[StepCounter] Saved {self.step_count} steps to DB.")
-            self.step_count = 0 # Reset after save
-            
+            self.step_count = 0  # Reset after save
+
         except Exception as e:
             print(f"[StepCounter] Error saving to DB: {e}")
+        finally:
+            if conn:
+                conn.close()
 
     # --- Simulation Method for Testing ---
     def simulate_walking(self, duration_seconds=10, frequency_hz=50):

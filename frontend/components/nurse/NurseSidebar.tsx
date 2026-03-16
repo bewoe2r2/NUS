@@ -26,7 +26,10 @@ function SidebarItem({ icon, label, active, onClick, disabled }: SidebarItemProp
 
     return (
         <div
+            role="button"
+            tabIndex={0}
             onClick={handleClick}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
             className={cn(
                 "px-3 py-2.5 rounded-md flex items-center gap-3 font-medium cursor-pointer transition-all duration-200 group relative",
                 active

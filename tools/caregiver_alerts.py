@@ -241,16 +241,15 @@ def send_tiered_alert_tool(
 # Internal Helpers
 # =============================================================================
 
-def _check_rate_limit(patient_id: str, severity: str) -> bool:
-    """Check if rate limit allows sending this alert."""
-    limit = RATE_LIMITS.get(severity, 5)
-    if limit == float("inf"):
-        return True
+_alerts_table_initialized = False
 
+
+def _ensure_alerts_table():
+    global _alerts_table_initialized
+    if _alerts_table_initialized:
+        return
     conn = sqlite3.connect(DB_PATH)
     try:
-        one_hour_ago = int(time.time()) - 3600
-
         conn.execute("""
             CREATE TABLE IF NOT EXISTS caregiver_alerts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -262,6 +261,22 @@ def _check_rate_limit(patient_id: str, severity: str) -> bool:
                 delivery_results_json TEXT
             )
         """)
+        conn.commit()
+        _alerts_table_initialized = True
+    finally:
+        conn.close()
+
+
+def _check_rate_limit(patient_id: str, severity: str) -> bool:
+    """Check if rate limit allows sending this alert."""
+    limit = RATE_LIMITS.get(severity, 5)
+    if limit == float("inf"):
+        return True
+
+    _ensure_alerts_table()
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        one_hour_ago = int(time.time()) - 3600
 
         count = conn.execute(
             "SELECT COUNT(*) FROM caregiver_alerts WHERE patient_id = ? AND severity = ? AND timestamp_utc >= ?",
@@ -389,19 +404,9 @@ def _log_alert(
     delivery_results: Dict,
 ):
     """Log alert in database for audit trail and rate limiting."""
+    _ensure_alerts_table()
     conn = sqlite3.connect(DB_PATH)
     try:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS caregiver_alerts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                patient_id TEXT,
-                timestamp_utc INTEGER,
-                alert_type TEXT,
-                severity TEXT,
-                message TEXT,
-                delivery_results_json TEXT
-            )
-        """)
         conn.execute("""
             INSERT INTO caregiver_alerts
             (patient_id, timestamp_utc, alert_type, severity, message, delivery_results_json)

@@ -45,7 +45,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
         )}>
             <div className="flex items-end gap-2 max-w-md mx-auto">
                 {/* ATTACHMENT / VOICE */}
-                <Button variant="ghost" size="icon" className="rounded-full text-neutral-400 hover:text-neutral-600 h-10 w-10 shrink-0">
+                <Button variant="ghost" size="icon" className="rounded-full text-neutral-400 hover:text-neutral-600 h-10 w-10 shrink-0" aria-label="Voice input available in menu" disabled>
                     <Mic size={20} />
                 </Button>
 
@@ -59,6 +59,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         placeholder="Ask Bewo..."
+                        aria-label="Type your message"
                         rows={1}
                         className="w-full bg-transparent border-none focus:ring-0 px-4 py-3 max-h-[120px] resize-none text-sm placeholder:text-neutral-400 leading-relaxed"
                     />

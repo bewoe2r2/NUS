@@ -61,6 +61,24 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
             print(f"Warning clearing {table}: {e}")
             pass
 
+    # Seed prescribed medications
+    medications_data = [
+        ('P001', 'Metformin 500mg', '500mg', 'BID', '["08:00", "20:00"]'),
+        ('P001', 'Amlodipine 5mg', '5mg', 'OD', '["08:00"]'),
+        ('P001', 'Atorvastatin 20mg', '20mg', 'ON', '["21:00"]'),
+        ('P002', 'Insulin Glargine', '10 units', 'OD', '["22:00"]'),
+        ('P002', 'Furosemide 40mg', '40mg', 'OD', '["08:00"]'),
+        ('P003', 'Metformin 500mg', '500mg', 'OD', '["08:00"]'),
+    ]
+    for med in medications_data:
+        try:
+            conn.execute(
+                "INSERT OR IGNORE INTO medications (user_id, medication_name, dosage, frequency, scheduled_times) VALUES (?, ?, ?, ?, ?)",
+                med
+            )
+        except Exception:
+            pass
+
     print(f"Injecting {len(observations)} observations for {tier} tier...")
 
     for i, obs in enumerate(observations):
@@ -99,18 +117,18 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
         social_int = min(50, max(0, obs.get('social_engagement', 10) or 10))  # Clamp to bounds [0, 50]
 
         conn.execute("""
-            INSERT INTO passive_metrics (window_start_utc, window_end_utc, step_count, screen_time_seconds,
+            INSERT INTO passive_metrics (user_id, window_start_utc, window_end_utc, step_count, screen_time_seconds,
                                         social_interactions, time_at_home_seconds)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (t, t + window_size, int(steps / 6), screen_s, int(social_int), int(12 * 3600)))
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, ('P001', t, t + window_size, int(steps / 6), screen_s, int(social_int), int(12 * 3600)))
 
         # ===== MEDICATION (ALL tiers) =====
         meds = obs.get('meds_adherence', 0)
         if meds and meds > 0.5:
             conn.execute("""
-                INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc)
-                VALUES (?, ?, ?)
-            """, ('Metformin 500mg', t + 100, t))
+                INSERT INTO medication_logs (user_id, medication_name, taken_timestamp_utc, scheduled_timestamp_utc)
+                VALUES (?, ?, ?, ?)
+            """, ('P001', 'Metformin 500mg', t + 100, t))
 
         # ===== FOOD LOGS (ALL tiers) =====
         carbs = obs.get('carbs_intake')
@@ -195,10 +213,10 @@ def run_analysis_and_save(engine, days=14):
             result = engine.run_inference(window_obs)
 
             conn.execute("""
-                INSERT INTO hmm_states (timestamp_utc, detected_state, confidence_score,
+                INSERT INTO hmm_states (user_id, timestamp_utc, detected_state, confidence_score,
                                        confidence_margin, patient_tier, input_vector_snapshot)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (obs_time, result['current_state'], result['confidence'],
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, ('P001', obs_time, result['current_state'], result['confidence'],
                   result.get('confidence_margin', 0), TIER, json.dumps(obs)))
 
     conn.commit()

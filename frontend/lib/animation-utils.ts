@@ -1,12 +1,5 @@
 
-import { Variants, Transition } from "framer-motion";
-
-const SPRING_BOUNCY: Transition = {
-    type: "spring",
-    stiffness: 400,
-    damping: 20,
-    mass: 1,
-};
+import { Variants } from "framer-motion";
 
 const EASE_ELITE = [0.33, 1, 0.68, 1] as const;
 

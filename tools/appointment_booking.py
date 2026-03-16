@@ -311,16 +311,20 @@ def _load_patient_preferences(patient_id: str) -> Dict:
     conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             "SELECT key, value_json FROM agent_memory WHERE patient_id = ? AND memory_type = 'preference'",
             (patient_id,),
-        ).fetchall()
+        )
+        rows = cursor.fetchall()
 
-        prefs = {}
+        preferences = {}
         for row in rows:
-            prefs[row["key"]] = json.loads(row["value_json"])
-        return prefs
+            try:
+                preferences[row[0]] = json.loads(row[1]) if isinstance(row[1], str) else row[1]
+            except (json.JSONDecodeError, TypeError):
+                preferences[row[0]] = row[1]
+        return preferences
     except Exception as e:
         logger.warning(f"Could not load preferences: {e}")
         return {}
@@ -361,8 +365,13 @@ def _select_optimal_slot(slots: List[Dict], preferred_times: List[str], patient_
     return scored_slots[0][1]
 
 
-def _store_appointment_in_db(patient_id: str, booking: Dict):
-    """Store appointment in database for audit trail."""
+_appointments_table_initialized = False
+
+
+def _ensure_appointments_table():
+    global _appointments_table_initialized
+    if _appointments_table_initialized:
+        return
     conn = sqlite3.connect(DB_PATH)
     try:
         conn.execute("""
@@ -379,6 +388,17 @@ def _store_appointment_in_db(patient_id: str, booking: Dict):
                 created_at INTEGER
             )
         """)
+        conn.commit()
+        _appointments_table_initialized = True
+    finally:
+        conn.close()
+
+
+def _store_appointment_in_db(patient_id: str, booking: Dict):
+    """Store appointment in database for audit trail."""
+    _ensure_appointments_table()
+    conn = sqlite3.connect(DB_PATH)
+    try:
         conn.execute("""
             INSERT INTO appointments
             (patient_id, appointment_datetime, doctor_name, clinic_location, reason,

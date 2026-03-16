@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, X, Activity, Frown, Smile, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,13 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<{ sentiment: number; urgency: string; response?: string } | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    // Close on Escape key
+    const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose]);
+    useEffect(() => {
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [handleEscape]);
 
     // Reset state when modal closes
     useEffect(() => {
@@ -143,6 +150,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
                                         )}
                                         <button
                                             onClick={toggleListening}
+                                            aria-label={isListening ? "Stop recording" : "Start recording"}
                                             className={`h-20 w-20 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-error-500 text-white shadow-lg scale-110' : 'bg-accent-500 text-white shadow-md'}`}
                                         >
                                             <Mic size={32} />

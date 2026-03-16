@@ -13,6 +13,7 @@ export interface ChatMessage {
     content: string;
     timestamp: string;
     status?: "sending" | "sent" | "error";
+    hmm_state?: string;
 }
 
 interface MessageBubbleProps {
@@ -58,8 +59,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     "relative px-4 py-3 text-[15px] leading-relaxed shadow-sm",
                     isUser
                         ? "bg-accent-500 text-white rounded-2xl rounded-br-sm"
-                        : "bg-white border border-neutral-200 text-neutral-800 rounded-2xl rounded-bl-sm"
+                        : "bg-white border text-neutral-800 rounded-2xl rounded-bl-sm",
+                    !isUser && message.hmm_state === "CRISIS" && "border-red-400 border-l-4",
+                    !isUser && message.hmm_state === "WARNING" && "border-amber-400 border-l-4",
+                    !isUser && message.hmm_state !== "CRISIS" && message.hmm_state !== "WARNING" && "border-neutral-200"
                 )}>
+                    <span className="inline-flex items-center gap-1">
+                        {message.hmm_state === "CRISIS" && <span className="w-2 h-2 rounded-full bg-red-500 inline-block mr-1 shrink-0" />}
+                        {message.hmm_state === "WARNING" && <span className="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1 shrink-0" />}
+                    </span>
                     {message.content}
 
                     {/* TIMESTAMP */}

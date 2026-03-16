@@ -49,10 +49,11 @@ export function PatientHeader({
                     <input
                         type="text"
                         placeholder="Search records..."
+                        aria-label="Search patients"
                         className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-64"
                     />
                 </div>
-                <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full relative">
+                <button aria-label="Notifications" className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full relative">
                     <Bell size={20} />
                     {status === 'CRISIS' && (
                         <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>

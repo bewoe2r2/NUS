@@ -93,7 +93,8 @@ class SeaLionInterface:
         self.gemini_key = api_key or os.getenv('GEMINI_API_KEY')
         self.gemini_model = None
         if GENAI_AVAILABLE and self.gemini_key:
-            genai.configure(api_key=self.gemini_key)
+            # Don't call genai.configure() here — GeminiIntegration already configures it globally.
+            # Calling it again overwrites global Gemini state and can cause race conditions.
             self.gemini_model = genai.GenerativeModel('gemini-2.0-flash')
 
         # Log which backend is active

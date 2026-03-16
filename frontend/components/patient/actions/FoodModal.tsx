@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,22 +16,37 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
     const [value, setValue] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState("");
+
+    const resetAndClose = useCallback(() => {
+        setValue("");
+        setLoading(false);
+        setSuccess(false);
+        setError("");
+        onClose();
+    }, [onClose]);
+
+    // Close on Escape key
+    const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') resetAndClose(); }, [resetAndClose]);
+    useEffect(() => {
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [handleEscape]);
 
     const handleSubmit = async () => {
         if (!value.trim()) return;
         setLoading(true);
+        setError("");
         try {
             await api.logFood(value);
             setSuccess(true);
             setTimeout(() => {
-                setSuccess(false);
-                setLoading(false);
-                setValue("");
-                onClose();
+                resetAndClose();
             }, 1500);
         } catch (e) {
             console.error(e);
             setLoading(false);
+            setError("Failed to log food. Please try again.");
         }
     };
 
@@ -43,7 +58,7 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={resetAndClose}
                         className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50"
                     />
 
@@ -56,7 +71,7 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
                     >
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-neutral-900">Log Meal</h3>
-                            <button onClick={onClose} className="p-2 bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200">
+                            <button onClick={resetAndClose} className="p-2 bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200">
                                 <X size={20} />
                             </button>
                         </div>
@@ -70,6 +85,8 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
                                     className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-4 text-lg focus:ring-2 focus:ring-accent-500 outline-none h-32 resize-none placeholder:text-neutral-400"
                                 />
                             </div>
+
+                            {error && <p className="text-red-500 text-sm">{error}</p>}
 
                             <Button
                                 onClick={handleSubmit}

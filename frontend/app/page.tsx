@@ -25,7 +25,10 @@ export default function Home() {
   const [showVoice, setShowVoice] = useState(false);
 
   useEffect(() => {
+    let stopped = false;
+
     async function fetchData() {
+      if (stopped) return;
       try {
         const stateRes = await api.getPatientState("P001");
         setData(stateRes);
@@ -39,8 +42,10 @@ export default function Home() {
     }
 
     fetchData();
-    const interval = setInterval(fetchData, 15000); // Poll every 15s
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (!stopped) fetchData();
+    }, 15000);
+    return () => { stopped = true; clearInterval(interval); };
   }, []);
 
   if (loading && !data) {

@@ -25,6 +25,13 @@ export function ChatContainer() {
         scrollToBottom();
     }, [messages, isTyping]);
 
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good morning";
+        if (hour < 17) return "Good afternoon";
+        return "Good evening";
+    };
+
     // Initial Greeting from "System" or Real History could go here
     useEffect(() => {
         // For now, let's just push a subtle welcome if empty
@@ -32,7 +39,7 @@ export function ChatContainer() {
             setMessages([{
                 id: "init-legacy",
                 role: "ai",
-                content: "Good morning, Mr. Tan. I noticed your glucose is slightly elevated. Have you had breakfast?",
+                content: `${getGreeting()}, Mr. Tan. I noticed your glucose is slightly elevated. Have you had breakfast?`,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }]);
         }
@@ -58,7 +65,8 @@ export function ChatContainer() {
                 id: (Date.now() + 1).toString(),
                 role: "ai",
                 content: res.message, // Real response from Gemini
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                hmm_state: res.hmm_state,
             };
 
             setMessages(prev => {
@@ -94,11 +102,11 @@ export function ChatContainer() {
                         <div className="text-[10px] uppercase font-bold text-accent-500 tracking-wider">Online</div>
                     </div>
                 </div>
-                <MoreHorizontal size={20} className="text-neutral-400" />
+                <MoreHorizontal size={20} className="text-neutral-400" aria-hidden="true" />
             </div>
 
             {/* MESSAGES AREA */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2 bg-neutral-50/50">
+            <div ref={scrollRef} role="log" aria-live="polite" className="flex-1 overflow-y-auto p-4 space-y-2 bg-neutral-50/50">
                 <AnimatePresence initial={false}>
                     {messages.map((msg) => (
                         <MessageBubble key={msg.id} message={msg} />
@@ -109,12 +117,17 @@ export function ChatContainer() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex justify-start w-full pl-10" // Indent for avatar
+                        className="flex gap-2 items-start"
                     >
-                        <div className="bg-white border border-neutral-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex gap-1.5 items-center">
-                            <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                            <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                            <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce"></span>
+                        <div className="bg-neutral-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%]">
+                            <div className="flex items-center gap-1.5">
+                                <div className="flex gap-1">
+                                    <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                                    <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                                    <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                                </div>
+                                <span className="text-xs text-neutral-400 ml-2">Analysing your health data...</span>
+                            </div>
                         </div>
                     </motion.div>
                 )}

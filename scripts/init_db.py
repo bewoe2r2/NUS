@@ -21,13 +21,13 @@ def init_db():
         # Add missing columns to hmm_states if they don't exist
         try:
             cursor.execute("ALTER TABLE hmm_states ADD COLUMN confidence_margin REAL")
-        except:
-            pass  # Column already exists
-        
+        except Exception as e:
+            print(f"Warning: {e}")
+
         try:
             cursor.execute("ALTER TABLE hmm_states ADD COLUMN patient_tier TEXT DEFAULT 'BASIC'")
-        except:
-            pass  # Column already exists
+        except Exception as e:
+            print(f"Warning: {e}")
 
         # Add retention_until to all relevant tables if missing
         tables_with_retention = ['glucose_readings', 'medication_logs', 'passive_metrics', 'voice_checkins', 'hmm_states']
@@ -43,21 +43,21 @@ def init_db():
         try:
             cursor.execute("ALTER TABLE passive_metrics ADD COLUMN social_interactions INTEGER DEFAULT 0")
             print("Added social_interactions to passive_metrics")
-        except:
-            pass # Column exists
+        except Exception as e:
+            print(f"Warning: {e}")
 
         # Add HRV columns to fitbit_heart_rate (critical for diabetic autonomic neuropathy detection)
         try:
             cursor.execute("ALTER TABLE fitbit_heart_rate ADD COLUMN hrv_rmssd REAL")
             print("Added hrv_rmssd to fitbit_heart_rate")
-        except:
-            pass # Column exists
+        except Exception as e:
+            print(f"Warning: {e}")
 
         try:
             cursor.execute("ALTER TABLE fitbit_heart_rate ADD COLUMN hrv_sdnn REAL")
             print("Added hrv_sdnn to fitbit_heart_rate")
-        except:
-            pass # Column exists
+        except Exception as e:
+            print(f"Warning: {e}")
 
         conn.commit()
         conn.close()

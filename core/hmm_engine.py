@@ -1513,6 +1513,26 @@ class HMMEngine:
                 }
             self._personalized_baselines[patient_id] = personalized
 
+            # Persist learned params to DB so they survive restarts
+            try:
+                learned_params = {}
+                for feat, params in personalized.items():
+                    learned_params[feat] = {
+                        'means': [float(m) for m in params['means']] if hasattr(params['means'], '__iter__') else params['means'],
+                        'vars': [float(v) for v in params['vars']] if hasattr(params['vars'], '__iter__') else params['vars'],
+                        'bounds': params.get('bounds'),
+                        'calibration_source': 'baum_welch',
+                    }
+                conn = sqlite3.connect(self.db_path)
+                conn.execute("""
+                    INSERT OR REPLACE INTO agent_memory (patient_id, memory_type, key, value_json, confidence, created_at, source)
+                    VALUES (?, 'model_params', 'baum_welch_emissions', ?, 1.0, ?, 'hmm_engine')
+                """, (patient_id, json.dumps(learned_params), int(time.time())))
+                conn.commit()
+                conn.close()
+            except Exception:
+                pass
+
         # Store learned transitions per patient
         if result['learned_transitions']:
             if not hasattr(self, '_personalized_transitions'):
@@ -1721,6 +1741,20 @@ class HMMEngine:
         # ---------------------------------------------------------------------
         
         # Get personalized parameters if available
+        # Try loading from DB if not already in memory
+        if patient_id and patient_id not in self._personalized_baselines:
+            try:
+                conn = sqlite3.connect(self.db_path)
+                row = conn.execute(
+                    "SELECT value_json FROM agent_memory WHERE patient_id = ? AND key = 'baum_welch_emissions'",
+                    (patient_id,)
+                ).fetchone()
+                if row:
+                    self._personalized_baselines[patient_id] = json.loads(row[0])
+                conn.close()
+            except Exception:
+                pass
+
         personalized_params = None
         if patient_id:
             personalized_params = self.get_personalized_baseline(patient_id)
@@ -1948,7 +1982,7 @@ class HMMEngine:
             # Extract hour for Dawn Phenomenon / Time-Aware Logic (SGT = UTC+8)
             dt_obj = datetime.fromtimestamp(t, tz=timezone.utc)
             sgt_hour = (dt_obj.hour + 8) % 24  # Singapore Time
-            obs = {'hour_of_day': sgt_hour}
+            obs = {'hour_of_day': sgt_hour, 'user_id': patient_id}
 
             # -----------------------------------------------------------------
             # 1. GLUCOSE METRICS (from glucose_readings or cgm_readings)
@@ -1996,7 +2030,7 @@ class HMMEngine:
                 if len(glucose_values) > 1:
                     mean = obs['glucose_avg']
                     if mean > 0.5:  # Minimum meaningful glucose value (avoid div by tiny numbers)
-                        variance = sum((x - mean) ** 2 for x in glucose_values) / len(glucose_values)
+                        variance = sum((x - mean) ** 2 for x in glucose_values) / max(len(glucose_values) - 1, 1)
                         std_dev = math.sqrt(variance)
                         cv_pct = (std_dev / mean) * 100
                         # Clamp CV% to clinical range [5, 100] per EMISSION_PARAMS bounds
@@ -2036,30 +2070,37 @@ class HMMEngine:
 
                 # Default to 2 doses/day — overridden per patient if medication schedule is available
                 scheduled_doses_daily = 2
+                has_medications = True  # Assume medications exist unless proven otherwise
                 try:
                     med_sched_row = cursor.execute(
                         "SELECT COUNT(*) as cnt FROM medications WHERE user_id = ?",
-                        (obs.get('user_id', 'P001'),)
+                        (patient_id or 'P001',)
                     ).fetchone()
                     if med_sched_row and med_sched_row[0] > 0:
                         scheduled_doses_daily = med_sched_row[0]
+                    else:
+                        has_medications = False
                 except Exception:
                     pass  # medications table may not exist; use default
-                
-                adherence_24h = 0.0
-                if med_row_24h and med_row_24h['taken'] is not None:
-                     adherence_24h = min(1.0, med_row_24h['taken'] / scheduled_doses_daily)
-                     
-                adherence_7d = 0.0
-                if med_row_7d and med_row_7d['taken'] is not None:
-                    # Scheduled for 7 days = 14 doses
-                    adherence_7d = min(1.0, med_row_7d['taken'] / (scheduled_doses_daily * 7))
-                
-                if med_row_24h or med_row_7d:
-                     # Weighted Metric: 70% Recent (Critical), 30% Trend (Context)
-                     obs['meds_adherence'] = 0.7 * adherence_24h + 0.3 * adherence_7d
+
+                if not has_medications:
+                    # No medications prescribed — adherence is not applicable
+                    obs['meds_adherence'] = None
                 else:
-                     obs['meds_adherence'] = None
+                    adherence_24h = 0.0
+                    if med_row_24h and med_row_24h['taken'] is not None:
+                         adherence_24h = min(1.0, med_row_24h['taken'] / scheduled_doses_daily)
+
+                    adherence_7d = 0.0
+                    if med_row_7d and med_row_7d['taken'] is not None:
+                        # Scheduled for 7 days = 14 doses
+                        adherence_7d = min(1.0, med_row_7d['taken'] / (scheduled_doses_daily * 7))
+
+                    if med_row_24h or med_row_7d:
+                         # Weighted Metric: 70% Recent (Critical), 30% Trend (Context)
+                         obs['meds_adherence'] = 0.7 * adherence_24h + 0.3 * adherence_7d
+                    else:
+                         obs['meds_adherence'] = None
                      
             except sqlite3.Error:
                 obs['meds_adherence'] = None

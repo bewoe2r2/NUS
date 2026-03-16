@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS patients (
     name TEXT NOT NULL,
     age INTEGER,
     conditions TEXT, -- JSON array of strings e.g. ["Type 2 Diabetes", "Hypertension"]
-    medications TEXT, -- JSON array of strings e.g. ["Metformin", "Lilisnopril"]
+    medications TEXT, -- JSON array of strings e.g. ["Metformin", "Lisinopril"]
     tier TEXT DEFAULT 'BASIC',
     created_at_utc INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -46,6 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_glucose_recent ON glucose_readings(user_id, readi
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS medication_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL DEFAULT 'current_user',
     medication_name TEXT NOT NULL,
     dosage TEXT,
     taken_timestamp_utc INTEGER NOT NULL,
@@ -56,6 +57,23 @@ CREATE TABLE IF NOT EXISTS medication_logs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_meds_time ON medication_logs(taken_timestamp_utc DESC);
+CREATE INDEX IF NOT EXISTS idx_medication_logs_user ON medication_logs(user_id);
+
+-- ==============================================================================
+-- 2b. MEDICATIONS (Prescribed medications - not same as medication_logs)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS medications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL DEFAULT 'current_user',
+    medication_name TEXT NOT NULL,
+    dosage TEXT,
+    frequency TEXT DEFAULT 'BID',
+    scheduled_times TEXT,  -- JSON array of times like ["08:00", "20:00"]
+    active INTEGER DEFAULT 1,
+    prescribed_date INTEGER,
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_medications_user ON medications(user_id);
 
 -- ==============================================================================
 -- 3. PASSIVE METRICS (Tier 2 - Aggregated, 6 Months Retention)
@@ -64,6 +82,7 @@ CREATE INDEX IF NOT EXISTS idx_meds_time ON medication_logs(taken_timestamp_utc 
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS passive_metrics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL DEFAULT 'current_user',
     window_start_utc INTEGER NOT NULL,
     window_end_utc INTEGER NOT NULL,
     
@@ -87,6 +106,7 @@ CREATE TABLE IF NOT EXISTS passive_metrics (
 );
 
 CREATE INDEX IF NOT EXISTS idx_passive_time ON passive_metrics(window_start_utc DESC);
+CREATE INDEX IF NOT EXISTS idx_passive_metrics_user ON passive_metrics(user_id);
 
 -- ==============================================================================
 -- 4. VOICE CHECK-INS (Tier 2 - Transcript Only, 6 Months Retention)
@@ -94,6 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_passive_time ON passive_metrics(window_start_utc 
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS voice_checkins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL DEFAULT 'current_user',
     timestamp_utc INTEGER NOT NULL,
     transcript_text TEXT,
     sentiment_score REAL,
@@ -104,6 +125,7 @@ CREATE TABLE IF NOT EXISTS voice_checkins (
 );
 
 CREATE INDEX IF NOT EXISTS idx_voice_time ON voice_checkins(timestamp_utc DESC);
+CREATE INDEX IF NOT EXISTS idx_voice_checkins_user ON voice_checkins(user_id);
 
 -- ==============================================================================
 -- 5. HMM STATES (Tier 2 - Derived, 6 Months Retention)
@@ -130,14 +152,10 @@ CREATE INDEX IF NOT EXISTS idx_hmm_recent ON hmm_states(user_id, timestamp_utc D
 -- 6. VOUCHER & INTERVENTIONS (Tier 3 - Indefinite Retention)
 -- Allowed to sync to cloud (Anonymized).
 -- ==============================================================================
--- ==============================================================================
--- 6. VOUCHER & INTERVENTIONS (Tier 3 - Indefinite Retention)
--- Allowed to sync to cloud (Anonymized).
--- ==============================================================================
 -- Voucher System (Loss Aversion Gamification)
 CREATE TABLE IF NOT EXISTS voucher_tracker (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'user',
+    user_id TEXT NOT NULL DEFAULT 'current_user',
     week_start_utc INTEGER NOT NULL,
     current_value REAL NOT NULL DEFAULT 5.00,
     bonus_earned REAL DEFAULT 0,
@@ -263,7 +281,8 @@ CREATE TABLE IF NOT EXISTS fitbit_activity (
     active_minutes INTEGER DEFAULT 0,
     sedentary_minutes INTEGER DEFAULT 0,
     calories_burned INTEGER DEFAULT 0,
-    is_synced BOOLEAN DEFAULT 0
+    is_synced BOOLEAN DEFAULT 0,
+    UNIQUE(user_id, date)
 );
 CREATE INDEX IF NOT EXISTS idx_fitbit_activity_date ON fitbit_activity(user_id, date DESC);
 
@@ -284,7 +303,8 @@ CREATE TABLE IF NOT EXISTS fitbit_heart_rate (
     average_heart_rate INTEGER,
     hrv_rmssd REAL,  -- Heart Rate Variability (RMSSD method, in milliseconds)
     hrv_sdnn REAL,   -- Alternative HRV metric (standard deviation of NN intervals)
-    is_synced BOOLEAN DEFAULT 0
+    is_synced BOOLEAN DEFAULT 0,
+    UNIQUE(user_id, date)
 );
 CREATE INDEX IF NOT EXISTS idx_fitbit_hr_date ON fitbit_heart_rate(user_id, date DESC);
 
@@ -297,7 +317,8 @@ CREATE TABLE IF NOT EXISTS fitbit_sleep (
     date INTEGER NOT NULL,
     total_sleep_minutes INTEGER,
     sleep_score REAL,
-    is_synced BOOLEAN DEFAULT 0
+    is_synced BOOLEAN DEFAULT 0,
+    UNIQUE(user_id, date)
 );
 CREATE INDEX IF NOT EXISTS idx_fitbit_sleep_date ON fitbit_sleep(user_id, date DESC);
 

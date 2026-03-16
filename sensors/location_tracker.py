@@ -16,14 +16,17 @@ Privacy Tier 1: Raw GPS discarded after classification.
 import time
 import sqlite3
 import math
-import random
 import os
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 # Default Home Location (Singapore City Hall approx — configurable per patient via env vars)
-HOME_LAT = float(os.environ.get("BEWO_HOME_LAT", "1.2931"))
-HOME_LON = float(os.environ.get("BEWO_HOME_LON", "103.8517"))
+try:
+    HOME_LAT = float(os.environ.get("BEWO_HOME_LAT", "1.2931"))
+    HOME_LON = float(os.environ.get("BEWO_HOME_LON", "103.8558"))
+except ValueError:
+    HOME_LAT = 1.2931
+    HOME_LON = 103.8558
 
 class LocationTracker:
     def __init__(self, db_path=DB_PATH):
@@ -51,6 +54,9 @@ class LocationTracker:
             lat, lon: Coordinates
             duration_seconds: How long user was here (simulation)
         """
+        if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+            return
+
         dist_km = self.haversine_distance(lat, lon, HOME_LAT, HOME_LON)
         
         # Update Stats
@@ -64,39 +70,44 @@ class LocationTracker:
 
     def save_stats(self):
         """Writes hourly aggregated stats to DB."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        now = int(time.time())
-        hour_start = now - (now % 3600)
-        
-        # Upsert logic similar to others
-        row = cursor.execute("""
-            SELECT id, time_at_home_seconds, max_distance_from_home_km 
-            FROM passive_metrics 
-            WHERE window_start_utc = ? 
-            ORDER BY id DESC LIMIT 1
-        """, (hour_start,)).fetchone()
-        
-        if row:
-            # Aggregate time, keep max dist
-            new_time = (row[1] or 0) + self.time_at_home_seconds
-            new_max = max(row[2] or 0, self.max_dist_km)
-            cursor.execute("""
-                UPDATE passive_metrics 
-                SET time_at_home_seconds = ?, max_distance_from_home_km = ? 
-                WHERE id = ?
-            """, (new_time, new_max, row[0]))
-        else:
-            cursor.execute("""
-                INSERT INTO passive_metrics (window_start_utc, window_end_utc, time_at_home_seconds, max_distance_from_home_km)
-                VALUES (?, ?, ?, ?)
-            """, (hour_start, now, self.time_at_home_seconds, self.max_dist_km))
-            
-        conn.commit()
-        conn.close()
-        
-        print(f"[Location] Saved: Home {self.time_at_home_seconds}s, Max Dist {self.max_dist_km:.3f}km")
+        conn = None
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            now = int(time.time())
+            hour_start = now - (now % 3600)
+
+            # Upsert logic similar to others
+            row = cursor.execute("""
+                SELECT id, time_at_home_seconds, max_distance_from_home_km
+                FROM passive_metrics
+                WHERE window_start_utc = ?
+                ORDER BY id DESC LIMIT 1
+            """, (hour_start,)).fetchone()
+
+            if row:
+                # Aggregate time, keep max dist
+                new_time = (row[1] or 0) + self.time_at_home_seconds
+                new_max = max(row[2] or 0, self.max_dist_km)
+                cursor.execute("""
+                    UPDATE passive_metrics
+                    SET time_at_home_seconds = ?, max_distance_from_home_km = ?, window_end_utc = ?
+                    WHERE id = ?
+                """, (new_time, new_max, now, row[0]))
+            else:
+                cursor.execute("""
+                    INSERT INTO passive_metrics (window_start_utc, window_end_utc, time_at_home_seconds, max_distance_from_home_km)
+                    VALUES (?, ?, ?, ?)
+                """, (hour_start, now, self.time_at_home_seconds, self.max_dist_km))
+
+            conn.commit()
+            print(f"[Location] Saved: Home {self.time_at_home_seconds}s, Max Dist {self.max_dist_km:.3f}km")
+        except Exception as e:
+            print(f"[Location] DB error: {e}")
+        finally:
+            if conn:
+                conn.close()
         
         # Reset counters
         self.time_at_home_seconds = 0
