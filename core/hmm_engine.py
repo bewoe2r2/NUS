@@ -829,6 +829,151 @@ class HMMEngine:
         """
         return self._personalized_baselines.get(patient_id)
 
+    def calibrate_baseline(self, observations, patient_id=None):
+        """
+        Calibrates personalized emission parameters from patient observations.
+
+        Returns a dict of {feature: {STATE: {mean, std}, ...}} for all features.
+        Uses 30% population prior + 70% observed data weighting.
+        Requires >= MIN_CALIBRATION_OBS stable observations; otherwise returns
+        population defaults.
+
+        Args:
+            observations: List of observation dicts
+            patient_id: Optional patient identifier for storage/retrieval
+
+        Returns:
+            dict: Personalized parameters keyed by feature, then state
+        """
+        # Build population defaults structure
+        def _population_defaults():
+            defaults = {}
+            for feature, params in self.emission_params.items():
+                defaults[feature] = {}
+                for i, state in enumerate(STATES):
+                    defaults[feature][state] = {
+                        'mean': params['means'][i],
+                        'std': math.sqrt(params['vars'][i])
+                    }
+            return defaults
+
+        # Handle empty/None observations
+        if not observations:
+            result = _population_defaults()
+            if patient_id is not None:
+                self._personalized_baselines[patient_id] = result
+            return result
+
+        # Filter out None entries
+        valid_obs = [obs for obs in observations if obs is not None]
+
+        if not valid_obs:
+            result = _population_defaults()
+            if patient_id is not None:
+                self._personalized_baselines[patient_id] = result
+            return result
+
+        # Classify observations and keep only STABLE ones
+        stable_obs = []
+        for obs in valid_obs:
+            state = self._classify_observation_state(obs)
+            if state == 'STABLE':
+                stable_obs.append(obs)
+
+        # Insufficient stable data -> population defaults
+        # Use a lower threshold than MIN_CALIBRATION_OBS since we filter
+        # out non-STABLE periods; require at least 3 days (18 obs)
+        min_stable_required = min(self.MIN_CALIBRATION_OBS, max(18, len(valid_obs) // 3))
+        if len(stable_obs) < min_stable_required:
+            result = _population_defaults()
+            if patient_id is not None:
+                self._personalized_baselines[patient_id] = result
+            return result
+
+        # Compute personalized parameters per feature
+        PRIOR_WEIGHT = 0.3   # population prior
+        OBS_WEIGHT = 0.7     # observed data
+        STD_OBS_WEIGHT = 0.5 # more conservative for std
+
+        personalized = {}
+        for feature, pop_params in self.emission_params.items():
+            pop_means = pop_params['means']
+            pop_vars = pop_params['vars']
+            bounds = pop_params.get('bounds', [None, None])
+
+            # Collect non-None values for this feature from stable obs
+            values = [obs.get(feature) for obs in stable_obs
+                      if obs.get(feature) is not None]
+
+            if len(values) < 10:
+                # Not enough data for this feature, use population defaults
+                personalized[feature] = {}
+                for i, state in enumerate(STATES):
+                    personalized[feature][state] = {
+                        'mean': pop_means[i],
+                        'std': math.sqrt(pop_vars[i])
+                    }
+                continue
+
+            # Clamp values to bounds before computing stats
+            if bounds[0] is not None and bounds[1] is not None:
+                values = [max(bounds[0], min(bounds[1], v)) for v in values]
+
+            observed_mean = float(np.mean(values))
+            observed_std = float(np.std(values)) if len(values) > 1 else math.sqrt(pop_vars[0])
+            observed_std = max(observed_std, 0.001)
+
+            pop_stable_mean = pop_means[0]
+            pop_stable_std = math.sqrt(pop_vars[0])
+
+            # Weighted STABLE mean: 30% population + 70% observed
+            personal_stable_mean = PRIOR_WEIGHT * pop_stable_mean + OBS_WEIGHT * observed_mean
+
+            # Weighted STABLE std: more conservative (50/50)
+            personal_stable_std = (1 - STD_OBS_WEIGHT) * pop_stable_std + STD_OBS_WEIGHT * observed_std
+            personal_stable_std = max(personal_stable_std, pop_stable_std * 0.5)
+
+            # Clamp mean to bounds
+            if bounds[0] is not None and bounds[1] is not None:
+                personal_stable_mean = max(bounds[0], min(bounds[1], personal_stable_mean))
+
+            # Shift WARNING and CRISIS relative to the STABLE shift
+            mean_shift = personal_stable_mean - pop_stable_mean
+
+            warning_mean = pop_means[1] + mean_shift
+            crisis_mean = pop_means[2] + mean_shift
+
+            # Clamp WARNING/CRISIS to bounds
+            if bounds[0] is not None and bounds[1] is not None:
+                warning_mean = max(bounds[0], min(bounds[1], warning_mean))
+                crisis_mean = max(bounds[0], min(bounds[1], crisis_mean))
+
+            # Scale WARNING/CRISIS std proportionally
+            std_ratio = personal_stable_std / pop_stable_std if pop_stable_std > 0 else 1.0
+            warning_std = math.sqrt(pop_vars[1]) * std_ratio
+            crisis_std = math.sqrt(pop_vars[2]) * std_ratio
+
+            personalized[feature] = {
+                'STABLE': {
+                    'mean': personal_stable_mean,
+                    'std': personal_stable_std
+                },
+                'WARNING': {
+                    'mean': warning_mean,
+                    'std': warning_std
+                },
+                'CRISIS': {
+                    'mean': crisis_mean,
+                    'std': crisis_std
+                }
+            }
+
+        # Store if patient_id provided
+        if patient_id is not None:
+            self._personalized_baselines[patient_id] = personalized
+
+        return personalized
+
     def calibrate_patient_baseline(self, patient_id, observations, min_stable_obs=None):
         """
         Learns personalized emission parameters from a patient's historical data.
