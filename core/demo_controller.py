@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Competition Demo Controller
+Bewo 2026 - Competition Demo Controller
 =========================================
 Master script for NUS-SYNAPXE-IMDA competition demos.
 
@@ -227,7 +227,7 @@ def validate_all():
 
 
 def main():
-    parser = argparse.ArgumentParser(description='NEXUS 2026 Competition Demo Controller')
+    parser = argparse.ArgumentParser(description='Bewo 2026 Competition Demo Controller')
     parser.add_argument('--preset', type=str, choices=list(PRESETS.keys()),
                         help='Load a competition preset')
     parser.add_argument('--scenario', type=str,

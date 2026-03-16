@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - HMM Inference Engine (Offline/Edge)
+Bewo 2026 - HMM Inference Engine (Offline/Edge)
 file: hmm_engine.py
 author: Lead Architect
 version: 2.0.0
@@ -3223,7 +3223,7 @@ class ValidationSuite:
         """
         if verbose:
             print("=" * 70)
-            print("NEXUS HMM Engine - Statistical Validation Suite")
+            print("Bewo HMM Engine - Statistical Validation Suite")
             print("=" * 70)
 
         # Define cohort configuration
@@ -3485,7 +3485,7 @@ def run_tests():
             failed += 1
 
     print("=" * 70)
-    print("NEXUS 2026 - HMM Engine v3.0 Test Suite")
+    print("Bewo 2026 - HMM Engine v3.0 Test Suite")
     print("Evidence-Based Clinical Parameters")
     print("=" * 70)
 

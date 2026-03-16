@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Demo Data Injector
+Bewo 2026 - Demo Data Injector
 Generates realistic patient data for demo scenarios and populates SQLite.
 
 Updated for HMM v2.0 orthogonal feature set.
@@ -259,7 +259,7 @@ def print_summary(engine, days=14):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description='Inject demo data for NEXUS 2026')
+    parser = argparse.ArgumentParser(description='Inject demo data for Bewo 2026')
     parser.add_argument('--scenario', type=str, default=SCENARIO,
                         choices=['stable_perfect', 'stable_realistic', 'stable_noisy', 'missing_data',
                                 'gradual_decline', 'warning_to_crisis', 'warning_recovery', 'sudden_crisis', 

@@ -45,7 +45,13 @@ export function VoucherCard() {
         }
     };
 
-    if (loading) return null; // Or skeleton
+    if (loading) return (
+        <div className="w-full bg-white rounded-3xl shadow-sm border border-neutral-100 p-6 animate-pulse">
+            <div className="h-4 bg-neutral-100 rounded w-24 mb-3"></div>
+            <div className="h-10 bg-neutral-100 rounded w-20 mb-2"></div>
+            <div className="h-3 bg-neutral-100 rounded w-32"></div>
+        </div>
+    );
     if (!voucher) return null;
 
     // Color Logic for Loss Aversion

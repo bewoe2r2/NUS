@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Passive Sensor: Step Counter
+Bewo 2026 - Passive Sensor: Step Counter
 file: step_counter.py
 author: Lead Architect
 version: 1.0.0

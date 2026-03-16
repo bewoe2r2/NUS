@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Passive Sensor: Screen Time Tracker
+Bewo 2026 - Passive Sensor: Screen Time Tracker
 file: screen_time_tracker.py
 author: Lead Architect
 version: 1.0.0

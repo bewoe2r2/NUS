@@ -863,7 +863,7 @@ async def log_food(data: FoodInput):
         return {"success": True, "message": f"Logged {data.meal_type}: {data.description}"}
     except Exception as e:
         logger.exception(f"Error logging food: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
     finally:
         conn.close()
 

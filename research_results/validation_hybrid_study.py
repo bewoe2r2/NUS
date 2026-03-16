@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Personalized Baselines Research Validation
+Bewo 2026 - Personalized Baselines Research Validation
 ========================================================
 OBJECTIVE: Honestly evaluate if personalized baselines improve detection accuracy.
 
@@ -20,7 +20,7 @@ HYPOTHESIS:
 - Personalized HMM might OVER-ALERT for patients with high variability
 - For "average" patients, both should perform similarly
 
-Author: NEXUS Research Team
+Author: Bewo Research Team
 Date: 2026-01-29
 """
 
@@ -518,7 +518,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("\n" + "=" * 70)
-    print(f"NEXUS 2026 - PERSONALIZED BASELINES VALIDATION STUDY (N={args.n * 6} patients)")
+    print(f"Bewo 2026 - PERSONALIZED BASELINES VALIDATION STUDY (N={args.n * 6} patients)")
     print("=" * 70)
     print("\nThis is an HONEST evaluation. Results may show personalization")
     print("doesn't help - that's a valid and important finding.")

@@ -1,5 +1,5 @@
 """
-NEXUS 2026 - Passive Sensor: Location Tracker (Privacy Preserving)
+Bewo 2026 - Passive Sensor: Location Tracker (Privacy Preserving)
 file: location_tracker.py
 author: Lead Architect
 version: 1.0.0

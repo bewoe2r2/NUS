@@ -1,5 +1,5 @@
 """
-NEXUS Agent Tools
+Bewo Agent Tools
 =================
 
 Tool ecosystem for autonomous agent actions.

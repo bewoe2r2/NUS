@@ -1,5 +1,5 @@
 """
-NEXUS Agent Tool: Clinical Interventions
+Bewo Agent Tool: Clinical Interventions
 =========================================
 
 Advanced clinical decision support tools.
