@@ -576,30 +576,108 @@ class SafetyMonitor:
         }
     }
 
+    # -----------------------------------------------------------------
+    # COMBINED-RISK RULES (multi-feature escalation)
+    # -----------------------------------------------------------------
+    # Clinical rationale: Individual WARNING-level values can combine
+    # into a CRISIS-level situation. These rules capture synergistic
+    # risk factors documented in clinical literature.
+    #
+    # Source: ADA Standards of Care 2024 - "Acute Complications"
+    #         WHO Integrated Care for Older People (ICOPE) 2019
+    # -----------------------------------------------------------------
+    COMBINED_RULES = [
+        {
+            'name': 'hyperglycemia_plus_poor_meds',
+            'conditions': [
+                ('glucose_avg', 'gt', 11.0),
+                ('meds_adherence', 'lt', 0.4),
+            ],
+            'state': 'CRISIS',
+            'reason': 'CRITICAL: Hyperglycemia (>11 mmol/L) with poor medication adherence (<40%) - risk of DKA/HHS'
+        },
+        {
+            'name': 'hyperglycemia_plus_tachycardia',
+            'conditions': [
+                ('glucose_avg', 'gt', 13.0),
+                ('resting_hr', 'gt', 95),
+            ],
+            'state': 'CRISIS',
+            'reason': 'CRITICAL: Hyperglycemia with tachycardia - possible DKA, sepsis, or dehydration'
+        },
+        {
+            'name': 'low_activity_plus_low_hrv_plus_high_glucose',
+            'conditions': [
+                ('steps_daily', 'lt', 1500),
+                ('hrv_rmssd', 'lt', 15),
+                ('glucose_avg', 'gt', 12.0),
+            ],
+            'state': 'CRISIS',
+            'reason': 'CRITICAL: Immobility + autonomic dysfunction + hyperglycemia - acute illness pattern'
+        },
+        {
+            'name': 'multi_system_decline',
+            'conditions': [
+                ('meds_adherence', 'lt', 0.5),
+                ('sleep_quality', 'lt', 4.0),
+                ('social_engagement', 'lt', 3.0),
+            ],
+            'state': 'WARNING',
+            'reason': 'ALERT: Multi-system decline (poor meds, sleep, social) - depression/neglect screening needed'
+        },
+        {
+            'name': 'autonomic_crisis',
+            'conditions': [
+                ('hrv_rmssd', 'lt', 12),
+                ('resting_hr', 'gt', 90),
+            ],
+            'state': 'WARNING',
+            'reason': 'ALERT: Low HRV with elevated HR - autonomic instability, cardiac risk'
+        },
+    ]
+
     @staticmethod
     def check_safety(observation):
         """
-        Checks immediate safety rules.
+        Checks immediate safety rules (single-feature AND combined-risk).
         Returns: (state, reason) or (None, None)
         Prioritizes CRISIS > WARNING.
         """
         if not observation:
             return None, None
-            
+
         triggered_rules = []
 
+        # --- Single-feature threshold rules ---
         for rule_name, rule in SafetyMonitor.THRESHOLDS.items():
             val = observation.get(rule['feature'])
             if val is None:
                 continue
-                
+
             triggered = False
             if rule['operator'] == 'lt' and val < rule['value']:
                 triggered = True
             elif rule['operator'] == 'gt' and val > rule['value']:
                 triggered = True
-                
+
             if triggered:
+                triggered_rules.append(rule)
+
+        # --- Combined-risk rules ---
+        for rule in SafetyMonitor.COMBINED_RULES:
+            all_met = True
+            for feat, op, threshold in rule['conditions']:
+                val = observation.get(feat)
+                if val is None:
+                    all_met = False
+                    break
+                if op == 'lt' and not (val < threshold):
+                    all_met = False
+                    break
+                if op == 'gt' and not (val > threshold):
+                    all_met = False
+                    break
+            if all_met:
                 triggered_rules.append(rule)
 
         # Sort by severity (CRISIS > WARNING)
@@ -607,11 +685,11 @@ class SafetyMonitor:
         for rule in triggered_rules:
             if rule['state'] == 'CRISIS':
                 return rule['state'], rule['reason']
-        
+
         # If no CRISIS, return first WARNING
         if triggered_rules:
              return triggered_rules[0]['state'], triggered_rules[0]['reason']
-                
+
         return None, None
 
 # ==============================================================================

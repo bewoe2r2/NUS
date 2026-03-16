@@ -253,7 +253,7 @@ def generate_clinical_archetype(archetype, rng):
             'hrv_rmssd': rng.uniform(20, 38),
             'sleep_quality': rng.uniform(5.5, 8.0),
             'social_engagement': rng.uniform(6, 14),
-            'expected': 'WARNING'  # borderline
+            'expected': 'STABLE'  # transient morning spike, all other vitals healthy
         },
         'steroid_induced_hyperglycemia': {
             'glucose_avg': rng.uniform(14.0, 24.0),
@@ -1083,14 +1083,61 @@ def run_section_j(engine):
     print(f"  HMM (our model):                {hmm_acc*100:.1f}%")
     results['hmm_accuracy'] = hmm_acc
 
-    # Summary
-    print(f"\n  HMM advantage over majority:    +{(hmm_acc - majority_acc)*100:.1f}pp")
+    # Summary (single observation)
+    print(f"\n  --- Single Observation ---")
+    print(f"  HMM advantage over majority:    +{(hmm_acc - majority_acc)*100:.1f}pp")
     print(f"  HMM advantage over glucose:     +{(hmm_acc - glucose_acc)*100:.1f}pp")
     print(f"  HMM advantage over weighted:    +{(hmm_acc - weighted_acc)*100:.1f}pp")
 
     results['hmm_advantage_majority'] = hmm_acc - majority_acc
     results['hmm_advantage_glucose'] = hmm_acc - glucose_acc
     results['hmm_advantage_weighted'] = hmm_acc - weighted_acc
+
+    # -----------------------------------------------------------------------
+    # J2: TEMPORAL COMPARISON (multi-observation sequences)
+    # This is where HMM's real advantage shows — temporal reasoning
+    # -----------------------------------------------------------------------
+    print(f"\n  --- Temporal Sequences (6 observations each) ---")
+    seq_data = []
+    n_obs = 6
+    for state in STATES:
+        for seed in range(100):
+            rng = random.Random(seed + 150000 + STATES.index(state) * 10000)
+            seq = [generate_realistic_patient(state, 'hard', rng) for _ in range(n_obs)]
+            seq_data.append((seq, state))
+
+    # HMM on sequences
+    hmm_seq_correct = 0
+    for seq, true_state in seq_data:
+        result = engine.run_inference(seq)
+        if result['current_state'] == true_state:
+            hmm_seq_correct += 1
+    hmm_seq_acc = hmm_seq_correct / len(seq_data)
+
+    # Glucose threshold on last observation only (baselines can't use history)
+    glucose_seq_correct = sum(1 for seq, t in seq_data if glucose_threshold(seq[-1]) == t)
+    glucose_seq_acc = glucose_seq_correct / len(seq_data)
+
+    # Weighted scoring on last observation
+    weighted_seq_correct = sum(1 for seq, t in seq_data if weighted_scoring(seq[-1]) == t)
+    weighted_seq_acc = weighted_seq_correct / len(seq_data)
+
+    # Majority
+    majority_seq_acc = sum(1 for _, t in seq_data if t == 'STABLE') / len(seq_data)
+
+    print(f"  Majority class (always STABLE): {majority_seq_acc*100:.1f}%")
+    print(f"  Glucose threshold only:         {glucose_seq_acc*100:.1f}%")
+    print(f"  Weighted scoring (z-score):      {weighted_seq_acc*100:.1f}%")
+    print(f"  HMM (our model, 6-obs seq):     {hmm_seq_acc*100:.1f}%")
+    print(f"\n  HMM temporal advantage over glucose: +{(hmm_seq_acc - glucose_seq_acc)*100:.1f}pp")
+    print(f"  HMM temporal advantage over weighted: +{(hmm_seq_acc - weighted_seq_acc)*100:.1f}pp")
+
+    results['temporal_hmm_accuracy'] = hmm_seq_acc
+    results['temporal_glucose_accuracy'] = glucose_seq_acc
+    results['temporal_weighted_accuracy'] = weighted_seq_acc
+    results['temporal_majority_accuracy'] = majority_seq_acc
+    results['temporal_hmm_advantage_glucose'] = hmm_seq_acc - glucose_seq_acc
+    results['temporal_hmm_advantage_weighted'] = hmm_seq_acc - weighted_seq_acc
 
     return results
 
@@ -1152,10 +1199,14 @@ def main():
           f"{'PASS' if si['risk_ordering_correct'] else 'FAIL'}  "
           f"monotonicity {'PASS' if si['risk_monotonicity'] else 'FAIL'}")
     sj = all_results['section_j']
-    print(f"  J. vs Baselines:             HMM={sj['hmm_accuracy']*100:.1f}%  "
+    print(f"  J. vs Baselines (1-obs):     HMM={sj['hmm_accuracy']*100:.1f}%  "
           f"majority={sj['majority_class_accuracy']*100:.1f}%  "
           f"glucose={sj['glucose_threshold_accuracy']*100:.1f}%  "
           f"weighted={sj['weighted_scoring_accuracy']*100:.1f}%")
+    print(f"     vs Baselines (temporal):  HMM={sj['temporal_hmm_accuracy']*100:.1f}%  "
+          f"glucose={sj['temporal_glucose_accuracy']*100:.1f}%  "
+          f"weighted={sj['temporal_weighted_accuracy']*100:.1f}%  "
+          f"(+{sj['temporal_hmm_advantage_glucose']*100:.1f}pp vs glucose)")
     print(f"\n  Total runtime: {elapsed:.1f}s")
     print("=" * 70)
 
@@ -1310,6 +1361,18 @@ def main():
         f.write(f"| Weighted scoring | {sj['weighted_scoring_accuracy']*100:.1f}% | "
                 f"{sj['hmm_advantage_weighted']*100:+.1f}pp |\n")
         f.write(f"| **HMM (ours)** | **{sj['hmm_accuracy']*100:.1f}%** | — |\n")
+
+        f.write(f"\n### Temporal Sequences (6 observations, hard difficulty)\n\n")
+        f.write(f"*This is where HMM's temporal reasoning shines — baselines only see the last reading.*\n\n")
+        f.write("| Model | Accuracy | vs HMM |\n")
+        f.write("|-------|----------|--------|\n")
+        f.write(f"| Majority class | {sj['temporal_majority_accuracy']*100:.1f}% | "
+                f"{(sj['temporal_hmm_accuracy']-sj['temporal_majority_accuracy'])*100:+.1f}pp |\n")
+        f.write(f"| Glucose threshold | {sj['temporal_glucose_accuracy']*100:.1f}% | "
+                f"{sj['temporal_hmm_advantage_glucose']*100:+.1f}pp |\n")
+        f.write(f"| Weighted scoring | {sj['temporal_weighted_accuracy']*100:.1f}% | "
+                f"{sj['temporal_hmm_advantage_weighted']*100:+.1f}pp |\n")
+        f.write(f"| **HMM (ours, 6-obs)** | **{sj['temporal_hmm_accuracy']*100:.1f}%** | — |\n")
 
         f.write(f"\n---\n\n")
         f.write(f"*Generated by NEXUS 2026 Clinical Validation Suite*\n")
