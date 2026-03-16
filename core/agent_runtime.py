@@ -26,6 +26,7 @@ import time
 import logging
 import sqlite3
 import os
+import concurrent.futures
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 
@@ -961,7 +962,7 @@ def _ensure_runtime_tables_inner(conn):
         CREATE TABLE IF NOT EXISTS voucher_tracker (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL DEFAULT 'current_user',
-            week_start INTEGER NOT NULL,
+            week_start_utc INTEGER NOT NULL,
             initial_value REAL DEFAULT 5.0,
             current_value REAL DEFAULT 5.0,
             penalties_json TEXT DEFAULT '[]',
@@ -978,6 +979,17 @@ def _ensure_runtime_tables_inner(conn):
             phone TEXT,
             email TEXT,
             is_primary INTEGER DEFAULT 0
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS caregiver_alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id TEXT,
+            timestamp_utc INTEGER,
+            alert_type TEXT,
+            severity TEXT,
+            message TEXT,
+            delivery_results_json TEXT
         )
     """)
     # Ensure patients table exists
@@ -1275,20 +1287,22 @@ Return ONLY the JSON array, no other text."""
         if not parsed or not isinstance(parsed, list):
             return
         conn = sqlite3.connect(DB_PATH)
-        now = int(time.time())
-        for mem in parsed[:5]:
-            if not isinstance(mem, dict) or "key" not in mem:
-                continue
-            conn.execute("""
-                INSERT OR REPLACE INTO agent_memory
-                (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'conversation')
-            """, (patient_id, mem.get("memory_type", "episodic"),
-                  mem.get("key", "unknown")[:100],
-                  json.dumps({"value": mem.get("value", ""), "hmm_state": hmm_state}),
-                  mem.get("confidence", 0.5), now, now))
-        conn.commit()
-        conn.close()
+        try:
+            now = int(time.time())
+            for mem in parsed[:5]:
+                if not isinstance(mem, dict) or "key" not in mem:
+                    continue
+                conn.execute("""
+                    INSERT OR REPLACE INTO agent_memory
+                    (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'conversation')
+                """, (patient_id, mem.get("memory_type", "episodic"),
+                      mem.get("key", "unknown")[:100],
+                      json.dumps({"value": mem.get("value", ""), "hmm_state": hmm_state}),
+                      mem.get("confidence", 0.5), now, now))
+            conn.commit()
+        finally:
+            conn.close()
     except Exception as e:
         logger.warning(f"Memory extraction failed (non-critical): {e}")
 
@@ -1343,15 +1357,17 @@ def _load_agent_memory(patient_id):
     """Load top memories for injection into agent prompt. Returns formatted string."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT memory_type, key, value_json, confidence
-            FROM agent_memory
-            WHERE patient_id = ?
-            ORDER BY updated_at DESC, confidence DESC
-            LIMIT 20
-        """, (patient_id,)).fetchall()
-        conn.close()
+        try:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute("""
+                SELECT memory_type, key, value_json, confidence
+                FROM agent_memory
+                WHERE patient_id = ?
+                ORDER BY updated_at DESC, confidence DESC
+                LIMIT 20
+            """, (patient_id,)).fetchall()
+        finally:
+            conn.close()
         if not rows:
             return "  No memories yet — this is a new patient relationship."
         grouped = {}
@@ -1379,41 +1395,42 @@ def _update_tool_preferences(patient_id):
     """Compute which tools have worked best for this patient. Returns formatted string."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        now = int(time.time())
-        state_order = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
-        rows = conn.execute("""
-            SELECT tool_name, hmm_state, timestamp_utc
-            FROM agent_actions_log
-            WHERE patient_id = ? AND action_type = 'tool_execution' AND tool_name IS NOT NULL
-            ORDER BY timestamp_utc ASC
-        """, (patient_id,)).fetchall()
-        if not rows:
+        try:
+            conn.row_factory = sqlite3.Row
+            now = int(time.time())
+            state_order = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
+            rows = conn.execute("""
+                SELECT tool_name, hmm_state, timestamp_utc
+                FROM agent_actions_log
+                WHERE patient_id = ? AND action_type = 'tool_execution' AND tool_name IS NOT NULL
+                ORDER BY timestamp_utc ASC
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return "  No tool history yet."
+            import math
+            scores = {}
+            for r in rows:
+                tool = r["tool_name"]
+                state = r["hmm_state"] or "UNKNOWN"
+                ts = r["timestamp_utc"]
+                age_days = max(0, (now - ts) / 86400)
+                weight = math.exp(-0.693 * age_days / 14)
+                key = f"{tool}|{state}"
+                if key not in scores:
+                    scores[key] = {"total_w": 0, "improved_w": 0, "uses": 0, "tool": tool, "state": state}
+                scores[key]["total_w"] += weight
+                scores[key]["uses"] += 1
+                next_row = conn.execute("""
+                    SELECT hmm_state FROM agent_actions_log
+                    WHERE patient_id = ? AND timestamp_utc > ? AND timestamp_utc <= ?
+                    AND hmm_state IS NOT NULL
+                    ORDER BY timestamp_utc ASC LIMIT 1
+                """, (patient_id, ts, ts + 86400)).fetchone()
+                if next_row and state in state_order and next_row["hmm_state"] in state_order:
+                    if state_order[next_row["hmm_state"]] < state_order[state]:
+                        scores[key]["improved_w"] += weight
+        finally:
             conn.close()
-            return "  No tool history yet."
-        import math
-        scores = {}
-        for r in rows:
-            tool = r["tool_name"]
-            state = r["hmm_state"] or "UNKNOWN"
-            ts = r["timestamp_utc"]
-            age_days = max(0, (now - ts) / 86400)
-            weight = math.exp(-0.693 * age_days / 14)
-            key = f"{tool}|{state}"
-            if key not in scores:
-                scores[key] = {"total_w": 0, "improved_w": 0, "uses": 0, "tool": tool, "state": state}
-            scores[key]["total_w"] += weight
-            scores[key]["uses"] += 1
-            next_row = conn.execute("""
-                SELECT hmm_state FROM agent_actions_log
-                WHERE patient_id = ? AND timestamp_utc > ? AND timestamp_utc <= ?
-                AND hmm_state IS NOT NULL
-                ORDER BY timestamp_utc ASC LIMIT 1
-            """, (patient_id, ts, ts + 86400)).fetchone()
-            if next_row and state in state_order and next_row["hmm_state"] in state_order:
-                if state_order[next_row["hmm_state"]] < state_order[state]:
-                    scores[key]["improved_w"] += weight
-        conn.close()
         lines = []
         for data in sorted(scores.values(), key=lambda x: x["uses"], reverse=True)[:10]:
             if data["total_w"] > 0:
@@ -1545,7 +1562,7 @@ def build_agent_prompt(
 
     # Format counterfactuals
     cf_text = "\n".join(
-        f"  - If {name}: risk drops {cf['risk_reduction_pct']}% → new crisis risk {cf['new_crisis_risk']}%"
+        f"  - If {name}: risk drops {cf.get('risk_reduction_pct', 0)}% → new crisis risk {cf.get('new_crisis_risk', 0)}%"
         for name, cf in hmm_context.get("counterfactuals", {}).items()
     ) or "  No counterfactual data"
 
@@ -1584,13 +1601,15 @@ def build_agent_prompt(
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-        row = conn.execute(
-            "SELECT current_value FROM voucher_tracker WHERE user_id = ? ORDER BY week_start_utc DESC LIMIT 1",
-            (patient_id,)
-        ).fetchone()
-        if row:
-            voucher_balance = row["current_value"]
-        conn.close()
+        try:
+            row = conn.execute(
+                "SELECT current_value FROM voucher_tracker WHERE user_id = ? ORDER BY week_start_utc DESC LIMIT 1",
+                (patient_id,)
+            ).fetchone()
+            if row:
+                voucher_balance = row["current_value"]
+        finally:
+            conn.close()
     except Exception:
         pass
 
@@ -1650,7 +1669,7 @@ def build_agent_prompt(
     drug_interactions = check_drug_interactions(current_meds) if current_meds else {"interactions_found": 0, "interactions": []}
     drug_safety_lines = []
     for ix in drug_interactions.get("interactions", []):
-        drug_safety_lines.append(f"  [{ix['severity']}] {' + '.join(ix.get('drugs', []))}: {ix.get('mechanism', '')}")
+        drug_safety_lines.append(f"  [{ix.get('severity', 'unknown')}] {' + '.join(ix.get('drugs', []))}: {ix.get('mechanism', '')}")
     drug_safety_text = "\n".join(drug_safety_lines) if drug_safety_lines else "  No known interactions in current medication list."
 
     prompt = f"""
@@ -1981,13 +2000,15 @@ Return valid JSON:
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-        row = conn.execute(
-            "SELECT current_value FROM voucher_tracker WHERE user_id = ? ORDER BY week_start_utc DESC LIMIT 1",
-            (patient_id,)
-        ).fetchone()
-        if row:
-            voucher_balance = row["current_value"]
-        conn.close()
+        try:
+            row = conn.execute(
+                "SELECT current_value FROM voucher_tracker WHERE user_id = ? ORDER BY week_start_utc DESC LIMIT 1",
+                (patient_id,)
+            ).fetchone()
+            if row:
+                voucher_balance = row["current_value"]
+        finally:
+            conn.close()
     except Exception:
         pass
 
@@ -2281,7 +2302,7 @@ def run_agent_loop(
     tool_trace = []
     result = None
     start_time = time.time()
-    MAX_AGENT_SECONDS = 45  # 45 second timeout for entire loop
+    MAX_AGENT_SECONDS = 55  # 55 second timeout for entire loop
 
     for turn in range(max_turns):
         # Check overall timeout before each Gemini call
@@ -2295,8 +2316,8 @@ def run_agent_loop(
             conversation_history, user_message, tool_trace, turn, max_turns,
         )
 
-        # Call Gemini
-        parsed = _call_gemini(gemini_integration, prompt)
+        # Call Gemini (max 2 retries per turn to stay within 45s loop budget)
+        parsed = _call_gemini(gemini_integration, prompt, max_retries=2)
 
         if parsed is None:
             # Gemini failed — use fallback with safety tool execution
@@ -2344,21 +2365,23 @@ def run_agent_loop(
             # Log each tool execution
             try:
                 conn = sqlite3.connect(DB_PATH)
-                conn.execute("""
-                    INSERT INTO agent_actions_log
-                    (patient_id, timestamp_utc, action_type, tool_name, tool_args,
-                     tool_result, status, hmm_state, risk_48h, reasoning)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    patient_id, int(time.time()), "tool_execution",
-                    tool_name, json.dumps(tool_args), json.dumps(tool_result),
-                    "success" if tool_result.get("success") else "failed",
-                    hmm_context.get("current_state"),
-                    hmm_context.get("risk_48h", 0),
-                    parsed.get("internal_reasoning", "")[:500],
-                ))
-                conn.commit()
-                conn.close()
+                try:
+                    conn.execute("""
+                        INSERT INTO agent_actions_log
+                        (patient_id, timestamp_utc, action_type, tool_name, tool_args,
+                         tool_result, status, hmm_state, risk_48h, reasoning)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        patient_id, int(time.time()), "tool_execution",
+                        tool_name, json.dumps(tool_args), json.dumps(tool_result),
+                        "success" if tool_result.get("success") else "failed",
+                        hmm_context.get("current_state"),
+                        hmm_context.get("risk_48h", 0),
+                        parsed.get("internal_reasoning", "")[:500],
+                    ))
+                    conn.commit()
+                finally:
+                    conn.close()
             except Exception as e:
                 logger.warning(f"Failed to log action: {e}")
 
@@ -2380,15 +2403,17 @@ def get_conversation_history(patient_id: str, limit: int = 10) -> List[Dict]:
     """Fetch recent conversation turns."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT role, message, hmm_state, timestamp_utc
-            FROM conversation_history
-            WHERE patient_id = ?
-            ORDER BY timestamp_utc DESC
-            LIMIT ?
-        """, (patient_id, limit)).fetchall()
-        conn.close()
+        try:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute("""
+                SELECT role, message, hmm_state, timestamp_utc
+                FROM conversation_history
+                WHERE patient_id = ?
+                ORDER BY timestamp_utc DESC
+                LIMIT ?
+            """, (patient_id, limit)).fetchall()
+        finally:
+            conn.close()
         return [dict(r) for r in reversed(rows)]
     except Exception:
         return []
@@ -2451,7 +2476,7 @@ def run_agent(
     full_context = {}
     if gemini_integration:
         try:
-            full_context = gemini_integration.fetch_full_context(days=7)
+            full_context = gemini_integration.fetch_full_context(days=7, patient_id=patient_id)
         except Exception as e:
             logger.warning(f"Context fetch failed: {e}")
 
@@ -2473,7 +2498,7 @@ def run_agent(
         user_message=user_message,
         patient_id=patient_id,
         gemini_integration=gemini_integration,
-        max_turns=5,
+        max_turns=3,
     )
 
     # 6. Save original message for safety check BEFORE translation
@@ -2509,7 +2534,7 @@ def run_agent(
         result["_safety_verdict"] = verdict
         result["_safety_flags"] = safety.get("flags", [])
     except Exception as e:
-        logger.warning(f"Safety classifier failed (non-critical): {e}")
+        logger.error(f"Safety classifier failed — original message passed through unfiltered: {e}")
 
     # 7. Store assistant response
     assistant_message = result.get("message_to_patient", result.get("message", ""))
@@ -3315,8 +3340,13 @@ def _call_gemini(gemini_integration, prompt: str, max_retries: int = 3) -> Optio
     for attempt in range(max_retries):
         try:
             model = gemini_integration._get_model()
-            response = model.generate_content(prompt)
-            text = response.text.strip()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(model.generate_content, prompt)
+                response = future.result(timeout=40)  # 40 second timeout per Gemini call
+            text = (response.text or '').strip()
+            if not text:
+                logger.warning(f"Gemini returned empty response on attempt {attempt + 1}")
+                continue
 
             # Clean markdown fences
             if text.startswith("```json"):
@@ -3369,7 +3399,6 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
     """Safe fallback when Gemini is unavailable. Uses HMM data for rule-based response."""
     state = hmm_context.get("current_state", "STABLE")
     risk = hmm_context.get("risk_48h", 0)
-    name = patient_profile.get("name", patient_profile.get("display_name", "there"))
     latest = hmm_context.get("latest_obs", {})
     glucose = latest.get("glucose_avg")
 
@@ -3377,8 +3406,8 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
 
     if state == "CRISIS":
         message = (
-            f"Hello {name}, your health readings need attention right now. "
-            f"Please rest and drink water. A nurse will contact you soon."
+            "Your health readings need attention right now. "
+            "Please rest and drink water. A nurse will contact you soon."
         )
         tone = "urgent"
         tool_calls = [
@@ -3387,8 +3416,8 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
         ]
     elif state == "WARNING":
         message = (
-            f"Hi {name}! I notice some changes in your health lah. "
-            f"Remember to take medicine and check glucose ok?"
+            "I notice some changes in your health lah. "
+            "Remember to take medicine and check glucose ok?"
         )
         tone = "concerned"
         tool_calls = [
@@ -3397,8 +3426,8 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
         ]
     else:
         message = (
-            f"Good day {name}! Your health looking stable lah. Keep it up! "
-            f"Remember to stay active today."
+            "Your health looking stable lah. Keep it up! "
+            "Remember to stay active today."
         )
         tone = "celebratory"
 
@@ -3705,15 +3734,17 @@ def _log_safety_event(patient_id, verdict, flags, original_message):
     """Log safety classifier events for audit."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.execute("""
-            INSERT INTO agent_actions_log
-            (patient_id, timestamp_utc, action_type, action_data, tool_name, status)
-            VALUES (?, ?, 'safety_flag', ?, 'safety_classifier', ?)
-        """, (patient_id, int(time.time()),
-              json.dumps({"verdict": verdict, "flags": flags, "message_preview": original_message[:200]}),
-              verdict.lower()))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("""
+                INSERT INTO agent_actions_log
+                (patient_id, timestamp_utc, action_type, action_data, tool_name, status)
+                VALUES (?, ?, 'safety_flag', ?, 'safety_classifier', ?)
+            """, (patient_id, int(time.time()),
+                  json.dumps({"verdict": verdict, "flags": flags, "message_preview": original_message[:200]}),
+                  verdict.lower()))
+            conn.commit()
+        finally:
+            conn.close()
     except Exception as e:
         logger.warning(f"Safety event logging failed: {e}")
 
@@ -3731,40 +3762,41 @@ def compute_tool_effectiveness_scores(patient_id: str) -> Dict:
     import math
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        now = int(time.time())
-        state_order = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
-        rows = conn.execute("""
-            SELECT tool_name, hmm_state, timestamp_utc
-            FROM agent_actions_log
-            WHERE patient_id = ? AND action_type = 'tool_execution' AND tool_name IS NOT NULL
-            ORDER BY timestamp_utc ASC
-        """, (patient_id,)).fetchall()
-        if not rows:
+        try:
+            conn.row_factory = sqlite3.Row
+            now = int(time.time())
+            state_order = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
+            rows = conn.execute("""
+                SELECT tool_name, hmm_state, timestamp_utc
+                FROM agent_actions_log
+                WHERE patient_id = ? AND action_type = 'tool_execution' AND tool_name IS NOT NULL
+                ORDER BY timestamp_utc ASC
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {}
+            scores = {}
+            for r in rows:
+                tool = r["tool_name"]
+                state = r["hmm_state"] or "UNKNOWN"
+                ts = r["timestamp_utc"]
+                age_days = max(0, (now - ts) / 86400)
+                weight = math.exp(-0.693 * age_days / 14)
+                key = f"{tool}|{state}"
+                if key not in scores:
+                    scores[key] = {"total_w": 0, "improved_w": 0, "uses": 0, "tool": tool, "state": state}
+                scores[key]["total_w"] += weight
+                scores[key]["uses"] += 1
+                next_row = conn.execute("""
+                    SELECT hmm_state FROM agent_actions_log
+                    WHERE patient_id = ? AND timestamp_utc > ? AND timestamp_utc <= ?
+                    AND hmm_state IS NOT NULL
+                    ORDER BY timestamp_utc ASC LIMIT 1
+                """, (patient_id, ts, ts + 86400)).fetchone()
+                if next_row and state in state_order and next_row["hmm_state"] in state_order:
+                    if state_order[next_row["hmm_state"]] < state_order[state]:
+                        scores[key]["improved_w"] += weight
+        finally:
             conn.close()
-            return {}
-        scores = {}
-        for r in rows:
-            tool = r["tool_name"]
-            state = r["hmm_state"] or "UNKNOWN"
-            ts = r["timestamp_utc"]
-            age_days = max(0, (now - ts) / 86400)
-            weight = math.exp(-0.693 * age_days / 14)
-            key = f"{tool}|{state}"
-            if key not in scores:
-                scores[key] = {"total_w": 0, "improved_w": 0, "uses": 0, "tool": tool, "state": state}
-            scores[key]["total_w"] += weight
-            scores[key]["uses"] += 1
-            next_row = conn.execute("""
-                SELECT hmm_state FROM agent_actions_log
-                WHERE patient_id = ? AND timestamp_utc > ? AND timestamp_utc <= ?
-                AND hmm_state IS NOT NULL
-                ORDER BY timestamp_utc ASC LIMIT 1
-            """, (patient_id, ts, ts + 86400)).fetchone()
-            if next_row and state in state_order and next_row["hmm_state"] in state_order:
-                if state_order[next_row["hmm_state"]] < state_order[state]:
-                    scores[key]["improved_w"] += weight
-        conn.close()
         result = {}
         for data in scores.values():
             tool, state = data["tool"], data["state"]
@@ -3790,8 +3822,10 @@ def _get_all_patient_ids() -> List[str]:
     """Get all patient IDs from database."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        rows = conn.execute("SELECT user_id FROM patients").fetchall()
-        conn.close()
+        try:
+            rows = conn.execute("SELECT user_id FROM patients").fetchall()
+        finally:
+            conn.close()
         return [r[0] for r in rows] if rows else ["P001"]
     except Exception:
         return ["P001"]
@@ -3806,13 +3840,15 @@ def _get_patient_profile_from_db(patient_id: str) -> Dict:
     }
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        # Explicit columns — never SELECT *, prevents accidental PII leakage
-        row = conn.execute(
-            "SELECT user_id, name, age, conditions, medications FROM patients WHERE user_id = ?",
-            (patient_id,)
-        ).fetchone()
-        conn.close()
+        try:
+            conn.row_factory = sqlite3.Row
+            # Explicit columns — never SELECT *, prevents accidental PII leakage
+            row = conn.execute(
+                "SELECT user_id, name, age, conditions, medications FROM patients WHERE user_id = ?",
+                (patient_id,)
+            ).fetchone()
+        finally:
+            conn.close()
         if row:
             profile = dict(row)
             profile["id"] = patient_id
@@ -3833,91 +3869,93 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
     triggers = []
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    now = int(time.time())
-
-    # 1. Glucose rising (Merlion velocity)
     try:
+        now = int(time.time())
+
+        # 1. Glucose rising (Merlion velocity)
         try:
-            from hmm_engine import HMMEngine
-        except ModuleNotFoundError:
-            from core.hmm_engine import HMMEngine
-        engine = HMMEngine()
-        obs = engine.fetch_observations(days=3, patient_id=patient_id)
-        if obs:
-            merlion = _get_merlion_forecast(obs)
-            if merlion.get("velocity", 0) > 0.3 and merlion.get("acceleration", 0) > 0:
-                triggers.append({"type": "glucose_rising", "reason": f"Glucose rising: velocity={merlion['velocity']:.2f}, acceleration={merlion['acceleration']:.2f}"})
-    except Exception:
-        pass
+            try:
+                from hmm_engine import HMMEngine
+            except ModuleNotFoundError:
+                from core.hmm_engine import HMMEngine
+            engine = HMMEngine()
+            obs = engine.fetch_observations(days=3, patient_id=patient_id)
+            if obs:
+                merlion = _get_merlion_forecast(obs)
+                if merlion.get("velocity", 0) > 0.3 and merlion.get("acceleration", 0) > 0:
+                    triggers.append({"type": "glucose_rising", "reason": f"Glucose rising: velocity={merlion['velocity']:.2f}, acceleration={merlion['acceleration']:.2f}"})
+        except Exception:
+            pass
 
-    # 2. Sustained WARNING/CRISIS
-    try:
-        recent = conn.execute("""
-            SELECT hmm_state FROM agent_actions_log
-            WHERE patient_id = ? AND hmm_state IS NOT NULL
-            ORDER BY timestamp_utc DESC LIMIT 3
-        """, (patient_id,)).fetchall()
-        if len(recent) >= 2 and all(r["hmm_state"] in ("WARNING", "CRISIS") for r in recent):
-            triggers.append({"type": "sustained_risk", "reason": f"Sustained {recent[0]['hmm_state']} state for last {len(recent)} observations"})
-    except Exception:
-        pass
+        # 2. Sustained WARNING/CRISIS
+        try:
+            recent = conn.execute("""
+                SELECT hmm_state FROM agent_actions_log
+                WHERE patient_id = ? AND hmm_state IS NOT NULL
+                ORDER BY timestamp_utc DESC LIMIT 3
+            """, (patient_id,)).fetchall()
+            if len(recent) >= 2 and all(r["hmm_state"] in ("WARNING", "CRISIS") for r in recent):
+                triggers.append({"type": "sustained_risk", "reason": f"Sustained {recent[0]['hmm_state']} state for last {len(recent)} observations"})
+        except Exception:
+            pass
 
-    # 3. Logging gap (no glucose reading in 6+ hours)
-    try:
-        last_reading = conn.execute("""
-            SELECT MAX(reading_timestamp_utc) as last_ts FROM glucose_readings WHERE user_id = ?
-        """, (patient_id,)).fetchone()
-        if last_reading and last_reading["last_ts"]:
-            hours_gap = (now - last_reading["last_ts"]) / 3600
-            if hours_gap > 6:
-                triggers.append({"type": "logging_gap", "reason": f"No glucose reading for {hours_gap:.0f} hours"})
-    except Exception:
-        pass
+        # 3. Logging gap (no glucose reading in 6+ hours)
+        try:
+            last_reading = conn.execute("""
+                SELECT MAX(reading_timestamp_utc) as last_ts FROM glucose_readings WHERE user_id = ?
+            """, (patient_id,)).fetchone()
+            if last_reading and last_reading["last_ts"]:
+                hours_gap = (now - last_reading["last_ts"]) / 3600
+                if hours_gap > 6:
+                    triggers.append({"type": "logging_gap", "reason": f"No glucose reading for {hours_gap:.0f} hours"})
+        except Exception:
+            pass
 
-    # 4. Medication nudge (optimal time + not logged today)
-    try:
-        nudge_times = get_optimal_nudge_times(patient_id)
-        current_hour = datetime.now().hour
-        best_hours = nudge_times.get("best_hours", [8, 14, 20])
-        if current_hour in best_hours:
-            today_start = int(datetime.now().replace(hour=0, minute=0, second=0).timestamp())
-            med_today = conn.execute("""
-                SELECT COUNT(*) as cnt FROM medication_logs WHERE taken_timestamp_utc >= ? AND user_id = ?
-            """, (today_start, patient_id)).fetchone()
-            if med_today and med_today["cnt"] == 0:
-                triggers.append({"type": "medication_nudge", "reason": "Optimal nudge time and no medication logged today"})
-    except Exception:
-        pass
+        # 4. Medication nudge (optimal time + not logged today)
+        try:
+            nudge_times = get_optimal_nudge_times(patient_id)
+            current_hour = datetime.now().hour
+            best_hours = nudge_times.get("best_hours", [8, 14, 20])
+            if current_hour in best_hours:
+                today_start = int(datetime.now().replace(hour=0, minute=0, second=0).timestamp())
+                med_today = conn.execute("""
+                    SELECT COUNT(*) as cnt FROM medication_logs WHERE taken_timestamp_utc >= ? AND user_id = ?
+                """, (today_start, patient_id)).fetchone()
+                if med_today and med_today["cnt"] == 0:
+                    triggers.append({"type": "medication_nudge", "reason": "Optimal nudge time and no medication logged today"})
+        except Exception:
+            pass
 
-    # 5. Streak about to break
-    try:
-        streaks = get_patient_streaks(patient_id)
-        for streak_type, data in streaks.items():
-            if isinstance(data, dict) and data.get("current", 0) >= 3:
-                last_action = data.get("last_action", "")
-                if last_action and last_action != datetime.now().strftime("%Y-%m-%d"):
-                    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-                    if last_action == yesterday:
-                        triggers.append({"type": "streak_save", "reason": f"{streak_type} streak ({data.get('current', 0)} days) at risk — no action today"})
-                        break
-    except Exception:
-        pass
+        # 5. Streak about to break
+        try:
+            streaks = get_patient_streaks(patient_id)
+            for streak_type, data in streaks.items():
+                if isinstance(data, dict) and data.get("current", 0) >= 3:
+                    last_action = data.get("last_action", "")
+                    if last_action and last_action != datetime.now().strftime("%Y-%m-%d"):
+                        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+                        if last_action == yesterday:
+                            triggers.append({"type": "streak_save", "reason": f"{streak_type} streak ({data.get('current', 0)} days) at risk — no action today"})
+                            break
+        except Exception:
+            pass
 
-    # 6. Mood follow-up
-    try:
-        last_msg = conn.execute("""
-            SELECT message FROM conversation_history
-            WHERE patient_id = ? AND role = 'user'
-            ORDER BY timestamp_utc DESC LIMIT 1
-        """, (patient_id,)).fetchone()
-        if last_msg and last_msg["message"]:
-            mood = detect_mood_from_message(last_msg["message"])
-            if mood.get("mood") in ("frustrated", "sad", "worried"):
-                triggers.append({"type": "mood_followup", "reason": f"Previous mood: {mood['mood']} — follow-up needed"})
-    except Exception:
-        pass
+        # 6. Mood follow-up
+        try:
+            last_msg = conn.execute("""
+                SELECT message FROM conversation_history
+                WHERE patient_id = ? AND role = 'user'
+                ORDER BY timestamp_utc DESC LIMIT 1
+            """, (patient_id,)).fetchone()
+            if last_msg and last_msg["message"]:
+                mood = detect_mood_from_message(last_msg["message"])
+                if mood.get("mood") in ("frustrated", "sad", "worried"):
+                    triggers.append({"type": "mood_followup", "reason": f"Previous mood: {mood['mood']} — follow-up needed"})
+        except Exception:
+            pass
+    finally:
+        conn.close()
 
-    conn.close()
     return triggers
 
 
@@ -3956,14 +3994,16 @@ def run_proactive_scan(patient_ids: List[str] = None) -> List[Dict]:
                 )
                 # Store in proactive_checkins
                 conn = sqlite3.connect(DB_PATH)
-                conn.execute("""
-                    INSERT INTO proactive_checkins
-                    (patient_id, scheduled_time, checkin_type, reason, status, created_at, completed_at)
-                    VALUES (?, ?, ?, ?, 'completed', ?, ?)
-                """, (pid, datetime.now().isoformat(), trigger["type"],
-                      trigger["reason"], int(time.time()), int(time.time())))
-                conn.commit()
-                conn.close()
+                try:
+                    conn.execute("""
+                        INSERT INTO proactive_checkins
+                        (patient_id, scheduled_time, checkin_type, reason, status, created_at, completed_at)
+                        VALUES (?, ?, ?, ?, 'completed', ?, ?)
+                    """, (pid, datetime.now().isoformat(), trigger["type"],
+                          trigger["reason"], int(time.time()), int(time.time())))
+                    conn.commit()
+                finally:
+                    conn.close()
                 results.append({"patient_id": pid, "trigger": trigger,
                                 "message": result.get("message_to_patient", "")})
             except Exception as e:
@@ -3982,49 +4022,51 @@ def process_caregiver_response(alert_id: int, caregiver_id: str, response_type: 
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    now = int(time.time())
-    conn.execute("""
-        INSERT INTO caregiver_responses (alert_id, caregiver_id, response_type, message, timestamp_utc)
-        VALUES (?, ?, ?, ?, ?)
-    """, (alert_id, caregiver_id, response_type, message, now))
-    alert = None
     try:
-        alert = conn.execute("SELECT * FROM caregiver_alerts WHERE id = ?", (alert_id,)).fetchone()
-    except Exception:
-        pass
-    result = {"success": True, "response_type": response_type, "alert_id": alert_id}
-    if alert:
-        patient_id = alert["patient_id"]
-        if response_type == "acknowledged":
-            try:
-                conn.execute("UPDATE caregiver_alerts SET delivery_results_json = json_set(COALESCE(delivery_results_json, '{}'), '$.caregiver_status', 'acknowledged') WHERE id = ?", (alert_id,))
-            except Exception:
-                pass
-            result["status"] = "Alert acknowledged"
-        elif response_type == "on_the_way":
-            result["status"] = "Caregiver en route"
-        elif response_type == "need_help":
-            conn.execute("""
-                INSERT INTO nurse_alerts (user_id, timestamp_utc, priority, reason, status)
-                VALUES (?, ?, 'high', ?, 'pending')
-            """, (patient_id, now, f"Caregiver needs help: {message[:200]}"))
-            result["status"] = "Escalated to nurse"
-        elif response_type == "escalate":
-            conn.execute("""
-                INSERT INTO nurse_alerts (user_id, timestamp_utc, priority, reason, status)
-                VALUES (?, ?, 'critical', ?, 'pending')
-            """, (patient_id, now, f"Caregiver escalation: {message[:200]}"))
-            result["status"] = "Critical escalation created"
-        elif response_type == "note":
-            conn.execute("""
-                INSERT OR REPLACE INTO agent_memory
-                (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
-                VALUES (?, 'episodic', ?, ?, 0.8, ?, ?, 'caregiver')
-            """, (patient_id, f"caregiver_note_{now}",
-                  json.dumps({"value": message, "caregiver_id": caregiver_id}), now, now))
-            result["status"] = "Note stored in patient memory"
-    conn.commit()
-    conn.close()
+        now = int(time.time())
+        conn.execute("""
+            INSERT INTO caregiver_responses (alert_id, caregiver_id, response_type, message, timestamp_utc)
+            VALUES (?, ?, ?, ?, ?)
+        """, (alert_id, caregiver_id, response_type, message, now))
+        alert = None
+        try:
+            alert = conn.execute("SELECT * FROM caregiver_alerts WHERE id = ?", (alert_id,)).fetchone()
+        except Exception:
+            pass
+        result = {"success": True, "response_type": response_type, "alert_id": alert_id}
+        if alert:
+            patient_id = alert["patient_id"]
+            if response_type == "acknowledged":
+                try:
+                    conn.execute("UPDATE caregiver_alerts SET delivery_results_json = json_set(COALESCE(delivery_results_json, '{}'), '$.caregiver_status', 'acknowledged') WHERE id = ?", (alert_id,))
+                except Exception:
+                    pass
+                result["status"] = "Alert acknowledged"
+            elif response_type == "on_the_way":
+                result["status"] = "Caregiver en route"
+            elif response_type == "need_help":
+                conn.execute("""
+                    INSERT INTO nurse_alerts (user_id, timestamp_utc, priority, reason, status)
+                    VALUES (?, ?, 'high', ?, 'pending')
+                """, (patient_id, now, f"Caregiver needs help: {message[:200]}"))
+                result["status"] = "Escalated to nurse"
+            elif response_type == "escalate":
+                conn.execute("""
+                    INSERT INTO nurse_alerts (user_id, timestamp_utc, priority, reason, status)
+                    VALUES (?, ?, 'critical', ?, 'pending')
+                """, (patient_id, now, f"Caregiver escalation: {message[:200]}"))
+                result["status"] = "Critical escalation created"
+            elif response_type == "note":
+                conn.execute("""
+                    INSERT OR REPLACE INTO agent_memory
+                    (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
+                    VALUES (?, 'episodic', ?, ?, 0.8, ?, ?, 'caregiver')
+                """, (patient_id, f"caregiver_note_{now}",
+                      json.dumps({"value": message, "caregiver_id": caregiver_id}), now, now))
+                result["status"] = "Note stored in patient memory"
+        conn.commit()
+    finally:
+        conn.close()
     return result
 
 
@@ -4035,87 +4077,89 @@ def compute_caregiver_burden_score(patient_id: str) -> Dict:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    now = int(time.time())
-    week_ago = now - (7 * 86400)
-    score = 0
-    signals = []
-
-    # Factor 1: Alert volume weighted by severity (0-30 pts)
     try:
-        rows = conn.execute("""
-            SELECT severity, COUNT(*) as cnt FROM caregiver_alerts
-            WHERE patient_id = ? AND timestamp_utc >= ? GROUP BY severity
-        """, (patient_id, week_ago)).fetchall()
-        severity_weights = {"critical": 5, "warning": 2, "info": 1}
-        weighted_vol = sum(r["cnt"] * severity_weights.get(r["severity"], 1) for r in rows)
-        vol_score = min(30, weighted_vol * 2)
-        score += vol_score
-        if vol_score > 20:
-            signals.append(f"High alert volume ({weighted_vol} weighted)")
-    except Exception:
-        pass
+        now = int(time.time())
+        week_ago = now - (7 * 86400)
+        score = 0
+        signals = []
 
-    # Factor 2: Response latency trend (0-25 pts)
-    try:
-        responses = conn.execute("""
-            SELECT cr.timestamp_utc - ca.timestamp_utc as latency
-            FROM caregiver_responses cr JOIN caregiver_alerts ca ON cr.alert_id = ca.id
-            WHERE ca.patient_id = ? AND cr.timestamp_utc >= ?
-            ORDER BY cr.timestamp_utc ASC
-        """, (patient_id, week_ago)).fetchall()
-        if len(responses) >= 4:
-            latencies = [r["latency"] for r in responses if r["latency"] and r["latency"] > 0]
-            if len(latencies) >= 4:
-                mid = len(latencies) // 2
-                early_avg = sum(latencies[:mid]) / mid
-                late_avg = sum(latencies[mid:]) / (len(latencies) - mid)
-                if early_avg > 0 and late_avg > early_avg * 1.5:
-                    lat_score = min(25, int((late_avg / early_avg - 1) * 25))
-                    score += lat_score
-                    signals.append("Response times increasing (possible burnout)")
-    except Exception:
-        pass
+        # Factor 1: Alert volume weighted by severity (0-30 pts)
+        try:
+            rows = conn.execute("""
+                SELECT severity, COUNT(*) as cnt FROM caregiver_alerts
+                WHERE patient_id = ? AND timestamp_utc >= ? GROUP BY severity
+            """, (patient_id, week_ago)).fetchall()
+            severity_weights = {"critical": 5, "warning": 2, "info": 1}
+            weighted_vol = sum(r["cnt"] * severity_weights.get(r["severity"], 1) for r in rows)
+            vol_score = min(30, weighted_vol * 2)
+            score += vol_score
+            if vol_score > 20:
+                signals.append(f"High alert volume ({weighted_vol} weighted)")
+        except Exception:
+            pass
 
-    # Factor 3: Unresolved alert ratio (0-25 pts)
-    try:
-        total = conn.execute("""
-            SELECT COUNT(*) as cnt FROM caregiver_alerts
-            WHERE patient_id = ? AND timestamp_utc >= ?
-        """, (patient_id, week_ago)).fetchone()["cnt"]
-        responded = conn.execute("""
-            SELECT COUNT(DISTINCT ca.id) as cnt FROM caregiver_alerts ca
-            JOIN caregiver_responses cr ON cr.alert_id = ca.id
-            WHERE ca.patient_id = ? AND ca.timestamp_utc >= ?
-        """, (patient_id, week_ago)).fetchone()["cnt"]
-        if total > 0:
-            unresolved = 1 - (responded / total)
-            ratio_score = int(unresolved * 25)
-            score += ratio_score
-            if unresolved > 0.5:
-                signals.append(f"{int(unresolved * 100)}% alerts unresolved")
-    except Exception:
-        pass
+        # Factor 2: Response latency trend (0-25 pts)
+        try:
+            responses = conn.execute("""
+                SELECT cr.timestamp_utc - ca.timestamp_utc as latency
+                FROM caregiver_responses cr JOIN caregiver_alerts ca ON cr.alert_id = ca.id
+                WHERE ca.patient_id = ? AND cr.timestamp_utc >= ?
+                ORDER BY cr.timestamp_utc ASC
+            """, (patient_id, week_ago)).fetchall()
+            if len(responses) >= 4:
+                latencies = [r["latency"] for r in responses if r["latency"] and r["latency"] > 0]
+                if len(latencies) >= 4:
+                    mid = len(latencies) // 2
+                    early_avg = sum(latencies[:mid]) / mid
+                    late_avg = sum(latencies[mid:]) / (len(latencies) - mid)
+                    if early_avg > 0 and late_avg > early_avg * 1.5:
+                        lat_score = min(25, int((late_avg / early_avg - 1) * 25))
+                        score += lat_score
+                        signals.append("Response times increasing (possible burnout)")
+        except Exception:
+            pass
 
-    # Factor 4: Continuous alerting > 48h (0-20 pts)
-    try:
-        first_recent = conn.execute("""
-            SELECT MIN(timestamp_utc) as first_ts FROM caregiver_alerts
-            WHERE patient_id = ? AND timestamp_utc >= ? AND severity IN ('critical', 'warning')
-        """, (patient_id, week_ago)).fetchone()
-        last_alert = conn.execute("""
-            SELECT MAX(timestamp_utc) as last_ts FROM caregiver_alerts
-            WHERE patient_id = ? AND severity IN ('critical', 'warning')
-        """, (patient_id,)).fetchone()
-        if first_recent and last_alert and first_recent["first_ts"] and last_alert["last_ts"]:
-            continuous_h = (last_alert["last_ts"] - first_recent["first_ts"]) / 3600
-            if continuous_h > 48:
-                dur_score = min(20, int((continuous_h - 48) / 24 * 10))
-                score += dur_score
-                signals.append(f"Continuous alerting for {int(continuous_h)}h")
-    except Exception:
-        pass
+        # Factor 3: Unresolved alert ratio (0-25 pts)
+        try:
+            total = conn.execute("""
+                SELECT COUNT(*) as cnt FROM caregiver_alerts
+                WHERE patient_id = ? AND timestamp_utc >= ?
+            """, (patient_id, week_ago)).fetchone()["cnt"]
+            responded = conn.execute("""
+                SELECT COUNT(DISTINCT ca.id) as cnt FROM caregiver_alerts ca
+                JOIN caregiver_responses cr ON cr.alert_id = ca.id
+                WHERE ca.patient_id = ? AND ca.timestamp_utc >= ?
+            """, (patient_id, week_ago)).fetchone()["cnt"]
+            if total > 0:
+                unresolved = 1 - (responded / total)
+                ratio_score = int(unresolved * 25)
+                score += ratio_score
+                if unresolved > 0.5:
+                    signals.append(f"{int(unresolved * 100)}% alerts unresolved")
+        except Exception:
+            pass
 
-    conn.close()
+        # Factor 4: Continuous alerting > 48h (0-20 pts)
+        try:
+            first_recent = conn.execute("""
+                SELECT MIN(timestamp_utc) as first_ts FROM caregiver_alerts
+                WHERE patient_id = ? AND timestamp_utc >= ? AND severity IN ('critical', 'warning')
+            """, (patient_id, week_ago)).fetchone()
+            last_alert = conn.execute("""
+                SELECT MAX(timestamp_utc) as last_ts FROM caregiver_alerts
+                WHERE patient_id = ? AND severity IN ('critical', 'warning')
+            """, (patient_id,)).fetchone()
+            if first_recent and last_alert and first_recent["first_ts"] and last_alert["last_ts"]:
+                continuous_h = (last_alert["last_ts"] - first_recent["first_ts"]) / 3600
+                if continuous_h > 48:
+                    dur_score = min(20, int((continuous_h - 48) / 24 * 10))
+                    score += dur_score
+                    signals.append(f"Continuous alerting for {int(continuous_h)}h")
+        except Exception:
+            pass
+    finally:
+        conn.close()
+
     score = min(100, score)
     return {
         "burden_score": score,
@@ -4139,30 +4183,32 @@ def compute_attention_score(patient_id: str) -> Dict:
     """How much clinical attention has this patient received recently?"""
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        now = int(time.time())
-        week_ago = now - (7 * 86400)
-        nurse_count, last_nurse = 0, 0
         try:
-            row = conn.execute("""
-                SELECT COUNT(*) as cnt, MAX(timestamp_utc) as last_ts FROM nurse_alerts
-                WHERE user_id = ? AND timestamp_utc >= ?
-            """, (patient_id, week_ago)).fetchone()
-            nurse_count = row["cnt"] or 0
-            last_nurse = row["last_ts"] or 0
-        except Exception:
-            pass
-        conv_count, last_conv = 0, 0
-        try:
-            row = conn.execute("""
-                SELECT COUNT(*) as cnt, MAX(timestamp_utc) as last_ts FROM conversation_history
-                WHERE patient_id = ? AND timestamp_utc >= ?
-            """, (patient_id, week_ago)).fetchone()
-            conv_count = row["cnt"] or 0
-            last_conv = row["last_ts"] or 0
-        except Exception:
-            pass
-        conn.close()
+            conn.row_factory = sqlite3.Row
+            now = int(time.time())
+            week_ago = now - (7 * 86400)
+            nurse_count, last_nurse = 0, 0
+            try:
+                row = conn.execute("""
+                    SELECT COUNT(*) as cnt, MAX(timestamp_utc) as last_ts FROM nurse_alerts
+                    WHERE user_id = ? AND timestamp_utc >= ?
+                """, (patient_id, week_ago)).fetchone()
+                nurse_count = row["cnt"] or 0
+                last_nurse = row["last_ts"] or 0
+            except Exception:
+                pass
+            conv_count, last_conv = 0, 0
+            try:
+                row = conn.execute("""
+                    SELECT COUNT(*) as cnt, MAX(timestamp_utc) as last_ts FROM conversation_history
+                    WHERE patient_id = ? AND timestamp_utc >= ?
+                """, (patient_id, week_ago)).fetchone()
+                conv_count = row["cnt"] or 0
+                last_conv = row["last_ts"] or 0
+            except Exception:
+                pass
+        finally:
+            conn.close()
         last_any = max(last_nurse, last_conv)
         days_since = (now - last_any) / 86400 if last_any > 0 else 999
         total = nurse_count + conv_count

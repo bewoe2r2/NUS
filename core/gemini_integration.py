@@ -11,9 +11,8 @@ Handles interaction with Google Gemini API for:
 4. Proactive Patient Insights (Agentic) - NOW WITH FULL CONTEXTUAL DATA
 
 Model Hierarchy:
-- Primary: gemini-2.5-flash (with fallback to gemini-2.0-flash)
-- Fallback 1: gemini-2.0-flash
-- Fallback 2: gemini-2.0-flash-exp
+- Primary: gemini-2.5-flash
+- Fallback: gemini-2.5-flash-preview-04-17
 
 ===============================================================================
 BEHAVIORAL SCIENCE FRAMEWORK (for nudging elderly diabetics)
@@ -37,6 +36,7 @@ Key Principles Applied:
 """
 
 import google.generativeai as genai
+import logging
 import os
 from dotenv import load_dotenv
 import json
@@ -44,26 +44,28 @@ import time
 import sqlite3
 import math
 
+logger = logging.getLogger(__name__)
+
 class GeminiIntegration:
     def __init__(self, api_key=None):
         load_dotenv()
         self.api_key = api_key or os.getenv('GEMINI_API_KEY')
 
         if not self.api_key:
-            print("WARNING: No GEMINI_API_KEY found. API calls will fail/fallback.")
+            logger.warning("No GEMINI_API_KEY found. API calls will fail/fallback.")
         else:
             genai.configure(api_key=self.api_key)
 
         # Model hierarchy with fallback
         self.model_candidates = [
-            'gemini-2.5-flash',         # Stable production model
-            'gemini-2.0-flash',         # Fallback
+            'gemini-2.5-flash',         # Latest stable model
+            'gemini-2.5-flash-preview-04-17',  # Preview fallback
         ]
         self.model_name = self._select_available_model()
         self.max_retries = 2
 
         self.db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
-        print(f"[OK] Gemini Integration initialized with model: {self.model_name}")
+        logger.info(f"Gemini Integration initialized with model: {self.model_name}")
 
     def _get_db_connection(self):
         """Returns a database connection."""
@@ -86,7 +88,17 @@ class GeminiIntegration:
         Returns:
             dict: Rich contextual data for personalized insights
         """
-        conn = self._get_db_connection()
+        conn = None
+        try:
+            conn = self._get_db_connection()
+        except Exception as e:
+            logger.warning(f"Could not connect to DB for context fetch: {e}")
+            return {
+                'voice_checkins': [], 'recent_meals': [], 'activity_pattern': {},
+                'digital_behavior': {}, 'location_pattern': {}, 'gait_data': {},
+                'sleep_details': {}, 'glucose_pattern': {}, 'hmm_trajectory': [],
+                'medication_details': []
+            }
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
@@ -342,9 +354,11 @@ class GeminiIntegration:
                 })
 
         except Exception as e:
-            print(f"[WARN] Error fetching context: {e}")
+            logger.warning(f"Error fetching context: {e}")
+        finally:
+            if conn:
+                conn.close()
 
-        conn.close()
         return context
 
     def _select_available_model(self):
@@ -423,13 +437,16 @@ class GeminiIntegration:
             ])
             
             # Parse JSON
-            text = response.text.strip()
+            text = (response.text or '').strip()
             # Clean md code blocks if present
             if text.startswith('```json'):
                 text = text[7:-3]
             elif text.startswith('```'):
                 text = text[3:-3]
-                
+            text = text.strip()
+            if not text:
+                text = '{}'
+
             return json.loads(text)
 
         except Exception as e:
@@ -482,12 +499,15 @@ class GeminiIntegration:
             model = self._get_model()
             response = model.generate_content(prompt)
             
-            text = response.text.strip()
+            text = (response.text or '').strip()
             if text.startswith('```json'): text = text[7:-3]
             elif text.startswith('```'): text = text[3:-3]
-            
+            text = text.strip()
+            if not text:
+                text = '{}'
+
             return json.loads(text)
-            
+
         except Exception as e:
             print(f"Sentiment Analysis Error: {e}")
             return {
@@ -547,13 +567,16 @@ class GeminiIntegration:
         try:
             model = self._get_model()
             response = model.generate_content(prompt)
-            text = response.text.strip()
-            
+            text = (response.text or '').strip()
+
             # Clean potential markdown
             if text.startswith('```json'): text = text[7:-3]
             elif text.startswith('```'): text = text[3:-3]
-            
-            return json.loads(text.strip())
+            text = text.strip()
+            if not text:
+                text = '{}'
+
+            return json.loads(text)
         except Exception as e:
             print(f"SBAR Synthesis Error: {e}")
             # Generate useful fallback SBAR from available data
@@ -626,9 +649,11 @@ class GeminiIntegration:
              # Ideally fetch actual list, here we might have to mock if full history not in context dict yet
              # For now, let's look for it in the DB or use a placeholder
              conn = self._get_db_connection()
-             rows = conn.execute("SELECT reading_value FROM glucose_readings ORDER BY reading_timestamp_utc DESC LIMIT 12").fetchall()
-             glucose_history = [r[0] for r in rows][::-1] # Reverse to chronological
-             conn.close()
+             try:
+                 rows = conn.execute("SELECT reading_value FROM glucose_readings ORDER BY reading_timestamp_utc DESC LIMIT 12").fetchall()
+                 glucose_history = [r[0] for r in rows][::-1] # Reverse to chronological
+             finally:
+                 conn.close()
 
         merlion_risk = merlion.calculate_risk(glucose_history)
         
@@ -659,7 +684,7 @@ class GeminiIntegration:
             if pct >= 90:
                 hmm_metrics.append(f"✅ MEDICATION: {pct:.0f}% adherence - Excellent! Keep it up.")
             elif pct >= 70:
-                hmm_metrics.append(f"⚠️ MEDICATION: {pct:.0f}% adherence - Missed {int((1-meds)*14)} doses this week")
+                hmm_metrics.append(f"⚠️ MEDICATION: {pct:.0f}% adherence - Some doses missed recently")
             else:
                 hmm_metrics.append(f"🚨 MEDICATION: {pct:.0f}% adherence - CRITICAL. Each missed dose = ~0.5% HbA1c rise")
 
@@ -831,8 +856,11 @@ class GeminiIntegration:
         try:
             model = self._get_model()
             response = model.generate_content(prompt)
-            text = response.text.strip()
+            text = (response.text or '').strip()
             if text.startswith('```json'): text = text[7:-3]
+            text = text.strip()
+            if not text:
+                text = '{}'
             strategy = json.loads(text)
         except Exception as e:
             strategy = {
@@ -1082,24 +1110,24 @@ class GeminiIntegration:
         # Get current HMM state
         conn = self._get_db_connection()
         conn.row_factory = sqlite3.Row
+        try:
+            hmm_row = conn.execute("""
+                SELECT detected_state, confidence_score, input_vector_snapshot
+                FROM hmm_states ORDER BY timestamp_utc DESC LIMIT 1
+            """).fetchone()
 
-        hmm_row = conn.execute("""
-            SELECT detected_state, confidence_score, input_vector_snapshot
-            FROM hmm_states ORDER BY timestamp_utc DESC LIMIT 1
-        """).fetchone()
+            current_state = hmm_row['detected_state'] if hmm_row else 'UNKNOWN'
+            confidence = hmm_row['confidence_score'] if hmm_row else 0
+            recent_obs = json.loads(hmm_row['input_vector_snapshot']) if hmm_row and hmm_row['input_vector_snapshot'] else {}
 
-        current_state = hmm_row['detected_state'] if hmm_row else 'UNKNOWN'
-        confidence = hmm_row['confidence_score'] if hmm_row else 0
-        recent_obs = json.loads(hmm_row['input_vector_snapshot']) if hmm_row and hmm_row['input_vector_snapshot'] else {}
-
-        # Get voucher status
-        voucher_row = conn.execute("""
-            SELECT current_value FROM voucher_tracker
-            ORDER BY week_start_utc DESC LIMIT 1
-        """).fetchone()
-        voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
-
-        conn.close()
+            # Get voucher status
+            voucher_row = conn.execute("""
+                SELECT current_value FROM voucher_tracker
+                ORDER BY week_start_utc DESC LIMIT 1
+            """).fetchone()
+            voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
+        finally:
+            conn.close()
 
         # Build pattern insight text
         pattern_text = ""
@@ -1191,12 +1219,14 @@ Return JSON:
             model = self._get_model()
             response = model.generate_content(prompt)
 
-            text = response.text.strip()
+            text = (response.text or '').strip()
             if text.startswith('```json'):
                 text = text[7:]
             if text.endswith('```'):
                 text = text[:-3]
             text = text.strip()
+            if not text:
+                text = '{}'
 
             insight = json.loads(text)
 
@@ -1548,12 +1578,14 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
         # Get voucher balance
         conn = self._get_db_connection()
         conn.row_factory = sqlite3.Row
-        voucher_row = conn.execute("""
-            SELECT current_value FROM voucher_tracker
-            ORDER BY week_start_utc DESC LIMIT 1
-        """).fetchone()
-        voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
-        conn.close()
+        try:
+            voucher_row = conn.execute("""
+                SELECT current_value FROM voucher_tracker
+                ORDER BY week_start_utc DESC LIMIT 1
+            """).fetchone()
+            voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
+        finally:
+            conn.close()
 
         # =====================================================================
         # STEP 6: BUILD COMPREHENSIVE PROMPT
@@ -1676,7 +1708,7 @@ Return your response as valid JSON following the format in the system prompt.
             full_prompt = self.AGENTIC_SYSTEM_PROMPT + "\n\n" + data_prompt
 
             response = model.generate_content(full_prompt)
-            text = response.text.strip()
+            text = (response.text or '').strip()
 
             # Clean markdown formatting
             if text.startswith('```json'):
@@ -1686,6 +1718,8 @@ Return your response as valid JSON following the format in the system prompt.
             if text.endswith('```'):
                 text = text[:-3]
             text = text.strip()
+            if not text:
+                text = '{}'
 
             result = json.loads(text)
 
@@ -1954,7 +1988,7 @@ Return your response as valid JSON following the format in the system prompt.
                 ORDER BY reminder_time
             """, (user_id,)).fetchall()
             return [dict(row) for row in rows]
-        except:
+        except Exception:
             return []
         finally:
             conn.close()
@@ -2071,19 +2105,21 @@ Return your response as valid JSON following the format in the system prompt.
     def _ensure_conversation_table(self):
         """Ensure conversation_history table exists (called internally)."""
         conn = self._get_db_connection()
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS conversation_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                patient_id TEXT,
-                timestamp_utc INTEGER,
-                role TEXT,
-                message TEXT,
-                hmm_state TEXT,
-                actions_taken TEXT
-            )
-        """)
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS conversation_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    patient_id TEXT,
+                    timestamp_utc INTEGER,
+                    role TEXT,
+                    message TEXT,
+                    hmm_state TEXT,
+                    actions_taken TEXT
+                )
+            """)
+            conn.commit()
+        finally:
+            conn.close()
     
     def generate_agentic_reasoning(
         self, 
@@ -2113,14 +2149,17 @@ Return your response as valid JSON following the format in the system prompt.
             model = self._get_model()
             response = model.generate_content(prompt)
             
-            text = response.text.strip()
+            text = (response.text or '').strip()
             if text.startswith('```json'):
                 text = text[7:-3]
             elif text.startswith('```'):
                 text = text[3:-3]
-            
-            result = json.loads(text.strip())
-            
+            text = text.strip()
+            if not text:
+                text = '{}'
+
+            result = json.loads(text)
+
             # Validate tool_name is in available_tools
             if result.get('tool_name') and result['tool_name'] not in available_tools:
                 print(f"Warning: LLM suggested invalid tool '{result['tool_name']}'")
@@ -2260,13 +2299,16 @@ RESPOND IN JSON:
             model = self._get_model()
             response = model.generate_content(prompt)
             
-            text = response.text.strip()
+            text = (response.text or '').strip()
             if text.startswith('```json'):
                 text = text[7:-3]
             elif text.startswith('```'):
                 text = text[3:-3]
-            
-            result = json.loads(text.strip())
+            text = text.strip()
+            if not text:
+                text = '{}'
+
+            result = json.loads(text)
             result['_metadata'] = {
                 'hmm_state': current_state,
                 'user_message': user_message
@@ -2291,12 +2333,14 @@ RESPOND IN JSON:
         try:
             self._ensure_conversation_table()
             conn = self._get_db_connection()
-            conn.execute("""
-                INSERT INTO conversation_history (patient_id, timestamp_utc, role, message)
-                VALUES (?, ?, ?, ?)
-            """, (patient_id, int(time.time()), role, message))
-            conn.commit()
-            conn.close()
+            try:
+                conn.execute("""
+                    INSERT INTO conversation_history (patient_id, timestamp_utc, role, message)
+                    VALUES (?, ?, ?, ?)
+                """, (patient_id, int(time.time()), role, message))
+                conn.commit()
+            finally:
+                conn.close()
         except Exception as e:
             print(f"Warning: Could not store conversation: {e}")
 

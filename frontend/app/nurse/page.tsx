@@ -562,7 +562,7 @@ export default function NurseDashboard() {
                                     {drugInteractions?.interactions && drugInteractions.interactions.length > 0 ? (
                                         <div className="space-y-3">
                                             {drugInteractions.interactions.map((ix: any, i: number) => (
-                                                <div key={i} className="p-3 rounded-lg border border-slate-100 bg-slate-50 transition-transform duration-150 hover:translate-x-[2px]">
+                                                <div key={`ix-${ix.severity}-${ix.drugs?.[0]}-${ix.drugs?.[1]}-${i}`} className="p-3 rounded-lg border border-slate-100 bg-slate-50 transition-transform duration-150 hover:translate-x-[2px]">
                                                     <div className="flex items-center gap-2 mb-1.5">
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                                             ix.severity === 'CONTRAINDICATED' ? 'bg-rose-100 text-rose-700' :

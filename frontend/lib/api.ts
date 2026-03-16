@@ -1,14 +1,23 @@
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 const API_KEY = process.env.NEXT_PUBLIC_BEWO_API_KEY || "bewo-dev-key-2026";
+const FETCH_TIMEOUT_MS = 30_000;
 
-// Authenticated fetch wrapper — all requests include API key
+// Authenticated fetch wrapper — all requests include API key + 30s timeout
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
     const headers = {
         ...Object.fromEntries(new Headers(options.headers).entries()),
         "X-API-Key": API_KEY,
     };
-    return fetch(url, { ...options, headers });
+
+    try {
+        return await fetch(url, { ...options, headers, signal: controller.signal });
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
 export type PatientState = {
@@ -91,6 +100,7 @@ export const api = {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ medication_name: name, taken, patient_id: "P001" })
         });
+        if (!res.ok) throw new Error("Failed to log medication");
         return res.json();
     },
 
@@ -100,6 +110,7 @@ export const api = {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ value, unit, source: "MANUAL", patient_id: "P001" })
         });
+        if (!res.ok) throw new Error("Failed to log glucose");
         return res.json();
     },
 
@@ -114,6 +125,7 @@ export const api = {
                 patient_id: "P001"
             }),
         });
+        if (!res.ok) throw new Error("Failed to log food");
         return res.json();
     },
 
@@ -359,11 +371,13 @@ export const api = {
     // --- ADMIN METHODS ---
     resetData: async (): Promise<any> => {
         const res = await authFetch(`${API_BASE}/admin/reset`, { method: "POST" });
+        if (!res.ok) throw new Error("Failed to reset data");
         return res.json();
     },
 
     injectScenario: async (scenario: string, days: number = 14): Promise<any> => {
         const res = await authFetch(`${API_BASE}/admin/inject-scenario?scenario=${scenario}&days=${days}`, { method: "POST" });
+        if (!res.ok) throw new Error("Failed to inject scenario");
         return res.json();
     },
 

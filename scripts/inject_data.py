@@ -36,6 +36,13 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
     - PREMIUM: + CGM continuous glucose
     """
     conn = get_db_connection()
+    try:
+        _inject_tiered_scenario_impl(conn, observations, tier, days)
+    finally:
+        conn.close()
+
+def _inject_tiered_scenario_impl(conn, observations, tier, days):
+    """Implementation of inject_tiered_scenario_to_db with connection managed by caller."""
     now = int(time.time())
     start_time = now - (days * 24 * 3600)
     window_size = 4 * 3600
@@ -182,7 +189,6 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
                 """, ('P001', day_start, int(sleep_q * 50), sleep_q * 10))  # 7 hours sleep at quality 7
 
     conn.commit()
-    conn.close()
     print("Data injection complete.")
 
 def run_analysis_and_save(engine, days=14):
@@ -195,33 +201,35 @@ def run_analysis_and_save(engine, days=14):
         return
 
     conn = get_db_connection()
-    now = int(time.time())
-    start_time = now - (days * 24 * 3600)
+    try:
+        now = int(time.time())
+        start_time = now - (days * 24 * 3600)
 
-    # Run HMM and save state for EACH time bucket
-    window_size = 4 * 3600  # 4 hours
-    buckets_per_day = 6
+        # Run HMM and save state for EACH time bucket
+        window_size = 4 * 3600  # 4 hours
+        buckets_per_day = 6
 
-    for i, obs in enumerate(observations):
-        obs_time = start_time + (i * window_size)
+        for i, obs in enumerate(observations):
+            obs_time = start_time + (i * window_size)
 
-        # Sliding window context (last 7 days of context)
-        window_start = max(0, i - (7 * buckets_per_day))
-        window_obs = observations[window_start:i+1]
+            # Sliding window context (last 7 days of context)
+            window_start = max(0, i - (7 * buckets_per_day))
+            window_obs = observations[window_start:i+1]
 
-        if window_obs:
-            result = engine.run_inference(window_obs)
+            if window_obs:
+                result = engine.run_inference(window_obs)
 
-            conn.execute("""
-                INSERT INTO hmm_states (user_id, timestamp_utc, detected_state, confidence_score,
-                                       confidence_margin, patient_tier, input_vector_snapshot)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, ('P001', obs_time, result['current_state'], result['confidence'],
-                  result.get('confidence_margin', 0), TIER, json.dumps(obs)))
+                conn.execute("""
+                    INSERT INTO hmm_states (user_id, timestamp_utc, detected_state, confidence_score,
+                                           confidence_margin, patient_tier, input_vector_snapshot)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, ('P001', obs_time, result['current_state'], result['confidence'],
+                      result.get('confidence_margin', 0), TIER, json.dumps(obs)))
 
-    conn.commit()
-    conn.close()
-    print(f"Analyzed {len(observations)} time buckets and saved states.")
+        conn.commit()
+        print(f"Analyzed {len(observations)} time buckets and saved states.")
+    finally:
+        conn.close()
 
 def print_summary(engine, days=14):
     """Print a summary of the analysis."""

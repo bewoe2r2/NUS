@@ -1524,12 +1524,14 @@ class HMMEngine:
                         'calibration_source': 'baum_welch',
                     }
                 conn = sqlite3.connect(self.db_path)
-                conn.execute("""
-                    INSERT OR REPLACE INTO agent_memory (patient_id, memory_type, key, value_json, confidence, created_at, source)
-                    VALUES (?, 'model_params', 'baum_welch_emissions', ?, 1.0, ?, 'hmm_engine')
-                """, (patient_id, json.dumps(learned_params), int(time.time())))
-                conn.commit()
-                conn.close()
+                try:
+                    conn.execute("""
+                        INSERT OR REPLACE INTO agent_memory (patient_id, memory_type, key, value_json, confidence, created_at, source)
+                        VALUES (?, 'model_params', 'baum_welch_emissions', ?, 1.0, ?, 'hmm_engine')
+                    """, (patient_id, json.dumps(learned_params), int(time.time())))
+                    conn.commit()
+                finally:
+                    conn.close()
             except Exception:
                 pass
 
@@ -1745,13 +1747,15 @@ class HMMEngine:
         if patient_id and patient_id not in self._personalized_baselines:
             try:
                 conn = sqlite3.connect(self.db_path)
-                row = conn.execute(
-                    "SELECT value_json FROM agent_memory WHERE patient_id = ? AND key = 'baum_welch_emissions'",
-                    (patient_id,)
-                ).fetchone()
-                if row:
-                    self._personalized_baselines[patient_id] = json.loads(row[0])
-                conn.close()
+                try:
+                    row = conn.execute(
+                        "SELECT value_json FROM agent_memory WHERE patient_id = ? AND key = 'baum_welch_emissions'",
+                        (patient_id,)
+                    ).fetchone()
+                    if row:
+                        self._personalized_baselines[patient_id] = json.loads(row[0])
+                finally:
+                    conn.close()
             except Exception:
                 pass
 

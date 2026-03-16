@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bewo Health — NUS-Synapxe-IMDA AI Innovation Challenge 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN SYSTEM
+   ============================================================ */
+:root {
+  /* Backgrounds */
+  --bg-deep: #06080f;
+  --bg-slide: #0a0c14;
+  --bg-surface: #10131c;
+  --bg-surface-2: #161a26;
+  --bg-surface-3: #1c2030;
+  --bg-glass: rgba(16, 19, 28, 0.85);
+
+  /* Borders */
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-medium: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.15);
+
+  /* Text */
+  --text-primary: #f0f0f5;
+  --text-secondary: #8b8fa3;
+  --text-muted: #5a5e72;
+  --text-accent: #06b6d4;
+
+  /* Accent Colors */
+  --cyan: #06b6d4;
+  --cyan-dim: rgba(6,182,212,0.15);
+  --cyan-glow: rgba(6,182,212,0.3);
+  --emerald: #10b981;
+  --emerald-dim: rgba(16,185,129,0.15);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.15);
+  --rose: #f43f5e;
+  --rose-dim: rgba(244,63,94,0.15);
+  --purple: #8b5cf6;
+  --purple-dim: rgba(139,92,246,0.15);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.15);
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --slide-pad: 72px;
+  --slide-pad-y: 56px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   SLIDE FRAMEWORK
+   ============================================================ */
+.deck {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--slide-pad-y) var(--slide-pad);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-out);
+  overflow: hidden;
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.slide.active .anim {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Staggered entrance */
+.anim {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.d1 { transition-delay: 0.08s; }
+.d2 { transition-delay: 0.16s; }
+.d3 { transition-delay: 0.24s; }
+.d4 { transition-delay: 0.32s; }
+.d5 { transition-delay: 0.40s; }
+.d6 { transition-delay: 0.48s; }
+.d7 { transition-delay: 0.56s; }
+.d8 { transition-delay: 0.64s; }
+.d9 { transition-delay: 0.72s; }
+.d10 { transition-delay: 0.80s; }
+
+/* ============================================================
+   PROGRESS BAR & NAV
+   ============================================================ */
+.progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 100;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  transition: width 0.4s var(--ease-out);
+  border-radius: 0 2px 2px 0;
+}
+.slide-counter {
+  position: fixed; bottom: 24px; right: 32px; z-index: 100;
+  font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+.slide-counter .current { color: var(--text-secondary); font-weight: 600; }
+.nav-hint {
+  position: fixed; bottom: 24px; left: 32px; z-index: 100;
+  font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.03em;
+}
+.logo-watermark {
+  position: fixed; top: 20px; left: 28px; z-index: 100;
+  font-weight: 800; font-size: 0.85rem; letter-spacing: -0.02em;
+  color: var(--text-muted);
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+.logo-watermark:hover { opacity: 0.8; }
+.logo-watermark span { color: var(--cyan); }
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+.t-hero { font-size: 3.5rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; }
+.t-stat { font-size: 4.5rem; font-weight: 900; line-height: 1; letter-spacing: -0.04em; font-family: var(--font-mono); }
+.t-title { font-size: 2rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
+.t-subtitle { font-size: 1.25rem; font-weight: 500; line-height: 1.5; color: var(--text-secondary); }
+.t-section { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; }
+.t-body { font-size: 0.95rem; font-weight: 400; line-height: 1.6; color: var(--text-secondary); }
+.t-caption { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); }
+.t-mono { font-family: var(--font-mono); }
+.t-cyan { color: var(--cyan); }
+.t-emerald { color: var(--emerald); }
+.t-amber { color: var(--amber); }
+.t-rose { color: var(--rose); }
+.t-purple { color: var(--purple); }
+.t-white { color: var(--text-primary); }
+.t-center { text-align: center; }
+
+/* ============================================================
+   LAYOUT UTILITIES
+   ============================================================ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-center { align-items: center; justify-content: center; }
+.flex-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+.gap-xs { gap: 8px; }
+.gap-sm { gap: 12px; }
+.gap-md { gap: 20px; }
+.gap-lg { gap: 32px; }
+.gap-xl { gap: 48px; }
+.w-full { width: 100%; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; }
+.self-center { align-self: center; }
+.m-auto { margin: auto; }
+
+/* ============================================================
+   COMPONENT: CARDS
+   ============================================================ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+}
+.card-sm { padding: 16px; border-radius: 10px; }
+.card-glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-medium);
+  border-radius: 12px;
+  padding: 24px;
+}
+.card-accent {
+  border-left: 3px solid var(--cyan);
+}
+.card-glow-cyan { box-shadow: 0 0 40px rgba(6,182,212,0.08), inset 0 1px 0 rgba(6,182,212,0.1); }
+.card-glow-emerald { box-shadow: 0 0 40px rgba(16,185,129,0.08), inset 0 1px 0 rgba(16,185,129,0.1); }
+.card-glow-amber { box-shadow: 0 0 40px rgba(245,158,11,0.08), inset 0 1px 0 rgba(245,158,11,0.1); }
+.card-glow-rose { box-shadow: 0 0 40px rgba(244,63,94,0.08), inset 0 1px 0 rgba(244,63,94,0.1); }
+
+/* ============================================================
+   COMPONENT: BADGES & TAGS
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 100px;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.badge-cyan { background: var(--cyan-dim); color: var(--cyan); }
+.badge-emerald { background: var(--emerald-dim); color: var(--emerald); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-rose { background: var(--rose-dim); color: var(--rose); }
+.badge-purple { background: var(--purple-dim); color: var(--purple); }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-cyan { background: var(--cyan); }
+.dot-emerald { background: var(--emerald); }
+.dot-amber { background: var(--amber); }
+.dot-rose { background: var(--rose); }
+
+/* ============================================================
+   COMPONENT: BARS (for biomarker charts)
+   ============================================================ */
+.bar-track {
+  height: 28px; background: var(--bg-surface-2); border-radius: 6px;
+  overflow: hidden; position: relative;
+}
+.bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 1s var(--ease-out);
+  display: flex; align-items: center; padding-left: 10px;
+  font-size: 0.75rem; font-weight: 700; color: var(--bg-deep);
+}
+
+/* ============================================================
+   COMPONENT: ARCHITECTURE LAYERS
+   ============================================================ */
+.arch-layer {
+  border-radius: 10px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid;
+  position: relative;
+}
+.arch-layer .layer-num {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.1rem;
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.arch-layer .layer-content { flex: 1; }
+.arch-layer .layer-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
+.arch-layer .layer-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+.arch-layer .layer-badge {
+  flex-shrink: 0; font-size: 0.65rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.arch-connector {
+  width: 2px; height: 16px; margin: 0 auto;
+  background: linear-gradient(to bottom, var(--border-medium), transparent);
+}
+
+/* Layer colors */
+.layer-4 { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+.layer-4 .layer-num { color: var(--emerald); }
+.layer-4 .layer-badge { background: var(--emerald-dim); color: var(--emerald); }
+.layer-3 { background: rgba(6,182,212,0.06); border-color: rgba(6,182,212,0.2); }
+.layer-3 .layer-num { color: var(--cyan); }
+.layer-3 .layer-badge { background: var(--cyan-dim); color: var(--cyan); }
+.layer-2 { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+.layer-2 .layer-num { color: var(--amber); }
+.layer-2 .layer-badge { background: var(--amber-dim); color: var(--amber); }
+.layer-1 { background: rgba(244,63,94,0.06); border-color: rgba(244,63,94,0.2); }
+.layer-1 .layer-num { color: var(--rose); }
+.layer-1 .layer-badge { background: var(--rose-dim); color: var(--rose); }
+
+/* ============================================================
+   COMPONENT: COMPARISON COLUMNS
+   ============================================================ */
+.compare-col {
+  border-radius: 12px; padding: 20px; border: 1px solid var(--border-subtle);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.compare-col.winner {
+  border-color: rgba(6,182,212,0.3);
+  background: rgba(6,182,212,0.04);
+  box-shadow: 0 0 30px rgba(6,182,212,0.06);
+}
+.compare-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; line-height: 1.4;
+}
+.compare-icon {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 800;
+}
+.icon-yes { background: var(--emerald-dim); color: var(--emerald); }
+.icon-no { background: var(--rose-dim); color: var(--rose); }
+.icon-warn { background: var(--amber-dim); color: var(--amber); }
+
+/* ============================================================
+   COMPONENT: STACK LAYERS (personalisation)
+   ============================================================ */
+.stack-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px; border-radius: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid;
+}
+.stack-num {
+  font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem;
+  width: 28px; text-align: center; flex-shrink: 0;
+}
+.stack-content { flex: 1; }
+.stack-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 1px; }
+.stack-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+
+/* ============================================================
+   COMPONENT: METRIC CARDS
+   ============================================================ */
+.metric-card {
+  background: var(--bg-surface); border: 1px solid var(--border-subtle);
+  border-radius: 12px; padding: 20px 24px; text-align: center;
+}
+.metric-value {
+  font-family: var(--font-mono); font-weight: 900; font-size: 2.2rem;
+  line-height: 1; margin-bottom: 6px; letter-spacing: -0.03em;
+}
+.metric-label { font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; }
+
+/* ============================================================
+   COMPONENT: TABLE
+   ============================================================ */
+.clean-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.clean-table th {
+  text-align: left; padding: 8px 12px; font-weight: 600; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
+  border-bottom: 1px solid var(--border-medium);
+}
+.clean-table td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary); line-height: 1.4;
+}
+.clean-table td:first-child { color: var(--text-primary); font-weight: 500; }
+
+/* ============================================================
+   COMPONENT: TIMELINE
+   ============================================================ */
+.timeline {
+  display: flex; align-items: flex-start; gap: 0; position: relative;
+}
+.timeline::before {
+  content: ''; position: absolute; top: 16px; left: 0; right: 0;
+  height: 2px; background: var(--border-medium);
+}
+.timeline-item {
+  flex: 1; text-align: center; position: relative; padding-top: 36px;
+}
+.timeline-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+  border: 2px solid;
+}
+
+/* ============================================================
+   SPECIAL: HOOK SLIDE
+   ============================================================ */
+.slide-hook {
+  background: radial-gradient(ellipse at 50% 40%, rgba(6,182,212,0.06) 0%, var(--bg-deep) 70%);
+  justify-content: center; align-items: center; text-align: center;
+}
+.hook-stat {
+  font-size: 6rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--cyan) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hook-question {
+  font-size: 1.6rem; font-weight: 400; color: var(--text-secondary);
+  margin-top: 24px; max-width: 700px;
+}
+.hook-question em { color: var(--cyan); font-style: normal; font-weight: 600; }
+.hook-logo {
+  margin-top: 56px; font-size: 1.1rem; font-weight: 300; color: var(--text-muted);
+  letter-spacing: 0.15em; text-transform: uppercase;
+}
+.hook-logo strong { font-weight: 800; color: var(--text-secondary); letter-spacing: -0.01em; text-transform: none; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.1); }
+  50% { box-shadow: 0 0 40px rgba(6,182,212,0.25); }
+}
+
+/* ============================================================
+   SPECIAL: PERSONA CARD
+   ============================================================ */
+.persona-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.persona-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+}
+.persona-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan-dim), var(--purple-dim));
+  border: 2px solid var(--border-medium);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.2rem; color: var(--cyan);
+}
+.persona-detail {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; color: var(--text-secondary); padding: 4px 0;
+}
+.persona-detail .label { color: var(--text-muted); min-width: 90px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ============================================================
+   SPECIAL: CLOSING SLIDE
+   ============================================================ */
+.slide-close {
+  background: radial-gradient(ellipse at 50% 60%, rgba(6,182,212,0.08) 0%, var(--bg-deep) 70%);
+  justify-content: center; align-items: center; text-align: center;
+}
+.close-quote {
+  font-size: 1.8rem; font-weight: 600; line-height: 1.5;
+  max-width: 800px; color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.close-quote em { color: var(--cyan); font-style: normal; }
+
+/* ============================================================
+   RESPONSIVE (shouldn't need much at 16:9 fullscreen)
+   ============================================================ */
+@media (max-width: 1200px) {
+  :root { --slide-pad: 48px; --slide-pad-y: 40px; }
+  .hook-stat { font-size: 4.5rem; }
+  .t-hero { font-size: 2.5rem; }
+  .t-title { font-size: 1.6rem; }
+}
+
+/* ============================================================
+   PRINT / EXPORT
+   ============================================================ */
+@media print {
+  .slide { position: relative; page-break-after: always; opacity: 1 !important; }
+  .progress-bar, .slide-counter, .nav-hint, .logo-watermark { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar" style="width: 10%;"></div>
+
+<!-- Logo Watermark -->
+<div class="logo-watermark"><span>B</span>ewo Health</div>
+
+<!-- Slide Counter -->
+<div class="slide-counter"><span class="current" id="currentSlide">01</span> / 10</div>
+
+<!-- Nav Hint -->
+<div class="nav-hint">Arrow keys or click to navigate</div>
+
+<!-- ============================================================
+     SLIDE DECK
+     ============================================================ -->
+<div class="deck" id="deck">
+
+<!-- ============================================================
+     SLIDE 1: HOOK
+     ============================================================ -->
+<section class="slide slide-hook active" data-slide="1">
+  <div class="anim d1" style="margin-bottom:12px;">
+    <span class="badge badge-rose" style="font-size:0.65rem;">Singapore Healthcare Crisis</span>
+  </div>
+  <div class="hook-stat anim d2">Every 6 minutes.</div>
+  <div class="hook-question anim d3">
+    A Singaporean is rushed to the ER for a <em>preventable</em> diabetic complication.<br>
+    What if we could see it coming <em>48 hours early</em> — and act?
+  </div>
+  <div class="hook-logo anim d5">
+    <strong>Bewo</strong> &nbsp;&middot;&nbsp; Predictive &middot; Personal &middot; Proactive
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 2: PROBLEM + TARGET USER
+     ============================================================ -->
+<section class="slide" data-slide="2" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">The Problem</div>
+  <div class="t-title anim d1" style="margin-bottom:28px;">The Gap Between Visits</div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 36px; flex:1;">
+    <!-- Left: Stats -->
+    <div class="flex flex-col gap-md anim d2">
+      <div class="card card-sm" style="border-left:3px solid var(--rose);">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--rose);">440K</span>
+          <span class="t-body">Singaporeans have diabetes. <strong style="color:var(--text-primary);">1 in 3</strong> over 60.</span>
+        </div>
+        <div class="t-caption" style="margin-top:4px;">MOH Singapore, 2024</div>
+      </div>
+      <div class="card card-sm" style="border-left:3px solid var(--amber);">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--amber);">3-6 mo</span>
+          <span class="t-body">Between polyclinic visits — <strong style="color:var(--text-primary);">total blind spot.</strong></span>
+        </div>
+        <div class="t-caption" style="margin-top:4px;">Health Promotion Board</div>
+      </div>
+      <div class="card card-sm" style="border-left:3px solid var(--purple);">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--purple);">$8,800</span>
+          <span class="t-body">Per preventable ER admission. <strong style="color:var(--text-primary);">68%</strong> are preventable.</span>
+        </div>
+        <div class="t-caption" style="margin-top:4px;">MOH Expenditure Data</div>
+      </div>
+
+      <div class="card card-sm card-accent anim d4" style="margin-top:8px; background:rgba(6,182,212,0.04);">
+        <div class="t-body" style="font-style:italic; color:var(--text-secondary);">
+          "Most solutions digitise the existing workflow. <strong style="color:var(--cyan);">We redesigned it.</strong>"
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Persona -->
+    <div class="anim d3">
+      <div class="persona-card">
+        <div class="flex gap-md" style="align-items:center; margin-bottom:20px;">
+          <div class="persona-avatar">T</div>
+          <div>
+            <div style="font-weight:700; font-size:1.1rem;">Mr. Tan Ah Kow</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">72 years old &middot; Toa Payoh HDB</div>
+          </div>
+          <span class="badge badge-amber" style="margin-left:auto;">Target User</span>
+        </div>
+        <div class="flex flex-col gap-xs">
+          <div class="persona-detail"><span class="label">Conditions</span> Type 2 Diabetes + Hypertension + Hyperlipidaemia</div>
+          <div class="persona-detail"><span class="label">HbA1c</span> <span style="color:var(--amber); font-weight:600;">8.1%</span> (above 7.0% target)</div>
+          <div class="persona-detail"><span class="label">Medications</span> Metformin 1000mg BD, Amlodipine 5mg OD</div>
+          <div class="persona-detail"><span class="label">Language</span> Singlish, Hokkien, basic English</div>
+          <div class="persona-detail"><span class="label">Living</span> Alone. Daughter visits on weekends.</div>
+          <div class="persona-detail"><span class="label">Behaviour</span> <span style="color:var(--rose);">Misses medication 2-3x/week</span></div>
+          <div class="persona-detail"><span class="label">Last Visit</span> 4 months ago</div>
+        </div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-subtle);">
+          <div class="t-caption" style="line-height:1.5;">Uncle Tan represents 440,000 Singaporeans. Between clinic visits, <strong style="color:var(--text-secondary);">nobody is watching.</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 3: WHY AI, NOT CONVENTIONAL
+     ============================================================ -->
+<section class="slide" data-slide="3" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Rationale</div>
+  <div class="t-title anim d1" style="margin-bottom:32px;">Why Agentic AI — Not Conventional Approaches</div>
+
+  <div class="grid-3 gap-lg" style="flex:1;">
+    <!-- Manual -->
+    <div class="compare-col anim d2">
+      <div style="text-align:center;">
+        <div style="font-size:2.5rem; margin-bottom:8px; opacity:0.7;">&#128100;</div>
+        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px;">Manual Monitoring</div>
+        <span class="badge badge-rose">Cannot Scale</span>
+      </div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>1 nurse : 220 patients</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Reactive — sees crisis at ER</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>3-6 month gaps between visits</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>No continuous monitoring</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Admin-heavy: notes, reports</span></div>
+    </div>
+
+    <!-- Rule-Based -->
+    <div class="compare-col anim d3">
+      <div style="text-align:center;">
+        <div style="font-size:2.5rem; margin-bottom:8px; opacity:0.7;">&#9881;</div>
+        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px;">Rule-Based Automation</div>
+        <span class="badge badge-amber">Cannot Personalise</span>
+      </div>
+      <div class="compare-row"><div class="compare-icon icon-warn">!</div><span>IF glucose &gt; 10 THEN alert</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Population thresholds, not personal</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>No context: mood, time, culture</span></div>
+      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Combinatorial explosion at scale</span></div>
+      <div class="compare-row"><div class="compare-icon icon-warn">!</div><span>Alert fatigue from false alarms</span></div>
+    </div>
+
+    <!-- Agentic AI -->
+    <div class="compare-col winner anim d4">
+      <div style="text-align:center;">
+        <div style="font-size:2.5rem; margin-bottom:8px;">&#9670;</div>
+        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px; color:var(--cyan);">Agentic AI (Bewo)</div>
+        <span class="badge badge-cyan">Reasons + Acts</span>
+      </div>
+      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Predicts</strong> crisis 48h early</span></div>
+      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Personalises</strong> to each patient</span></div>
+      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Reasons</strong> across 9 biomarkers</span></div>
+      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Acts</strong> with 18 autonomous tools</span></div>
+      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Learns</strong> what works per patient</span></div>
+    </div>
+  </div>
+
+  <div class="anim d6 card card-sm" style="margin-top:20px; background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.15); max-width:800px;">
+    <div class="t-body" style="line-height:1.6; font-size:0.85rem;">
+      <strong style="color:var(--cyan);">The agentic advantage:</strong> Rules can't handle state &times; time &times; mood &times; medication &times; culture &times; caregiver &times; meal &times; sleep simultaneously. An agent <em>reasons</em> about the optimal combination of actions for this patient at this moment.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 4: DIAMOND ARCHITECTURE
+     ============================================================ -->
+<section class="slide" data-slide="4" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">System Design</div>
+  <div class="t-title anim d1" style="margin-bottom:28px;">The Diamond Architecture</div>
+
+  <div style="max-width:860px; margin:0 auto; flex:1; display:flex; flex-direction:column; justify-content:center; gap:0;">
+    <!-- Layer 4 -->
+    <div class="arch-layer layer-4 anim d2">
+      <div class="layer-num">L4</div>
+      <div class="layer-content">
+        <div class="layer-title">Cultural Intelligence</div>
+        <div class="layer-desc">SEA-LION v4 27B (Singlish/Malay/Mandarin) &middot; MERaLiON-ready (paralinguistic emotion)</div>
+      </div>
+      <div class="layer-badge">IMDA</div>
+    </div>
+    <div class="arch-connector"></div>
+
+    <!-- Layer 3 -->
+    <div class="arch-layer layer-3 anim d3">
+      <div class="layer-num">L3</div>
+      <div class="layer-content">
+        <div class="layer-title">Agentic Reasoning</div>
+        <div class="layer-desc">Gemini 2.5 Flash &middot; Multi-turn ReAct loop &middot; 18 autonomous tools &middot; Cross-session memory &middot; Counterfactual reasoning</div>
+      </div>
+      <div class="layer-badge">NUS</div>
+    </div>
+    <div class="arch-connector"></div>
+
+    <!-- Layer 2 -->
+    <div class="arch-layer layer-2 anim d4" style="transform-origin:center;">
+      <div class="layer-num">L2</div>
+      <div class="layer-content">
+        <div class="layer-title">Statistical Inference Engine</div>
+        <div class="layer-desc">HMM Viterbi (state detection, 9 biomarkers) &middot; Baum-Welch EM (per-patient personalisation) &middot; Monte Carlo (48h forecast, 2000 sims) &middot; Merlion ARIMA (45-min glucose velocity)</div>
+      </div>
+      <div class="layer-badge">Core</div>
+    </div>
+    <div class="arch-connector"></div>
+
+    <!-- Layer 1 -->
+    <div class="arch-layer layer-1 anim d5">
+      <div class="layer-num">L1</div>
+      <div class="layer-content">
+        <div class="layer-title">Safety Foundation</div>
+        <div class="layer-desc">Deterministic clinical rules (always override AI) &middot; Drug interaction engine (16 pairs, 39 classes) &middot; SBAR clinical reporting &middot; PII de-identification &middot; PDPA compliance</div>
+      </div>
+      <div class="layer-badge">Synapxe</div>
+    </div>
+
+    <!-- Data Input -->
+    <div style="text-align:center; margin-top:16px;" class="anim d6">
+      <div style="display:inline-flex; align-items:center; gap:12px; padding:8px 24px; border-radius:8px; border:1px dashed var(--border-medium); background:var(--bg-surface);">
+        <span style="font-size:0.8rem; color:var(--text-muted);">&#9650;</span>
+        <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">Patient Data &middot; 9 Orthogonal Biomarkers &middot; Wearables &middot; Phone Sensors &middot; CGM</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="anim d7 t-caption" style="margin-top:16px; text-align:center; max-width:700px; align-self:center; line-height:1.5;">
+    Layer 1 is <strong style="color:var(--rose);">deterministic</strong> — it cannot hallucinate. The HMM handles nuance. Gemini handles empathy. <strong style="color:var(--text-secondary);">Safety is never probabilistic.</strong>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 5: HMM DEEP DIVE
+     ============================================================ -->
+<section class="slide" data-slide="5" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Core Innovation</div>
+  <div class="t-title anim d1" style="margin-bottom:20px;">Why Hidden Markov Models</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
+    <!-- Left: Comparison -->
+    <div class="flex flex-col gap-sm">
+      <div class="t-section t-muted anim d2" style="color:var(--text-muted); margin-bottom:4px;">Head-to-Head Comparison</div>
+      <table class="clean-table anim d2" style="font-size:0.75rem;">
+        <thead>
+          <tr><th style="width:28%;">Dimension</th><th style="color:var(--cyan);">HMM (Ours)</th><th>LSTM</th><th>Raw LLM</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Data needed</td>
+            <td><span style="color:var(--emerald); font-weight:600;">7 days</span></td>
+            <td><span style="color:var(--rose);">10,000+ examples</span></td>
+            <td><span style="color:var(--text-muted);">N/A</span></td>
+          </tr>
+          <tr>
+            <td>Explainability</td>
+            <td><span style="color:var(--emerald); font-weight:600;">Full trace</span></td>
+            <td><span style="color:var(--rose);">Black box</span></td>
+            <td><span style="color:var(--rose);">"I think..."</span></td>
+          </tr>
+          <tr>
+            <td>Hallucination</td>
+            <td><span style="color:var(--emerald); font-weight:600;">Impossible</span></td>
+            <td><span style="color:var(--amber);">Low risk</span></td>
+            <td><span style="color:var(--rose); font-weight:600;">High risk</span></td>
+          </tr>
+          <tr>
+            <td>Runs locally</td>
+            <td><span style="color:var(--emerald);">&#10003; &lt;1ms</span></td>
+            <td><span style="color:var(--rose);">GPU needed</span></td>
+            <td><span style="color:var(--rose);">Cloud only</span></td>
+          </tr>
+          <tr>
+            <td>PDPA safe</td>
+            <td><span style="color:var(--emerald);">&#10003; On-device</span></td>
+            <td><span style="color:var(--amber);">Depends</span></td>
+            <td><span style="color:var(--rose);">Data leaves</span></td>
+          </tr>
+          <tr>
+            <td>Audit trail</td>
+            <td><span style="color:var(--emerald);">&#10003; Every step</span></td>
+            <td><span style="color:var(--amber);">SHAP/LIME</span></td>
+            <td><span style="color:var(--rose);">None</span></td>
+          </tr>
+          <tr>
+            <td>Personalisation</td>
+            <td><span style="color:var(--emerald);">Baum-Welch EM</span></td>
+            <td><span style="color:var(--amber);">Transfer learn</span></td>
+            <td><span style="color:var(--rose);">Prompt only</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card card-sm anim d4" style="margin-top:8px; background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.12);">
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
+          <strong style="color:var(--cyan);">Key insight:</strong> In healthcare, the question isn't "can AI predict?" — it's "can you explain <em>why</em> to a doctor, patient, and regulator?" <strong style="color:var(--text-primary);">HMMs answer all three.</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Biomarkers -->
+    <div class="flex flex-col gap-sm">
+      <div class="t-section anim d3" style="color:var(--text-muted); margin-bottom:4px;">9 Orthogonal Biomarkers — ADA 2024 Derived</div>
+      <div class="flex flex-col gap-xs anim d3">
+        <!-- Each biomarker bar -->
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Glucose Average</span>
+          <div class="bar-track"><div class="bar-fill" style="width:100%; background:linear-gradient(90deg, var(--cyan), var(--blue));">25%</div></div>
+          <span class="t-caption">ADA</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Med Adherence</span>
+          <div class="bar-track"><div class="bar-fill" style="width:72%; background:linear-gradient(90deg, var(--cyan), var(--blue));">18%</div></div>
+          <span class="t-caption">UKPDS</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Glucose Variability</span>
+          <div class="bar-track"><div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--amber), var(--amber));">10%</div></div>
+          <span class="t-caption">Danne</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Sleep Quality</span>
+          <div class="bar-track"><div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--purple), var(--purple));">10%</div></div>
+          <span class="t-caption">DiaBeatIt</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Social Engagement</span>
+          <div class="bar-track"><div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--emerald), var(--emerald));">10%</div></div>
+          <span class="t-caption">Lancet</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Steps Daily</span>
+          <div class="bar-track"><div class="bar-fill" style="width:32%; background:var(--text-muted);">8%</div></div>
+          <span class="t-caption">WHO</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">HRV (RMSSD)</span>
+          <div class="bar-track"><div class="bar-fill" style="width:28%; background:var(--text-muted);">7%</div></div>
+          <span class="t-caption">ARIC</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Carbs Intake</span>
+          <div class="bar-track"><div class="bar-fill" style="width:28%; background:var(--text-muted);">7%</div></div>
+          <span class="t-caption">ADA</span>
+        </div>
+        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
+          <span style="font-size:0.73rem; color:var(--text-secondary);">Resting HR</span>
+          <div class="bar-track"><div class="bar-fill" style="width:20%; background:var(--text-muted);">5%</div></div>
+          <span class="t-caption">Clinical</span>
+        </div>
+      </div>
+
+      <!-- Validation box -->
+      <div class="card card-sm anim d5" style="margin-top:8px; border-left:3px solid var(--emerald);">
+        <div class="t-section t-emerald" style="margin-bottom:6px;">Validation Results</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.78rem;">
+          <div><span style="color:var(--text-muted);">Accuracy (hardened)</span><br><strong style="color:var(--emerald); font-size:1.1rem;">82.1%</strong></div>
+          <div><span style="color:var(--text-muted);">CRISIS&#8594;STABLE misclass</span><br><strong style="color:var(--emerald); font-size:1.1rem;">0</strong></div>
+          <div><span style="color:var(--text-muted);">Validation gates</span><br><strong style="color:var(--text-primary); font-size:1.1rem;">38/38</strong></div>
+          <div><span style="color:var(--text-muted);">vs glucose-only baseline</span><br><strong style="color:var(--cyan); font-size:1.1rem;">+25.3%</strong> <span class="t-caption">p&lt;0.0001</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 6: AGENTIC SYSTEM
+     ============================================================ -->
+<section class="slide" data-slide="6" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Agentic AI</div>
+  <div class="t-title anim d1" style="margin-bottom:20px;">18 Tools. 5-Turn Reasoning. Autonomous Action.</div>
+
+  <div style="display:grid; grid-template-columns:280px 1fr; gap:28px; flex:1;">
+    <!-- Left: ReAct Loop -->
+    <div class="flex flex-col gap-md anim d2">
+      <div class="card" style="position:relative; padding:20px;">
+        <div class="t-section" style="color:var(--cyan); margin-bottom:14px;">ReAct Loop</div>
+        <div class="flex flex-col gap-sm">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:var(--cyan-dim);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--cyan);flex-shrink:0;">O</div>
+            <div><div style="font-weight:600;font-size:0.82rem;">Observe</div><div class="t-caption">HMM state + forecast + context</div></div>
+          </div>
+          <div style="width:2px;height:10px;background:var(--border-medium);margin-left:17px;"></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:var(--purple-dim);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--purple);flex-shrink:0;">T</div>
+            <div><div style="font-weight:600;font-size:0.82rem;">Think</div><div class="t-caption">Gemini reasons about actions</div></div>
+          </div>
+          <div style="width:2px;height:10px;background:var(--border-medium);margin-left:17px;"></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--emerald);flex-shrink:0;">A</div>
+            <div><div style="font-weight:600;font-size:0.82rem;">Act</div><div class="t-caption">Execute tools, see results</div></div>
+          </div>
+          <div style="width:2px;height:10px;background:var(--border-medium);margin-left:17px;"></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--amber);flex-shrink:0;">&#8634;</div>
+            <div><div style="font-weight:600;font-size:0.82rem;">Loop</div><div class="t-caption">Max 5 turns, safety on every output</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Counterfactual -->
+      <div class="card card-sm anim d4" style="border-left:3px solid var(--purple);">
+        <div class="t-section t-purple" style="margin-bottom:8px;">Counterfactual "What-If"</div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
+          <div style="margin-bottom:6px;">Current crisis risk: <strong style="color:var(--rose); font-size:1rem;">45%</strong></div>
+          <div>Take Metformin now: <strong style="color:var(--emerald); font-size:1rem;">18%</strong> <span class="t-caption" style="color:var(--emerald);">&#9660; 27%</span></div>
+          <div>Walk 3000 steps: <strong style="color:var(--amber); font-size:1rem;">32%</strong> <span class="t-caption" style="color:var(--emerald);">&#9660; 13%</span></div>
+          <div style="margin-top:6px;" class="t-caption">Runs through actual HMM math. Not hand-wavy.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Tools + Behavioral Science -->
+    <div class="flex flex-col gap-md">
+      <!-- 18 Tools Grid -->
+      <div class="anim d3">
+        <div class="t-section" style="color:var(--text-muted); margin-bottom:10px;">18 Autonomous Tools</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--cyan); font-weight:600;">&#9673;</span> Book Appointment
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Alert Caregiver
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--purple); font-weight:600;">&#9673;</span> Counterfactual
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--amber); font-weight:600;">&#9673;</span> Med Adjustment
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--emerald); font-weight:600;">&#9673;</span> Set Reminder
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Alert Nurse
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--blue); font-weight:600;">&#9673;</span> Alert Family
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--amber); font-weight:600;">&#9673;</span> Award Voucher
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--purple); font-weight:600;">&#9673;</span> Med Video
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--emerald); font-weight:600;">&#9673;</span> Suggest Activity
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Escalate Doctor
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--emerald); font-weight:600;">&#9673;</span> Recommend Food
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--cyan); font-weight:600;">&#9673;</span> Proactive Check-in
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--amber); font-weight:600;">&#9673;</span> Celebrate Streak
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--blue); font-weight:600;">&#9673;</span> Weekly Report
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--purple); font-weight:600;">&#9673;</span> Adjust Nudge Time
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--cyan); font-weight:600;">&#9673;</span> Clinician Summary
+          </div>
+          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
+            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Drug Interactions
+          </div>
+        </div>
+      </div>
+
+      <!-- Behavioral Science -->
+      <div class="anim d5">
+        <div class="t-section" style="color:var(--text-muted); margin-bottom:10px;">Behavioral Science in Action — Same Action, 4 Psychological Frames</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div class="card-sm" style="padding:10px 14px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--amber); font-weight:600; margin-bottom:3px;">PROSPECT THEORY (Loss Aversion)</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); font-style:italic;">"You'll lose $1.50 from your voucher if you miss today's dose."</div>
+          </div>
+          <div class="card-sm" style="padding:10px 14px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--purple); font-weight:600; margin-bottom:3px;">IMPLEMENTATION INTENTION (Fogg)</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); font-style:italic;">"After your kopi at 8am, take the Metformin on the counter."</div>
+          </div>
+          <div class="card-sm" style="padding:10px 14px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--emerald); font-weight:600; margin-bottom:3px;">SOCIAL PROOF (Cialdini)</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); font-style:italic;">"87% of patients your age took their morning medication already."</div>
+          </div>
+          <div class="card-sm" style="padding:10px 14px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:3px;">AUTONOMY SUPPORT (SDT)</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); font-style:italic;">"Would you prefer a reminder at 8am or 9am? You choose, Uncle."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 7: HYPER-PERSONALISATION STACK
+     ============================================================ -->
+<section class="slide" data-slide="7" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Personalisation</div>
+  <div class="t-title anim d1" style="margin-bottom:24px;">6 Dimensions of Personalisation</div>
+
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:32px; flex:1;">
+    <!-- Left: Stack -->
+    <div class="flex flex-col gap-sm" style="justify-content:center;">
+      <div class="stack-item anim d2" style="border-left-color:var(--purple);">
+        <div class="stack-num" style="color:var(--purple);">6</div>
+        <div class="stack-content">
+          <div class="stack-title" style="color:var(--purple);">Memory Personalisation</div>
+          <div class="stack-desc">Cross-session memory: episodic &#8594; semantic &#8594; preference. Remembers "glucose crashes after weekend hawker visits."</div>
+        </div>
+      </div>
+      <div class="stack-item anim d3" style="border-left-color:var(--amber);">
+        <div class="stack-num" style="color:var(--amber);">5</div>
+        <div class="stack-content">
+          <div class="stack-title" style="color:var(--amber);">Motivational Personalisation</div>
+          <div class="stack-desc">Learns which psychological frame drives behaviour. Uncle Tan: loss-aversion. Mdm. Lee: social proof.</div>
+        </div>
+      </div>
+      <div class="stack-item anim d4" style="border-left-color:var(--emerald);">
+        <div class="stack-num" style="color:var(--emerald);">4</div>
+        <div class="stack-content">
+          <div class="stack-title" style="color:var(--emerald);">Cultural Personalisation</div>
+          <div class="stack-desc">SEA-LION adapts register: Singlish for Uncle Tan, formal Malay for Mr. Ahmad, Mandarin-mix for Mdm. Lee.</div>
+        </div>
+      </div>
+      <div class="stack-item anim d5" style="border-left-color:var(--cyan);">
+        <div class="stack-num" style="color:var(--cyan);">3</div>
+        <div class="stack-content">
+          <div class="stack-title" style="color:var(--cyan);">Temporal Personalisation</div>
+          <div class="stack-desc">Nudge timing optimised to when you respond. Learns from 14 days of conversation patterns.</div>
+        </div>
+      </div>
+      <div class="stack-item anim d6" style="border-left-color:var(--blue);">
+        <div class="stack-num" style="color:var(--blue);">2</div>
+        <div class="stack-content">
+          <div class="stack-title" style="color:var(--blue);">Behavioral Personalisation</div>
+          <div class="stack-desc">Outcome-based tool selection: tracks which interventions actually improved YOUR HMM state. 14-day decay.</div>
+        </div>
+      </div>
+      <div class="stack-item anim d7" style="border-left-color:var(--rose);">
+        <div class="stack-num" style="color:var(--rose);">1</div>
+        <div class="stack-content">
+          <div class="stack-title" style="color:var(--rose);">Clinical Personalisation</div>
+          <div class="stack-desc">Baum-Welch EM learns YOUR baselines in 7 days. Uncle Tan's "normal" glucose (7.5) &#8800; population average (5.8).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Cultural Translation Example -->
+    <div class="flex flex-col gap-md" style="justify-content:center;">
+      <div class="card anim d5" style="border-left:3px solid var(--emerald);">
+        <div class="t-section t-emerald" style="margin-bottom:10px;">SEA-LION Cultural Translation</div>
+        <div style="font-size:0.78rem; margin-bottom:12px; color:var(--text-muted); font-weight:500;">CLINICAL ENGLISH</div>
+        <div class="card-sm" style="background:var(--bg-surface-2); margin-bottom:14px; font-size:0.82rem; color:var(--text-secondary); line-height:1.5; border:1px solid var(--border-subtle);">
+          "Your glucose is trending upward. Please take 500mg Metformin and avoid high-GI foods."
+        </div>
+        <div style="font-size:0.78rem; margin-bottom:12px; color:var(--emerald); font-weight:500;">SINGLISH ELDER (SEA-LION v4)</div>
+        <div class="card-sm" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.15); font-size:0.82rem; color:var(--text-primary); line-height:1.5;">
+          "Ah Uncle, sugar going up leh! Take your medicine first, then don't go eat roti prata today can? Better makan fish porridge — stomach happy, sugar also happy lah."
+        </div>
+      </div>
+
+      <div class="card card-sm anim d7" style="background:rgba(139,92,246,0.04); border-color:rgba(139,92,246,0.15);">
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
+          <strong style="color:var(--purple);">MERaLiON-ready:</strong> Detects paralinguistic cues — HOW "I'm fine lah" is said matters as much as WHAT is said. Tired voice &#8800; energetic voice.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 8: BRIDGING PATIENT-CLINICIAN GAP
+     ============================================================ -->
+<section class="slide" data-slide="8" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Clinical Integration</div>
+  <div class="t-title anim d1" style="margin-bottom:24px;">Zero-Effort Clinical Intelligence</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
+    <!-- Left: Before/After -->
+    <div class="flex flex-col gap-md anim d2">
+      <div class="t-section" style="color:var(--text-muted); margin-bottom:4px;">Transformation</div>
+      <div class="flex flex-col gap-xs">
+        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
+          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">Nurse reviews 220 patient files manually</div>
+          </div>
+          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
+          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
+            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
+            <div style="font-size:0.75rem; color:var(--text-primary);">Auto-triaged: IMMEDIATE / SOON / MONITOR</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
+          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">Nurse writes clinical handoff notes</div>
+          </div>
+          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
+          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
+            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
+            <div style="font-size:0.75rem; color:var(--text-primary);">SBAR auto-generated in 3 seconds</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
+          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">Doctor asks "how have you been?"</div>
+          </div>
+          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
+          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
+            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
+            <div style="font-size:0.75rem; color:var(--text-primary);">14-day HMM trajectory with confidence</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
+          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">Crisis discovered at ER admission</div>
+          </div>
+          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
+          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
+            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
+            <div style="font-size:0.75rem; color:var(--text-primary);">Predicted 48h early with survival curve</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;" class="anim d4">
+        <div class="metric-card">
+          <div class="metric-value t-cyan">1:100</div>
+          <div class="metric-label">Nurse-to-patient ratio</div>
+          <div class="t-caption" style="margin-top:4px;">from 1:20</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value t-cyan">3s</div>
+          <div class="metric-label">SBAR generation</div>
+          <div class="t-caption" style="margin-top:4px;">from 15 minutes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: SBAR + Nurse Dashboard Preview -->
+    <div class="flex flex-col gap-md anim d3">
+      <div class="card" style="flex:1;">
+        <div class="t-section t-amber" style="margin-bottom:12px;">Auto-Generated SBAR Report</div>
+        <div class="flex flex-col gap-sm">
+          <div>
+            <div style="font-size:0.72rem; font-weight:700; color:var(--rose); margin-bottom:3px;">S &mdash; SITUATION</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">72M with T2DM in WARNING state (72% confidence). Glucose trending upward over 48h. Medication adherence declined to 68%.</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:700; color:var(--amber); margin-bottom:3px;">B &mdash; BACKGROUND</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">HbA1c 8.1%. History of hypertension, hyperlipidaemia. On Metformin 1000mg BD, Amlodipine 5mg OD. Lives alone, limited social support.</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:700; color:var(--cyan); margin-bottom:3px;">A &mdash; ASSESSMENT</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">HMM top factors: medication adherence (35% weight), glucose variability (22%), sleep quality declining. Monte Carlo 48h crisis risk: 38%. Merlion velocity: +0.3 mmol/h, accelerating.</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:700; color:var(--emerald); margin-bottom:3px;">R &mdash; RECOMMENDATION</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">Counterfactual: Metformin dose escalation reduces 48h risk by 31%. Consider clinic follow-up within 72h. Caregiver notified (daughter, SMS).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-sm anim d5" style="background:rgba(245,158,11,0.04); border-color:rgba(245,158,11,0.15);">
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
+          <strong style="color:var(--amber);">Multi-patient triage:</strong> Patients auto-sorted by urgency. Drug interactions flagged with severity. Nurse reviews and approves — <strong style="color:var(--text-primary);">the system surfaces, the human decides.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9: SECURITY + ETHICS + PDPA
+     ============================================================ -->
+<section class="slide" data-slide="9" style="background: var(--bg-slide);">
+  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Governance</div>
+  <div class="t-title anim d1" style="margin-bottom:24px;">Privacy by Architecture, Not by Policy</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
+    <!-- Left: 5 Security Layers -->
+    <div class="flex flex-col gap-sm anim d2">
+      <div class="t-section" style="color:var(--rose); margin-bottom:4px;">5 Layers of Data Protection</div>
+
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">1</div>
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">PII Firewall</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Name, NRIC, address, phone, email stripped before any LLM call. AI never sees who the patient is.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">2</div>
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Local HMM Inference</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">All clinical classification runs on-device. Patient data never leaves for health state detection.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">3</div>
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Blind Appointment Booking</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Only urgency + clinical category sent to HealthHub. Patient identity revealed at check-in only.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">4</div>
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">6-Month Rolling Retention</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Auto-deletion triggers on glucose, HMM states, voice transcripts. PDPA Section 25 compliant.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">5</div>
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Immediate Audio Purge</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Voice recordings deleted after transcription. Only transcript retained (6-month TTL). No voice biometrics.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Ethics Framework -->
+    <div class="flex flex-col gap-sm anim d3">
+      <div class="t-section" style="color:var(--purple); margin-bottom:4px;">Ethics &amp; Consent Framework</div>
+
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Informed Consent (Tiered)</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">BASIC (phone sensors) &#8594; ENHANCED (+Fitbit) &#8594; PREMIUM (+CGM). Granular opt-in, not all-or-nothing.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Right to Explanation (PDPA S.20)</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Every HMM state: which feature, what weight, what probability. Patient asks "why WARNING?" and gets a readable answer.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Right to Withdrawal</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Revoke consent &#8594; all Tier 2 data deleted within 24h. Agent memory purged. Only anonymous aggregates retained.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Algorithmic Fairness</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">No demographic features in HMM — only clinical biomarkers. Baum-Welch personalises to individual baselines regardless of ethnicity.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">Human-in-the-Loop</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Medication suggestions NEVER auto-applied. Always flagged for doctor review. The system recommends. The human decides.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
+        <div>
+          <div style="font-weight:600; font-size:0.82rem;">6-Dimension Safety Classifier</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Every AI response filtered: medical overclaims, hallucination, emotional mismatch, cultural issues, scope violation, dangerous advice.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10: IMPACT + EVALUATION + CLOSE
+     ============================================================ -->
+<section class="slide slide-close" data-slide="10">
+  <div style="width:100%; max-width:900px; margin:0 auto;">
+    <div class="t-section t-cyan anim d1" style="margin-bottom:6px; text-align:center;">Impact &amp; Evaluation</div>
+    <div class="t-title anim d1" style="margin-bottom:28px; text-align:center;">Measuring What Matters</div>
+
+    <!-- Impact Metrics -->
+    <div class="grid-4 gap-md anim d2" style="margin-bottom:28px;">
+      <div class="metric-card card-glow-cyan">
+        <div class="metric-value t-cyan">~40%</div>
+        <div class="metric-label">Fewer Preventable Admissions</div>
+      </div>
+      <div class="metric-card card-glow-emerald">
+        <div class="metric-value t-emerald">60%</div>
+        <div class="metric-label">Nurse Time Saved</div>
+      </div>
+      <div class="metric-card card-glow-amber">
+        <div class="metric-value t-amber">85%</div>
+        <div class="metric-label">Patient Retention</div>
+      </div>
+      <div class="metric-card card-glow-rose">
+        <div class="metric-value" style="color:var(--purple);">~$1.2K</div>
+        <div class="metric-label">Saved / Patient / Year</div>
+      </div>
+    </div>
+
+    <!-- Evaluation Plan -->
+    <div class="card anim d3" style="margin-bottom:28px; padding:20px 24px;">
+      <div class="t-section t-emerald" style="margin-bottom:12px;">Proposed RCT Evaluation</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; font-size:0.8rem;">
+        <div>
+          <div style="color:var(--text-muted); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Design</div>
+          <div style="color:var(--text-secondary); line-height:1.5;">Treatment vs Control across 2 polyclinics. ~400 patients per arm. IRB approval via NUS.</div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Primary Endpoints</div>
+          <div style="color:var(--text-secondary); line-height:1.5;">30-day readmission rate. HbA1c at 3 &amp; 6 months. Medication adherence (pill count + self-report).</div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Secondary Endpoints</div>
+          <div style="color:var(--text-secondary); line-height:1.5;">Patient NPS. Nurse hours/patient. 90-day retention. Caregiver Zarit Burden score.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div class="anim d4" style="margin-bottom:32px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+        <div class="card card-sm" style="border-top:3px solid var(--cyan);">
+          <div style="font-size:0.7rem; color:var(--cyan); font-weight:700; margin-bottom:6px;">PHASE 1 &middot; 2026-27</div>
+          <div style="font-size:0.78rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">Singapore</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">3 polyclinics &middot; 20,000 patients &middot; HealthHub integration &middot; MERaLiON voice</div>
+        </div>
+        <div class="card card-sm" style="border-top:3px solid var(--purple);">
+          <div style="font-size:0.7rem; color:var(--purple); font-weight:700; margin-bottom:6px;">PHASE 2 &middot; 2028-29</div>
+          <div style="font-size:0.78rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">ASEAN</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Malaysia, Thailand, Indonesia &middot; SEA-LION 11 languages &middot; 50M+ patients</div>
+        </div>
+        <div class="card card-sm" style="border-top:3px solid var(--emerald);">
+          <div style="font-size:0.7rem; color:var(--emerald); font-weight:700; margin-bottom:6px;">PHASE 3 &middot; 2030+</div>
+          <div style="font-size:0.78rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">Multi-Chronic</div>
+          <div style="font-size:0.73rem; color:var(--text-secondary); line-height:1.4;">Hypertension, CKD, cardiovascular &middot; Same architecture, new biomarker sets</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closing -->
+    <div class="anim d5" style="text-align:center;">
+      <div class="close-quote">
+        The future of healthcare isn't reactive.<br>
+        It's <em>predictive</em>, <em>personalised</em>, and <em>proactive</em>.<br>
+        <span style="font-weight:800;">Bewo doesn't wait for the crisis. It sees it coming.</span>
+      </div>
+      <div style="margin-top:24px; font-size:1.3rem; font-weight:800; letter-spacing:-0.02em;">
+        <span style="color:var(--cyan);">B</span>ewo Health
+      </div>
+      <div style="margin-top:8px; font-size:0.75rem; color:var(--text-muted);">
+        NUS-Synapxe-IMDA AI Innovation Challenge 2026 &middot; Problem Statement 1
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<!-- ============================================================
+     JAVASCRIPT: Navigation
+     ============================================================ -->
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  const progressBar = document.getElementById('progressBar');
+  const currentSlideEl = document.getElementById('currentSlide');
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+    currentSlideEl.textContent = String(current + 1).padStart(2, '0');
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  // Keyboard
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+    // Number keys 1-9, 0=10
+    if (e.key >= '1' && e.key <= '9') { goTo(parseInt(e.key) - 1); }
+    if (e.key === '0') { goTo(9); }
+  });
+
+  // Click navigation (left 30% = prev, right 70% = next)
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('a, button, input, textarea')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.3) prev(); else next();
+  });
+
+  // Touch swipe
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+  });
+
+  // Init
+  goTo(0);
+})();
+</script>
+</body>
+</html>

@@ -67,20 +67,22 @@ def reset_database():
     """Clear all demo data from database."""
     print("Resetting database to clean state...")
     conn = sqlite3.connect(DB_PATH)
-    tables = [
-        'glucose_readings', 'cgm_readings', 'passive_metrics',
-        'medication_logs', 'food_logs', 'fitbit_activity',
-        'fitbit_heart_rate', 'fitbit_sleep', 'hmm_states',
-        'state_change_alerts'
-    ]
-    for table in tables:
-        try:
-            conn.execute(f"DELETE FROM {table}")
-            print(f"  [OK] Cleared {table}")
-        except Exception as e:
-            print(f"  [WARN] {table}: {e}")
-    conn.commit()
-    conn.close()
+    try:
+        tables = [
+            'glucose_readings', 'cgm_readings', 'passive_metrics',
+            'medication_logs', 'food_logs', 'fitbit_activity',
+            'fitbit_heart_rate', 'fitbit_sleep', 'hmm_states',
+            'state_change_alerts'
+        ]
+        for table in tables:
+            try:
+                conn.execute(f"DELETE FROM {table}")
+                print(f"  [OK] Cleared {table}")
+            except Exception as e:
+                print(f"  [WARN] {table}: {e}")
+        conn.commit()
+    finally:
+        conn.close()
     print("Database reset complete.\n")
 
 
@@ -148,15 +150,17 @@ def validate_all():
     # 2. Check database tables
     print("\n[2] Checking database tables...")
     conn = sqlite3.connect(DB_PATH)
-    required_tables = ['glucose_readings', 'hmm_states', 'medication_logs', 'passive_metrics']
-    for table in required_tables:
-        try:
-            count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-            print(f"  [OK] {table}: {count} rows")
-        except Exception as e:
-            print(f"  [FAIL] {table}: {e}")
-            errors.append(f"Table {table}")
-    conn.close()
+    try:
+        required_tables = ['glucose_readings', 'hmm_states', 'medication_logs', 'passive_metrics']
+        for table in required_tables:
+            try:
+                count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                print(f"  [OK] {table}: {count} rows")
+            except Exception as e:
+                print(f"  [FAIL] {table}: {e}")
+                errors.append(f"Table {table}")
+    finally:
+        conn.close()
     
     # 3. Test Merlion mock
     print("\n[3] Testing Merlion risk engine...")

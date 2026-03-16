@@ -76,10 +76,13 @@ export function ChatContainer() {
 
         } catch (err) {
             console.error(err);
+            const isTimeout = err instanceof DOMException && err.name === "AbortError";
             const errorMsg: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: "system",
-                content: "Network Error: Could not reach Bewo brain.",
+                content: isTimeout
+                    ? "Request timed out. The server may be busy — please try again."
+                    : `Connection failed: ${err instanceof Error ? err.message : "Could not reach Bewo brain."}`,
                 timestamp: ""
             };
             setMessages(prev => [...prev, errorMsg]);

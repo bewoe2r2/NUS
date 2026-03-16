@@ -98,21 +98,21 @@ class ClinicalEngine:
                  probs = [1.0, 0.0, 0.0]
             else:
                  results = self.hmm_engine.run_inference(observations, patient_id=user_id)
-                 state = results['current_state']
-                 state_probs_dict = results['state_probabilities']
+                 state = results.get('current_state', 'STABLE')
+                 state_probs_dict = results.get('state_probabilities', {})
                  probs = [state_probs_dict.get(s, 0.0) for s in STATES]
 
             # 3. Compute Real-time Metrics
             metrics = self.compute_realtime_metrics(user_id, observations)
-            
+
             # 4. Synthesize SBAR (Gemini - ANONYMIZED)
             # CRITICAL: We pass 'patient_profile' strictly for clinical context (Diagnoses/Meds),
             # NOT PII (Name, Address).
             sbar = self.gemini.draft_sbar(
                 state=state,
                 metrics=metrics,
-                conditions=patient_profile['conditions'],
-                medications=patient_profile['medications'],
+                conditions=patient_profile.get('conditions', []),
+                medications=patient_profile.get('medications', []),
                 guidelines=CLINICAL_GUIDELINES
             )
 
@@ -188,9 +188,10 @@ class ClinicalEngine:
 
     def _get_patient_profile(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Fetch patient clinical profile from DB."""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
+        conn = None
         try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
             cur = conn.cursor()
             cur.execute("SELECT * FROM patients WHERE user_id = ?", (user_id,))
             row = cur.fetchone()
@@ -208,12 +209,14 @@ class ClinicalEngine:
                 return data
             return None
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def _save_sbar_history(self, user_id: str, sbar: Dict[str, Any]):
         """Persist the generated SBAR report for audit trail."""
-        conn = sqlite3.connect(self.db_path)
+        conn = None
         try:
+            conn = sqlite3.connect(self.db_path)
             timestamp_utc = int(time.time())
             conn.execute("""
                 INSERT INTO clinical_notes_history (patient_id, timestamp_utc, note_type, content)
@@ -222,9 +225,10 @@ class ClinicalEngine:
             conn.commit()
         except sqlite3.OperationalError:
             # Table might not exist yet if schema update hasn't run
-            pass 
+            pass
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def _generate_fallback_response(self, user_id: str, error_msg: str) -> Dict[str, Any]:
         """Generate a safe fallback response if the main pipeline crashes."""

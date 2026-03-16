@@ -60,10 +60,88 @@ interface GuidedWalkthroughProps {
     onClose: () => void;
     onTabChange: (tab: TabId) => void;
     onRefresh: () => void;
+    onStepChange?: (step: number) => void;
+    initialStep?: number;
 }
 
-export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWalkthroughProps) {
-    const [currentStep, setCurrentStep] = useState(0);
+// Tiny confetti burst — no dependencies, pure DOM
+function launchConfetti() {
+    const container = document.createElement('div');
+    container.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden';
+    document.body.appendChild(container);
+    const colors = ['#10b981', '#34d399', '#6ee7b7', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa'];
+    for (let i = 0; i < 80; i++) {
+        const piece = document.createElement('div');
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const left = 30 + Math.random() * 40;
+        const size = 4 + Math.random() * 6;
+        const rotation = Math.random() * 360;
+        const duration = 1.5 + Math.random() * 2;
+        const drift = -60 + Math.random() * 120;
+        piece.style.cssText = `position:absolute;left:${left}%;top:-10px;width:${size}px;height:${size * 0.6}px;background:${color};border-radius:1px;transform:rotate(${rotation}deg);opacity:1;`;
+        piece.animate([
+            { transform: `translate(0, 0) rotate(${rotation}deg)`, opacity: 1 },
+            { transform: `translate(${drift}px, ${window.innerHeight + 50}px) rotate(${rotation + 720}deg)`, opacity: 0 },
+        ], { duration: duration * 1000, easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', fill: 'forwards', delay: Math.random() * 400 });
+        container.appendChild(piece);
+    }
+    setTimeout(() => container.remove(), 5000);
+}
+
+// Subtle sound via Web Audio — no files needed
+function playSound(type: 'step' | 'complete' | 'celebrate') {
+    try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.value = 0.06; // Very subtle
+
+        if (type === 'step') {
+            osc.frequency.value = 880;
+            osc.type = 'sine';
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.08);
+        } else if (type === 'complete') {
+            osc.frequency.value = 523.25; // C5
+            osc.type = 'sine';
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.15);
+            // Second note
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.frequency.value = 659.25; // E5
+            osc2.type = 'sine';
+            gain2.gain.value = 0.06;
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc2.start(ctx.currentTime + 0.12);
+            osc2.stop(ctx.currentTime + 0.35);
+        } else if (type === 'celebrate') {
+            // Rising arpeggio: C E G C
+            const notes = [523.25, 659.25, 783.99, 1046.5];
+            notes.forEach((freq, i) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.frequency.value = freq;
+                o.type = 'sine';
+                g.gain.value = 0.05;
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12 * i + 0.2);
+                o.start(ctx.currentTime + 0.1 * i);
+                o.stop(ctx.currentTime + 0.1 * i + 0.2);
+            });
+        }
+    } catch { /* Audio not available — silent fallback */ }
+}
+
+export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChange, initialStep }: GuidedWalkthroughProps) {
+    const [currentStep, setCurrentStep] = useState(initialStep ?? 0);
     const [actionRunning, setActionRunning] = useState(false);
     const [actionDone, setActionDone] = useState<Set<number>>(new Set());
     const [transitioning, setTransitioning] = useState(false);
@@ -71,22 +149,46 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
     const [highlightRect, setHighlightRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
     const [mounted, setMounted] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [judgeName, setJudgeName] = useState('');
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => { setMounted(true); }, []);
 
+    const [pipelineStage, setPipelineStage] = useState<string | null>(null);
+
     const runAction = useCallback(async (action: () => Promise<void>, stepIdx: number) => {
         setActionRunning(true);
         setActionError(null);
+        setPipelineStage("Initializing...");
+
+        // Monitor the sidebar console log for pipeline stages
+        const stageObserver = setInterval(() => {
+            const consoleEl = document.querySelector('#sidebar-console .space-y-1');
+            if (consoleEl) {
+                const lastLine = consoleEl.lastElementChild?.textContent?.trim();
+                if (lastLine && lastLine.length > 5) {
+                    const short = lastLine.length > 45 ? lastLine.slice(0, 42) + '...' : lastLine;
+                    setPipelineStage(short);
+                }
+            }
+        }, 300);
+
         try {
             await action();
             setActionDone(prev => new Set(prev).add(stepIdx));
             onRefresh();
+            playSound('complete');
+            // Confetti on recovery scenario completion (step index for inject_recovery)
+            if (steps[stepIdx]?.id === 'inject_recovery') {
+                setTimeout(() => { launchConfetti(); playSound('celebrate'); }, 600);
+            }
         } catch (e) {
             console.error("Walkthrough action failed:", e);
             setActionError("Pipeline encountered an issue. You can retry or skip to the next step.");
             setActionDone(prev => new Set(prev).add(stepIdx));
         } finally {
+            clearInterval(stageObserver);
+            setPipelineStage(null);
             setActionRunning(false);
         }
     }, [onRefresh]);
@@ -133,7 +235,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             id: "welcome",
             phase: "INTRODUCTION",
             phaseColor: "from-blue-600 to-indigo-600",
-            title: "Welcome to Bewo",
+            title: judgeName ? `Welcome, ${judgeName}` : "Welcome to Bewo",
             subtitle: "AI-Powered Chronic Disease Management for Singapore",
             body: "You're about to experience a live, working system \u2014 not a prototype, not a mockup.\n\nEvery button fires real API calls: HMM Viterbi inference, Baum-Welch learning, Monte Carlo simulation, agentic AI reasoning, and 6-dimension safety classification.\n\nBewo solves one problem: Singapore spends $2.5B/year on diabetes complications that are 61% preventable. We detect health crises 48 hours before they happen \u2014 from passive sensor data alone \u2014 then autonomously intervene.\n\nThis guided walkthrough takes ~8 minutes and covers everything.",
             insight: "43,000+ lines of production code. 53 API endpoints. 35 database tables. 7 injectable clinical scenarios. 3 stakeholder views (patient, nurse, caregiver). Everything you see is computed live.",
@@ -233,7 +335,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-blue-600 to-cyan-600",
             title: "The Nurse's Perspective",
             subtitle: "What Sarah Chen, RN sees at the start of her shift",
-            body: "You're now looking at the clinical dashboard \u2014 designed for polyclinic nurses, not patients.\n\nTop bar: Mr. Tan Ah Kow, 67M with CRISIS status badge (pulsing red = urgent attention needed).\n\nBelow: The 14-day Health Timeline \u2014 each day is color-coded by HMM state with confidence percentages. Click any day to drill into the detailed analysis.\n\nThis view is designed for speed: a nurse glances at the timeline, sees red, clicks the day, reads the SBAR, acts. Under 60 seconds from dashboard to decision.",
+            body: "The Nurse View tab is now active \u2014 this is the clinical dashboard, designed for polyclinic nurses, not patients.\n\nTop bar: Mr. Tan Ah Kow, 67M with CRISIS status badge (pulsing red = urgent attention needed).\n\nBelow: The 14-day Health Timeline \u2014 each day is color-coded by HMM state with confidence percentages. Click any day to drill into the detailed analysis.\n\nThis view is designed for speed: a nurse glances at the timeline, sees red, clicks the day, reads the SBAR, acts. Under 60 seconds from dashboard to decision.",
             insight: "Singapore polyclinics assign 600+ patients per nurse. Manual chart review takes 20+ minutes each. Bewo's auto-triage means the nurse only reviews patients that need attention, in priority order. Zero manual chart-pulling.",
             tab: "nurse",
             icon: <Stethoscope size={20} />,
@@ -281,7 +383,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-emerald-600 to-teal-600",
             title: "What Mr. Tan Sees",
             subtitle: "A caring companion, not a clinical dashboard",
-            body: "This is the patient's mobile app \u2014 notice the stark difference from the nurse view.\n\nNo HMM states. No probability curves. No triage scores. Instead:\n\n\u2022 Daily Insight Card \u2014 a simple risk indicator with trend (Declining/Improving/Stable) and motivational, culturally-sensitive text\n\u2022 Merlion Risk Score \u2014 a percentage the patient can understand\n\u2022 Biometric overview \u2014 glucose, steps, heart rate in a clean bento grid\n\nThe clinical complexity is hidden. The patient sees a caring companion that speaks their language.",
+            body: "The Patient View is now active \u2014 this is the patient's mobile app. Notice the stark difference from the nurse view.\n\nNo HMM states. No probability curves. No triage scores. Instead:\n\n\u2022 Daily Insight Card \u2014 a simple risk indicator with trend (Declining/Improving/Stable) and motivational, culturally-sensitive text\n\u2022 Merlion Risk Score \u2014 a percentage the patient can understand\n\u2022 Biometric overview \u2014 glucose, steps, heart rate in a clean bento grid\n\nThe clinical complexity is hidden. The patient sees a caring companion that speaks their language.",
             insight: "Trust is the intervention. If Mr. Tan doesn't trust the app, no algorithm will help him take his medication. That's why the patient view uses warm language, Singlish when appropriate, and never shows alarming clinical jargon. UX IS the treatment adherence strategy.",
             tab: "patient",
             icon: <Heart size={20} />,
@@ -392,7 +494,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-cyan-600 to-blue-600",
             title: "18 Agentic AI Tools",
             subtitle: "Every tool fires against a real API endpoint",
-            body: "Click the \"Tool Demo\" tab. You'll see individual tool buttons plus \"Run All 18 Tools\".\n\nTry clicking individual tools:\n\u2022 Drug Interaction Check \u2014 queries real interaction database (16 pairs, 39 drug-to-class mappings)\n\u2022 SBAR Report \u2014 generates real clinical summary from current HMM state\n\u2022 Caregiver Alert \u2014 sends alert with intelligent burden scoring\n\u2022 Food Recommendation \u2014 culturally-aware meal suggestion (knows hawker food)\n\nThen click \"Run All 18 Tools\" to see the full pipeline.\n\nWatch the terminal \u2014 it shows exact function calls, arguments, and real API responses. Nothing is mocked.",
+            body: "The Tool Demo tab is now active. You'll see individual tool buttons plus \"Run All 18 Tools\".\n\nTry clicking individual tools:\n\u2022 Drug Interaction Check \u2014 queries real interaction database (16 pairs, 39 drug-to-class mappings)\n\u2022 SBAR Report \u2014 generates real clinical summary from current HMM state\n\u2022 Caregiver Alert \u2014 sends alert with intelligent burden scoring\n\u2022 Food Recommendation \u2014 culturally-aware meal suggestion (knows hawker food)\n\nThen click \"Run All 18 Tools\" to see the full pipeline.\n\nWatch the terminal \u2014 it shows exact function calls, arguments, and real API responses. Nothing is mocked.",
             insight: "Each tool tracks its effectiveness per-patient, per-state. The system learns that medication reminders work 85% of the time for Mr. Tan in WARNING state but only 40% in CRISIS. Over time, the agent preferentially selects tools that work for each individual.",
             tab: "tooldemo",
             icon: <Terminal size={20} />,
@@ -424,7 +526,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phaseColor: "from-purple-600 to-violet-600",
             title: "The Learning Engine",
             subtitle: "What makes Bewo truly agentic \u2014 it learns and remembers",
-            body: "Click \"AI Intelligence\". You'll see 10 panels showing the agent's internal state:\n\n\u2022 Agent Memory \u2014 3 types: episodic (events), semantic (medical knowledge), preference (patient likes/dislikes). Persists across sessions.\n\n\u2022 Tool Effectiveness \u2014 per-tool, per-state success rates. Learns which interventions work for each patient.\n\n\u2022 Safety Classifier \u2014 audit trail of every AI response with verdict: SAFE / CAUTION / UNSAFE.\n\n\u2022 Baum-Welch Parameters \u2014 the learned HMM transition matrix via EM algorithm, showing how the model adapted to this specific patient's patterns.",
+            body: "The AI Intelligence tab is now active. You'll see 10 panels showing the agent's internal state:\n\n\u2022 Agent Memory \u2014 3 types: episodic (events), semantic (medical knowledge), preference (patient likes/dislikes). Persists across sessions.\n\n\u2022 Tool Effectiveness \u2014 per-tool, per-state success rates. Learns which interventions work for each patient.\n\n\u2022 Safety Classifier \u2014 audit trail of every AI response with verdict: SAFE / CAUTION / UNSAFE.\n\n\u2022 Baum-Welch Parameters \u2014 the learned HMM transition matrix via EM algorithm, showing how the model adapted to this specific patient's patterns.",
             insight: "Most health AI chatbots are stateless \u2014 they forget between sessions. Bewo remembers that Mr. Tan prefers Hokkien, skips breakfast on Sundays, and responds better to gentle nudges than clinical warnings. 3 memory types working together make the AI feel like it actually knows the patient.",
             tab: "intelligence",
             icon: <Brain size={20} />,
@@ -491,7 +593,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
             phase: "SUMMARY",
             phaseColor: "from-zinc-800 to-zinc-900",
             title: "Before Crisis. Not After.",
-            subtitle: "A working system. Not a prototype. Not a pitch deck.",
+            subtitle: judgeName ? `Thank you, ${judgeName}. Everything you saw is live.` : "A working system. Not a prototype. Not a pitch deck.",
             body: "What you've just experienced is fully functional:\n\n\u2022 3-state HMM with Viterbi decoding + Baum-Welch learning\n\u2022 9 orthogonal biomarkers from CGM + Fitbit + App\n\u2022 2,000-path Monte Carlo simulation for 48h risk forecasting\n\u2022 5-turn ReAct agent with 18 tools and cross-session memory\n\u2022 6-dimension safety classifier on every AI response\n\u2022 Auto-SBAR, auto-triage, continuous drug interaction monitoring\n\u2022 Loss-aversion voucher gamification (Prospect Theory)\n\u2022 Caregiver burden scoring (prevents alert fatigue)\n\u2022 53 API routes, 35 database tables, 43,000+ lines of code\n\u2022 3 stakeholder views: patient \u2192 nurse \u2192 caregiver\n\nBuilt for Singapore. Designed to scale across ASEAN.\n\nYou can now explore freely. Inject any scenario. Chat with the AI. Click every button. Everything is live.",
             insight: "Singapore's diabetic population will double by 2035. Bewo is built for this reality \u2014 culturally aware (Singlish, hawker food, NTUC vouchers), clinically rigorous (HMM, SBAR, pharmacovigilance), and designed to scale across polyclinics at S$3/patient/month. The question isn't whether we need this \u2014 it's how fast we can deploy it.",
             icon: <Globe size={20} />,
@@ -512,6 +614,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
     const animateTransition = (direction: "next" | "prev", callback: () => void) => {
         setTransitioning(true);
         setActionError(null);
+        playSound('step');
         setTimeout(() => {
             callback();
             setTimeout(() => setTransitioning(false), 400);
@@ -553,9 +656,18 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
         return () => window.removeEventListener("keydown", handler);
     }, [currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Single canonical place for tab switching — fires once per step change
+    // Single canonical place for tab switching + step reporting — fires once per step change
     useEffect(() => {
         if (step.tab) onTabChange(step.tab);
+        onStepChange?.(currentStep);
+        // Celebrate on reaching the closing step
+        if (step.id === 'closing') {
+            setTimeout(() => { launchConfetti(); playSound('celebrate'); }, 500);
+        }
+        // Celebrate recovery confirmed step too
+        if (step.id === 'recovery_confirmed') {
+            setTimeout(() => { launchConfetti(); }, 300);
+        }
     }, [currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Scroll card body to top on step change
@@ -732,7 +844,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
 
             {/* Floating tour card */}
             <div
-                className="fixed z-[195] w-[340px] bg-white rounded-2xl shadow-2xl border border-zinc-200/80 overflow-hidden flex flex-col"
+                className={`fixed z-[195] w-[340px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-zinc-200/80 overflow-hidden flex flex-col
+                    ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
+                `}
                 role="dialog"
                 aria-label={`Walkthrough step ${currentStep + 1} of ${steps.length}: ${step.title}`}
                 aria-modal="true"
@@ -740,7 +854,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                     top: cardPos.top,
                     left: cardPos.left,
                     maxHeight: "min(420px, calc(100vh - 80px))",
-                    transition: "top 0.7s cubic-bezier(0.22,1,0.36,1), left 0.7s cubic-bezier(0.22,1,0.36,1)",
+                    transition: "top 0.7s cubic-bezier(0.22,1,0.36,1), left 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, transform 0.5s ease",
+                    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.03)",
                 }}
             >
                 {/* Compact gradient header */}
@@ -780,21 +895,37 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                         </div>
                     )}
 
-                    {/* Phase progress ticks */}
-                    <div className="mt-2 flex items-center gap-px">
-                        {phases.map((p, pi) => (
-                            <div key={pi} className="flex-1 flex gap-px">
-                                {p.steps.map((si) => (
-                                    <div
-                                        key={si}
-                                        className={`h-[3px] flex-1 rounded-full transition-all duration-300 ${
-                                            si === currentStep ? "bg-white" :
-                                            si < currentStep ? "bg-white/50" : "bg-white/15"
-                                        }`}
-                                    />
-                                ))}
-                            </div>
-                        ))}
+                    {/* Phase progress ticks — clickable to jump between phases */}
+                    <div className="mt-2 flex items-center gap-0.5">
+                        {phases.map((p, pi) => {
+                            const phaseStart = p.steps[0];
+                            const isCurrentPhase = p.steps.includes(currentStep);
+                            const isPastPhase = p.steps[p.steps.length - 1] < currentStep;
+                            return (
+                                <button
+                                    key={pi}
+                                    onClick={() => {
+                                        if (phaseStart !== currentStep) {
+                                            animateTransition(phaseStart > currentStep ? "next" : "prev", () => {
+                                                setCurrentStep(phaseStart);
+                                            });
+                                        }
+                                    }}
+                                    className="flex-1 flex gap-px group cursor-pointer"
+                                    title={`Jump to ${p.name}`}
+                                >
+                                    {p.steps.map((si) => (
+                                        <div
+                                            key={si}
+                                            className={`h-[3px] flex-1 rounded-full transition-all duration-300 group-hover:opacity-80 ${
+                                                si === currentStep ? "bg-white" :
+                                                si < currentStep ? "bg-white/50" : "bg-white/15"
+                                            } ${isCurrentPhase ? "" : isPastPhase ? "group-hover:bg-white/60" : "group-hover:bg-white/30"}`}
+                                        />
+                                    ))}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -829,12 +960,30 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                             </div>
                         )}
 
+                        {/* Judge name personalization — only on welcome step */}
+                        {step.id === 'welcome' && (
+                            <div className="mt-2">
+                                <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-[0.12em]">
+                                    Your name (optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={judgeName}
+                                    onChange={(e) => setJudgeName(e.target.value)}
+                                    placeholder="Enter your name to personalize"
+                                    className="mt-1 w-full px-3 py-1.5 text-[11px] bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-700 placeholder-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+                                    onKeyDown={(e) => { if (e.key === 'Enter') goNext(); }}
+                                />
+                            </div>
+                        )}
+
                         {hasAction && (
                             <div className="mt-3">
                                 <button
                                     onClick={() => runAction(step.action!, currentStep)}
                                     disabled={actionRunning || isDone}
-                                    className={`w-full h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all
+                                    className={`w-full rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all
+                                        ${actionRunning ? "h-14 py-2" : "h-10"}
                                         ${isDone
                                             ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200"
                                             : "bg-zinc-900 text-white hover:bg-zinc-800 active:scale-[0.98] shadow-lg shadow-zinc-900/20"
@@ -842,14 +991,21 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                                         disabled:opacity-60 disabled:cursor-not-allowed`}
                                 >
                                     {actionRunning ? (
-                                        <>
-                                            <Loader2 size={14} className="animate-spin" />
-                                            <span>Running Pipeline...</span>
-                                        </>
+                                        <div className="flex flex-col items-center gap-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 size={14} className="animate-spin" />
+                                                <span>Running Pipeline...</span>
+                                            </div>
+                                            {pipelineStage && (
+                                                <span className="text-[9px] text-zinc-400 font-mono truncate max-w-[280px]">
+                                                    {pipelineStage}
+                                                </span>
+                                            )}
+                                        </div>
                                     ) : isDone ? (
                                         <>
                                             <CheckCircle2 size={14} />
-                                            <span>Complete \u2014 Data Injected</span>
+                                            <span>Complete \u2014 Pipeline Executed Successfully</span>
                                         </>
                                     ) : (
                                         <>
@@ -877,17 +1033,19 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh }: GuidedWal
                 <div className="px-3 py-2 border-t border-zinc-100 bg-zinc-50/80 shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-0.5">
-                            {steps.map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={`h-1 rounded-full transition-all duration-300 ${
-                                        i === currentStep
-                                            ? "w-4 bg-zinc-900"
-                                            : i < currentStep
-                                                ? "w-1.5 bg-zinc-400"
-                                                : "w-1 bg-zinc-200"
-                                    }`}
-                                />
+                            {phases.map((p) => (
+                                p.steps.map((si) => (
+                                    <div
+                                        key={si}
+                                        className={`h-1 rounded-full transition-all duration-300 ${
+                                            si === currentStep
+                                                ? `w-4 ${p.color}`
+                                                : si < currentStep
+                                                    ? `w-1.5 ${p.color} opacity-40`
+                                                    : "w-1 bg-zinc-200"
+                                        }`}
+                                    />
+                                ))
                             ))}
                         </div>
 

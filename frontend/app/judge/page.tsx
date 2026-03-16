@@ -57,6 +57,8 @@ export default function JudgePage() {
     const [loading, setLoading] = useState(false);
     const [showWalkthrough, setShowWalkthrough] = useState(true); // Auto-launch for judges
     const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
+    const [walkthroughResumeStep, setWalkthroughResumeStep] = useState<number | undefined>(undefined);
+    const lastWalkthroughStepRef = useRef(0);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Overview data
@@ -184,12 +186,21 @@ export default function JudgePage() {
                     </div>
                     <div className="flex items-center gap-3">
                         {loading && <Loader2 size={14} className="animate-spin text-zinc-400" />}
+                        {walkthroughCompleted && lastWalkthroughStepRef.current > 0 && (
+                            <button
+                                onClick={() => { setWalkthroughResumeStep(lastWalkthroughStepRef.current); setShowWalkthrough(true); }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                            >
+                                <Play size={12} className="fill-current" />
+                                Resume (Step {lastWalkthroughStepRef.current + 1})
+                            </button>
+                        )}
                         <button
-                            onClick={() => setShowWalkthrough(true)}
+                            onClick={() => { setWalkthroughResumeStep(undefined); setShowWalkthrough(true); }}
                             className={`${walkthroughCompleted ? 'bg-zinc-600 hover:bg-zinc-700' : 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300 ring-offset-2 animate-pulse'} text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm`}
                         >
                             <Play size={12} className="fill-current" />
-                            {walkthroughCompleted ? 'Replay Demo' : 'Guided Demo'}
+                            {walkthroughCompleted ? 'Restart Demo' : 'Guided Demo'}
                         </button>
                         <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
                             JUDGE MODE
@@ -244,6 +255,8 @@ export default function JudgePage() {
                     onClose={() => { setShowWalkthrough(false); setWalkthroughCompleted(true); }}
                     onTabChange={handleTabChange}
                     onRefresh={handleRefresh}
+                    onStepChange={(step: number) => { lastWalkthroughStepRef.current = step; }}
+                    initialStep={walkthroughResumeStep}
                 />
             )}
         </div>
@@ -261,9 +274,10 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
     impactMetrics: any;
     onRefresh: () => void;
 }) {
-    const state = patientState?.current_state || 'UNKNOWN';
+    const state = patientState?.current_state || null;
     const risk = patientState?.risk_score ?? 0;
-    const stateColor = state === 'CRISIS' ? 'rose' : state === 'WARNING' ? 'amber' : 'emerald';
+    const stateColor = state === 'CRISIS' ? 'rose' : state === 'WARNING' ? 'amber' : state ? 'emerald' : 'blue';
+    const hasData = !!patientState?.current_state;
 
     return (
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -271,7 +285,12 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-zinc-900">System Overview</h1>
-                    <p className="text-sm text-zinc-500 mt-1">Real-time patient state after simulation pipeline</p>
+                    <p className="text-sm text-zinc-500 mt-1">
+                        {hasData
+                            ? 'Real-time patient state after simulation pipeline'
+                            : 'Use the Guided Demo or inject a scenario from the sidebar to begin'
+                        }
+                    </p>
                 </div>
                 <button onClick={onRefresh} className="p-2 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors">
                     <RefreshCw size={18} />
@@ -282,20 +301,20 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             <div id="state-cards-grid" className="grid grid-cols-4 gap-4">
                 <StateCard
                     label="HMM State"
-                    value={state}
+                    value={state || 'Awaiting Data'}
                     color={stateColor}
                     icon={<Brain size={18} />}
                 />
                 <StateCard
                     label="Risk Score"
-                    value={`${(risk * 100).toFixed(0)}%`}
-                    color={risk > 0.7 ? 'rose' : risk > 0.4 ? 'amber' : 'emerald'}
+                    value={hasData ? `${(risk * 100).toFixed(0)}%` : '\u2014'}
+                    color={hasData ? (risk > 0.7 ? 'rose' : risk > 0.4 ? 'amber' : 'emerald') : 'blue'}
                     icon={<AlertTriangle size={18} />}
                 />
                 <StateCard
                     label="48h Crisis Prob"
-                    value={patientState?.risk_48h != null ? `${(patientState.risk_48h * 100).toFixed(0)}%` : 'N/A'}
-                    color={patientState?.risk_48h > 0.5 ? 'rose' : 'emerald'}
+                    value={patientState?.risk_48h != null ? `${(patientState.risk_48h * 100).toFixed(0)}%` : '\u2014'}
+                    color={patientState?.risk_48h > 0.5 ? 'rose' : hasData ? 'emerald' : 'blue'}
                     icon={<TrendingUp size={18} />}
                 />
                 <StateCard
@@ -409,7 +428,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                     {drugInteractions?.interactions && drugInteractions.interactions.length > 0 ? (
                         <div className="space-y-3">
                             {drugInteractions.interactions.map((ix: any, i: number) => (
-                                <div key={i} className="p-3 rounded-lg border border-zinc-100 bg-zinc-50">
+                                <div key={`drug-ix-${i}`} className="p-3 rounded-lg border border-zinc-100 bg-zinc-50">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                             ix.severity === 'CONTRAINDICATED' ? 'bg-rose-100 text-rose-700' :
@@ -506,7 +525,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                     {agentMemory && agentMemory.length > 0 ? (
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {agentMemory.slice(0, 20).map((m: any, i: number) => (
-                                <div key={i} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
+                                <div key={m.key ? `mem-${m.key}-${i}` : `mem-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="font-bold text-indigo-600">{m.memory_type || m.type}</span>
                                         <span className="text-zinc-400">|</span>
@@ -561,7 +580,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                 const verdict = parsed.verdict || evt.verdict || 'SAFE';
                                 const flags = parsed.flags || evt.flags;
                                 return (
-                                    <div key={i} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
+                                    <div key={`safety-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                         <div className="flex items-center gap-2">
                                             <span className={`font-bold ${verdict === 'UNSAFE' ? 'text-rose-600' : verdict === 'CAUTION' ? 'text-amber-600' : 'text-emerald-600'}`}>
                                                 {verdict}
@@ -582,7 +601,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                     {agentActions && agentActions.length > 0 ? (
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {agentActions.slice(0, 15).map((a: any, i: number) => (
-                                <div key={i} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs flex items-center gap-2">
+                                <div key={`action-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs flex items-center gap-2">
                                     <span className="font-medium text-blue-600 shrink-0">{a.action_type || a.tool_name || a.tool}</span>
                                     <span className="text-zinc-500 truncate">{a.tool_result || a.reasoning || a.description || a.result || ''}</span>
                                 </div>
@@ -625,10 +644,10 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                     <div className="font-semibold text-zinc-700 mb-1">Transition Matrix</div>
                                     <div className="font-mono text-[10px] bg-zinc-50 p-2 rounded">
                                         {Array.isArray(hmmParams.transition_matrix) && hmmParams.transition_matrix.map((row: number[], i: number) => (
-                                            <div key={i} className="flex gap-3">
+                                            <div key={`tm-row-${i}`} className="flex gap-3">
                                                 {['STABLE', 'WARNING', 'CRISIS'][i]}:
                                                 {row.map((v: number, j: number) => (
-                                                    <span key={j} className={v > 0.5 ? 'text-emerald-600 font-bold' : 'text-zinc-500'}>{v.toFixed(3)}</span>
+                                                    <span key={`tm-${i}-${j}`} className={v > 0.5 ? 'text-emerald-600 font-bold' : 'text-zinc-500'}>{v.toFixed(3)}</span>
                                                 ))}
                                             </div>
                                         ))}
@@ -640,7 +659,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                     <div className="font-semibold text-zinc-700 mb-1">Initial Probabilities</div>
                                     <div className="font-mono text-[10px] bg-zinc-50 p-2 rounded">
                                         {Array.isArray(hmmParams.initial_probs) && hmmParams.initial_probs.map((v: number, i: number) => (
-                                            <span key={i} className="mr-3">{['S', 'W', 'C'][i]}: {v.toFixed(3)}</span>
+                                            <span key={`ip-${i}`} className="mr-3">{['S', 'W', 'C'][i]}: {v.toFixed(3)}</span>
                                         ))}
                                     </div>
                                 </div>
@@ -681,7 +700,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                     {proactiveHistory && proactiveHistory.length > 0 ? (
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {proactiveHistory.slice(0, 10).map((c: any, i: number) => (
-                                <div key={i} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
+                                <div key={`proactive-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                     <div className="flex items-center gap-2">
                                         <Zap size={10} className="text-cyan-600" />
                                         <span className="font-medium text-zinc-700">{c.trigger_type || c.type}</span>
@@ -800,6 +819,7 @@ function ToolDemoTab() {
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [running, setRunning] = useState(false);
     const logIdRef = useRef(0);
+    const logContainerRef = useRef<HTMLDivElement>(null);
 
     const now = () => new Date().toLocaleTimeString('en-GB', { hour12: false });
 
@@ -807,6 +827,10 @@ function ToolDemoTab() {
         logIdRef.current += 1;
         const id = logIdRef.current;
         setLogs(old => [...old, { ...entry, id, timestamp: now() }]);
+        // Auto-scroll terminal to bottom
+        requestAnimationFrame(() => {
+            logContainerRef.current?.scrollTo({ top: logContainerRef.current.scrollHeight, behavior: 'smooth' });
+        });
     };
 
     const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -948,6 +972,7 @@ function ToolDemoTab() {
     };
 
     const runAllTools = async () => {
+        const pipelineStart = performance.now();
         addLog({ type: 'system', text: '=== FULL 18-TOOL PIPELINE DEMONSTRATION ===' });
         addLog({ type: 'system', text: 'Patient: P001 (Mr. Tan Ah Kow, 67M, T2DM + HTN + HLD)' });
         addLog({ type: 'system', text: 'Medications: Metformin 500mg BD, Lisinopril 10mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD' });
@@ -1045,9 +1070,11 @@ function ToolDemoTab() {
             await delay(100);
         }
 
+        const pipelineEnd = performance.now();
+        const elapsed = ((pipelineEnd - pipelineStart) / 1000).toFixed(1);
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '=== PIPELINE COMPLETE: 18/18 tools executed successfully ===' });
-        addLog({ type: 'system', text: 'Total execution time: 4.2s | Safety checks: PASSED | Drug interactions: CHECKED' });
+        addLog({ type: 'system', text: `Total execution time: ${elapsed}s | Safety checks: PASSED | Drug interactions: CHECKED` });
     };
 
     const handleRun = async (toolId: string) => {
@@ -1148,7 +1175,7 @@ function ToolDemoTab() {
                         clear
                     </button>
                 </div>
-                <div className="p-4 font-mono text-xs max-h-[500px] overflow-y-auto space-y-0.5" id="tool-demo-log">
+                <div ref={logContainerRef} className="p-4 font-mono text-xs max-h-[500px] overflow-y-auto space-y-0.5" id="tool-demo-log">
                     {logs.length === 0 && (
                         <div className="text-zinc-600 py-8 text-center">
                             Click a tool above to see it execute, or click &quot;Run All 18 Tools&quot; for a full demo.

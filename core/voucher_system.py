@@ -30,39 +30,40 @@ class VoucherSystem:
     def get_current_voucher(self, user_id=None):
         """Get this week's voucher status"""
         user_id = user_id or self.user_id
-        conn = sqlite3.connect(self.db_path)
-        
-        # Get week start (Monday)
-        now = datetime.now()
-        days_since_monday = now.weekday()
-        week_start = now - timedelta(days=days_since_monday)
-        # Normalize to start of day
-        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
-        week_start_ts = int(week_start.timestamp())
-        
-        # Check if voucher exists for this week
-        row = conn.execute("""
-            SELECT current_value, penalties_json
-            FROM voucher_tracker
-            WHERE user_id = ? AND week_start_utc >= ?
-            ORDER BY week_start_utc DESC LIMIT 1
-        """, (user_id, week_start_ts)).fetchone()
-        
-        if row:
-            value, penalties = row
-        else:
-            # Create new week's voucher
-            # Check if table exists (handled by schema, but ensure row exists)
-            conn.execute("""
-                INSERT INTO voucher_tracker (user_id, week_start_utc, current_value, penalties_json)
-                VALUES (?, ?, ?, ?)
-            """, (user_id, week_start_ts, self.WEEKLY_START, "[]"))
-            conn.commit()
-            value = self.WEEKLY_START
-            penalties = "[]"
-        
-        conn.close()
-        
+        conn = None
+        try:
+            conn = sqlite3.connect(self.db_path)
+            # Get week start (Monday)
+            now = datetime.now()
+            days_since_monday = now.weekday()
+            week_start = now - timedelta(days=days_since_monday)
+            # Normalize to start of day
+            week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+            week_start_ts = int(week_start.timestamp())
+
+            # Check if voucher exists for this week
+            row = conn.execute("""
+                SELECT current_value, penalties_json
+                FROM voucher_tracker
+                WHERE user_id = ? AND week_start_utc >= ?
+                ORDER BY week_start_utc DESC LIMIT 1
+            """, (user_id, week_start_ts)).fetchone()
+
+            if row:
+                value, penalties = row
+            else:
+                # Create new week's voucher
+                conn.execute("""
+                    INSERT INTO voucher_tracker (user_id, week_start_utc, current_value, penalties_json)
+                    VALUES (?, ?, ?, ?)
+                """, (user_id, week_start_ts, self.WEEKLY_START, "[]"))
+                conn.commit()
+                value = self.WEEKLY_START
+                penalties = "[]"
+        finally:
+            if conn:
+                conn.close()
+
         # Days until Sunday
         days_until_sunday = 6 - now.weekday()
         
@@ -98,20 +99,23 @@ class VoucherSystem:
 
         # Update DB
         conn = sqlite3.connect(self.db_path)
-        conn.execute("""
-            UPDATE voucher_tracker
-            SET current_value = ?, penalties_json = ?
-            WHERE user_id = ? AND week_start_utc = ?
-        """, (new_value, penalties_json, user_id, week_start_ts))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("""
+                UPDATE voucher_tracker
+                SET current_value = ?, penalties_json = ?
+                WHERE user_id = ? AND week_start_utc = ?
+            """, (new_value, penalties_json, user_id, week_start_ts))
+            conn.commit()
+        finally:
+            conn.close()
 
         return new_value
     
     def check_and_apply_daily_penalties(self):
         """Check for missed actions today and apply penalties (lazy evaluation)."""
-        conn = sqlite3.connect(self.db_path)
+        conn = None
         try:
+            conn = sqlite3.connect(self.db_path)
             now = int(time.time())
             today_start = now - ((now + 28800) % 86400)  # SGT midnight
             sgt_hour = ((now + 28800) % 86400) // 3600
@@ -146,7 +150,8 @@ class VoucherSystem:
         except Exception as e:
             print(f"[Voucher] Penalty check error: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def generate_qr_code(self, amount):
         """Generate QR code for redemption"""

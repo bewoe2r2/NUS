@@ -248,8 +248,9 @@ def _ensure_alerts_table():
     global _alerts_table_initialized
     if _alerts_table_initialized:
         return
-    conn = sqlite3.connect(DB_PATH)
+    conn = None
     try:
+        conn = sqlite3.connect(DB_PATH)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS caregiver_alerts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -264,7 +265,8 @@ def _ensure_alerts_table():
         conn.commit()
         _alerts_table_initialized = True
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 def _check_rate_limit(patient_id: str, severity: str) -> bool:
@@ -274,8 +276,9 @@ def _check_rate_limit(patient_id: str, severity: str) -> bool:
         return True
 
     _ensure_alerts_table()
-    conn = sqlite3.connect(DB_PATH)
+    conn = None
     try:
+        conn = sqlite3.connect(DB_PATH)
         one_hour_ago = int(time.time()) - 3600
 
         count = conn.execute(
@@ -285,7 +288,8 @@ def _check_rate_limit(patient_id: str, severity: str) -> bool:
 
         return count < limit
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 def _determine_delivery_method(severity: str) -> str:
@@ -405,8 +409,9 @@ def _log_alert(
 ):
     """Log alert in database for audit trail and rate limiting."""
     _ensure_alerts_table()
-    conn = sqlite3.connect(DB_PATH)
+    conn = None
     try:
+        conn = sqlite3.connect(DB_PATH)
         conn.execute("""
             INSERT INTO caregiver_alerts
             (patient_id, timestamp_utc, alert_type, severity, message, delivery_results_json)
@@ -421,4 +426,5 @@ def _log_alert(
         ))
         conn.commit()
     finally:
-        conn.close()
+        if conn:
+            conn.close()

@@ -26,7 +26,7 @@ try:
     MERLION_AVAILABLE = True
 except ImportError:
     MERLION_AVAILABLE = False
-    print("WARNING: 'salesforce-merlion' not found. Running in MOCK mode.")
+    logger.info("salesforce-merlion not found. Running in MOCK mode.")
 
 class MerlionRiskEngine:
     def __init__(self):

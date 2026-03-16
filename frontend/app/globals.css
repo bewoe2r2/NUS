@@ -251,12 +251,21 @@
     border-radius: 14px;
     pointer-events: none;
     border: 2px solid oklch(60% 0.20 250 / 0.7);
-    box-shadow: 0 0 20px oklch(60% 0.20 250 / 0.15);
+    box-shadow:
+      0 0 20px oklch(60% 0.20 250 / 0.15),
+      0 0 0 4px oklch(60% 0.20 250 / 0.08),
+      inset 0 0 12px oklch(60% 0.20 250 / 0.05);
     transition:
       top 0.7s cubic-bezier(0.22,1,0.36,1),
       left 0.7s cubic-bezier(0.22,1,0.36,1),
       width 0.7s cubic-bezier(0.22,1,0.36,1),
       height 0.7s cubic-bezier(0.22,1,0.36,1),
       opacity 0.4s ease;
+    animation: wt-ring-pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes wt-ring-pulse {
+    0%, 100% { border-color: oklch(60% 0.20 250 / 0.7); box-shadow: 0 0 20px oklch(60% 0.20 250 / 0.15), 0 0 0 4px oklch(60% 0.20 250 / 0.08); }
+    50% { border-color: oklch(65% 0.22 250 / 0.9); box-shadow: 0 0 30px oklch(60% 0.20 250 / 0.25), 0 0 0 6px oklch(60% 0.20 250 / 0.12); }
   }
 }

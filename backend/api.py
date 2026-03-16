@@ -35,25 +35,22 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 
-try:
-    from hmm_engine import HMMEngine, TRANSITION_PROBS, EMISSION_PARAMS, WEIGHTS, gaussian_pdf, safe_log, STATES, LOG_TRANSITIONS, INITIAL_PROBS
-    from gemini_integration import GeminiIntegration
-    from voucher_system import VoucherSystem
-    from agent_runtime import (run_agent, ensure_runtime_tables, build_full_hmm_context,
-                                get_patient_streaks, get_optimal_nudge_times,
-                                generate_weekly_report, detect_mood_from_message,
-                                calculate_engagement_score, generate_daily_challenge,
-                                detect_caregiver_fatigue, generate_glucose_narrative,
-                                compute_impact_metrics, _exec_clinician_summary,
-                                _get_merlion_forecast, check_drug_interactions,
-                                classify_response_safety, compute_tool_effectiveness_scores,
-                                run_proactive_scan, _check_proactive_triggers,
-                                process_caregiver_response, compute_caregiver_burden_score,
-                                generate_nurse_triage, compute_attention_score,
-                                _load_agent_memory, _consolidate_memories,
-                                _get_patient_profile_from_db)
-except ImportError as e:
-    logging.error(f"Failed to import modules: {e}")
+from hmm_engine import HMMEngine, TRANSITION_PROBS, EMISSION_PARAMS, WEIGHTS, gaussian_pdf, safe_log, STATES, LOG_TRANSITIONS, INITIAL_PROBS
+from gemini_integration import GeminiIntegration
+from voucher_system import VoucherSystem
+from agent_runtime import (run_agent, ensure_runtime_tables, build_full_hmm_context,
+                            get_patient_streaks, get_optimal_nudge_times,
+                            generate_weekly_report, detect_mood_from_message,
+                            calculate_engagement_score, generate_daily_challenge,
+                            detect_caregiver_fatigue, generate_glucose_narrative,
+                            compute_impact_metrics, _exec_clinician_summary,
+                            _get_merlion_forecast, check_drug_interactions,
+                            classify_response_safety, compute_tool_effectiveness_scores,
+                            run_proactive_scan, _check_proactive_triggers,
+                            process_caregiver_response, compute_caregiver_burden_score,
+                            generate_nurse_triage, compute_attention_score,
+                            _load_agent_memory, _consolidate_memories,
+                            _get_patient_profile_from_db)
 
 # --- CONFIGURATION ---
 logging.basicConfig(
@@ -325,7 +322,7 @@ def get_voucher_system(user_id: str = 'demo_user'):
 @app.get("/")
 def root_health_check():
     """Root health check endpoint"""
-    return {"status": "ok", "system": "Bewo Health API v2.0"}
+    return {"status": "ok", "system": "Bewo Health API v4.0"}
 
 @app.get("/patient/{patient_id}/state", response_model=PatientStateResponse)
 async def get_patient_state(patient_id: str):
@@ -1088,12 +1085,14 @@ async def voice_checkin(data: VoiceCheckInRequest):
 
             # Store in database
             conn = get_db()
-            conn.execute("""
-                INSERT INTO voice_checkins (timestamp_utc, transcript_text, sentiment_score, user_id)
-                VALUES (?, ?, ?, ?)
-            """, (int(time.time()), data.transcript, result.get('sentiment_score', 0), data.patient_id))
-            conn.commit()
-            conn.close()
+            try:
+                conn.execute("""
+                    INSERT INTO voice_checkins (timestamp_utc, transcript_text, sentiment_score, user_id)
+                    VALUES (?, ?, ?, ?)
+                """, (int(time.time()), data.transcript, result.get('sentiment_score', 0), data.patient_id))
+                conn.commit()
+            finally:
+                conn.close()
 
             return VoiceCheckInResponse(
                 sentiment_score=result.get('sentiment_score', 0),
@@ -1724,20 +1723,22 @@ async def get_clinician_summary(patient_id: str, period_days: int = 7):
     try:
         from agent_runtime import DB_PATH
         _conn = sqlite3.connect(DB_PATH)
-        _conn.row_factory = sqlite3.Row
-        summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(time.time()))
-        _conn.close()
-        # Sanitize NaN/Inf values that break JSON serialization
-        def _sanitize(obj):
-            if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
-                return 0.0
-            if isinstance(obj, dict):
-                return {k: _sanitize(v) for k, v in obj.items()}
-            if isinstance(obj, list):
-                return [_sanitize(v) for v in obj]
-            return obj
-        summary = _sanitize(summary)
-        return {"success": True, "patient_id": patient_id, "period_days": period_days, **summary}
+        try:
+            _conn.row_factory = sqlite3.Row
+            summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(time.time()))
+            # Sanitize NaN/Inf values that break JSON serialization
+            def _sanitize(obj):
+                if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+                    return 0.0
+                if isinstance(obj, dict):
+                    return {k: _sanitize(v) for k, v in obj.items()}
+                if isinstance(obj, list):
+                    return [_sanitize(v) for v in obj]
+                return obj
+            summary = _sanitize(summary)
+            return {"success": True, "patient_id": patient_id, "period_days": period_days, **summary}
+        finally:
+            _conn.close()
     except Exception as e:
         logger.exception(f"Clinician summary failed: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -1780,14 +1781,16 @@ async def get_agent_memory(patient_id: str):
     """View all memories for a patient (cross-session learned preferences and facts)."""
     try:
         # sqlite3 already imported at module level
-        db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
+        db = DB_PATH
         conn = sqlite3.connect(db)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            "SELECT * FROM agent_memory WHERE patient_id = ? ORDER BY updated_at DESC", (patient_id,)
-        ).fetchall()
-        conn.close()
-        return {"success": True, "patient_id": patient_id, "memories": [dict(r) for r in rows]}
+        try:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                "SELECT * FROM agent_memory WHERE patient_id = ? ORDER BY updated_at DESC", (patient_id,)
+            ).fetchall()
+            return {"success": True, "patient_id": patient_id, "memories": [dict(r) for r in rows]}
+        finally:
+            conn.close()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -1808,12 +1811,14 @@ async def delete_memory(patient_id: str, memory_id: int):
     """Delete a specific memory."""
     try:
         # sqlite3 already imported at module level
-        db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
+        db = DB_PATH
         conn = sqlite3.connect(db)
-        conn.execute("DELETE FROM agent_memory WHERE id = ? AND patient_id = ?", (memory_id, patient_id))
-        conn.commit()
-        conn.close()
-        return {"success": True, "deleted": memory_id}
+        try:
+            conn.execute("DELETE FROM agent_memory WHERE id = ? AND patient_id = ?", (memory_id, patient_id))
+            conn.commit()
+            return {"success": True, "deleted": memory_id}
+        finally:
+            conn.close()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -1881,16 +1886,18 @@ async def get_safety_log(patient_id: str):
     """View safety classifier flags for a patient."""
     try:
         # sqlite3 already imported at module level
-        db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
+        db = DB_PATH
         conn = sqlite3.connect(db)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT * FROM agent_actions_log
-            WHERE patient_id = ? AND action_type = 'safety_flag'
-            ORDER BY timestamp_utc DESC LIMIT 50
-        """, (patient_id,)).fetchall()
-        conn.close()
-        return {"success": True, "patient_id": patient_id, "safety_events": [dict(r) for r in rows]}
+        try:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute("""
+                SELECT * FROM agent_actions_log
+                WHERE patient_id = ? AND action_type = 'safety_flag'
+                ORDER BY timestamp_utc DESC LIMIT 50
+            """, (patient_id,)).fetchall()
+            return {"success": True, "patient_id": patient_id, "safety_events": [dict(r) for r in rows]}
+        finally:
+            conn.close()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -1925,15 +1932,17 @@ async def get_proactive_history(patient_id: str):
     """View past proactive interactions for a patient."""
     try:
         # sqlite3 already imported at module level
-        db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
+        db = DB_PATH
         conn = sqlite3.connect(db)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT * FROM proactive_checkins WHERE patient_id = ?
-            ORDER BY created_at DESC LIMIT 50
-        """, (patient_id,)).fetchall()
-        conn.close()
-        return {"success": True, "patient_id": patient_id, "history": [dict(r) for r in rows]}
+        try:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute("""
+                SELECT * FROM proactive_checkins WHERE patient_id = ?
+                ORDER BY created_at DESC LIMIT 50
+            """, (patient_id,)).fetchall()
+            return {"success": True, "patient_id": patient_id, "history": [dict(r) for r in rows]}
+        finally:
+            conn.close()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -1959,20 +1968,26 @@ async def caregiver_dashboard(patient_id: str):
         profile = _get_patient_profile_from_db(patient_id)
         burden = compute_caregiver_burden_score(patient_id)
         # sqlite3 already imported at module level
-        db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
+        db = DB_PATH
         conn = sqlite3.connect(db)
-        conn.row_factory = sqlite3.Row
-        alerts = conn.execute("""
-            SELECT * FROM caregiver_alerts WHERE patient_id = ?
-            ORDER BY timestamp_utc DESC LIMIT 20
-        """, (patient_id,)).fetchall()
-        conn.close()
-        return {
-            "success": True, "patient_id": patient_id,
-            "patient_name": profile.get("name", patient_id),
-            "burden": burden,
-            "recent_alerts": [dict(a) for a in alerts],
-        }
+        try:
+            conn.row_factory = sqlite3.Row
+            try:
+                alerts = conn.execute("""
+                    SELECT * FROM caregiver_alerts WHERE patient_id = ?
+                    ORDER BY timestamp_utc DESC LIMIT 20
+                """, (patient_id,)).fetchall()
+                recent_alerts = [dict(a) for a in alerts]
+            except Exception:
+                recent_alerts = []  # Table may not exist yet
+            return {
+                "success": True, "patient_id": patient_id,
+                "patient_name": profile.get("name", patient_id),
+                "burden": burden,
+                "recent_alerts": recent_alerts,
+            }
+        finally:
+            conn.close()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -2113,35 +2128,36 @@ def _auto_init_database():
 
     # Check if core tables exist
     conn = sqlite3.connect(DB_PATH)
-    tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
-    has_schema = "patients" in tables and "glucose_readings" in tables
+    try:
+        tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+        has_schema = "patients" in tables and "glucose_readings" in tables
 
-    if not has_schema:
-        logger.info("Database missing core tables — loading schema...")
-        if os.path.exists(schema_path):
-            with open(schema_path, "r", encoding="utf-8") as f:
-                conn.executescript(f.read())
-            logger.info("Schema loaded successfully.")
-        else:
-            logger.warning(f"Schema file not found: {schema_path}")
-            conn.close()
-            return
+        if not has_schema:
+            logger.info("Database missing core tables — loading schema...")
+            if os.path.exists(schema_path):
+                with open(schema_path, "r", encoding="utf-8") as f:
+                    conn.executescript(f.read())
+                logger.info("Schema loaded successfully.")
+            else:
+                logger.warning(f"Schema file not found: {schema_path}")
+                return
 
-    # Check if demo data exists
-    patient_row = conn.execute("SELECT COUNT(*) FROM patients").fetchone()
-    patient_count = patient_row[0] if patient_row else 0
-    if patient_count == 0:
-        logger.info("No patients found — seeding demo data...")
-        _seed_demo_patients(conn)
+        # Check if demo data exists
+        patient_row = conn.execute("SELECT COUNT(*) FROM patients").fetchone()
+        patient_count = patient_row[0] if patient_row else 0
+        if patient_count == 0:
+            logger.info("No patients found — seeding demo data...")
+            _seed_demo_patients(conn)
 
-    glucose_row = conn.execute("SELECT COUNT(*) FROM glucose_readings").fetchone()
-    glucose_count = glucose_row[0] if glucose_row else 0
-    if glucose_count == 0:
+        glucose_row = conn.execute("SELECT COUNT(*) FROM glucose_readings").fetchone()
+        glucose_count = glucose_row[0] if glucose_row else 0
+        need_scenario = glucose_count == 0
+    finally:
+        conn.close()
+
+    if need_scenario:
         logger.info("No glucose data — injecting demo scenario...")
-        conn.close()
         _seed_demo_scenario()
-    else:
-        conn.close()
 
 
 def _seed_demo_patients(conn):
@@ -2195,4 +2211,4 @@ def _seed_demo_scenario():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True, timeout_keep_alive=65)

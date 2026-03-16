@@ -18,9 +18,12 @@ Backend priority:
 """
 
 import json
+import logging
 import os
 import requests
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Try to import OpenAI client (for SEA-LION official API)
 try:
@@ -81,7 +84,9 @@ class SeaLionInterface:
         if OPENAI_AVAILABLE and self.sealion_api_key:
             self.sealion_client = OpenAI(
                 api_key=self.sealion_api_key,
-                base_url=SEALION_API_BASE
+                base_url=SEALION_API_BASE,
+                max_retries=0,
+                timeout=10,
             )
 
         # --- Backend 2: Cloudflare Workers AI (fallback) ---
@@ -95,17 +100,17 @@ class SeaLionInterface:
         if GENAI_AVAILABLE and self.gemini_key:
             # Don't call genai.configure() here — GeminiIntegration already configures it globally.
             # Calling it again overwrites global Gemini state and can cause race conditions.
-            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+            self.gemini_model = genai.GenerativeModel('gemini-2.5-flash')
 
         # Log which backend is active
         if self.sealion_client:
-            print(f"SEA-LION: Using REAL SEA-LION v4 27B via Official API ({SEALION_API_BASE})")
+            logger.info(f"SEA-LION: Using REAL SEA-LION v4 27B via Official API ({SEALION_API_BASE})")
         elif self.use_cloudflare:
-            print("SEA-LION: Using REAL SEA-LION v4 27B via Cloudflare Workers AI")
+            logger.info("SEA-LION: Using REAL SEA-LION v4 27B via Cloudflare Workers AI")
         elif self.gemini_model:
-            print("SEA-LION: Using Gemini mock (no SEA-LION API key set)")
+            logger.info("SEA-LION: Using Gemini mock (no SEA-LION API key set)")
         else:
-            print("SEA-LION: Running in OFFLINE mode")
+            logger.info("SEA-LION: Running in OFFLINE mode")
 
     def translate_message(self, core_message, target_dialect="singlish_elder", mood="concerned"):
         """
@@ -121,6 +126,9 @@ class SeaLionInterface:
         Returns:
             str: The culturally aligned message (e.g., "Uncle, numbers no good lah!")
         """
+        if not core_message or not isinstance(core_message, str):
+            return ""
+
         system_prompt = SINGLISH_SYSTEM_PROMPT.format(
             dialect=target_dialect.upper(),
             mood=mood.upper()
@@ -157,11 +165,12 @@ class SeaLionInterface:
                     {"role": "user", "content": user_message}
                 ],
                 max_tokens=300,
-                temperature=0.7
+                temperature=0.7,
+                timeout=10
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"SEA-LION API: Request failed: {e}")
+            logger.warning(f"SEA-LION API: Request failed (falling back to Gemini mock): {e}")
             return None
 
     def _call_cloudflare(self, system_prompt, user_message):
@@ -176,7 +185,7 @@ class SeaLionInterface:
         }
 
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
             response.raise_for_status()
             data = response.json()
 
@@ -193,17 +202,17 @@ class SeaLionInterface:
                 if isinstance(result, str):
                     return result.strip()
 
-            print(f"SEA-LION CF: Unexpected response: {json.dumps(data)[:200]}")
+            logger.warning(f"SEA-LION CF: Unexpected response: {json.dumps(data)[:200]}")
             return None
 
         except requests.exceptions.Timeout:
-            print("SEA-LION CF: Request timed out (30s)")
+            logger.warning("SEA-LION CF: Request timed out (10s)")
             return None
         except requests.exceptions.RequestException as e:
-            print(f"SEA-LION CF: Request failed: {e}")
+            logger.warning(f"SEA-LION CF: Request failed: {e}")
             return None
         except (KeyError, ValueError) as e:
-            print(f"SEA-LION CF: Parse error: {e}")
+            logger.warning(f"SEA-LION CF: Parse error: {e}")
             return None
 
     def _call_gemini(self, system_prompt, user_message):
@@ -213,7 +222,7 @@ class SeaLionInterface:
             response = self.gemini_model.generate_content(full_prompt)
             return response.text.strip()
         except Exception as e:
-            print(f"SEA-LION Gemini fallback error: {e}")
+            logger.warning(f"SEA-LION Gemini fallback error: {e}")
             return None
 
     def _offline_mock(self, core_message, mood):
@@ -274,7 +283,7 @@ Write it as a warm, clear message to a family member in Singlish. 2-3 sentences 
         elif self.use_cloudflare:
             return {"backend": "cloudflare_sealion_v4_27b", "model": SEALION_CF_MODEL, "status": "real"}
         elif self.gemini_model:
-            return {"backend": "gemini_mock", "model": "gemini-2.0-flash", "status": "simulated"}
+            return {"backend": "gemini_mock", "model": "gemini-2.5-flash", "status": "simulated"}
         else:
             return {"backend": "offline_mock", "model": None, "status": "offline"}
 

@@ -372,8 +372,9 @@ def _ensure_appointments_table():
     global _appointments_table_initialized
     if _appointments_table_initialized:
         return
-    conn = sqlite3.connect(DB_PATH)
+    conn = None
     try:
+        conn = sqlite3.connect(DB_PATH)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS appointments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -391,14 +392,16 @@ def _ensure_appointments_table():
         conn.commit()
         _appointments_table_initialized = True
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 def _store_appointment_in_db(patient_id: str, booking: Dict):
     """Store appointment in database for audit trail."""
     _ensure_appointments_table()
-    conn = sqlite3.connect(DB_PATH)
+    conn = None
     try:
+        conn = sqlite3.connect(DB_PATH)
         conn.execute("""
             INSERT INTO appointments
             (patient_id, appointment_datetime, doctor_name, clinic_location, reason,
@@ -417,7 +420,8 @@ def _store_appointment_in_db(patient_id: str, booking: Dict):
         ))
         conn.commit()
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 def _estimate_travel_time(clinic: str) -> str:

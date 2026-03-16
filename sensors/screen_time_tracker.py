@@ -41,8 +41,9 @@ class ScreenTimeTracker:
 
         # Simulating "Usage this hour":
         # In real life, we diff total_time_visible.
-        # Use mock OS stats as basis for hourly usage (capped at 1 hour)
-        usage_this_hour = min(current_total, 3600)
+        # Mock: derive a realistic hourly fraction from the daily total (varies per hour)
+        hourly_fraction = random.uniform(0.05, 0.15)
+        usage_this_hour = min(int(current_total * hourly_fraction), 3600)
 
         self._save_to_db(usage_this_hour)
         
