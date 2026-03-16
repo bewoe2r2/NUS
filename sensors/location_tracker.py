@@ -17,12 +17,13 @@ import time
 import sqlite3
 import math
 import random
+import os
 
 DB_PATH = "nexus_health.db"
 
-# Mock Home Location (Singapore City Hall approx)
-HOME_LAT = 1.2931
-HOME_LON = 103.8517
+# Default Home Location (Singapore City Hall approx — configurable per patient via env vars)
+HOME_LAT = float(os.environ.get("BEWO_HOME_LAT", "1.2931"))
+HOME_LON = float(os.environ.get("BEWO_HOME_LON", "103.8517"))
 
 class LocationTracker:
     def __init__(self, db_path=DB_PATH):

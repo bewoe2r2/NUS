@@ -81,18 +81,7 @@ class StepCounter:
             now = int(time.time())
             hour_start = now - (now % 3600)
             
-            # Upsert logic: Add to existing count if exists
-            cursor.execute("""
-                INSERT INTO passive_metrics (window_start_utc, window_end_utc, step_count)
-                VALUES (?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET step_count = step_count + ?
-            """, (hour_start, now, self.step_count, self.step_count))
-            
-            # Since we don't have a unique constraint on window_start for the ID, 
-            # the simple INSERT might create duplicates. 
-            # Better approach: Check if row exists for this hour.
-            
-            # Check existing
+            # Check existing row for this hour window, then upsert
             row = cursor.execute("""
                 SELECT id, step_count FROM passive_metrics 
                 WHERE window_start_utc = ? 

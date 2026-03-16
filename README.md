@@ -282,7 +282,7 @@ The CI pipeline (`.github/workflows/ci.yml`) runs backend tests, frontend lint, 
 | API server | 1,730 |
 | Frontend components | 4,091 |
 | Tests | 1,200+ |
-| **Total** | **~20,000** |
+| **Total** | **~43,000+** |
 
 ---
 

@@ -185,6 +185,7 @@ class ClinicalEngine:
             'glucose_max': round(max(glucose_vals), 1) if glucose_vals else 0,
             'adherence_pct': int(sum(adherence_vals)/len(adherence_vals) * 100) if adherence_vals else 0,
             'sleep_quality': sleep_val,
+            'sleep_hours': sleep_val,  # BUG-05: alias so draft_sbar can read either key
             'steps': steps_val
         }
         return metrics

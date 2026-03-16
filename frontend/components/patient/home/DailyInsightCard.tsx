@@ -109,6 +109,7 @@ export function DailyInsightCard({ state, riskScore, lastUpdated, trend = "STABL
                 <div className="flex flex-col items-center justify-center p-2 border-r border-neutral-200/50">
                     <span className="text-[10px] uppercase font-bold text-neutral-400 mb-1">Trend (48h)</span>
                     <div className="flex items-center gap-1">
+                        {/* TrendingDown = risk going down = improving; TrendingUp = risk rising = declining */}
                         {trend === "IMPROVING" && <TrendingDown size={18} className="text-success-500" />}
                         {trend === "DECLINING" && <TrendingUp size={18} className="text-error-500" />}
                         {trend === "STABLE" && <Minus size={18} className="text-neutral-400" />}

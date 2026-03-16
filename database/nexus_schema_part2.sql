@@ -1,4 +1,6 @@
 
+-- DEPRECATED: This file is superseded by nexus_schema.sql which contains
+-- all tables with the latest column definitions. Kept for reference only.
 -- ==============================================================================
 -- 7. EXTERNAL DEVICE DATA (Tier 2 & 3)
 -- ==============================================================================

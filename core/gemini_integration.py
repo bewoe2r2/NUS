@@ -1760,8 +1760,8 @@ Return your response as valid JSON following the format in the system prompt.
                 amount = min(params.get('amount', 1), 5)  # Cap at $5
                 conn.execute("""
                     UPDATE voucher_tracker
-                    SET current_value = MIN(current_value + ?, 10.0),
-                        bonus_earned = bonus_earned + ?
+                    SET current_value = MIN(COALESCE(current_value, 0) + ?, 10.0),
+                        bonus_earned = COALESCE(bonus_earned, 0) + ?
                     WHERE user_id = ?
                 """, (amount, amount, user_id))
                 conn.commit()

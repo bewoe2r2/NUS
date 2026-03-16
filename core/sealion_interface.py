@@ -236,10 +236,10 @@ class SeaLionInterface:
 Remove all medical jargon. Focus on what the caregiver can DO.
 
 SBAR:
-Situation: {sbar_data.get('situation', 'N/A')}
-Background: {sbar_data.get('background', 'N/A')}
-Assessment: {sbar_data.get('assessment', 'N/A')}
-Recommendation: {sbar_data.get('recommendation', 'N/A')}
+Situation: {sbar_data.get('Situation', sbar_data.get('situation', 'N/A'))}
+Background: {sbar_data.get('Background', sbar_data.get('background', 'N/A'))}
+Assessment: {sbar_data.get('Assessment', sbar_data.get('assessment', 'N/A'))}
+Recommendation: {sbar_data.get('Recommendation', sbar_data.get('recommendation', 'N/A'))}
 
 Write it as a warm, clear message to a family member in Singlish. 2-3 sentences max."""
 

@@ -353,8 +353,15 @@ def _execute_delivery(
             "status": status,
         })
 
-        # Critical: also call if primary method was SMS
-        if severity == "critical" and delivery_method == "sms":
+        # Critical: always send both SMS and call
+        if severity == "critical" and delivery_method != "sms":
+            sms_status = provider.send_sms(recipient=caregiver, message=message, severity=severity)
+            recipients.append({
+                "name": caregiver["name"],
+                "method": "sms",
+                "status": sms_status,
+            })
+        if severity == "critical" and delivery_method != "call":
             call_status = provider.send_call(recipient=caregiver, message=message, severity=severity)
             recipients.append({
                 "name": caregiver["name"],

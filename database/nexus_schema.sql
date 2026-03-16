@@ -339,7 +339,33 @@ CREATE INDEX IF NOT EXISTS idx_state_alerts_time ON state_change_alerts(user_id,
 CREATE INDEX IF NOT EXISTS idx_state_alerts_pending ON state_change_alerts(nurse_notified) WHERE nurse_notified = 0;
 
 -- ==============================================================================
--- 17. Update hmm_states to include new columns
+-- 17. CAREGIVER CONTACTS
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS caregiver_contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    phone TEXT,
+    email TEXT,
+    priority TEXT DEFAULT 'primary',  -- primary / secondary
+    preferred_method TEXT DEFAULT 'sms'
+);
+
+-- ==============================================================================
+-- 18. AGENT MEMORY (Cross-session learning)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS agent_memory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    memory_type TEXT NOT NULL,  -- episodic / semantic / preference
+    content TEXT NOT NULL,
+    timestamp_utc INTEGER NOT NULL,
+    relevance_score REAL DEFAULT 1.0
+);
+CREATE INDEX IF NOT EXISTS idx_agent_memory_user ON agent_memory(user_id, memory_type);
+
+-- ==============================================================================
+-- 19. Update hmm_states to include new columns
 -- ==============================================================================
 -- Add columns if they don't exist (SQLite doesn't support IF NOT EXISTS for ALTER)
 -- These will be created fresh if table is recreated

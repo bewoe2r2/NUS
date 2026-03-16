@@ -382,6 +382,8 @@ export const TechnologyPage = () => (
         <ToolCard icon={Award} name="celebrate_streak" description="Streak milestone celebrations with voucher bonuses" />
         <ToolCard icon={FileText} name="generate_weekly_report" description="Weekly health summary with letter grade" />
         <ToolCard icon={Settings} name="adjust_nudge_schedule" description="Shift reminders to learned optimal times" />
+        <ToolCard icon={FileText} name="generate_clinician_summary" description="SBAR clinical notes for nurse handoff" />
+        <ToolCard icon={AlertTriangle} name="check_drug_interactions" description="39 drug-class mappings with contraindication blocking" />
       </motion.div>
     </section>
   </motion.div>

@@ -42,7 +42,7 @@ import math
 import json
 import time
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import numpy as np
 
 # ==============================================================================
@@ -1355,6 +1355,36 @@ class HMMEngine:
             if hr > 95 or hr < 50:
                 return 'WARNING'
 
+        # Check HRV (low HRV = autonomic stress)
+        hrv = obs.get('hrv')
+        if hrv is not None:
+            if hrv < 15:
+                return 'WARNING'
+
+        # Check sleep quality (0-10 scale)
+        sleep = obs.get('sleep_quality')
+        if sleep is not None:
+            if sleep < 3:
+                return 'WARNING'
+
+        # Check steps (very low activity)
+        steps = obs.get('steps_daily')
+        if steps is not None:
+            if steps < 500:
+                return 'WARNING'
+
+        # Check carbs intake (very high)
+        carbs = obs.get('carbs_daily')
+        if carbs is not None:
+            if carbs > 300:
+                return 'WARNING'
+
+        # Check social engagement (isolation indicator)
+        social = obs.get('social_engagement')
+        if social is not None:
+            if social < 0.1:
+                return 'WARNING'
+
         # Default to STABLE if no warning signs
         return 'STABLE'
 
@@ -1693,7 +1723,7 @@ class HMMEngine:
             day_start = t - (t % 86400)  # Start of the day
             
             # Extract hour for Dawn Phenomenon / Time-Aware Logic (SGT = UTC+8)
-            dt_obj = datetime.utcfromtimestamp(t)
+            dt_obj = datetime.fromtimestamp(t, tz=timezone.utc)
             sgt_hour = (dt_obj.hour + 8) % 24  # Singapore Time
             obs = {'hour_of_day': sgt_hour}
 
@@ -1781,7 +1811,17 @@ class HMMEngine:
                         WHERE taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
                     """, (t - 7 * 86400, t)).fetchone()
 
+                # Default to 2 doses/day — overridden per patient if medication schedule is available
                 scheduled_doses_daily = 2
+                try:
+                    med_sched_row = cursor.execute(
+                        "SELECT COUNT(*) as cnt FROM medications WHERE user_id = ?",
+                        (obs.get('user_id', 'P001'),)
+                    ).fetchone()
+                    if med_sched_row and med_sched_row[0] > 0:
+                        scheduled_doses_daily = med_sched_row[0]
+                except Exception:
+                    pass  # medications table may not exist; use default
                 
                 adherence_24h = 0.0
                 if med_row_24h and med_row_24h['taken'] is not None:

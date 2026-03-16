@@ -50,12 +50,28 @@ class ScreenTimeTracker:
         Derives sleep quality (0-10) based on screen usage.
         Logic: High nighttime usage = Bad sleep.
         """
-        # Mocking "Night Time" usage (10pm - 6am)
-        night_usage_seconds = random.randint(0, 7200) # up to 2 hours
+        # Try to use stored screen time data from DB
+        night_usage_seconds = 0
+        try:
+            conn = sqlite3.connect(self.db_path)
+            now = int(time.time())
+            # Look for screen time in the 10pm-6am window (last night)
+            night_start = now - (now % 86400) - 2 * 3600  # Yesterday 10pm approx
+            night_end = now - (now % 86400) + 6 * 3600    # Today 6am approx
+            row = conn.execute(
+                "SELECT SUM(screen_time_seconds) FROM passive_metrics WHERE window_start_utc >= ? AND window_start_utc < ?",
+                (night_start, night_end)
+            ).fetchone()
+            conn.close()
+            if row and row[0] is not None:
+                night_usage_seconds = row[0]
+            else:
+                # Fallback: mock if no data yet
+                night_usage_seconds = random.randint(0, 7200)
+        except Exception:
+            night_usage_seconds = random.randint(0, 7200)
+
         night_hours = night_usage_seconds / 3600.0
-        
-        # Base score 10
-        # Deduct 2 points per hour of night use
         score = max(0, 10.0 - (night_hours * 2.0))
         return round(score, 1)
 

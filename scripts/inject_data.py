@@ -72,7 +72,7 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
             conn.execute("""
                 INSERT INTO glucose_readings (user_id, reading_value, reading_timestamp_utc, source_type)
                 VALUES (?, ?, ?, ?)
-            """, ('demo_user', obs['glucose_avg'], t + 60, 'MANUAL'))
+            """, ('P001', obs['glucose_avg'], t + 60, 'MANUAL'))
 
         # ===== CGM READINGS (PREMIUM only) =====
         # Provides continuous glucose data every 5 minutes
@@ -89,7 +89,7 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
                 conn.execute("""
                     INSERT INTO cgm_readings (user_id, glucose_value, timestamp_utc, device_id)
                     VALUES (?, ?, ?, ?)
-                """, ('demo_user', cgm_val, t + (j * 300), 'dexcom_g7'))
+                """, ('P001', cgm_val, t + (j * 300), 'dexcom_g7'))
 
         # ===== PASSIVE METRICS (ALL tiers) =====
         # From phone sensors: steps, screen time, social interactions
@@ -122,7 +122,7 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
                     conn.execute("""
                         INSERT INTO food_logs (user_id, timestamp_utc, meal_type, carbs_grams, source_type)
                         VALUES (?, ?, ?, ?, ?)
-                    """, ('demo_user', meal_time, meal, carbs_per_meal, 'PHOTO_GEMINI'))
+                    """, ('P001', meal_time, meal, carbs_per_meal, 'PHOTO_GEMINI'))
 
         # ===== FITBIT DATA (ENHANCED & PREMIUM only) =====
         if tier in ["PREMIUM", "ENHANCED"]:
@@ -136,7 +136,7 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
                     INSERT OR REPLACE INTO fitbit_activity
                     (user_id, date, steps, active_minutes, sedentary_minutes, calories_burned)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, ('demo_user', day_start,
+                """, ('P001', day_start,
                       int(steps_daily),
                       active_min,
                       max(0, 480 - active_min),  # Sedentary = 8 hours minus active
@@ -150,7 +150,7 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
                     INSERT OR REPLACE INTO fitbit_heart_rate
                     (user_id, date, resting_heart_rate, average_heart_rate, hrv_rmssd)
                     VALUES (?, ?, ?, ?, ?)
-                """, ('demo_user', day_start,
+                """, ('P001', day_start,
                       int(hr_resting) if hr_resting else None,
                       int(hr_resting + 7) if hr_resting else None,  # avg is slightly higher than resting
                       round(hrv_rmssd, 1) if hrv_rmssd else None))
@@ -161,7 +161,7 @@ def inject_tiered_scenario_to_db(observations, tier="PREMIUM", days=14):
                     INSERT OR REPLACE INTO fitbit_sleep
                     (user_id, date, total_sleep_minutes, sleep_score)
                     VALUES (?, ?, ?, ?)
-                """, ('demo_user', day_start, int(sleep_q * 50), sleep_q * 10))  # 7 hours sleep at quality 7
+                """, ('P001', day_start, int(sleep_q * 50), sleep_q * 10))  # 7 hours sleep at quality 7
 
     conn.commit()
     conn.close()

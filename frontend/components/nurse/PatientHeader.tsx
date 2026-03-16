@@ -31,7 +31,7 @@ export function PatientHeader({
                     <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wider font-medium">
                         <span>ID: {patientId}</span>
                         <span>•</span>
-                        <span>{age} Y.O. Male</span>
+                        <span>{age} Y.O.</span>
                         <span>•</span>
                         <span>Type 2 Diabetes</span>
                     </div>

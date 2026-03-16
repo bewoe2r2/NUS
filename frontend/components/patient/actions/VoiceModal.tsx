@@ -32,9 +32,9 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
     const recognitionRef = useRef<any>(null);
 
     useEffect(() => {
-        if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
-            // @ts-ignore
-            const recognition = new window.webkitSpeechRecognition();
+        const SpeechRecognition = typeof window !== "undefined" && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = true;
             recognition.lang = "en-US";

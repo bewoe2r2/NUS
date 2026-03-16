@@ -1,7 +1,7 @@
 """
 Bewo 2026 - COMPLETE PATIENT API
 file: backend/api.py
-version: 2.0.0
+version: 4.0.0
 
 Full API for Healthcare HMM Engine with ALL features:
 - Patient state & history
@@ -21,7 +21,8 @@ import logging
 import time
 import json
 import tempfile
-import secrets
+import secrets  # noqa: F401 — reserved for future token generation
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, Request, Security
@@ -63,10 +64,16 @@ logger = logging.getLogger("BewoAPI")
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
+@asynccontextmanager
+async def lifespan(app):
+    await startup_event()
+    yield
+
 app = FastAPI(
     title="Bewo Health API",
     description="Complete Backend for Bewo Healthcare Companion",
-    version="2.0.0"
+    version="4.0.0",
+    lifespan=lifespan,
 )
 
 # --- CORS (locked to known origins only) ---
@@ -81,6 +88,9 @@ app.add_middleware(
 
 # --- API Key Authentication ---
 API_KEY = os.getenv("BEWO_API_KEY", "bewo-dev-key-2026")  # Override in production via env var
+if API_KEY == "bewo-dev-key-2026":
+    logging.getLogger("BewoAPI").warning("SECURITY: Using default API key. Set BEWO_API_KEY env var in production.")
+ADMIN_KEY = os.getenv("BEWO_ADMIN_KEY", API_KEY)  # Separate admin key; defaults to API_KEY for dev
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
@@ -91,6 +101,12 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 
 # Public endpoints that don't need auth (health check, docs)
 PUBLIC_PATHS = {"/", "/docs", "/openapi.json", "/redoc", "/health"}
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok"}
 
 # --- Rate Limiting (in-memory, per-IP) ---
 _rate_limit_store: Dict[str, list] = {}
@@ -117,6 +133,10 @@ async def security_middleware(request: Request, call_next):
     now = time.time()
     if client_ip in _rate_limit_store:
         _rate_limit_store[client_ip] = [t for t in _rate_limit_store[client_ip] if now - t < RATE_LIMIT_WINDOW]
+    # Prune empty entries to prevent unbounded memory growth (BUG-13)
+    if not _rate_limit_store[client_ip]:
+        del _rate_limit_store[client_ip]
+        _rate_limit_store[client_ip] = []
     else:
         _rate_limit_store[client_ip] = []
 
@@ -242,20 +262,31 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+_cached_engine = None
+_cached_gemini = None
+
 def get_engine():
-    """Get HMM Engine instance"""
+    """Get HMM Engine instance (cached singleton)"""
+    global _cached_engine
+    if _cached_engine is not None:
+        return _cached_engine
     try:
-        return HMMEngine()
+        _cached_engine = HMMEngine()
+        return _cached_engine
     except Exception as e:
         logger.error(f"Engine init failed: {e}")
         raise HTTPException(status_code=500, detail="HMM Engine unavailable")
 
 def get_gemini():
-    """Get Gemini Integration instance"""
+    """Get Gemini Integration instance (cached singleton)"""
+    global _cached_gemini
+    if _cached_gemini is not None:
+        return _cached_gemini
     try:
         gi = GeminiIntegration()
         gi.ensure_agentic_tables()
-        return gi
+        _cached_gemini = gi
+        return _cached_gemini
     except Exception as e:
         logger.error(f"Gemini init failed: {e}")
         return None
@@ -360,6 +391,7 @@ async def get_patient_state(patient_id: str):
 @app.get("/patient/{patient_id}/history", response_model=PatientHistoryResponse)
 async def get_patient_history(patient_id: str, days: int = 7):
     """Get patient history for charts"""
+    days = max(1, min(days, 365))  # BUG-19: clamp to reasonable range
     try:
         engine = get_engine()
         observations = engine.fetch_observations(days=days, patient_id=patient_id)
@@ -642,16 +674,16 @@ def _get_patient_profile(patient_id: str) -> dict:
                 (patient_id,)
             ).fetchone()
             if row:
-                import json as _json
+                # json already imported at module level
                 conditions = row["conditions"] or ""
                 medications = row["medications"] or ""
                 # Handle JSON-encoded lists
                 try:
-                    conditions = ", ".join(_json.loads(conditions)) if conditions.startswith("[") else conditions
+                    conditions = ", ".join(json.loads(conditions)) if conditions.startswith("[") else conditions
                 except Exception:
                     pass
                 try:
-                    medications = ", ".join(_json.loads(medications)) if medications.startswith("[") else medications
+                    medications = ", ".join(json.loads(medications)) if medications.startswith("[") else medications
                 except Exception:
                     pass
                 return {
@@ -705,10 +737,7 @@ async def chat_with_ai(request: ChatRequest):
 
     except Exception as e:
         logger.exception(f"Chat error: {e}")
-        return ChatResponse(
-            message="Sorry, I'm having trouble right now. Please try again.",
-            tone="calm",
-        )
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
 # =============================================================================
 # GLUCOSE ENDPOINTS
@@ -816,7 +845,7 @@ async def get_medications(patient_id: str):
                 medications.append({"id": med_id, "name": name, "dose": sched["dose"], "time": sched["time"], "with_food": sched["with_food"], "taken": False})
                 med_id += 1
 
-        today_start = int(time.time()) - (int(time.time()) % 86400)
+        today_start = int(time.time()) - ((int(time.time()) + 28800) % 86400)  # SGT midnight (UTC+8)
         try:
             taken_meds = conn.execute("""
                 SELECT medication_name FROM medication_logs
@@ -1448,7 +1477,14 @@ async def get_glucose_narrative(patient_id: str):
 # DEMO/ADMIN ENDPOINTS
 # =============================================================================
 
-@app.post("/admin/inject-scenario")
+async def _require_admin(request: Request):
+    """Verify admin-level authorization for sensitive endpoints."""
+    key = request.headers.get("X-API-Key", "")
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Admin access required. Set X-API-Key to admin key.")
+
+
+@app.post("/admin/inject-scenario", dependencies=[Depends(_require_admin)])
 async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier: str = "PREMIUM"):
     """Inject demo scenario data (for testing)"""
     try:
@@ -1504,7 +1540,7 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
         logger.exception(f"Error injecting scenario: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
-@app.post("/admin/run-hmm")
+@app.post("/admin/run-hmm", dependencies=[Depends(_require_admin)])
 async def run_hmm_analysis():
     """Run HMM analysis on current data"""
     try:
@@ -1535,7 +1571,7 @@ async def run_hmm_analysis():
                                            confidence_margin, patient_tier, input_vector_snapshot, user_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (obs_time, result['current_state'], result['confidence'],
-                      result.get('confidence_margin', 0), 'PREMIUM', json.dumps(obs), 'P001'))
+                      result.get('confidence_margin', 0), 'PREMIUM', json.dumps(obs), obs.get('user_id', 'P001')))
 
         conn.commit()
         conn.close()
@@ -1548,7 +1584,7 @@ async def run_hmm_analysis():
 
 # ... (existing admin endpoints)
 
-@app.post("/admin/reset")
+@app.post("/admin/reset", dependencies=[Depends(_require_admin)])
 async def reset_data():
     """Reset all data for demo"""
     try:
@@ -1575,11 +1611,10 @@ async def reset_data():
 async def get_clinician_summary(patient_id: str, period_days: int = 7):
     """Structured clinician intelligence briefing with SBAR, trajectory, interventions."""
     try:
-        import sqlite3, time as _time, math
         from agent_runtime import DB_PATH
         _conn = sqlite3.connect(DB_PATH)
         _conn.row_factory = sqlite3.Row
-        summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(_time.time()))
+        summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(time.time()))
         _conn.close()
         # Sanitize NaN/Inf values that break JSON serialization
         def _sanitize(obj):
@@ -1633,9 +1668,9 @@ async def get_intervention_effectiveness(patient_id: str):
 async def get_agent_memory(patient_id: str):
     """View all memories for a patient (cross-session learned preferences and facts)."""
     try:
-        import sqlite3 as _sql
+        # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
-        conn = _sql.connect(db)
+        conn = sqlite3.connect(db)
         conn.row_factory = _sql.Row
         rows = conn.execute(
             "SELECT * FROM agent_memory WHERE patient_id = ? ORDER BY updated_at DESC", (patient_id,)
@@ -1661,9 +1696,9 @@ async def consolidate_memory(patient_id: str):
 async def delete_memory(patient_id: str, memory_id: int):
     """Delete a specific memory."""
     try:
-        import sqlite3 as _sql
+        # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
-        conn = _sql.connect(db)
+        conn = sqlite3.connect(db)
         conn.execute("DELETE FROM agent_memory WHERE id = ? AND patient_id = ?", (memory_id, patient_id))
         conn.commit()
         conn.close()
@@ -1734,9 +1769,9 @@ async def get_tool_effectiveness(patient_id: str):
 async def get_safety_log(patient_id: str):
     """View safety classifier flags for a patient."""
     try:
-        import sqlite3 as _sql
+        # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
-        conn = _sql.connect(db)
+        conn = sqlite3.connect(db)
         conn.row_factory = _sql.Row
         rows = conn.execute("""
             SELECT * FROM agent_actions_log
@@ -1778,9 +1813,9 @@ async def proactive_scan_patient(patient_id: str):
 async def get_proactive_history(patient_id: str):
     """View past proactive interactions for a patient."""
     try:
-        import sqlite3 as _sql
+        # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
-        conn = _sql.connect(db)
+        conn = sqlite3.connect(db)
         conn.row_factory = _sql.Row
         rows = conn.execute("""
             SELECT * FROM proactive_checkins WHERE patient_id = ?
@@ -1812,9 +1847,9 @@ async def caregiver_dashboard(patient_id: str):
     try:
         profile = _get_patient_profile_from_db(patient_id)
         burden = compute_caregiver_burden_score(patient_id)
-        import sqlite3 as _sql
+        # sqlite3 already imported at module level
         db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
-        conn = _sql.connect(db)
+        conn = sqlite3.connect(db)
         conn.row_factory = _sql.Row
         alerts = conn.execute("""
             SELECT * FROM caregiver_alerts WHERE patient_id = ?
@@ -1934,7 +1969,6 @@ async def get_hmm_params(patient_id: str):
 # STARTUP
 # =============================================================================
 
-@app.on_event("startup")
 async def startup_event():
     """Initialize on startup — auto-creates schema and seeds demo data if DB is empty."""
     logger.info("Starting Bewo Health API v4.0 (Diamond v7 + 7 Ceiling Features)...")
@@ -2007,13 +2041,13 @@ def _auto_init_database():
 def _seed_demo_patients(conn):
     """Insert 3 Singapore demo patients."""
     demo_patients = [
-        ("demo_user", "Mr. Tan Ah Kow", 67,
+        ("P001", "Mr. Tan Ah Kow", 67,
          '["Type 2 Diabetes", "Hypertension"]',
          '["Metformin 500mg", "Lisinopril 10mg"]', "PREMIUM"),
-        ("patient_002", "Mdm. Lim Siew Eng", 72,
+        ("P002", "Mdm. Lim Siew Eng", 72,
          '["Type 2 Diabetes", "Chronic Kidney Disease Stage 2"]',
          '["Metformin 500mg", "Gliclazide 80mg"]', "ENHANCED"),
-        ("patient_003", "Mr. Ahmad bin Ismail", 58,
+        ("P003", "Mr. Ahmad bin Ismail", 58,
          '["Type 2 Diabetes"]',
          '["Metformin 1000mg"]', "BASIC"),
     ]

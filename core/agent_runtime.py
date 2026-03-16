@@ -1402,6 +1402,7 @@ def build_agent_prompt(
     """
     Build the comprehensive agent prompt with ALL HMM data.
     """
+    patient_id = patient_profile.get("id", "UNKNOWN")
     latest_obs = hmm_context.get("latest_obs", {})
 
     # Format top factors
