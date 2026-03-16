@@ -1,0 +1,684 @@
+{
+  "s1": {
+    "easy": {
+      "accuracy": 0.9591111111111111,
+      "ci_95": [
+        0.9458909998165284,
+        0.9692063885150144
+      ],
+      "adjacent_accuracy": 0.9982222222222222,
+      "confusion_matrix": {
+        "STABLE": {
+          "STABLE": 366,
+          "WARNING": 7,
+          "CRISIS": 2
+        },
+        "WARNING": {
+          "STABLE": 3,
+          "WARNING": 344,
+          "CRISIS": 28
+        },
+        "CRISIS": {
+          "STABLE": 0,
+          "WARNING": 6,
+          "CRISIS": 369
+        }
+      },
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.991869918699187,
+          "recall": 0.976,
+          "f1": 0.9838709677419355,
+          "tp": 366,
+          "fp": 3,
+          "fn": 9
+        },
+        "WARNING": {
+          "precision": 0.9635854341736695,
+          "recall": 0.9173333333333333,
+          "f1": 0.9398907103825137,
+          "tp": 344,
+          "fp": 13,
+          "fn": 31
+        },
+        "CRISIS": {
+          "precision": 0.924812030075188,
+          "recall": 0.984,
+          "f1": 0.9534883720930233,
+          "tp": 369,
+          "fp": 30,
+          "fn": 6
+        }
+      },
+      "n": 1125,
+      "brier": 0.07600502706666662,
+      "auc_STABLE": 1.0,
+      "auc_WARNING": 0.9991786666666667,
+      "auc_CRISIS": 1.0
+    },
+    "medium": {
+      "accuracy": 0.9591111111111111,
+      "ci_95": [
+        0.9458909998165284,
+        0.9692063885150144
+      ],
+      "adjacent_accuracy": 0.9982222222222222,
+      "confusion_matrix": {
+        "STABLE": {
+          "STABLE": 368,
+          "WARNING": 5,
+          "CRISIS": 2
+        },
+        "WARNING": {
+          "STABLE": 4,
+          "WARNING": 339,
+          "CRISIS": 32
+        },
+        "CRISIS": {
+          "STABLE": 0,
+          "WARNING": 3,
+          "CRISIS": 372
+        }
+      },
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.989247311827957,
+          "recall": 0.9813333333333333,
+          "f1": 0.9852744310575636,
+          "tp": 368,
+          "fp": 4,
+          "fn": 7
+        },
+        "WARNING": {
+          "precision": 0.9769452449567724,
+          "recall": 0.904,
+          "f1": 0.9390581717451524,
+          "tp": 339,
+          "fp": 8,
+          "fn": 36
+        },
+        "CRISIS": {
+          "precision": 0.916256157635468,
+          "recall": 0.992,
+          "f1": 0.9526248399487837,
+          "tp": 372,
+          "fp": 34,
+          "fn": 3
+        }
+      },
+      "n": 1125,
+      "brier": 0.09144003853333312,
+      "auc_STABLE": 1.0,
+      "auc_WARNING": 0.9974044444444455,
+      "auc_CRISIS": 1.0
+    },
+    "hard": {
+      "accuracy": 0.9502222222222222,
+      "ci_95": [
+        0.9359105546798041,
+        0.961469556046094
+      ],
+      "adjacent_accuracy": 0.9991111111111111,
+      "confusion_matrix": {
+        "STABLE": {
+          "STABLE": 366,
+          "WARNING": 8,
+          "CRISIS": 1
+        },
+        "WARNING": {
+          "STABLE": 5,
+          "WARNING": 337,
+          "CRISIS": 33
+        },
+        "CRISIS": {
+          "STABLE": 0,
+          "WARNING": 9,
+          "CRISIS": 366
+        }
+      },
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.9865229110512129,
+          "recall": 0.976,
+          "f1": 0.9812332439678283,
+          "tp": 366,
+          "fp": 5,
+          "fn": 9
+        },
+        "WARNING": {
+          "precision": 0.9519774011299436,
+          "recall": 0.8986666666666666,
+          "f1": 0.9245541838134431,
+          "tp": 337,
+          "fp": 17,
+          "fn": 38
+        },
+        "CRISIS": {
+          "precision": 0.915,
+          "recall": 0.976,
+          "f1": 0.9445161290322581,
+          "tp": 366,
+          "fp": 34,
+          "fn": 9
+        }
+      },
+      "n": 1125,
+      "brier": 0.11598303710222242,
+      "auc_STABLE": 0.9999964444444444,
+      "auc_WARNING": 0.9928639999999997,
+      "auc_CRISIS": 0.9999964444444444
+    },
+    "adversarial": {
+      "accuracy": 0.8951111111111111,
+      "ci_95": [
+        0.8758411269165194,
+        0.9116918626543824
+      ],
+      "adjacent_accuracy": 0.9991111111111111,
+      "confusion_matrix": {
+        "STABLE": {
+          "STABLE": 355,
+          "WARNING": 19,
+          "CRISIS": 1
+        },
+        "WARNING": {
+          "STABLE": 9,
+          "WARNING": 314,
+          "CRISIS": 52
+        },
+        "CRISIS": {
+          "STABLE": 0,
+          "WARNING": 37,
+          "CRISIS": 338
+        }
+      },
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.9752747252747253,
+          "recall": 0.9466666666666667,
+          "f1": 0.9607577807848443,
+          "tp": 355,
+          "fp": 9,
+          "fn": 20
+        },
+        "WARNING": {
+          "precision": 0.8486486486486486,
+          "recall": 0.8373333333333334,
+          "f1": 0.8429530201342283,
+          "tp": 314,
+          "fp": 56,
+          "fn": 61
+        },
+        "CRISIS": {
+          "precision": 0.8644501278772379,
+          "recall": 0.9013333333333333,
+          "f1": 0.8825065274151437,
+          "tp": 338,
+          "fp": 53,
+          "fn": 37
+        }
+      },
+      "n": 1125,
+      "brier": 0.12747434242666647,
+      "auc_STABLE": 0.9999928888888888,
+      "auc_WARNING": 0.9843200000000003,
+      "auc_CRISIS": 0.9999857777777778
+    },
+    "overall": {
+      "accuracy": 0.9408888888888889,
+      "ci_95": [
+        0.9336149639677909,
+        0.9474106919966641
+      ],
+      "adjacent_accuracy": 0.9986666666666667,
+      "confusion_matrix": {
+        "STABLE": {
+          "STABLE": 1455,
+          "WARNING": 39,
+          "CRISIS": 6
+        },
+        "WARNING": {
+          "STABLE": 21,
+          "WARNING": 1334,
+          "CRISIS": 145
+        },
+        "CRISIS": {
+          "STABLE": 0,
+          "WARNING": 55,
+          "CRISIS": 1445
+        }
+      },
+      "class_metrics": {
+        "STABLE": {
+          "precision": 0.9857723577235772,
+          "recall": 0.97,
+          "f1": 0.9778225806451614,
+          "tp": 1455,
+          "fp": 21,
+          "fn": 45
+        },
+        "WARNING": {
+          "precision": 0.9341736694677871,
+          "recall": 0.8893333333333333,
+          "f1": 0.9112021857923498,
+          "tp": 1334,
+          "fp": 94,
+          "fn": 166
+        },
+        "CRISIS": {
+          "precision": 0.9053884711779449,
+          "recall": 0.9633333333333334,
+          "f1": 0.9334625322997415,
+          "tp": 1445,
+          "fp": 151,
+          "fn": 55
+        }
+      },
+      "n": 4500,
+      "brier": 0.10272561128222277,
+      "auc_STABLE": 0.9999984444444445,
+      "auc_WARNING": 0.9944826666666642,
+      "auc_CRISIS": 0.9999977777777778
+    }
+  },
+  "s2": {
+    "ece": 0.11371173333333326,
+    "diagram": {
+      "0.5-0.6": {
+        "count": 122,
+        "avg_conf": 0.5493377049180329,
+        "avg_acc": 0.9754098360655737,
+        "gap": 0.42607213114754083
+      },
+      "0.6-0.7": {
+        "count": 118,
+        "avg_conf": 0.6531449152542373,
+        "avg_acc": 0.9491525423728814,
+        "gap": 0.29600762711864403
+      },
+      "0.7-0.8": {
+        "count": 134,
+        "avg_conf": 0.7531447761194026,
+        "avg_acc": 0.9701492537313433,
+        "gap": 0.21700447761194075
+      },
+      "0.8-0.9": {
+        "count": 172,
+        "avg_conf": 0.8595267441860465,
+        "avg_acc": 1.0,
+        "gap": 0.14047325581395353
+      },
+      "0.9-1.0": {
+        "count": 954,
+        "avg_conf": 0.9710879454926624,
+        "avg_acc": 0.939203354297694,
+        "gap": 0.03188459119496845
+      }
+    },
+    "n": 1500
+  },
+  "s3": {
+    "crisis_tpr": 0.988,
+    "crisis_tpr_ci": [
+      0.9740692922810136,
+      0.9944890800328247
+    ],
+    "false_alarm_rate": 0.002,
+    "hypo_Level 1 (3.0-3.9)": 1.0,
+    "hypo_Level 2 (<3.0)": 1.0,
+    "hypo_Severe (<2.0)": 1.0,
+    "safety_Extreme hyperglycemia": true,
+    "safety_Severe hypoglycemia": true,
+    "safety_Tachycardia": true,
+    "safety_Very low HRV": true,
+    "safety_No meds": true,
+    "safety_Hyper+poor meds (combined)": true,
+    "safety_Immobile+low HRV+hyper (combined)": true
+  },
+  "s4": {
+    "baseline": 0.9616666666666667,
+    "ablations": [
+      {
+        "feature": "glucose_avg",
+        "accuracy": 0.7666666666666667,
+        "drop": 0.19499999999999995,
+        "weight": 0.25
+      },
+      {
+        "feature": "glucose_variability",
+        "accuracy": 0.9583333333333334,
+        "drop": 0.0033333333333332993,
+        "weight": 0.1
+      },
+      {
+        "feature": "meds_adherence",
+        "accuracy": 0.9733333333333334,
+        "drop": -0.011666666666666714,
+        "weight": 0.18
+      },
+      {
+        "feature": "carbs_intake",
+        "accuracy": 0.96,
+        "drop": 0.0016666666666667052,
+        "weight": 0.07
+      },
+      {
+        "feature": "steps_daily",
+        "accuracy": 0.9566666666666667,
+        "drop": 0.0050000000000000044,
+        "weight": 0.08
+      },
+      {
+        "feature": "resting_hr",
+        "accuracy": 0.9583333333333334,
+        "drop": 0.0033333333333332993,
+        "weight": 0.05
+      },
+      {
+        "feature": "hrv_rmssd",
+        "accuracy": 0.9583333333333334,
+        "drop": 0.0033333333333332993,
+        "weight": 0.07
+      },
+      {
+        "feature": "sleep_quality",
+        "accuracy": 0.9566666666666667,
+        "drop": 0.0050000000000000044,
+        "weight": 0.1
+      },
+      {
+        "feature": "social_engagement",
+        "accuracy": 0.9583333333333334,
+        "drop": 0.0033333333333332993,
+        "weight": 0.1
+      }
+    ]
+  },
+  "s5": {
+    "Full HMM (all components)": {
+      "accuracy": 0.9655555555555555,
+      "crisis_tpr": 0.9833333333333333,
+      "fpr": 0.03
+    },
+    "HMM only (no SafetyMonitor)": {
+      "accuracy": 0.9444444444444444,
+      "crisis_tpr": 0.84,
+      "fpr": 0.0
+    },
+    "HMM + single rules only (no combined)": {
+      "accuracy": 0.9466666666666667,
+      "crisis_tpr": 0.87,
+      "fpr": 0.0016666666666666668
+    }
+  },
+  "s6": {
+    "boundary_adj_acc": 1.0,
+    "contradictory_warning_rate": 0.45,
+    "flip_glucose_avg": 1.0,
+    "flip_glucose_variability": 1.0,
+    "flip_meds_adherence": 1.0,
+    "flip_carbs_intake": 0.0,
+    "flip_steps_daily": 0.0,
+    "flip_resting_hr": 0.0,
+    "flip_hrv_rmssd": 0.0,
+    "flip_sleep_quality": 0.0,
+    "flip_social_engagement": 0.0
+  },
+  "s7": {
+    "Stable -> Warning": 0.96,
+    "Stable -> Warning -> Crisis": 1.0,
+    "Crisis -> Warning -> Stable": 0.96,
+    "Stable -> Sudden Crisis": 1.0,
+    "Crisis -> Recovery": 0.96,
+    "spike_absorption": 0.99,
+    "seq_1": 0.9666666666666667,
+    "seq_2": 0.96,
+    "seq_4": 0.9733333333333334,
+    "seq_8": 0.98,
+    "seq_12": 0.9733333333333334,
+    "seq_24": 0.9666666666666667,
+    "seq_48": 0.9866666666666667
+  },
+  "s8": {
+    "miss_0": 0.9766666666666667,
+    "miss_10": 0.9466666666666667,
+    "miss_20": 0.93,
+    "miss_30": 0.87,
+    "miss_40": 0.82,
+    "miss_50": 0.7166666666666667,
+    "miss_60": 0.64,
+    "miss_70": 0.57,
+    "miss_80": 0.49,
+    "no_glucose_avg": 0.7666666666666667,
+    "no_glucose_variability": 0.9733333333333334,
+    "no_meds_adherence": 0.96,
+    "no_carbs_intake": 0.9733333333333334,
+    "no_steps_daily": 0.9666666666666667,
+    "no_resting_hr": 0.9733333333333334,
+    "no_hrv_rmssd": 0.9666666666666667,
+    "no_sleep_quality": 0.9733333333333334,
+    "no_social_engagement": 0.9733333333333334
+  },
+  "s9": {
+    "well_controlled_elderly": {
+      "exact": 1.0,
+      "adjacent": 1.0,
+      "expected": "STABLE",
+      "dist": {
+        "STABLE": 200,
+        "WARNING": 0,
+        "CRISIS": 0
+      }
+    },
+    "brittle_diabetic": {
+      "exact": 0.83,
+      "adjacent": 1.0,
+      "expected": "WARNING",
+      "dist": {
+        "WARNING": 166,
+        "STABLE": 34,
+        "CRISIS": 0
+      }
+    },
+    "socially_isolated_elder": {
+      "exact": 0.915,
+      "adjacent": 1.0,
+      "expected": "WARNING",
+      "dist": {
+        "WARNING": 183,
+        "STABLE": 12,
+        "CRISIS": 5
+      }
+    },
+    "medication_noncompliant": {
+      "exact": 0.905,
+      "adjacent": 1.0,
+      "expected": "CRISIS",
+      "dist": {
+        "CRISIS": 181,
+        "WARNING": 19,
+        "STABLE": 0
+      }
+    },
+    "acute_infection": {
+      "exact": 1.0,
+      "adjacent": 1.0,
+      "expected": "CRISIS",
+      "dist": {
+        "CRISIS": 200,
+        "STABLE": 0,
+        "WARNING": 0
+      }
+    },
+    "post_exercise_spike": {
+      "exact": 1.0,
+      "adjacent": 1.0,
+      "expected": "STABLE",
+      "dist": {
+        "STABLE": 200,
+        "WARNING": 0,
+        "CRISIS": 0
+      }
+    },
+    "dawn_phenomenon": {
+      "exact": 0.91,
+      "adjacent": 1.0,
+      "expected": "STABLE",
+      "dist": {
+        "STABLE": 182,
+        "WARNING": 18,
+        "CRISIS": 0
+      }
+    },
+    "steroid_induced": {
+      "exact": 0.72,
+      "adjacent": 1.0,
+      "expected": "CRISIS",
+      "dist": {
+        "CRISIS": 144,
+        "WARNING": 56,
+        "STABLE": 0
+      }
+    },
+    "weekend_binge_eater": {
+      "exact": 1.0,
+      "adjacent": 1.0,
+      "expected": "WARNING",
+      "dist": {
+        "WARNING": 200,
+        "STABLE": 0,
+        "CRISIS": 0
+      }
+    },
+    "hypoglycemia_unaware": {
+      "exact": 0.625,
+      "adjacent": 1.0,
+      "expected": "WARNING",
+      "dist": {
+        "STABLE": 75,
+        "WARNING": 125,
+        "CRISIS": 0
+      }
+    }
+  },
+  "s10": {
+    "low_glucose_baseline": {
+      "before": 0.9965,
+      "after": 1.0,
+      "improvement": 0.0034999999999999476
+    },
+    "high_glucose_baseline": {
+      "before": 0.9838,
+      "after": 0.9999,
+      "improvement": 0.016100000000000003
+    },
+    "athletic_low_hr": {
+      "before": 0.9996,
+      "after": 1.0,
+      "improvement": 0.00039999999999995595
+    },
+    "sedentary_high_hr": {
+      "before": 0.9835,
+      "after": 0.9999,
+      "improvement": 0.01639999999999997
+    },
+    "baum_welch_converged": true
+  },
+  "s11": {
+    "risk_ordering": true,
+    "risks": {
+      "STABLE": 21.0,
+      "WARNING": 39.583333333333336,
+      "CRISIS": 100.0
+    },
+    "intervention_reduction": 0.053943376943850006,
+    "multi_intervention_risk": 9.573658648534054e-06,
+    "monotonicity": true
+  },
+  "s12": {
+    "single": {
+      "majority": 0.3333333333333333,
+      "glucose": 0.9483333333333334,
+      "weighted": 0.8616666666666667,
+      "hmm": 0.9683333333333334
+    },
+    "temporal": {
+      "majority": 0.3333333333333333,
+      "glucose": 0.8833333333333333,
+      "weighted": 0.84,
+      "hmm": 0.9733333333333334
+    }
+  },
+  "s13": {
+    "transition_rows_sum_1": true,
+    "initial_probs_sum_1": true,
+    "weights_sum_1": true,
+    "emissions_valid": true,
+    "fwd_bwd_consistent": true,
+    "reproducible": true,
+    "probs_normalized": true
+  },
+  "s14": {
+    "all_none_state": "STABLE",
+    "all_none_conf": 0.4,
+    "solo_glucose_avg": "CRISIS",
+    "solo_glucose_variability": "WARNING",
+    "solo_meds_adherence": "WARNING",
+    "solo_carbs_intake": "STABLE",
+    "solo_steps_daily": "STABLE",
+    "solo_resting_hr": "STABLE",
+    "solo_hrv_rmssd": "STABLE",
+    "solo_sleep_quality": "STABLE",
+    "solo_social_engagement": "STABLE",
+    "empty_obs": "STABLE",
+    "All at lower bounds": "CRISIS",
+    "All at upper bounds": "CRISIS",
+    "long_seq_time_ms": 2.5632381439208984,
+    "long_seq_state": "STABLE",
+    "extreme_no_crash": true
+  },
+  "s15": {
+    "stable_perfect": {
+      "predicted": "STABLE",
+      "expected": "STABLE",
+      "exact": true,
+      "adjacent": true,
+      "n_obs": 84
+    },
+    "stable_realistic": {
+      "predicted": "STABLE",
+      "expected": "STABLE",
+      "exact": true,
+      "adjacent": true,
+      "n_obs": 84
+    },
+    "gradual_decline": {
+      "predicted": "WARNING",
+      "expected": "WARNING",
+      "exact": true,
+      "adjacent": true,
+      "n_obs": 84
+    },
+    "warning_to_crisis": {
+      "predicted": "CRISIS",
+      "expected": "CRISIS",
+      "exact": true,
+      "adjacent": true,
+      "n_obs": 84
+    },
+    "sudden_crisis": {
+      "predicted": "CRISIS",
+      "expected": "CRISIS",
+      "exact": true,
+      "adjacent": true,
+      "n_obs": 84
+    },
+    "recovery": {
+      "predicted": "STABLE",
+      "expected": "STABLE",
+      "exact": true,
+      "adjacent": true,
+      "n_obs": 84
+    }
+  }
+}
