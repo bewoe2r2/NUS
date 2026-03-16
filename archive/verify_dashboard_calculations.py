@@ -1,3 +1,4 @@
+import _path_setup
 import sqlite3
 import pandas as pd
 import numpy as np
@@ -40,9 +41,8 @@ def verify_14_day_logic():
         return 'STABLE'
 
     daily_summary = df.groupby('date').agg({
-        'detected_state': get_worst_state,
-        'confidence_score': 'mean',
-        'detected_state': ['count', get_worst_state] # Get count and worst
+        'detected_state': ['count', get_worst_state],
+        'confidence_score': 'mean'
     })
     
     print(f" Analyzed {len(daily_summary)} days of data.")

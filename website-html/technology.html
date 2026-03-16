@@ -4,25 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Technology — BEWO</title>
+  <meta name="description" content="Bewo's technical architecture — Hidden Markov Models, agentic AI orchestration, and behavioral science for predictive chronic care">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
     :root {
+      --bg-paper: #faf9f6;
       --bg-paper: oklch(0.985 0.003 90);
+      --bg-raised: #f5f4f0;
       --bg-raised: oklch(0.97 0.005 90);
+      --bg-card: #ffffff;
       --bg-card: oklch(1 0 0);
+      --bg-inset: #e8e7ed;
       --bg-inset: oklch(0.94 0.008 260);
+      --text-ink: #1a1a2e;
       --text-ink: oklch(0.18 0.03 260);
+      --text-secondary: #5c5a6e;
       --text-secondary: oklch(0.42 0.02 260);
+      --text-muted: #8a8898;
       --text-muted: oklch(0.58 0.01 260);
+      --accent-primary: #3a3a8a;
       --accent-primary: oklch(0.42 0.14 265);
+      --accent-hover: #2e2e78;
       --accent-hover: oklch(0.36 0.16 265);
+      --accent-muted: rgba(58, 58, 138, 0.08);
       --accent-muted: oklch(0.42 0.14 265 / 0.08);
+      --color-profit: #2d8a5e;
       --color-profit: oklch(0.52 0.12 160);
+      --color-loss: #a04030;
       --color-loss: oklch(0.52 0.12 25);
+      --color-warning: #b08a20;
       --color-warning: oklch(0.62 0.14 80);
+      --border-default: #d4d3de;
       --border-default: oklch(0.86 0.008 260);
+      --border-subtle: #e8e7e2;
       --border-subtle: oklch(0.92 0.004 90);
       --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
       --font-body: 'DM Sans', 'Segoe UI', sans-serif;
@@ -105,6 +121,15 @@
       .engines-grid { grid-template-columns: 1fr !important; }
       .tool-grid { grid-template-columns: 1fr !important; }
     }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-primary, #2563eb);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -117,24 +142,24 @@
           <span class="site-header__title">BEWO</span>
           <span class="site-header__tagline">Predictive Chronic Care</span>
         </a>
-        <button class="mobile-nav-toggle" onclick="document.querySelector('.site-nav').classList.toggle('open')" aria-label="Toggle navigation">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <button class="mobile-nav-toggle" onclick="var nav=document.querySelector('.site-nav');nav.classList.toggle('open');this.setAttribute('aria-expanded',nav.classList.contains('open'))" aria-expanded="false" aria-label="Toggle navigation">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <nav class="site-nav">
           <a href="index.html" class="site-nav__link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
             Overview
           </a>
           <a href="technology.html" class="site-nav__link site-nav__link--active">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
             Technology
           </a>
           <a href="impact.html" class="site-nav__link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
             Impact
           </a>
           <a href="demo.html" class="site-nav__link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Product
           </a>
         </nav>
@@ -443,7 +468,7 @@
 
     <footer class="site-footer">
       <div class="container">
-        <p class="site-footer__text">Bewo Health 2026 — Predictive AI for Singapore's Aging Population</p>
+        <p class="site-footer__text">© Bewo Health 2026 — Predictive AI for Singapore's Aging Population</p>
       </div>
     </footer>
   </div>
@@ -457,6 +482,7 @@
           entry.target.querySelectorAll('.bar-fill').forEach(bar => {
             bar.style.width = bar.dataset.width;
           });
+          observer.unobserve(entry.target);
         }
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
@@ -471,11 +497,22 @@
             entry.target.querySelectorAll('.bar-fill').forEach(bar => {
               setTimeout(() => { bar.style.width = bar.dataset.width; }, 200);
             });
+            bioObserver.unobserve(entry.target);
           }
         });
       }, { threshold: 0.2 });
       bioObserver.observe(bioCard);
     }
+
+    // Close mobile nav on link click
+    document.querySelectorAll('.site-nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector('.site-nav').classList.remove('open');
+        var toggle = document.querySelector('.mobile-nav-toggle');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
   </script>
+  <noscript><style>.reveal { opacity: 1 !important; transform: none !important; }</style></noscript>
 </body>
 </html>

@@ -11,6 +11,7 @@ This app is the source of truth. It allows judges to:
 4. VERIFY the math against Oracle logic (Oracle Truth).
 """
 
+import _path_setup
 import streamlit as st
 import pandas as pd
 import numpy as np

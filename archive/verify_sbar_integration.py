@@ -1,4 +1,5 @@
 
+import _path_setup
 import sqlite3
 import json
 import os
@@ -93,8 +94,8 @@ def verify_sbar_integration():
     }
     
     try:
-        report = gi.generate_sbar_report(weekly_data, include_full_context=False, intervention_forecasts=forecasts)
-        sbar_text = report.get('sbar_text', '')
+        report = gi.draft_sbar(current_state, {'glucose': 15.0}, 'Type 2 Diabetes', 'Metformin', 'Standard diabetes guidelines')
+        sbar_text = str(report)
         
         # Safe print function
         def safe_print(text):

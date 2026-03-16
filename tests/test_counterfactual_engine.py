@@ -1,9 +1,10 @@
 
 import sys
+import os
 import unittest
 import math
-# Adjust path to import hmm_engine from parent directory if needed
-sys.path.append('..') 
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core'))
 from hmm_engine import HMMEngine, STATES
 
 class TestCounterfactualEngine(unittest.TestCase):

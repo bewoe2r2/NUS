@@ -1,6 +1,15 @@
 
+import sys
+import os
 import sqlite3
 import time
+import json
+
+# Add project root and core to path
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _project_root)
+sys.path.insert(0, os.path.join(_project_root, 'core'))
+
 from hmm_engine import HMMEngine
 
 def refresh_analysis():
@@ -43,7 +52,7 @@ def refresh_analysis():
     # The schema for `hmm_states` is:
     # timestamp_utc, user_id, detected_state, confidence_score, etc.
     
-    user_id = 'current_user'
+    user_id = 'P001'
     
     # We need to run inference cumulatively?
     # Actually `fetch_observations` returns the whole history.
@@ -100,7 +109,7 @@ def refresh_analysis():
             result['current_state'], 
             result['confidence'], 
             result['confidence_margin'], 
-            str(current_obs)
+            json.dumps(current_obs)
         ))
         
     conn.commit()

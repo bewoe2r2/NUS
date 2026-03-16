@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 interface SlideContextType {
     currentSlide: number;
@@ -15,19 +15,19 @@ export const SlideProvider = ({ children, totalSlides }: { children: React.React
     const [currentSlide, setCurrentSlide] = useState(0);
     const [direction, setDirection] = useState(0);
 
-    const nextSlide = () => {
+    const nextSlide = useCallback(() => {
         if (currentSlide < totalSlides - 1) {
             setDirection(1);
             setCurrentSlide((prev) => prev + 1);
         }
-    };
+    }, [currentSlide, totalSlides]);
 
-    const prevSlide = () => {
+    const prevSlide = useCallback(() => {
         if (currentSlide > 0) {
             setDirection(-1);
             setCurrentSlide((prev) => prev - 1);
         }
-    };
+    }, [currentSlide]);
 
     const goToSlide = (index: number) => {
         setDirection(index > currentSlide ? 1 : -1);
@@ -37,12 +37,12 @@ export const SlideProvider = ({ children, totalSlides }: { children: React.React
     // Keyboard Navigation
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowRight" || e.key === "Space") nextSlide();
+            if (e.key === "ArrowRight" || e.key === " ") nextSlide();
             if (e.key === "ArrowLeft") prevSlide();
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [currentSlide]);
+    }, [nextSlide, prevSlide]);
 
     return (
         <SlideContext.Provider value={{ currentSlide, direction, totalSlides, nextSlide, prevSlide, goToSlide }}>

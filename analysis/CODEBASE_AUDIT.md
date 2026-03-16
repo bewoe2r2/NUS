@@ -1,4 +1,4 @@
-# Nexus Health: System Architecture & Codebase Audit
+# Bewo Health: System Architecture & Codebase Audit
 > **Status:** DEEP DIVE COMPLETE
 > **Scope:** 3 Web Apps (Patient, Nurse, Judge), Core Engines, Database
 

@@ -1,6 +1,7 @@
 """
 Debug script to verify why warning_to_crisis scenario shows as STABLE.
 """
+import _path_setup
 from hmm_engine import HMMEngine, EMISSION_PARAMS
 
 engine = HMMEngine()

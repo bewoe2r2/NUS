@@ -8,6 +8,7 @@ A rapid prototype UI for the NEXUS 2026 Health Companion.
 Visualizes HMM states, Sensor Data, and provides Demo Controls.
 """
 
+import _path_setup
 import streamlit as st
 import sqlite3
 import pandas as pd

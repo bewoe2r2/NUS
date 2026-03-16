@@ -1,10 +1,8 @@
+import _path_setup
 import sys
 import os
 import unittest
 from datetime import datetime
-
-# Add current directory to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from hmm_engine import HMMEngine
 

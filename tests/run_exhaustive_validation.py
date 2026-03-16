@@ -19,8 +19,10 @@ import sys
 import numpy as np
 from datetime import datetime
 
-# Add parent dir to path to import engine
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add parent dir and core to path to import engine
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+sys.path.insert(0, os.path.join(project_root, 'core'))
 
 from hmm_engine import HMMEngine
 
@@ -32,7 +34,7 @@ def run_validation():
     print("Running Exhaustive HMM Oracle Validation...")
     
     # Load scenarios
-    with open("tests/test_matrix.json", "r") as f:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_matrix.json"), "r") as f:
         scenarios = json.load(f)
         
     engine = HMMEngine()

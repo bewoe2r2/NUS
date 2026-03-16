@@ -1,13 +1,21 @@
 """
+Standalone validation script. Run directly: python deep_math_validation.py
+Not a pytest test file — executes validation on import.
+
 DEEP MATH VALIDATION
 Checks EVERY observation, EVERY day, EVERY calculation
 """
+import sys
+import os
 import sqlite3
 import json
 import math
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core'))
+
 from hmm_engine import HMMEngine, STATES, EMISSION_PARAMS, WEIGHTS, gaussian_pdf, safe_log, TRANSITION_PROBS
 
-DB_PATH = "nexus_health.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 engine = HMMEngine()
 
 print("=" * 70)

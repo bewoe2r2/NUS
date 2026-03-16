@@ -10,7 +10,7 @@ The missing orchestration brain. Connects Gemini AI reasoning to real tool execu
 - Tools execute against real database, actions are logged, conversation is stored
 - Fallback rule-based responses when Gemini is unavailable
 
-### 13 Agentic Tools Wired:
+### 18 Agentic Tools Wired:
 1. **book_appointment** — Smart scheduling via mock HealthHub API with Lloyd's algorithm slot optimization, patient preference learning, sleep schedule preservation
 2. **send_caregiver_alert** — Three-tier severity escalation (info→push, warning→SMS, critical→call) with rate limiting to prevent alert fatigue
 3. **calculate_counterfactual** — "What if?" Bayesian simulation using HMM. E.g., "What if patient takes Metformin now?" → projects crisis risk reduction
@@ -202,7 +202,7 @@ The agent prompt now includes 3 new data sections injected before every Gemini c
 
 Plus 8 new decision rules for streaks, engagement, mood, and nudge timing.
 
-Total tools: **13 → 16** (added celebrate_streak, generate_weekly_report, adjust_nudge_schedule)
+Total tools: **13 → 18** (added celebrate_streak, generate_weekly_report, adjust_nudge_schedule)
 
 ---
 
@@ -268,6 +268,6 @@ The agent prompt now includes **7 data sections** injected before every Gemini c
 6. Caregiver Status — fatigue detection signals + level
 7. Conversation History — last 6 turns
 
-Total tools: **16**
+Total tools: **18**
 Total API endpoints added today: **14**
 Total agent prompt data sections: **13** (7 new + 6 existing)

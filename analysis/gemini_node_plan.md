@@ -44,7 +44,7 @@ We practice **Data Minimization**. We do not send raw sensor logs. We send a "Cl
 We use a structured prompts to ensure medical relevance.
 
 **Prompt Strategy:**
-> "You are NEXUS, a medical companion.
+> "You are Bewo, a medical companion.
 > **Observation:** The HMM engine has detected a {WARNING} state.
 > **Reason:** {Missed Medication} and {Rising Glucose}.
 > **Goal:** Persuade the user to take medication using {Family-Based Motivation}.

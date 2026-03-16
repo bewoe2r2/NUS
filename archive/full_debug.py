@@ -1,6 +1,7 @@
 """
 Full debug: Check raw data + rerun HMM analysis to find the bug.
 """
+import _path_setup
 import sqlite3
 import time
 from hmm_engine import HMMEngine

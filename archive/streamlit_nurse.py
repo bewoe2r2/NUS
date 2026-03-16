@@ -10,6 +10,7 @@ Design System: "Engineering Dark"
 - Charts: Minimalist, high contrast (Real Monte Carlo).
 """
 
+import _path_setup
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -23,13 +24,11 @@ import json
 # Import Engines
 from hmm_engine import HMMEngine, FEATURES
 try:
-    from clinical_engine import ClinicalEngine, SBARGenerator
+    from clinical_engine import ClinicalEngine
 except ImportError:
     # Fallback if clinical engine not available
     class ClinicalEngine:
         def __init__(self, db): pass
-    class SBARGenerator:
-        pass
 
 st.set_page_config(
     page_title="Nexus Nurse Station",

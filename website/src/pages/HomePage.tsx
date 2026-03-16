@@ -12,7 +12,7 @@ export const HomePage = () => (
     <section className="hero" style={{ marginBottom: 'var(--space-16)' }}>
       <motion.div variants={fadeInUp} style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 320px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: 'var(--space-12)',
         alignItems: 'center',
         position: 'relative',
@@ -238,7 +238,7 @@ export const HomePage = () => (
     <section className="section-tinted" style={{ marginBottom: 'var(--space-16)' }}>
       <motion.div variants={fadeInUp} style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 320px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: 'var(--space-8)',
         alignItems: 'start',
       }}>

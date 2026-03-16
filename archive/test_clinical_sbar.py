@@ -9,6 +9,7 @@ Tests:
 3. Schema Validation (SBAR format)
 """
 
+import _path_setup
 import unittest
 from unittest.mock import MagicMock, patch
 import json

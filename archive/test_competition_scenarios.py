@@ -1,4 +1,5 @@
 # Test new competition scenarios
+import _path_setup
 from hmm_engine import HMMEngine
 
 e = HMMEngine()

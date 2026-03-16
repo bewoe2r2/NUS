@@ -11,6 +11,7 @@ DESIGN BRIEF:
 - Tokens: OKLCH exclusively, 8px Grid, SF Pro Typography
 """
 
+import _path_setup
 import streamlit as st
 import sqlite3
 import time

@@ -1,4 +1,4 @@
-# NEXUS 2026 System Architecture
+# Bewo System Architecture
 
 ## 1. High-Level Data Flow (Offline-First)
 

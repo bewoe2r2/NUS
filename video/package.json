@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "preview": "remotion preview src/Root.tsx",
-    "render": "remotion render src/Root.tsx NexusVideo out/bewo.mp4 --codec h264",
-    "build": "remotion render src/Root.tsx NexusVideo out/bewo.mp4 --codec h264"
+    "render": "remotion render src/Root.tsx BewoVideo out/bewo.mp4 --codec h264",
+    "build": "remotion render src/Root.tsx BewoVideo out/bewo.mp4 --codec h264"
   },
   "dependencies": {
     "@remotion/cli": "4.0.266",

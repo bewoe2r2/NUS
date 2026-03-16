@@ -28,10 +28,15 @@ import sys
 import os
 import random
 import json
-import math
+import hashlib
 from dataclasses import dataclass
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 import numpy as np
+
+
+def _stable_hash(s: str) -> int:
+    """Deterministic hash that doesn't vary across Python sessions."""
+    return int(hashlib.md5(s.encode()).hexdigest(), 16) % 1000
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -128,14 +133,14 @@ PATIENT_ARCHETYPES = {
 # TRAJECTORY GENERATION (Ground Truth)
 # ==============================================================================
 
-def generate_patient_trajectory(profile: PatientProfile, days: int = 30, seed: int = None) -> List[Dict]:
+def generate_patient_trajectory(profile: PatientProfile, days: int = 30, seed: int = None) -> Tuple[List[Dict], Optional[int]]:
     """
     Generate a realistic 30-day trajectory for a patient.
     
     GROUND TRUTH: We know exactly when the patient transitions to WARNING/CRISIS.
     This allows us to measure detection accuracy.
     """
-    if seed:
+    if seed is not None:
         random.seed(seed)
         np.random.seed(seed)
     
@@ -405,7 +410,7 @@ class PersonalizationValidator:
                 )
                 
                 # Generate trajectory
-                trajectory, crisis_day = generate_patient_trajectory(profile, days=30, seed=i * 100 + hash(archetype_name) % 1000)
+                trajectory, crisis_day = generate_patient_trajectory(profile, days=30, seed=i * 100 + _stable_hash(archetype_name))
                 
                 # Validate
                 result = self.validate_patient(profile, trajectory)

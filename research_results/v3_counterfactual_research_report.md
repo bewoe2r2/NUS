@@ -1,5 +1,5 @@
 # 📄 V3 Counterfactual Research Report: Personalized Baselines
-**Project:** NEXUS 2026 AI Health Companion
+**Project:** Bewo AI Health Companion
 **Date:** 2026-01-29
 **Study Size:** N = 1,200 Simulated Patients (Monte Carlo)
 

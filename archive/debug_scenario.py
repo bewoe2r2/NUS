@@ -1,4 +1,5 @@
 """Debug warning_recovery scenario"""
+import _path_setup
 from hmm_engine import HMMEngine, STATES
 
 e = HMMEngine()

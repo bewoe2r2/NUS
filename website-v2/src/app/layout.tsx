@@ -24,7 +24,7 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Bewo — Predictive Chronic Disease Management",
   description:
-    "HMM-powered crisis prediction + 18 agentic AI tools for Singapore's 200,000+ elderly diabetics. 48-hour advance warning. Doctor-gated clinical decisions.",
+    "HMM-powered crisis prediction + 18 agentic AI tools for Singapore's 440,000 diabetics. 48-hour advance warning. Doctor-gated clinical decisions.",
   keywords: ["healthcare", "AI", "chronic disease", "diabetes", "Singapore", "HMM", "predictive", "agentic AI"],
   openGraph: {
     title: "Bewo — Predicting Health Crises 48 Hours Early",

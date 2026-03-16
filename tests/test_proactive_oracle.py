@@ -4,8 +4,8 @@ import sys
 import os
 import numpy as np
 
-# Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add core directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core'))
 
 from hmm_engine import HMMEngine, STATES
 
@@ -56,15 +56,4 @@ class TestProactiveOracle:
         assert 'risk_48h' in result['predictions']
         assert 0.0 <= result['predictions']['risk_48h'] <= 1.0
 
-    def test_absorbing_logic(self, engine):
-        """Verify the logic uses absorbing state math."""
-        # Manually calculate 1 step risk
-        # P(Warning -> Crisis) based on TRANSITION_PROBS
-        # If we start in Warning, risk @ T+1 should be exactly T[Warning][Crisis]
-        
-        # Access internal transitions (need to know exact values or mock them)
-        # engine.LOG_TRANSITIONS are log probs. 
-        # But let's assume valid property: 
-        # If we set T[Warning->Crisis] = 0.5 manually for the test...
-        
-        pass # Hard to test internal matrix values without fragility, sticking to behavioral tests
+    # test_absorbing_logic removed: was empty (pass-only), tested nothing

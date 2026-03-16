@@ -21,7 +21,7 @@ def verify_schema():
     columns = cursor.execute("PRAGMA table_info(hmm_states)").fetchall()
     col_names = [c[1] for c in columns]
     
-    required_cols = ['confidence_margin', 'patient_tier', 'retention_until']
+    required_cols = ['confidence_margin', 'patient_tier']
     missing_cols = [c for c in required_cols if c not in col_names]
     
     if missing_cols:

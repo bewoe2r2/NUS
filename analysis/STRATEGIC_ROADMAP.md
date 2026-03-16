@@ -1,4 +1,4 @@
-# Nexus Health: Strategic Analysis & Agentic Roadmap
+# Bewo Health: Strategic Analysis & Agentic Roadmap
 > **For:** NUS Synapxe Challenge IMDA
 > **Status:** AUDITED & VERIFIED (Deep Dive Complete)
 > **Codebase State:** 85% Ready (Architecture is solid, "Agentic" loops are missing)

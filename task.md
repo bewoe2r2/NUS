@@ -1,4 +1,4 @@
-# Tasks: NEXUS 2026 AI Health Companion
+# Tasks: Bewo AI Health Companion
 
 - [x] Design System Architecture & Data Flow <!-- id: 0 -->
 - [x] Create SQLite Schema (Optimized for HMM) <!-- id: 1 -->

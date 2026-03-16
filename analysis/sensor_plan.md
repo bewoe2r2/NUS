@@ -1,7 +1,7 @@
 # Implementation Plan - Passive Sensor Data Collection
 
 ## Goal Description
-Implement the passive data collection modules for NEXUS 2026. These modules simulate the interaction with mobile hardware (Accelerometer, UsageStats, GPS) and store aggregated data into the SQLite database (`passive_metrics` table).
+Implement the passive data collection modules for Bewo. These modules simulate the interaction with mobile hardware (Accelerometer, UsageStats, GPS) and store aggregated data into the SQLite database (`passive_metrics` table).
 
 ## 1. Step Counter (`step_counter.py`)
 - **Algo**: Magnitude calculation -> Smoothing -> Peak Detection (> 1.2G threshold).

@@ -49,7 +49,7 @@ from datetime import datetime
 from collections import defaultdict, Counter
 from typing import List, Dict, Tuple, Optional
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
 from core.hmm_engine import (

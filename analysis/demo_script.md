@@ -10,7 +10,7 @@
 *(Show "Home Page" - Status: STABLE)*
 **Speaker:** "Hi, I'm [Name]. We all know AI is great at chatting. But can it *prevent* a heart attack?
 Most apps today are reactive. They wait for you to fall.
-We built **NEXUS**, the first **Neuro-Symbolic Health Agent** that predicts crises *before* they happen."
+We built **Bewo**, the first **Neuro-Symbolic Health Agent** that predicts crises *before* they happen."
 
 ### [0:45-1:30] The Core Tech: "HMM Prediction"
 *(Navigate to "14-Day Analysis" Dashboard)*
@@ -33,7 +33,7 @@ It uses **Loss Aversion psychology** (the voucher) combined with clinically safe
 *(Show "Data Safety" slide or simply hold up the phone)*
 **Speaker:** "And the best part? This runs on **Edge AI**.
 No patient data leaves this phone. It is privacy-compliant by design.
-We are NEXUS: Moving healthcare from 'Reactive' to 'Predictive'. Thank you."
+We are Bewo: Moving healthcare from 'Reactive' to 'Predictive'. Thank you."
 
 ---
 

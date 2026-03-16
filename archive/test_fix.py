@@ -1,6 +1,7 @@
 """
 Test fix: Clear all data, inject warning_to_crisis, run HMM, verify states.
 """
+import _path_setup
 import sqlite3
 import time
 import json

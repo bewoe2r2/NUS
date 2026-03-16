@@ -2,10 +2,19 @@
 COMPREHENSIVE FUNCTIONAL TEST
 Tests all backend logic that the Streamlit UI buttons trigger
 """
+import sys
+import os
 import sqlite3
 import json
 import time
 from datetime import datetime
+
+# Add project root and core to path
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _project_root)
+sys.path.insert(0, os.path.join(_project_root, 'core'))
+sys.path.insert(0, os.path.join(_project_root, 'scripts'))
+sys.path.insert(0, os.path.join(_project_root, 'tools'))
 
 print("=" * 70)
 print("NEXUS 2026 - COMPREHENSIVE BACKEND TEST")
@@ -18,6 +27,8 @@ from voucher_system import VoucherSystem
 from inject_data import inject_tiered_scenario_to_db, run_analysis_and_save
 
 DB_PATH = "nexus_health.db"
+_test_pass = 0
+_test_fail = 0
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -55,9 +66,11 @@ for scenario in scenarios:
             "method": result["method"]
         }
         print(f"  [PASS] {scenario:20s} -> {result['current_state']:8s} ({result['confidence']*100:.1f}% conf, {result['method']})")
+        _test_pass += 1
     except Exception as e:
         print(f"  [FAIL] {scenario}: ERROR - {e}")
         scenario_results[scenario] = {"error": str(e)}
+        _test_fail += 1
 
 # ============================================================
 # TEST 2: Safety Monitor (Rule-based overrides)
@@ -78,6 +91,10 @@ for test in safety_tests:
     state, reason = SafetyMonitor.check_safety(obs)
     passed = (state == test["expected"])
     status = "[PASS]" if passed else "[FAIL]"
+    if passed:
+        _test_pass += 1
+    else:
+        _test_fail += 1
     print(f"  {status} {test['name']:25s} -> {state or 'None':8s} (expected: {test['expected'] or 'None'})")
 
 # ============================================================
@@ -246,17 +263,7 @@ print("\n" + "=" * 70)
 print("COMPREHENSIVE TEST COMPLETE")
 print("=" * 70)
 print(f"""
-All backend functions tested:
-  [PASS] 9 demo scenarios generated and analyzed
-  [PASS] Safety monitor rules verified
-  [PASS] Database injection working
-  [PASS] 14-day state history accessible
-  [PASS] Feature observations fetched
-  [PASS] XAI gaussian calculations correct
-  [PASS] Plot data generation working
-  [PASS] Voucher system operational
-  [PASS] Gemini integration connected
-  [PASS] State change alerts accessible
+Results: {_test_pass} passed, {_test_fail} failed
 
-Your app's backend logic is fully functional!
+{"All backend functions tested successfully!" if _test_fail == 0 else f"WARNING: {_test_fail} test(s) FAILED — review output above."}
 """)

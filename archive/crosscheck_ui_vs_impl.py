@@ -2,6 +2,8 @@
 CROSS-CHECK: UI Scenarios vs Actual Implementations
 This finds ALL discrepancies between what's in the UI and what actually works
 """
+import _path_setup
+import os
 import re
 
 print("=" * 60)
@@ -9,7 +11,9 @@ print("CROSS-CHECK: UI vs IMPLEMENTATION")
 print("=" * 60)
 
 # 1. Find UI scenarios from streamlit_app.py
-with open("streamlit_app.py", "r", encoding="utf-8") as f:
+_archive_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.dirname(_archive_dir)
+with open(os.path.join(_archive_dir, "streamlit_app.py"), "r", encoding="utf-8") as f:
     streamlit_content = f.read()
 
 # Look for scenario definitions in the admin panel
@@ -19,7 +23,7 @@ matches = re.findall(r'"(\w+)":\s*{\s*"name":', streamlit_content)
 ui_scenarios.update(matches)
 
 # Also check inject_data choices
-with open("inject_data.py", "r", encoding="utf-8") as f:
+with open(os.path.join(_project_root, "scripts", "inject_data.py"), "r", encoding="utf-8") as f:
     inject_content = f.read()
 inject_matches = re.findall(r"choices=\[([^\]]+)\]", inject_content)
 for match in inject_matches:
@@ -35,7 +39,7 @@ for s in sorted(ui_scenarios):
     print(f"    - {s}")
 
 # 2. Find implemented scenarios in hmm_engine.py
-with open("hmm_engine.py", "r", encoding="utf-8") as f:
+with open(os.path.join(_project_root, "core", "hmm_engine.py"), "r", encoding="utf-8") as f:
     hmm_content = f.read()
 
 # Pattern: elif scenario_type == "name" or if scenario_type == "name"

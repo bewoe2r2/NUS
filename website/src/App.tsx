@@ -1,11 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { EditorialLayout } from './components/EditorialLayout';
-import { HomePage } from './pages/HomePage';
-import { TechnologyPage } from './pages/TechnologyPage';
-import { ImpactPage } from './pages/ImpactPage';
-import { DemoPage } from './pages/DemoPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './styles/global.css';
+
+const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
+const TechnologyPage = lazy(() => import('./pages/TechnologyPage').then(m => ({ default: m.TechnologyPage })));
+const ImpactPage = lazy(() => import('./pages/ImpactPage').then(m => ({ default: m.ImpactPage })));
+const DemoPage = lazy(() => import('./pages/DemoPage').then(m => ({ default: m.DemoPage })));
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -24,9 +27,13 @@ const AnimatedRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
-      <EditorialLayout>
-        <AnimatedRoutes />
-      </EditorialLayout>
+      <ErrorBoundary>
+        <EditorialLayout>
+          <Suspense fallback={<div>Loading...</div>}>
+            <AnimatedRoutes />
+          </Suspense>
+        </EditorialLayout>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

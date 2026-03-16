@@ -1,3 +1,4 @@
+<!-- NOTE: This is a static HTML mockup. For the interactive version, use the Next.js frontend. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -408,7 +409,7 @@ body{
 
 <!-- ═══════════ SIDEBAR ═══════════ -->
 <aside class="sidebar" id="nurseSidebar" style="position:relative">
-  <button class="sb-toggle" onclick="document.getElementById('nurseSidebar').classList.toggle('collapsed')" title="Toggle sidebar">
+  <button class="sb-toggle" onclick="document.getElementById('nurseSidebar').classList.toggle('collapsed');this.setAttribute('aria-expanded',!document.getElementById('nurseSidebar').classList.contains('collapsed'))" aria-expanded="true" aria-label="Toggle sidebar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
   <div class="sidebar-logo">
@@ -421,7 +422,7 @@ body{
     <p class="subtitle">Decision Support System</p>
   </div>
 
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="Main navigation">
     <div class="nav-group">
       <div class="nav-group-label">Main</div>
       <a class="nav-item active" href="#" onclick="return false">
@@ -505,7 +506,7 @@ body{
     <div class="patient-header-right">
       <div class="search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="search-input" type="text" placeholder="Search records...">
+        <input class="search-input" type="text" placeholder="Search records..." aria-label="Search records">
       </div>
       <button class="notif-btn" id="notifBtn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -905,6 +906,17 @@ body{
 </div><!-- /layout -->
 
 <script>
+// ── Escape key to collapse sidebar ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var sidebar = document.getElementById('nurseSidebar');
+    if (!sidebar.classList.contains('collapsed')) {
+      sidebar.classList.add('collapsed');
+      document.querySelector('.sb-toggle').setAttribute('aria-expanded', 'false');
+    }
+  }
+});
+
 // ── 14 Days of Data ─────────────────────────────────────
 const DAYS = [
   {date:'2026-03-01',state:'STABLE',confidence:0.94,biomarkers:{glucose_avg:6.2,glucose_variability:0.8,steps:7200,sleep_hours:7.5,hrv:58,resting_hr:68,med_adherence:0.95,carbs_intake:180,social_engagement:0.82}},

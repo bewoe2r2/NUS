@@ -1,5 +1,13 @@
-"""Full audit test for Healthcare app"""
+"""
+Standalone validation script. Run directly: python full_audit.py
+Not a pytest test file — executes validation on import.
+
+Full audit test for Healthcare app
+"""
 import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core'))
 
 print("=" * 60)
 print("NEXUS 2026 HEALTHCARE APP - FULL AUDIT")
@@ -35,14 +43,16 @@ except Exception as e:
 print("\n[3] Database Test...")
 try:
     import sqlite3
-    conn = sqlite3.connect('nexus_health.db')
+    conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db"))
     cursor = conn.cursor()
     tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
     print(f"    [PASS] Database connected: {len(tables)} tables found")
     
     # Check key tables have data
-    key_tables = ['glucose_readings', 'hmm_states', 'medication_logs']
-    for table in key_tables:
+    VALID_TABLES = {'glucose_readings', 'hmm_states', 'medication_logs'}
+    for table in VALID_TABLES:
+        if table not in VALID_TABLES:
+            raise ValueError(f"Invalid table: {table}")
         count = cursor.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
         print(f"    [PASS] {table}: {count} rows")
     conn.close()

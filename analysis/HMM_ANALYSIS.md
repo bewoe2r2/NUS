@@ -372,4 +372,4 @@ P(obs|state) = N(obs; μ_state, Σ_state)
 
 ---
 
-*Analysis completed for NEXUS 2026 HMM v2.0*
+*Analysis completed for Bewo HMM v2.0*

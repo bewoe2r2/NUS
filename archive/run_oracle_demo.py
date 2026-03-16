@@ -1,10 +1,8 @@
+import _path_setup
 import sys
 import os
 import json
 import numpy as np
-
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from hmm_engine import HMMEngine
 

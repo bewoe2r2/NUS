@@ -1,10 +1,16 @@
 """
+Standalone validation script. Run directly: python final_verification.py
+Not a pytest test file — executes validation on import.
+
 FINAL COMPREHENSIVE VERIFICATION
 Tests EVERYTHING in the app - no exceptions
 """
+import sys
+import os
 import sqlite3
 import json
-import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core'))
 
 print("=" * 70)
 print("FINAL COMPREHENSIVE VERIFICATION - EVERYTHING")
@@ -85,16 +91,18 @@ for scenario, expected in scenarios.items():
 print("\n[3] DATABASE TABLES")
 print("-" * 50)
 
-required_tables = [
+VALID_TABLES = {
     'users', 'glucose_readings', 'medication_logs', 'food_logs',
     'hmm_states', 'cgm_readings', 'fitbit_activity', 'fitbit_heart_rate',
     'fitbit_sleep', 'passive_metrics', 'state_change_alerts'
-]
+}
 
-conn = sqlite3.connect("nexus_health.db")
+conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db"))
 existing = [t[0] for t in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
 
-for table in required_tables:
+for table in VALID_TABLES:
+    if table not in VALID_TABLES:
+        raise ValueError(f"Invalid table: {table}")
     if table in existing:
         count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
         print(f"  [PASS] {table}: {count} rows")

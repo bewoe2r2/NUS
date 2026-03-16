@@ -1,8 +1,8 @@
-# HMM Implementation Strategy - NEXUS 2026 v2.0
+# HMM Implementation Strategy - Bewo v2.0
 
 ## Executive Summary
 
-NEXUS uses a **Hidden Markov Model (HMM)** with **9 orthogonal features** to detect diabetic patient deterioration. The key innovation is **orthogonal feature selection** - maximum information with minimum redundancy.
+Bewo uses a **Hidden Markov Model (HMM)** with **9 orthogonal features** to detect diabetic patient deterioration. The key innovation is **orthogonal feature selection** - maximum information with minimum redundancy.
 
 ---
 
@@ -296,5 +296,5 @@ recovery:          CRISIS(19) → WARNING(47) → STABLE(18)
 
 ---
 
-*NEXUS 2026 - HMM Strategy v2.0*
+*Bewo - HMM Strategy v2.0*
 *Orthogonal Feature Architecture*

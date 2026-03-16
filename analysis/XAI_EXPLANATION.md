@@ -1,8 +1,8 @@
-# NEXUS 2026 - Explainable AI (XAI) Dashboard & Technical Deep Dive
+# Bewo - Explainable AI (XAI) Dashboard & Technical Deep Dive
 
 ## Executive Summary
 
-NEXUS 2026 uses a **Hidden Markov Model (HMM)** with **9 orthogonal health features** to detect patient deterioration. This document explains the science behind every decision, providing **full transparency** for clinicians, judges, and patients.
+Bewo uses a **Hidden Markov Model (HMM)** with **9 orthogonal health features** to detect patient deterioration. This document explains the science behind every decision, providing **full transparency** for clinicians, judges, and patients.
 
 **Key Innovation**: We achieve **maximum information with minimum features** through orthogonal feature selection - each feature captures a unique health dimension with near-zero correlation to others.
 
@@ -460,7 +460,7 @@ log(0.01) + log(0.01) + ... = -100 (stable!)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  NEXUS 2026 XAI - QUICK REFERENCE                               │
+│  Bewo XAI - QUICK REFERENCE                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  THE 9 ORTHOGONAL FEATURES                                      │
@@ -804,5 +804,5 @@ The novelty isn't the algorithm. It's the **application and integration**:
 
 ---
 
-*NEXUS 2026 - Explainable AI for Equitable Healthcare*
+*Bewo - Explainable AI for Equitable Healthcare*
 *Version 2.1 - Hybrid HMM + Safety Rules Architecture*

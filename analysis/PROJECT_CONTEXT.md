@@ -1,12 +1,12 @@
-# NEXUS 2026 - Project Context & Documentation
+# Bewo - Project Context & Documentation
 
-> **IMPORTANT FOR AI ASSISTANTS**: This file contains the full context of the NEXUS 2026 project. When the user starts a new chat, READ THIS FILE FIRST to understand the project. UPDATE THIS FILE whenever significant changes are made.
+> **IMPORTANT FOR AI ASSISTANTS**: This file contains the full context of the Bewo project. When the user starts a new chat, READ THIS FILE FIRST to understand the project. UPDATE THIS FILE whenever significant changes are made.
 
 ---
 
 ## Project Overview
 
-**NEXUS 2026** is an AI Health Companion system for elderly diabetic patients (specifically designed for Singapore's healthcare context). It uses a **Hidden Markov Model (HMM)** to detect health deterioration before it becomes critical.
+**Bewo** is an AI Health Companion system for elderly diabetic patients (specifically designed for Singapore's healthcare context). It uses a **Hidden Markov Model (HMM)** to detect health deterioration before it becomes critical.
 
 **Target User**: Mr. Tan - a 67-year-old Type 2 Diabetic patient
 
@@ -146,9 +146,9 @@ from plotly.subplots import make_subplots
 
 | Tier | Data Sources | Features Available |
 |------|-------------|-------------------|
-| BASIC | Phone only | 8/12 features |
-| ENHANCED | Phone + Fitbit | 10/12 features |
-| PREMIUM | Phone + Fitbit + CGM | 12/12 features |
+| BASIC | Phone only | 6/9 features |
+| ENHANCED | Phone + Fitbit | 8/9 features |
+| PREMIUM | Phone + Fitbit + CGM | 9/9 features |
 
 ---
 

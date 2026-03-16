@@ -1,6 +1,7 @@
 """
 Test sudden_crisis injection like Streamlit does
 """
+import _path_setup
 import sqlite3
 import time
 import json

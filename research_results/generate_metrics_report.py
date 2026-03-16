@@ -33,7 +33,7 @@ def generate_report():
 
     markdown = f"""# 📊 Clinical Validation Metrics (v3.1)
 **Date:** 2026-01-29
-**Sample Size:** N=120 Simulated Patients (Randomized)
+**Sample Size:** N=1,200 Simulated Patients (Randomized)
 
 ## 1. Classification Performance
 Comparison of Standard Population Model vs. Hybrid Personalized Model.

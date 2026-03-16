@@ -51,17 +51,17 @@ _~718 words | ~144 wpm = ~4:59_
 
 ## 1:40–2:50 — PRODUCT DEMO (70s)
 
-**SHOW: /pitch → scroll to "Live Chat Simulation" (animated chat with Mdm. Tan)**
+**SHOW: /pitch → scroll to "Live Chat Simulation" (animated chat with Mr. Tan Ah Kow)**
 
-> Mdm. Tan is 72, diabetic, lives with her daughter. Her glucose has been creeping up and her steps are down. The HMM detects she's moving from Stable toward Warning, and Bewo reaches out automatically. She didn't open the app. She didn't press anything.
+> Mr. Tan Ah Kow is 67, diabetic, lives with his daughter. His glucose has been creeping up and his steps are down. The HMM detects he's moving from Stable toward Warning, and Bewo reaches out automatically. He didn't open the app. He didn't press anything.
 >
-> It detects her mood is low and adjusts its tone. It recommends congee with fish for lower glycemic impact. It awards a voucher bonus for her 6-day medication streak. Then it shows her something no other app can: "Auntie, if you take your Metformin today, your crisis risk drops from 35% to 12%." That's her personalised probability, not a generic reminder.
+> It detects his mood is low and adjusts its tone. It recommends congee with fish for lower glycemic impact. It awards a voucher bonus for his 6-day medication streak. Then it shows him something no other app can: "Uncle, if you take your Metformin today, your crisis risk drops from 35% to 12%." That's his personalised probability, not a generic reminder.
 >
-> Behind the scenes, it sends an SBAR report to her nurse, shifts nudges to mornings, and generates a weekly summary.
+> Behind the scenes, it sends an SBAR report to his nurse, shifts nudges to mornings, and generates a weekly summary.
 
 **SHOW: /pitch → scroll to "Nurse Dashboard" (alert queue + patient cards)**
 
-> The nurse sees Situation, Background, Assessment, Recommendation, a format she already uses. She acts in seconds instead of reviewing glucose logs. And when Mdm. Tan's daughter gets too many alerts, Bewo detects caregiver fatigue and dials them back.
+> The nurse sees Situation, Background, Assessment, Recommendation, a format she already uses. She acts in seconds instead of reviewing glucose logs. And when Mr. Tan Ah Kow's daughter gets too many alerts, Bewo detects caregiver fatigue and dials them back.
 
 ---
 
@@ -159,7 +159,7 @@ Total page switches: 0
 | Section | Value increase | Cost decrease |
 |---------|---------------|--------------|
 | Hook | — | S$8,800/admission, 61% on hospitalisations |
-| What Bewo Does | 48h prediction, 16 actions, loss-aversion | Passive sensing, no hardware |
+| What Bewo Does | 48h prediction, 18 actions, loss-aversion | Passive sensing, no hardware |
 | ERRC | Prediction + gamification (new value) | Eliminate manual reviews, reduce admissions |
 | To-Be Canvas | "more value AND lower cost simultaneously" | — |
 | Demo | Personalised counterfactual, mood-aware, zero-effort | Auto-SBAR saves nurse hours, caregiver fatigue protection |

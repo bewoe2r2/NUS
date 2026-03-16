@@ -62,8 +62,8 @@ def generate_matrix():
             "id": f"SCEN_{i:04d}",
             "description": f"{combo[0]['id']} | {combo[1]['id']} | Meds:{combo[2]['id']}",
             "inputs": {
-                "glucose": combo[0]['val'],
-                "velocity": combo[1]['val'], # simulated strictly via glucose history
+                "glucose_avg": combo[0]['val'],
+                "glucose_variability": combo[1]['val'], # simulated strictly via glucose history
                 "meds_adherence": combo[2]['val'],
                 "sleep_quality": combo[3]['val'],
                 "hrv_rmssd": combo[4]['val'],

@@ -292,9 +292,9 @@ The database ships with 3 realistic Singapore T2DM patient profiles:
 
 | Patient | Profile | HbA1c | Medications | Scenario |
 |---------|---------|-------|-------------|----------|
-| Mr. Tan (72M) | T2DM + Hypertension + Hyperlipidemia | 8.1% | Metformin 1000mg BD, Amlodipine 5mg, Atorvastatin 20mg | Typical poorly-controlled elderly |
-| Mr. Carl (65M) | T2DM + Heart Failure (NYHA II) | 9.5% | Insulin Glargine 20U, Furosemide 40mg | Critical comorbidity |
-| Mdm. Sarah (58F) | Pre-Diabetes + Obesity | 6.2% | Metformin 500mg, Lifestyle Intervention | Preventive care |
+| Mr. Tan Ah Kow (67M) | T2DM + Hypertension + Hyperlipidemia | 8.1% | Metformin 1000mg BD, Amlodipine 5mg, Atorvastatin 20mg | Typical poorly-controlled elderly |
+| Mdm. Lim Siew Eng (72F) | T2DM + Chronic Kidney Disease Stage 2 | 9.5% | Metformin 500mg, Gliclazide 80mg | Complex comorbidity |
+| Mr. Ahmad bin Ismail (58M) | T2DM | 6.2% | Metformin 1000mg | Early-stage management |
 
 Plus: 4,032 CGM readings, 14 days of Fitbit data (activity, heart rate, sleep), 42 food logs, appointments, caregiver alerts, and nurse escalations.
 

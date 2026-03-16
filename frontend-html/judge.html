@@ -1,3 +1,4 @@
+<!-- NOTE: This is a static HTML mockup. For the interactive version, use the Next.js frontend. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -530,7 +531,7 @@ button{font-family:inherit}
 <div class="app-shell">
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar dark-scroll" id="judgeSidebar" style="position:relative">
-  <button class="sb-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+  <button class="sb-toggle" onclick="toggleSidebar()" aria-expanded="true" aria-label="Toggle sidebar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
   <div class="sb-header">
@@ -1150,7 +1151,14 @@ function addConsole(type, msg) {
 // SIDEBAR TOGGLE
 function toggleSidebar(){
   document.getElementById('judgeSidebar').classList.toggle('collapsed');
+  var btn = document.querySelector('.sb-toggle');
+  btn.setAttribute('aria-expanded', !document.getElementById('judgeSidebar').classList.contains('collapsed'));
 }
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && !document.getElementById('judgeSidebar').classList.contains('collapsed')) {
+    toggleSidebar();
+  }
+});
 
 function switchTab(tabId) {
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});

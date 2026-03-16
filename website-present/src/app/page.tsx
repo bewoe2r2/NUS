@@ -20,19 +20,22 @@ import {
 function Counter({ value, suffix = "", prefix = "", delay = 0 }: { value: number; suffix?: string; prefix?: string; delay?: number }) {
   const [count, setCount] = useState(0);
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
     const timeout = setTimeout(() => {
       let start = 0;
       const duration = 1200;
       const step = 16;
       const increment = value / (duration / step);
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         start += increment;
-        if (start >= value) { setCount(value); clearInterval(timer); }
+        if (start >= value) { setCount(value); if (timer) clearInterval(timer); }
         else { setCount(Math.floor(start)); }
       }, step);
-      return () => clearInterval(timer);
     }, delay);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      if (timer) clearInterval(timer);
+    };
   }, [value, delay]);
   return <>{prefix}{count.toLocaleString()}{suffix}</>;
 }

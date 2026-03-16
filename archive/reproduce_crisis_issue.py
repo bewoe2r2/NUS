@@ -1,12 +1,11 @@
 
+import _path_setup
 import sys
 import os
 import sqlite3
 import json
 from datetime import datetime
 
-# Import HMMEngine
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from hmm_engine import HMMEngine
 
 def test_sudden_crisis_detection():
@@ -30,7 +29,7 @@ def test_sudden_crisis_detection():
     print(f"Creating test database: {TEST_DB}")
     conn = sqlite3.connect(TEST_DB)
     # We need to find nexus_schema.sql
-    schema_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nexus_schema.sql")
+    schema_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_schema.sql")
     with open(schema_path, "r") as f:
         conn.executescript(f.read())
     conn.close()

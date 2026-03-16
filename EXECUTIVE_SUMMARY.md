@@ -4,7 +4,7 @@
 
 ---
 
-> Mr. Tan is 72, diabetic, lives alone in Toa Payoh. His next clinic visit is 3 months away. Yesterday his glucose spiked after skipping medication — nobody noticed. **Bewo did.** It predicted his risk 48 hours before symptoms appeared, nudged him in Singlish he trusts, alerted his daughter, and flagged his nurse with a clinical summary — without him pressing a single button.
+> Mr. Tan Ah Kow is 67, diabetic, lives alone in Toa Payoh. His next clinic visit is 3 months away. Yesterday his glucose spiked after skipping medication — nobody noticed. **Bewo did.** It predicted his risk 48 hours before symptoms appeared, nudged him in Singlish he trusts, alerted his daughter, and flagged his nurse with a clinical summary — without him pressing a single button.
 
 ---
 

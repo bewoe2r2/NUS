@@ -11,7 +11,7 @@ import sys, os, json, time, subprocess, signal, requests, traceback
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 BASE_URL = "http://127.0.0.1:8000"
-API_KEY = "bewo-dev-key-2026"
+API_KEY = os.environ.get("BEWO_API_KEY", "bewo-dev-key-2026")
 HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
 PASS = 0
 FAIL = 0
@@ -502,7 +502,7 @@ def test_hmm_endpoints():
 
     # POST /hmm/train/P001
     code, body = post("/hmm/train/P001", timeout=30)
-    if code in [200, 500]:
+    if code in [200]:
         ok(f"POST /hmm/train/P001 -> {code}")
     else:
         warn(f"POST /hmm/train/P001 -> {code}")
@@ -668,7 +668,7 @@ def test_error_handling():
 
     # Invalid scenario name
     code, body = post("/admin/inject-scenario?scenario=nonexistent_scenario_xyz", timeout=30)
-    if code in [200, 400, 422, 500]:
+    if code in [200, 400, 422]:
         ok(f"Invalid scenario: responded with {code} (didn't hang)")
     else:
         warn(f"Invalid scenario: {code}")

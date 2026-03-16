@@ -1,13 +1,11 @@
 
+import _path_setup
 import sqlite3
 import logging
 import json
 import os
 import sys
 import time
-
-# Ensure imports work
-sys.path.append(os.getcwd())
 
 from clinical_engine import ClinicalEngine
 from hmm_engine import HMMEngine
@@ -24,7 +22,7 @@ def setup_test_db(db_path="test_clinical.db"):
     
     # Initialize schema
     conn = sqlite3.connect(db_path)
-    with open("nexus_schema.sql", "r") as f:
+    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_schema.sql"), "r") as f:
         schema = f.read()
     conn.executescript(schema)
     conn.close()
