@@ -13,8 +13,9 @@ import sqlite3
 from collections import deque
 import math
 import random
+import os
 
-DB_PATH = "nexus_health.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 class StepCounter:
     def __init__(self, db_path=DB_PATH):

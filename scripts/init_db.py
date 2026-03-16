@@ -1,8 +1,8 @@
 import sqlite3
 import os
 
-DB_PATH = "nexus_health.db"
-SCHEMA_PATH = "nexus_schema.sql"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
+SCHEMA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_schema.sql")
 
 def init_db():
     if not os.path.exists(SCHEMA_PATH):

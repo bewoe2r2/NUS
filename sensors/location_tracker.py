@@ -19,7 +19,7 @@ import math
 import random
 import os
 
-DB_PATH = "nexus_health.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 # Default Home Location (Singapore City Hall approx — configurable per patient via env vars)
 HOME_LAT = float(os.environ.get("BEWO_HOME_LAT", "1.2931"))

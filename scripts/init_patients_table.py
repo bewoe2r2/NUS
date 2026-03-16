@@ -2,11 +2,12 @@
 import sqlite3
 import json
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DB_PATH = "nexus_health.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 def init_patients_table():
     conn = sqlite3.connect(DB_PATH)

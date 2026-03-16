@@ -56,9 +56,8 @@ class GeminiIntegration:
 
         # Model hierarchy with fallback
         self.model_candidates = [
-            'gemini-3-flash-preview',   # Latest (Dec 2025) - 3x faster than 2.5 Pro
-            'gemini-2.5-flash',         # Previous generation - stable
-            'gemini-2.0-flash-exp'      # Legacy fallback
+            'gemini-2.5-flash',         # Stable production model
+            'gemini-2.0-flash',         # Fallback
         ]
         self.model_name = self._select_available_model()
         self.max_retries = 2

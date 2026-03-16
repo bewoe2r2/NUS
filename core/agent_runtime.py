@@ -3119,31 +3119,40 @@ def generate_glucose_narrative(patient_id: str, hmm_context: Dict) -> Dict:
     }
 
 
-def _call_gemini(gemini_integration, prompt: str) -> Optional[Dict]:
+def _call_gemini(gemini_integration, prompt: str, max_retries: int = 3) -> Optional[Dict]:
     """
-    Call Gemini and parse JSON response. Returns None on failure.
-    Reusable across single-shot and multi-turn agent loops.
+    Call Gemini and parse JSON response with retry + exponential backoff.
+    Returns None on failure. Reusable across single-shot and multi-turn agent loops.
     """
     if not gemini_integration or not gemini_integration.api_key:
         return None
-    try:
-        model = gemini_integration._get_model()
-        response = model.generate_content(prompt)
-        text = response.text.strip()
 
-        # Clean markdown fences
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
+    for attempt in range(max_retries):
+        try:
+            model = gemini_integration._get_model()
+            response = model.generate_content(prompt)
+            text = response.text.strip()
 
-        return json.loads(text)
-    except Exception as e:
-        logger.error(f"Gemini call failed: {e}")
-        return None
+            # Clean markdown fences
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            logger.warning(f"Gemini returned non-JSON (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+        except Exception as e:
+            logger.error(f"Gemini call failed (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+
+    return None
 
 
 def _get_merlion_forecast(observations: List[Dict]) -> Dict:

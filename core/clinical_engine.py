@@ -86,26 +86,13 @@ class ClinicalEngine:
             # In a real system, we'd fetch the persistent HMM state. 
             # For now, we instantiate/retrieve logic associated with the user/demo.
             # Assuming HMM state is stored or re-computed from recent observations.
-            observations = self.hmm_engine.fetch_observations(days=1) # Last 24h
+            observations = self.hmm_engine.fetch_observations(days=14)
             if not observations or len(observations) == 0:
-                 # Fallback for empty data
                  state = "STABLE"
                  probs = [1.0, 0.0, 0.0]
             else:
-                # We need to run inference to get the *current* state
-                # This duplicates some logic from streamlit_app but belongs here in the 'Engine'
-                 # Fetch full history for accurate inference? No, engine usually stateful.
-                 # For the demo, we rely on what's in the DB specific to the 'current' logic
-                 # Simulating 'current' state retrieval:
-                 # In production this would come from a 'patient_states' table.
-                 # For this impl, we re-run inference on recent data.
-                 obs_sequence = observations # List of (feature, value) tuples
-                 # Re-run inference (computational cost accepted for accuracy)
-                 # We need the full sequence to get the current state
-                 full_obs = self.hmm_engine.fetch_observations(days=14) 
-                 results = self.hmm_engine.run_inference(full_obs)
+                 results = self.hmm_engine.run_inference(observations)
                  state = results['current_state']
-                 # Reconstruct probs list [STABLE, WARNING, CRISIS]
                  state_probs_dict = results['state_probabilities']
                  probs = [state_probs_dict.get(s, 0.0) for s in STATES]
 
@@ -185,7 +172,7 @@ class ClinicalEngine:
             'glucose_max': round(max(glucose_vals), 1) if glucose_vals else 0,
             'adherence_pct': int(sum(adherence_vals)/len(adherence_vals) * 100) if adherence_vals else 0,
             'sleep_quality': sleep_val,
-            'sleep_hours': sleep_val,  # BUG-05: alias so draft_sbar can read either key
+            'sleep_hours': round(sleep_val * 0.9, 1) if sleep_val else 0,  # Estimated hours from quality score (0-10 scale)
             'steps': steps_val
         }
         return metrics

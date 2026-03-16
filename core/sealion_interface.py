@@ -89,12 +89,12 @@ class SeaLionInterface:
         self.cf_auth_token = os.getenv('CLOUDFLARE_AUTH_TOKEN')
         self.use_cloudflare = bool(self.cf_account_id and self.cf_auth_token)
 
-        # --- Backend 3: Gemini mock (last resort) ---
+        # --- Backend 3: Gemini mock (last resort, always initialized as fallback) ---
         self.gemini_key = api_key or os.getenv('GEMINI_API_KEY')
         self.gemini_model = None
-        if GENAI_AVAILABLE and self.gemini_key and not self.sealion_client and not self.use_cloudflare:
+        if GENAI_AVAILABLE and self.gemini_key:
             genai.configure(api_key=self.gemini_key)
-            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash')
 
         # Log which backend is active
         if self.sealion_client:
@@ -273,7 +273,7 @@ Write it as a warm, clear message to a family member in Singlish. 2-3 sentences 
         elif self.use_cloudflare:
             return {"backend": "cloudflare_sealion_v4_27b", "model": SEALION_CF_MODEL, "status": "real"}
         elif self.gemini_model:
-            return {"backend": "gemini_mock", "model": "gemini-2.0-flash-exp", "status": "simulated"}
+            return {"backend": "gemini_mock", "model": "gemini-2.0-flash", "status": "simulated"}
         else:
             return {"backend": "offline_mock", "model": None, "status": "offline"}
 

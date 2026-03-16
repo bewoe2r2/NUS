@@ -16,7 +16,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core"))
 from hmm_engine import HMMEngine
 
-DB_PATH = "nexus_health.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 SCENARIO = "warning_to_crisis"  # Default scenario
 TIER = "PREMIUM"
 DAYS = 14
