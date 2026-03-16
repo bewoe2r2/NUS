@@ -1,0 +1,33 @@
+{
+  "baum_welch": {
+    "Stable (5 pts x 14d)": {
+      "converged": false,
+      "iterations": 25,
+      "final_ll": -721.8717014767832,
+      "improvement": 190.80610080959593,
+      "monotonic": true
+    },
+    "Mixed (stable+decline+crisis)": {
+      "converged": true,
+      "iterations": 11,
+      "final_ll": -1112.5268608928736,
+      "improvement": 290.84639814814886,
+      "monotonic": true
+    },
+    "Crisis-heavy (7 pts)": {
+      "converged": true,
+      "iterations": 12,
+      "final_ll": -1109.2690289643626,
+      "improvement": 394.9577489641051,
+      "monotonic": true
+    }
+  },
+  "summary": {
+    "total_tests": 1324,
+    "elapsed_seconds": 20.0,
+    "cohort_accuracy": 1.0,
+    "crisis_auc": 1.0,
+    "safety_sensitivity": 1.0,
+    "safety_specificity": 1.0
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "baum_welch": {
+    "stable": {
+      "converged": false,
+      "iterations": 20,
+      "final_ll": -721.8771829763159,
+      "ll_improvement": 190.8006193100632
+    },
+    "mixed": {
+      "converged": true,
+      "iterations": 12,
+      "final_ll": -777.3926012126766,
+      "ll_improvement": 199.40681826980529
+    }
+  },
+  "monte_carlo": {
+    "STABLE": {
+      "prob_crisis": 20.4,
+      "expected_hours": 27.5,
+      "risk_level": "LOW"
+    },
+    "WARNING": {
+      "prob_crisis": 38.9,
+      "expected_hours": 16.8,
+      "risk_level": "MEDIUM"
+    },
+    "CRISIS": {
+      "prob_crisis": 100.0,
+      "expected_hours": 0.0,
+      "risk_level": "CRITICAL"
+    }
+  },
+  "counterfactual": {
+    "take_meds": {
+      "new_risk": 0.145,
+      "baseline_risk": 0.2983,
+      "reduction": 0.1532,
+      "improvement_pct": 51.4
+    },
+    "exercise": {
+      "new_risk": 0.0,
+      "baseline_risk": 0.2983,
+      "reduction": 0.2982,
+      "improvement_pct": 100.0
+    },
+    "healthy_diet": {
+      "new_risk": 0.1422,
+      "baseline_risk": 0.2983,
+      "reduction": 0.156,
+      "improvement_pct": 52.3
+    },
+    "full_lifestyle": {
+      "new_risk": 0.0,
+      "baseline_risk": 0.2983,
+      "reduction": 0.2982,
+      "improvement_pct": 100.0
+    },
+    "skip_meds": {
+      "new_risk": 0.7089,
+      "baseline_risk": 0.2983,
+      "reduction": -0.4107,
+      "improvement_pct": -137.7
+    }
+  },
+  "mc_vs_ac_comparison": {
+    "STABLE": {
+      "mc_percent": 20.4,
+      "ac_risk": 20.7,
+      "difference": 0.3
+    },
+    "WARNING": {
+      "mc_percent": 38.9,
+      "ac_risk": 39.8,
+      "difference": 0.9
+    },
+    "CRISIS": {
+      "mc_percent": 100.0,
+      "ac_risk": 98.8,
+      "difference": 1.2
+    }
+  },
+  "cohort_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "crisis_auc": 1.0,
+    "crisis_sensitivity": 1.0,
+    "crisis_specificity": 1.0,
+    "stable_precision": 1.0,
+    "cohort_size": 550
+  }
+}
