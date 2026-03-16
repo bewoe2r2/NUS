@@ -1,0 +1,609 @@
+{
+  "S1_cohort": {
+    "total": 5000,
+    "accuracy": 99.28,
+    "macro_f1": 0.9928,
+    "per_class": {
+      "STABLE": {
+        "precision": 1.0,
+        "recall": 0.994,
+        "specificity": 1.0,
+        "f1": 0.997,
+        "tp": 1657,
+        "fp": 0,
+        "fn": 10,
+        "tn": 3333,
+        "support": 1667
+      },
+      "WARNING": {
+        "precision": 0.9939,
+        "recall": 0.9844,
+        "specificity": 0.997,
+        "f1": 0.9892,
+        "tp": 1641,
+        "fp": 10,
+        "fn": 26,
+        "tn": 3323,
+        "support": 1667
+      },
+      "CRISIS": {
+        "precision": 0.9846,
+        "recall": 1.0,
+        "specificity": 0.9922,
+        "f1": 0.9923,
+        "tp": 1666,
+        "fp": 26,
+        "fn": 0,
+        "tn": 3308,
+        "support": 1666
+      }
+    },
+    "auc": {
+      "STABLE": 1.0,
+      "WARNING": 1.0,
+      "CRISIS": 1.0
+    },
+    "confusion_matrix": {
+      "STABLE": {
+        "STABLE": 1657,
+        "WARNING": 10,
+        "CRISIS": 0
+      },
+      "WARNING": {
+        "STABLE": 0,
+        "WARNING": 1641,
+        "CRISIS": 26
+      },
+      "CRISIS": {
+        "STABLE": 0,
+        "WARNING": 0,
+        "CRISIS": 1666
+      }
+    }
+  },
+  "S2_boundary": {
+    "STABLE-WARNING boundary blend=0.3": {
+      "relevance_rate": 100.0,
+      "count": 200
+    },
+    "STABLE-WARNING boundary blend=0.5": {
+      "relevance_rate": 100.0,
+      "count": 200
+    },
+    "STABLE-WARNING boundary blend=0.7": {
+      "relevance_rate": 100.0,
+      "count": 200
+    },
+    "WARNING-CRISIS boundary blend=0.3": {
+      "relevance_rate": 100.0,
+      "count": 200
+    },
+    "WARNING-CRISIS boundary blend=0.5": {
+      "relevance_rate": 100.0,
+      "count": 200
+    },
+    "WARNING-CRISIS boundary blend=0.7": {
+      "relevance_rate": 100.0,
+      "count": 200
+    },
+    "STABLE-CRISIS boundary blend=0.3": {
+      "relevance_rate": 0.0,
+      "count": 200
+    },
+    "STABLE-CRISIS boundary blend=0.5": {
+      "relevance_rate": 17.5,
+      "count": 200
+    },
+    "STABLE-CRISIS boundary blend=0.7": {
+      "relevance_rate": 81.0,
+      "count": 200
+    }
+  },
+  "S3_archetypes": {
+    "well_controlled_elderly": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9932,
+      "method": "HMM"
+    },
+    "active_grandmother": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9946,
+      "method": "HMM"
+    },
+    "borderline_stable": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9233,
+      "method": "HMM"
+    },
+    "fit_low_glucose": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9985,
+      "method": "HMM"
+    },
+    "slipping_compliance": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.842,
+      "method": "HMM"
+    },
+    "post_illness_recovery": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.6379,
+      "method": "HMM"
+    },
+    "new_diagnosis_struggling": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9601,
+      "method": "HMM"
+    },
+    "depressed_elderly": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.8896,
+      "method": "HMM"
+    },
+    "stress_hyperglycemia": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.948,
+      "method": "HMM"
+    },
+    "mild_infection": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9101,
+      "method": "HMM"
+    },
+    "dka_presentation": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9839,
+      "method": "RULE_OVERRIDE"
+    },
+    "hypoglycemia_severe": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.8015,
+      "method": "RULE_OVERRIDE"
+    },
+    "sepsis_pattern": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.8294,
+      "method": "RULE_OVERRIDE"
+    },
+    "complete_neglect": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9584,
+      "method": "RULE_OVERRIDE"
+    },
+    "cardiac_decompensation": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.5071,
+      "method": "RULE_OVERRIDE"
+    },
+    "steroid_induced": {
+      "expected": "CRISIS",
+      "predicted": "CRISIS",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.6227,
+      "method": "RULE_OVERRIDE"
+    },
+    "athletic_low_hr": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9996,
+      "method": "HMM"
+    },
+    "high_glucose_great_everything_else": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.512,
+      "method": "HMM"
+    },
+    "low_social_but_healthy": {
+      "expected": "STABLE",
+      "predicted": "STABLE",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.9584,
+      "method": "HMM"
+    },
+    "brittle_diabetic": {
+      "expected": "WARNING",
+      "predicted": "WARNING",
+      "correct": true,
+      "severity_gap": 0,
+      "confidence": 0.6238,
+      "method": "RULE_OVERRIDE"
+    }
+  },
+  "S4_adversarial": {
+    "All features at bounds minimum": {
+      "state": "CRISIS",
+      "confidence": 0.954,
+      "crashed": false
+    },
+    "All features at bounds maximum": {
+      "state": "CRISIS",
+      "confidence": 1.0,
+      "crashed": false
+    },
+    "Mixed signals: crisis glucose + perfect everything else": {
+      "state": "CRISIS",
+      "confidence": 1.0,
+      "crashed": false
+    },
+    "Mixed signals: perfect glucose + crisis everything else": {
+      "state": "CRISIS",
+      "confidence": 0.8512,
+      "crashed": false
+    },
+    "Single feature only: glucose": {
+      "state": "CRISIS",
+      "confidence": 0.4102,
+      "crashed": false
+    },
+    "Single feature only: meds_adherence": {
+      "state": "WARNING",
+      "confidence": 0.513,
+      "crashed": false
+    },
+    "Empty observation": {
+      "state": "STABLE",
+      "confidence": 0.4,
+      "crashed": false
+    },
+    "All None values": {
+      "state": "STABLE",
+      "confidence": 0.4,
+      "crashed": false
+    },
+    "Extreme outlier: glucose 35 mmol/L": {
+      "state": "CRISIS",
+      "confidence": 1.0,
+      "crashed": false
+    }
+  },
+  "S5_temporal": {
+    "Stable -> Warning (gradual)": {
+      "accuracy": 98.5,
+      "expected": "WARNING"
+    },
+    "Stable -> Warning -> Crisis": {
+      "accuracy": 100.0,
+      "expected": "CRISIS"
+    },
+    "Crisis -> Warning -> Stable (recovery)": {
+      "accuracy": 98.5,
+      "expected": "STABLE"
+    },
+    "Stable -> Sudden Crisis": {
+      "accuracy": 100.0,
+      "expected": "CRISIS"
+    },
+    "Sustained Warning": {
+      "accuracy": 98.5,
+      "expected": "WARNING"
+    },
+    "Sustained Crisis": {
+      "accuracy": 100.0,
+      "expected": "CRISIS"
+    }
+  },
+  "S6_noise": [
+    {
+      "noise_boost": 0.0,
+      "accuracy": 98.7
+    },
+    {
+      "noise_boost": 0.25,
+      "accuracy": 97.7
+    },
+    {
+      "noise_boost": 0.5,
+      "accuracy": 94.7
+    },
+    {
+      "noise_boost": 0.75,
+      "accuracy": 92.7
+    },
+    {
+      "noise_boost": 1.0,
+      "accuracy": 90.7
+    },
+    {
+      "noise_boost": 1.5,
+      "accuracy": 83.0
+    },
+    {
+      "noise_boost": 2.0,
+      "accuracy": 75.7
+    },
+    {
+      "noise_boost": 3.0,
+      "accuracy": 65.0
+    }
+  ],
+  "S7_missing": [
+    {
+      "missing_rate": 0.0,
+      "accuracy": 99.3
+    },
+    {
+      "missing_rate": 0.1,
+      "accuracy": 99.7
+    },
+    {
+      "missing_rate": 0.2,
+      "accuracy": 99.7
+    },
+    {
+      "missing_rate": 0.3,
+      "accuracy": 99.7
+    },
+    {
+      "missing_rate": 0.4,
+      "accuracy": 99.7
+    },
+    {
+      "missing_rate": 0.5,
+      "accuracy": 99.7
+    },
+    {
+      "missing_rate": 0.6,
+      "accuracy": 99.3
+    },
+    {
+      "missing_rate": 0.7,
+      "accuracy": 99.0
+    },
+    {
+      "missing_rate": 0.8,
+      "accuracy": 94.7
+    },
+    {
+      "missing_rate": 0.9,
+      "accuracy": 74.7
+    }
+  ],
+  "S8_safety": {
+    "accuracy": 100.0,
+    "correct": 22,
+    "total": 22
+  },
+  "S9_calibration": {
+    "brier": 0.0019,
+    "ece": 0.0094,
+    "reliability": {
+      "0.5-0.6": {
+        "count": 1,
+        "avg_confidence": 0.5705,
+        "avg_accuracy": 1.0,
+        "gap": 0.4295
+      },
+      "0.6-0.7": {
+        "count": 4,
+        "avg_confidence": 0.6349,
+        "avg_accuracy": 1.0,
+        "gap": 0.3651
+      },
+      "0.7-0.8": {
+        "count": 15,
+        "avg_confidence": 0.7565,
+        "avg_accuracy": 1.0,
+        "gap": 0.2435
+      },
+      "0.8-0.9": {
+        "count": 65,
+        "avg_confidence": 0.8685,
+        "avg_accuracy": 1.0,
+        "gap": 0.1315
+      },
+      "0.9-1.0": {
+        "count": 4915,
+        "avg_confidence": 0.986,
+        "avg_accuracy": 0.9927,
+        "gap": 0.0067
+      }
+    }
+  },
+  "S10_montecarlo": {
+    "STABLE": {
+      "mean_risk": 20.8,
+      "std": 1.7
+    },
+    "WARNING": {
+      "mean_risk": 39.5,
+      "std": 2.0
+    },
+    "CRISIS": {
+      "mean_risk": 100.0,
+      "std": 0.0
+    }
+  },
+  "S11_intervention": {
+    "correct": 7,
+    "total": 7,
+    "monotonicity": true
+  },
+  "S12_bootstrap": {
+    "mean": 98.96,
+    "std": 0.42,
+    "ci_95": [
+      98.32,
+      99.67
+    ],
+    "all": [
+      99.2,
+      99.0,
+      98.5,
+      99.2,
+      98.5,
+      98.8,
+      99.5,
+      98.5,
+      98.5,
+      99.5,
+      98.2,
+      99.3,
+      98.7,
+      99.7,
+      98.8,
+      99.7,
+      98.8,
+      99.0,
+      98.7,
+      99.2
+    ]
+  },
+  "S13_ablation": {
+    "baseline": 98.4,
+    "features": {
+      "glucose_avg": {
+        "accuracy": 99.8,
+        "delta": 1.3
+      },
+      "glucose_variability": {
+        "accuracy": 98.4,
+        "delta": 0.0
+      },
+      "meds_adherence": {
+        "accuracy": 99.6,
+        "delta": 1.1
+      },
+      "carbs_intake": {
+        "accuracy": 98.4,
+        "delta": 0.0
+      },
+      "steps_daily": {
+        "accuracy": 98.4,
+        "delta": 0.0
+      },
+      "resting_hr": {
+        "accuracy": 98.4,
+        "delta": 0.0
+      },
+      "hrv_rmssd": {
+        "accuracy": 98.7,
+        "delta": 0.2
+      },
+      "sleep_quality": {
+        "accuracy": 98.4,
+        "delta": 0.0
+      },
+      "social_engagement": {
+        "accuracy": 98.4,
+        "delta": 0.0
+      }
+    }
+  },
+  "S14_baselines": {
+    "hmm": 99.4,
+    "glucose_only": 90.5,
+    "weighted": 87.7,
+    "majority": 33.3,
+    "mcnemar_chi2": 115.39,
+    "mcnemar_p": 0.0
+  },
+  "S15_seqlen": [
+    {
+      "n_obs": 1,
+      "accuracy": 97.0
+    },
+    {
+      "n_obs": 2,
+      "accuracy": 99.7
+    },
+    {
+      "n_obs": 3,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 4,
+      "accuracy": 99.3
+    },
+    {
+      "n_obs": 6,
+      "accuracy": 99.0
+    },
+    {
+      "n_obs": 8,
+      "accuracy": 99.3
+    },
+    {
+      "n_obs": 12,
+      "accuracy": 98.7
+    },
+    {
+      "n_obs": 18,
+      "accuracy": 98.7
+    },
+    {
+      "n_obs": 24,
+      "accuracy": 98.7
+    },
+    {
+      "n_obs": 36,
+      "accuracy": 99.0
+    }
+  ],
+  "S16_stats": {
+    "overall_ci": [
+      99.0,
+      99.5
+    ],
+    "cohens_h": 0.47
+  },
+  "summary": {
+    "verdict": "PASS \u2014 Model validated on fully independent data",
+    "gates_passed": 38,
+    "gates_total": 38,
+    "failed_gates": [],
+    "runtime_seconds": 30.9,
+    "timestamp": "2026-03-16T08:29:57.364774"
+  }
+}
