@@ -103,11 +103,16 @@ export const api = {
         return res.json();
     },
 
-    logFood: async (description: string): Promise<any> => {
-        const res = await authFetch(`${API_BASE}/chat`, {
+    logFood: async (description: string, carbs?: number, mealType?: string): Promise<any> => {
+        const res = await authFetch(`${API_BASE}/food/log`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: `Log food: ${description}`, patient_id: "P001" })
+            body: JSON.stringify({
+                description,
+                carbs_grams: carbs || 0,
+                meal_type: mealType || "snack",
+                patient_id: "P001"
+            }),
         });
         return res.json();
     },
@@ -149,7 +154,15 @@ export const api = {
         const res = await authFetch(`${API_BASE}/nurse/alerts`);
         if (!res.ok) return [];
         const data = await res.json();
-        return data.nurse_alerts || [];
+        const allAlerts = [
+            ...(data.nurse_alerts || []).map((a: any) => ({...a, category: 'nurse'})),
+            ...(data.doctor_escalations || []).map((a: any) => ({...a, category: 'escalation'})),
+            ...(data.family_alerts || []).map((a: any) => ({...a, category: 'family'})),
+            ...(data.medication_videos || []).map((a: any) => ({...a, category: 'medication_video'})),
+            ...(data.appointment_requests || []).map((a: any) => ({...a, category: 'appointment'})),
+        ];
+        allAlerts.sort((a, b) => (b.created_at || b.timestamp_utc || 0) - (a.created_at || a.timestamp_utc || 0));
+        return allAlerts;
     },
 
     getNursePatients: async (): Promise<any[]> => {
@@ -199,8 +212,10 @@ export const api = {
     },
 
     checkDrugInteraction: async (id: string, proposed: string): Promise<any> => {
-        const res = await authFetch(`${API_BASE}/patient/${id}/drug-interactions/check?proposed_medication=${encodeURIComponent(proposed)}`, {
+        const res = await authFetch(`${API_BASE}/patient/${id}/drug-interactions/check`, {
             method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ proposed_medication: proposed }),
         });
         if (!res.ok) return { interactions_found: 0, interactions: [] };
         return res.json();
@@ -273,7 +288,11 @@ export const api = {
     },
 
     runCounterfactual: async (id: string): Promise<any> => {
-        const res = await authFetch(`${API_BASE}/agent/counterfactual/${id}`, { method: "POST" });
+        const res = await authFetch(`${API_BASE}/agent/counterfactual/${id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+        });
         if (!res.ok) return null;
         return res.json();
     },

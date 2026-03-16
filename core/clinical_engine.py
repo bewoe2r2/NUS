@@ -19,13 +19,19 @@ import logging
 import os
 import sqlite3
 import math
+import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 
 # Local imports
-from hmm_engine import HMMEngine, STATES
-from merlion_risk_engine import MerlionRiskEngine
-from gemini_integration import GeminiIntegration
+try:
+    from core.hmm_engine import HMMEngine, STATES
+    from core.merlion_risk_engine import MerlionRiskEngine
+    from core.gemini_integration import GeminiIntegration
+except ImportError:
+    from hmm_engine import HMMEngine, STATES
+    from merlion_risk_engine import MerlionRiskEngine
+    from gemini_integration import GeminiIntegration
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -154,19 +160,22 @@ class ClinicalEngine:
         
         glucose_vals = []
         adherence_vals = []
-        sleep_val = 0
-        steps_val = 0
-        
+        sleep_vals = []
+        steps_vals = []
+
         for obs in observations:
-            if 'glucose_avg' in obs and obs['glucose_avg'] is not None: 
+            if 'glucose_avg' in obs and obs['glucose_avg'] is not None:
                 glucose_vals.append(obs['glucose_avg'])
-            if 'meds_adherence' in obs and obs['meds_adherence'] is not None: 
+            if 'meds_adherence' in obs and obs['meds_adherence'] is not None:
                 adherence_vals.append(obs['meds_adherence'])
-            if 'sleep_quality' in obs and obs['sleep_quality'] is not None: 
-                sleep_val = obs['sleep_quality'] 
-            if 'steps_daily' in obs and obs['steps_daily'] is not None: 
-                steps_val = obs['steps_daily']
-            
+            if 'sleep_quality' in obs and obs['sleep_quality'] is not None:
+                sleep_vals.append(obs['sleep_quality'])
+            if 'steps_daily' in obs and obs['steps_daily'] is not None:
+                steps_vals.append(obs['steps_daily'])
+
+        sleep_val = sum(sleep_vals) / len(sleep_vals) if sleep_vals else 5.0
+        steps_val = sum(steps_vals) / len(steps_vals) if steps_vals else 5000
+
         metrics = {
             'glucose_avg': round(sum(glucose_vals)/len(glucose_vals), 1) if glucose_vals else 0,
             'glucose_max': round(max(glucose_vals), 1) if glucose_vals else 0,
@@ -205,12 +214,11 @@ class ClinicalEngine:
         """Persist the generated SBAR report for audit trail."""
         conn = sqlite3.connect(self.db_path)
         try:
-            timestamp = datetime.now().isoformat()
-            # Assuming table 'clinical_notes_history' exists
+            timestamp_utc = int(time.time())
             conn.execute("""
-                INSERT INTO clinical_notes_history (user_id, timestamp, sbar_json)
-                VALUES (?, ?, ?)
-            """, (user_id, timestamp, json.dumps(sbar)))
+                INSERT INTO clinical_notes_history (patient_id, timestamp_utc, note_type, content)
+                VALUES (?, ?, ?, ?)
+            """, (user_id, timestamp_utc, "sbar", json.dumps(sbar)))
             conn.commit()
         except sqlite3.OperationalError:
             # Table might not exist yet if schema update hasn't run

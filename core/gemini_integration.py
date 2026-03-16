@@ -1,5 +1,5 @@
 """
-Bewo 2026 - Gemini 3.0 Flash Integration
+Bewo 2026 - Gemini 2.5 Flash Integration
 file: gemini_integration.py
 author: Lead Architect
 version: 3.0.0
@@ -11,8 +11,8 @@ Handles interaction with Google Gemini API for:
 4. Proactive Patient Insights (Agentic) - NOW WITH FULL CONTEXTUAL DATA
 
 Model Hierarchy:
-- Primary: gemini-3.0-flash (frontier performance, 3x faster than 2.5 Pro)
-- Fallback 1: gemini-2.5-flash
+- Primary: gemini-2.5-flash (with fallback to gemini-2.0-flash)
+- Fallback 1: gemini-2.0-flash
 - Fallback 2: gemini-2.0-flash-exp
 
 ===============================================================================
@@ -69,7 +69,7 @@ class GeminiIntegration:
         """Returns a database connection."""
         return sqlite3.connect(self.db_path)
 
-    def fetch_full_context(self, days=7):
+    def fetch_full_context(self, days=7, patient_id=None):
         """
         Fetches ALL available contextual data for Gemini to use.
 
@@ -155,6 +155,8 @@ class GeminiIntegration:
                 })
 
             # ===== 3. ACTIVITY PATTERN (Fitbit) =====
+            # Note: fitbit_activity.date is stored as INTEGER (Unix epoch day_start).
+            # start_time is also Unix epoch, so integer comparison is correct.
             activity_row = cursor.execute("""
                 SELECT
                     AVG(steps) as avg_steps,
@@ -164,7 +166,7 @@ class GeminiIntegration:
                     MAX(steps) as best_day_steps,
                     MIN(steps) as worst_day_steps
                 FROM fitbit_activity
-                WHERE date >= ?
+                WHERE CAST(date AS INTEGER) >= ?
             """, (start_time,)).fetchone()
 
             if activity_row and activity_row['avg_steps']:
@@ -227,6 +229,7 @@ class GeminiIntegration:
                 }
 
             # ===== 7. SLEEP DETAILS =====
+            # Note: fitbit_sleep.date is stored as INTEGER (Unix epoch day_start).
             sleep_row = cursor.execute("""
                 SELECT
                     AVG(total_sleep_minutes) as avg_sleep_min,
@@ -234,7 +237,7 @@ class GeminiIntegration:
                     MIN(total_sleep_minutes) as worst_night,
                     MAX(total_sleep_minutes) as best_night
                 FROM fitbit_sleep
-                WHERE date >= ?
+                WHERE CAST(date AS INTEGER) >= ?
             """, (start_time,)).fetchone()
 
             if sleep_row and sleep_row['avg_sleep_min']:
@@ -327,9 +330,9 @@ class GeminiIntegration:
                     MAX(datetime(taken_timestamp_utc, 'unixepoch', 'localtime')) as last_taken
                 FROM medication_logs
                 WHERE taken_timestamp_utc >= ?
-                AND (user_id IS NULL OR user_id = 'P001')
+                AND (user_id IS NULL OR user_id = ?)
                 GROUP BY medication_name
-            """, (start_time,)).fetchall()
+            """, (start_time, patient_id or 'P001')).fetchall()
 
             for row in med_rows:
                 context['medication_details'].append({
@@ -519,7 +522,7 @@ class GeminiIntegration:
           * Avg Glucose: {metrics.get('glucose_avg')} mmol/L
           * Max Glucose: {metrics.get('glucose_max')} mmol/L
           * Adherence: {metrics.get('adherence_pct')}%
-          * Sleep: {metrics.get('sleep_hours')}h
+          * Sleep Quality: {metrics.get('sleep_quality')}/10 (~{metrics.get('sleep_hours')}h)
           * Steps: {metrics.get('steps')}
 
         CLINICAL GUIDELINES:
@@ -808,7 +811,7 @@ class GeminiIntegration:
         2. FUTURE RISK (MERLION): 
            - Crisis Prob (45min): {merlion_risk['prob_crisis_45min']:.0%}
            - Velocity: {merlion_risk.get('velocity', 0)} mmol/L/min
-        3. PATIENT: {patient_profile.get('name', 'Mr. Tan')} ({patient_profile.get('age', 67)}yo)
+        3. PATIENT: Patient ({patient_profile.get('age', 67)}yo)
 
         Your goal is to devise a CLINICAL STRATEGY.
         Do NOT write the final dialogue. Write the MEDICAL INTENT.
@@ -854,7 +857,7 @@ class GeminiIntegration:
         )
         
         return {
-            "greeting": f"Hello {patient_profile.get('name')}",
+            "greeting": f"Hello {patient_profile.get('name', 'there')}",
             "message": final_message, # This is now the Singlish version
             "action_item": strategy['recommended_action'],
             "tone": strategy['tone'],

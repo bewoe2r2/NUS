@@ -412,8 +412,8 @@ def _exec_set_reminder(args, patient_id, conn, now):
         except sqlite3.OperationalError:
             # Fallback: insert without reminder_type column
             conn.execute("""
-                INSERT INTO reminders (user_id, reminder_time, message, repeat_type, created_at, status)
-                VALUES (?, ?, ?, ?, ?, 'pending')
+                INSERT INTO reminders (user_id, reminder_time, message, repeat_type, created_at)
+                VALUES (?, ?, ?, ?, ?)
             """, (patient_id, args.get("reminder_time", "08:00"),
                   args.get("message", "Health reminder"),
                   args.get("repeat_type", "once"), now))
@@ -474,10 +474,11 @@ def _exec_award_voucher(args, patient_id, conn, now):
     amount = min(float(args.get("amount", 1)), 5.0)
     cursor = conn.execute("""
         UPDATE voucher_tracker
-        SET current_value = MIN(COALESCE(current_value, 0) + ?, 10.0),
+        SET current_value = CASE WHEN COALESCE(current_value, 0) + ? > 10.0 THEN 10.0
+                                 ELSE COALESCE(current_value, 0) + ? END,
             bonus_earned = COALESCE(bonus_earned, 0) + ?
         WHERE user_id = ?
-    """, (amount, amount, patient_id))
+    """, (amount, amount, amount, patient_id))
     if cursor.rowcount == 0:
         # No voucher row exists — insert one
         conn.execute("""
@@ -571,12 +572,12 @@ def _exec_recommend_food(args, patient_id, conn, now):
 
 def _exec_schedule_checkin(args, patient_id, conn, now):
     conn.execute("""
-        INSERT INTO reminders
-        (user_id, reminder_time, message, reminder_type, repeat_type, created_at, status)
-        VALUES (?, ?, ?, ?, 'once', ?, 'pending')
+        INSERT INTO proactive_checkins
+        (patient_id, scheduled_time, checkin_type, reason, status, created_at)
+        VALUES (?, ?, ?, ?, 'pending', ?)
     """, (patient_id, args.get("checkin_time", "10:00"),
-          args.get("reason", "Scheduled check-in"),
-          args.get("checkin_type", "wellness"), now))
+          args.get("checkin_type", "wellness"),
+          args.get("reason", "Scheduled check-in"), now))
     conn.commit()
     return {"success": True, "checkin_time": args.get("checkin_time"),
             "checkin_type": args.get("checkin_type")}
@@ -591,10 +592,11 @@ def _exec_celebrate_streak(args, patient_id, conn, now):
     # Award voucher bonus
     cursor = conn.execute("""
         UPDATE voucher_tracker
-        SET current_value = MIN(COALESCE(current_value, 0) + ?, 10.0),
+        SET current_value = CASE WHEN COALESCE(current_value, 0) + ? > 10.0 THEN 10.0
+                                 ELSE COALESCE(current_value, 0) + ? END,
             bonus_earned = COALESCE(bonus_earned, 0) + ?
         WHERE user_id = ?
-    """, (bonus, bonus, patient_id))
+    """, (bonus, bonus, bonus, patient_id))
     if cursor.rowcount == 0:
         conn.execute("""
             INSERT INTO voucher_tracker (user_id, week_start_utc, current_value, bonus_earned)
@@ -644,15 +646,24 @@ def _exec_weekly_report(args, patient_id, patient_profile, conn, now):
 def _exec_adjust_nudge_schedule(args, patient_id, conn, now):
     """Adjust nudge schedule to optimal times."""
     new_times = args.get("new_times", [9, 14, 19])
+    reason = args.get("reason", "")
     conn.execute("""
         INSERT INTO agent_actions_log
         (patient_id, timestamp_utc, action_type, action_data, status)
         VALUES (?, ?, 'nudge_schedule_adjust', ?, 'delivered')
     """, (patient_id, now, json.dumps({
-        "new_times": new_times, "reason": args.get("reason", "")
+        "new_times": new_times, "reason": reason
     })))
+    # Persist the schedule to agent_memory so it actually takes effect
+    try:
+        conn.execute("""
+            INSERT OR REPLACE INTO agent_memory (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
+            VALUES (?, 'preference', 'nudge_schedule', ?, 0.9, ?, ?, 'agent')
+        """, (patient_id, json.dumps({"times": new_times, "reason": reason}), now, now))
+    except Exception:
+        pass
     conn.commit()
-    return {"success": True, "new_times": new_times, "reason": args.get("reason")}
+    return {"success": True, "new_times": new_times, "reason": reason}
 
 
 def _exec_clinician_summary(args, patient_id, conn, now):
@@ -688,8 +699,11 @@ def _exec_clinician_summary(args, patient_id, conn, now):
             from core.hmm_engine import HMMEngine
         engine = HMMEngine()
         obs = engine.fetch_observations(days=period_days, patient_id=patient_id)
-        merlion = _get_merlion_forecast(obs)
-        summary["merlion_forecast"] = merlion
+        if obs:
+            merlion = _get_merlion_forecast(obs)
+            summary["merlion_forecast"] = merlion
+        else:
+            summary["merlion_forecast"] = {"status": "INSUFFICIENT_DATA"}
     except Exception as e:
         summary["merlion_forecast"] = {"error": str(e)}
 
@@ -776,6 +790,13 @@ def _exec_clinician_summary(args, patient_id, conn, now):
 def ensure_runtime_tables():
     """Create tables needed by the agent runtime."""
     conn = sqlite3.connect(DB_PATH)
+    try:
+        _ensure_runtime_tables_inner(conn)
+    finally:
+        conn.close()
+
+
+def _ensure_runtime_tables_inner(conn):
     conn.execute("""
         CREATE TABLE IF NOT EXISTS agent_actions_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -936,6 +957,29 @@ def ensure_runtime_tables():
             date TEXT
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS voucher_tracker (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL DEFAULT 'current_user',
+            week_start INTEGER NOT NULL,
+            initial_value REAL DEFAULT 5.0,
+            current_value REAL DEFAULT 5.0,
+            penalties_json TEXT DEFAULT '[]',
+            bonus_earned REAL DEFAULT 0.0,
+            redeemed INTEGER DEFAULT 0
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS caregiver_contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id TEXT NOT NULL,
+            caregiver_name TEXT NOT NULL,
+            relationship TEXT,
+            phone TEXT,
+            email TEXT,
+            is_primary INTEGER DEFAULT 0
+        )
+    """)
     # Ensure patients table exists
     conn.execute("""
         CREATE TABLE IF NOT EXISTS patients (
@@ -1018,7 +1062,6 @@ def ensure_runtime_tables():
             except sqlite3.OperationalError:
                 pass
     conn.commit()
-    conn.close()
 
 
 def compute_impact_metrics(patient_id: str, period_days: int = 30) -> Dict:
@@ -1032,6 +1075,13 @@ def compute_impact_metrics(patient_id: str, period_days: int = 30) -> Dict:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    try:
+        return _compute_impact_metrics_inner(patient_id, period_days, conn)
+    finally:
+        conn.close()
+
+
+def _compute_impact_metrics_inner(patient_id: str, period_days: int, conn) -> Dict:
     now = int(time.time())
     period_start = now - (period_days * 86400)
 
@@ -1197,7 +1247,6 @@ def compute_impact_metrics(patient_id: str, period_days: int = 30) -> Dict:
         logger.warning(f"Failed to store impact metrics: {e}")
 
     conn.commit()
-    conn.close()
     return metrics
 
 
@@ -1963,6 +2012,10 @@ Return valid JSON:
     )
 
     engagement = calculate_engagement_score(patient_id)
+
+    # Agent memory (cross-session learning) — BUG FIX: was never injected into v2 prompt
+    memory_text = _load_agent_memory(patient_id)
+    tool_pref_text = _update_tool_preferences(patient_id)
     mood_info = detect_mood_from_message(user_message) if user_message else {"mood": "neutral", "adapt_tone": "calm", "confidence": 0.5}
     nudge_times = get_optimal_nudge_times(patient_id)
     daily_challenge = generate_daily_challenge(patient_id, hmm_context)
@@ -2054,6 +2107,14 @@ Age: {patient_profile.get('age', 67)}
 Conditions: {patient_profile.get('conditions', 'Type 2 Diabetes')}
 Medications: {patient_profile.get('medications', 'Metformin')}
 NOTE: Use "uncle"/"aunty" or "you" when addressing the patient. Never use real names.
+
+============================================================================
+AGENT MEMORY (What you remember about this patient across sessions)
+============================================================================
+{memory_text}
+
+TOOL EFFECTIVENESS (learned from past outcomes for this patient):
+{tool_pref_text}
 
 ============================================================================
 HMM INFERENCE RESULTS
@@ -2219,8 +2280,15 @@ def run_agent_loop(
     """
     tool_trace = []
     result = None
+    start_time = time.time()
+    MAX_AGENT_SECONDS = 45  # 45 second timeout for entire loop
 
     for turn in range(max_turns):
+        # Check overall timeout before each Gemini call
+        if time.time() - start_time > MAX_AGENT_SECONDS:
+            logger.warning(f"Agent loop timeout after {time.time() - start_time:.1f}s on turn {turn}")
+            break
+
         # Build prompt (full on turn 0, condensed on turn 1+)
         prompt = build_agent_prompt_v2(
             patient_profile, hmm_context, full_context, merlion_risk,
@@ -2408,23 +2476,38 @@ def run_agent(
         max_turns=5,
     )
 
-    # 6. Apply SEA-LION cultural translation to final message
+    # 6. Save original message for safety check BEFORE translation
+    original_for_safety = result.get("message_to_patient", "")
+
+    # 6a. Apply SEA-LION cultural translation to final message
     msg = result.get("message_to_patient", "")
-    if msg and gemini_integration and gemini_integration.api_key:
+    if msg:
         try:
             from sealion_interface import SeaLionInterface
             sealion = SeaLionInterface()
             tone = result.get("tone", "calm")
             translated = sealion.translate_message(msg, "singlish_elder", tone)
-            if translated and not translated.startswith("[Offline Mock]"):
+            if translated:
                 result["_original_message"] = msg
                 result["message_to_patient"] = translated
         except Exception as e:
             logger.warning(f"SEA-LION translation failed (non-critical): {e}")
 
-    # 6b. Apply safety classifier
+    # 6b. Apply safety classifier on ORIGINAL (pre-translation) message
+    #     Safety rules are designed for English, not Singlish-translated text
     try:
-        result = _apply_safety_filter(result, patient_profile, hmm_context, gemini_integration)
+        safety = classify_response_safety(original_for_safety, patient_profile, hmm_context, gemini_integration)
+        verdict = safety.get("verdict", "SAFE")
+        if verdict == "UNSAFE":
+            corrected = safety.get("corrected_message")
+            result["_original_unsafe_message"] = result.get("message_to_patient", "")
+            result["message_to_patient"] = corrected if corrected else "I want to help you lah, but let me check with your doctor first before giving advice on this. Stay safe!"
+            _log_safety_event(patient_id, "UNSAFE", safety.get("flags", []), original_for_safety)
+        elif verdict == "CAUTION":
+            result["message_to_patient"] = result.get("message_to_patient", "") + "\n\n(Please always consult your doctor for medical decisions.)"
+            _log_safety_event(patient_id, "CAUTION", safety.get("flags", []), original_for_safety)
+        result["_safety_verdict"] = verdict
+        result["_safety_flags"] = safety.get("flags", [])
     except Exception as e:
         logger.warning(f"Safety classifier failed (non-critical): {e}")
 
@@ -2480,66 +2563,63 @@ def get_patient_streaks(patient_id: str) -> Dict:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    now = int(time.time())
-    day_seconds = 86400
-
-    streaks = {
-        "medication": {"current": 0, "best": 0, "last_action": None},
-        "glucose_logging": {"current": 0, "best": 0, "last_action": None},
-        "exercise": {"current": 0, "best": 0, "last_action": None},
-        "app_login": {"current": 0, "best": 0, "last_action": None},
-    }
-
-    # Medication streak — from reminders completed or med adherence
     try:
-        rows = conn.execute("""
-            SELECT DISTINCT date(timestamp_utc, 'unixepoch') as day
-            FROM agent_actions_log
-            WHERE patient_id = ? AND action_type IN ('tool_execution')
-            AND tool_name IN ('set_reminder', 'request_medication_video')
-            ORDER BY day DESC
-        """, (patient_id,)).fetchall()
-        streaks["medication"] = _calc_streak([r["day"] for r in rows])
-    except Exception:
-        pass
+        streaks = {
+            "medication": {"current": 0, "best": 0, "last_action": None},
+            "glucose_logging": {"current": 0, "best": 0, "last_action": None},
+            "exercise": {"current": 0, "best": 0, "last_action": None},
+            "app_login": {"current": 0, "best": 0, "last_action": None},
+        }
 
-    # Glucose logging streak — from sensor readings
-    try:
-        rows = conn.execute("""
-            SELECT DISTINCT date(reading_timestamp_utc, 'unixepoch') as day
-            FROM glucose_readings
-            WHERE user_id = ?
-            ORDER BY day DESC
-        """, (patient_id,)).fetchall()
-        streaks["glucose_logging"] = _calc_streak([r["day"] for r in rows])
-    except Exception:
-        pass
+        # Medication streak — from actual medication intake logs
+        try:
+            rows = conn.execute("""
+                SELECT DISTINCT date(taken_timestamp_utc, 'unixepoch') as day
+                FROM medication_logs
+                WHERE user_id = ?
+                ORDER BY day DESC
+            """, (patient_id,)).fetchall()
+            streaks["medication"] = _calc_streak([r["day"] for r in rows])
+        except Exception:
+            pass
 
-    # Exercise streak — from step data
-    try:
-        rows = conn.execute("""
-            SELECT DISTINCT date(date, 'unixepoch') as day
-            FROM fitbit_activity
-            WHERE user_id = ? AND steps > 2000
-            ORDER BY day DESC
-        """, (patient_id,)).fetchall()
-        streaks["exercise"] = _calc_streak([r["day"] for r in rows])
-    except Exception:
-        pass
+        # Glucose logging streak — from sensor readings
+        try:
+            rows = conn.execute("""
+                SELECT DISTINCT date(reading_timestamp_utc, 'unixepoch') as day
+                FROM glucose_readings
+                WHERE user_id = ?
+                ORDER BY day DESC
+            """, (patient_id,)).fetchall()
+            streaks["glucose_logging"] = _calc_streak([r["day"] for r in rows])
+        except Exception:
+            pass
 
-    # App usage streak — from conversation history
-    try:
-        rows = conn.execute("""
-            SELECT DISTINCT date(timestamp_utc, 'unixepoch') as day
-            FROM conversation_history
-            WHERE patient_id = ? AND role = 'user'
-            ORDER BY day DESC
-        """, (patient_id,)).fetchall()
-        streaks["app_login"] = _calc_streak([r["day"] for r in rows])
-    except Exception:
-        pass
+        # Exercise streak — from step data
+        try:
+            rows = conn.execute("""
+                SELECT DISTINCT date(date, 'unixepoch') as day
+                FROM fitbit_activity
+                WHERE user_id = ? AND steps > 2000
+                ORDER BY day DESC
+            """, (patient_id,)).fetchall()
+            streaks["exercise"] = _calc_streak([r["day"] for r in rows])
+        except Exception:
+            pass
 
-    conn.close()
+        # App usage streak — from conversation history
+        try:
+            rows = conn.execute("""
+                SELECT DISTINCT date(timestamp_utc, 'unixepoch') as day
+                FROM conversation_history
+                WHERE patient_id = ? AND role = 'user'
+                ORDER BY day DESC
+            """, (patient_id,)).fetchall()
+            streaks["app_login"] = _calc_streak([r["day"] for r in rows])
+        except Exception:
+            pass
+    finally:
+        conn.close()
 
     # Overall engagement score (0-100)
     total_current = sum(s["current"] for s in streaks.values())
@@ -2632,8 +2712,8 @@ def get_optimal_nudge_times(patient_id: str) -> Dict:
                 response_by_hour[hour].append(response_delay)
     except Exception:
         pass
-
-    conn.close()
+    finally:
+        conn.close()
 
     if not response_by_hour:
         # Default: morning and evening for elderly
@@ -2678,12 +2758,19 @@ def generate_weekly_report(patient_id: str, patient_profile: Dict) -> Dict:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    try:
+        return _generate_weekly_report_inner(patient_id, patient_profile, conn)
+    finally:
+        conn.close()
+
+
+def _generate_weekly_report_inner(patient_id: str, patient_profile: Dict, conn) -> Dict:
     now = int(time.time())
     week_ago = now - (7 * 86400)
 
     report = {
         "patient_id": patient_id,
-        "patient_name": patient_profile.get("name", "Patient"),
+        "patient_name": patient_profile.get("name", patient_profile.get("display_name", _get_safe_patient_label(patient_profile))),
         "period": f"{datetime.fromtimestamp(week_ago).strftime('%d %b')} - {datetime.fromtimestamp(now).strftime('%d %b %Y')}",
         "generated_at": datetime.now().isoformat(),
     }
@@ -2772,7 +2859,6 @@ def generate_weekly_report(patient_id: str, patient_profile: Dict) -> Dict:
     )
     report["overall_score"] = score
 
-    conn.close()
     return report
 
 
@@ -2857,6 +2943,13 @@ def calculate_engagement_score(patient_id: str) -> Dict:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    try:
+        return _calculate_engagement_inner(patient_id, conn)
+    finally:
+        conn.close()
+
+
+def _calculate_engagement_inner(patient_id: str, conn) -> Dict:
     now = int(time.time())
     week_ago = now - (7 * 86400)
 
@@ -2887,14 +2980,25 @@ def calculate_engagement_score(patient_id: str) -> Dict:
     except Exception:
         scores["glucose_logging"] = 0
 
-    # Medication adherence (20 points)
+    # Medication adherence (20 points) — from actual medication logs
     try:
         row = conn.execute("""
-            SELECT AVG(taken) as avg_adh
-            FROM medication_adherence
-            WHERE patient_id = ? AND logged_at >= ?
+            SELECT COUNT(*) as logs_count
+            FROM medication_logs
+            WHERE user_id = ? AND taken_timestamp_utc >= ?
         """, (patient_id, week_ago)).fetchone()
-        adh = row["avg_adh"] if row and row["avg_adh"] else 0.5
+        logs_count = row["logs_count"] if row else 0
+        # Query actual prescribed medication count for expected doses
+        try:
+            med_row = conn.execute(
+                "SELECT COUNT(*) as med_count FROM medications WHERE patient_id = ?",
+                (patient_id,)
+            ).fetchone()
+            daily_doses = (med_row["med_count"] if med_row else 2) or 2
+        except Exception:
+            daily_doses = 2
+        expected_doses = daily_doses * 7
+        adh = min(1.0, logs_count / expected_doses) if expected_doses > 0 else 0.5
         scores["medication"] = round(adh * 20)
     except Exception:
         scores["medication"] = 10  # assume 50% if no data
@@ -2918,8 +3022,6 @@ def calculate_engagement_score(patient_id: str) -> Dict:
     streak_total = sum(s.get("current", 0) for k, s in streaks.items()
                        if isinstance(s, dict) and "current" in s)
     scores["streaks"] = min(15, streak_total * 2)
-
-    conn.close()
 
     total = sum(scores.values())
     risk_level = (
@@ -3042,86 +3144,87 @@ def detect_caregiver_fatigue(patient_id: str) -> Dict:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    now = int(time.time())
-    week_ago = now - (7 * 86400)
-    two_weeks_ago = now - (14 * 86400)
-
-    result = {
-        "fatigue_detected": False,
-        "fatigue_level": "none",
-        "signals": [],
-        "recommendation": "",
-    }
-
-    # Count alerts sent this week vs last week
     try:
-        this_week = conn.execute("""
-            SELECT COUNT(*) as cnt FROM caregiver_alerts
-            WHERE patient_id = ? AND timestamp_utc >= ?
-        """, (patient_id, week_ago)).fetchone()
+        now = int(time.time())
+        week_ago = now - (7 * 86400)
+        two_weeks_ago = now - (14 * 86400)
 
-        last_week = conn.execute("""
-            SELECT COUNT(*) as cnt FROM caregiver_alerts
-            WHERE patient_id = ? AND timestamp_utc >= ? AND timestamp_utc < ?
-        """, (patient_id, two_weeks_ago, week_ago)).fetchone()
+        result = {
+            "fatigue_detected": False,
+            "fatigue_level": "none",
+            "signals": [],
+            "recommendation": "",
+        }
 
-        alerts_this_week = this_week["cnt"] if this_week else 0
-        alerts_last_week = last_week["cnt"] if last_week else 0
+        # Count alerts sent this week vs last week
+        try:
+            this_week = conn.execute("""
+                SELECT COUNT(*) as cnt FROM caregiver_alerts
+                WHERE patient_id = ? AND timestamp_utc >= ?
+            """, (patient_id, week_ago)).fetchone()
 
-        if alerts_this_week > 15:
-            result["signals"].append("High alert volume this week (>15 alerts)")
-        if alerts_last_week > 0 and alerts_this_week > alerts_last_week * 1.5:
-            result["signals"].append("Alert volume increasing (50%+ over last week)")
-    except Exception:
-        pass
+            last_week = conn.execute("""
+                SELECT COUNT(*) as cnt FROM caregiver_alerts
+                WHERE patient_id = ? AND timestamp_utc >= ? AND timestamp_utc < ?
+            """, (patient_id, two_weeks_ago, week_ago)).fetchone()
 
-    # Check family alert response patterns
-    try:
-        family_alerts = conn.execute("""
-            SELECT status, COUNT(*) as cnt FROM family_alerts
-            WHERE user_id = ? AND timestamp_utc >= ?
-            GROUP BY status
-        """, (patient_id, week_ago)).fetchall()
+            alerts_this_week = this_week["cnt"] if this_week else 0
+            alerts_last_week = last_week["cnt"] if last_week else 0
 
-        pending = sum(r["cnt"] for r in family_alerts if r["status"] == "pending")
-        total = sum(r["cnt"] for r in family_alerts)
-        if total > 0 and pending / total > 0.5:
-            result["signals"].append(f"Family alerts unanswered: {pending}/{total}")
-    except Exception:
-        pass
+            if alerts_this_week > 15:
+                result["signals"].append("High alert volume this week (>15 alerts)")
+            if alerts_last_week > 0 and alerts_this_week > alerts_last_week * 1.5:
+                result["signals"].append("Alert volume increasing (50%+ over last week)")
+        except Exception:
+            pass
 
-    # Check nurse alert response patterns
-    try:
-        nurse_alerts = conn.execute("""
-            SELECT status, COUNT(*) as cnt FROM nurse_alerts
-            WHERE user_id = ? AND timestamp_utc >= ?
-            GROUP BY status
-        """, (patient_id, week_ago)).fetchall()
+        # Check family alert response patterns
+        try:
+            family_alerts = conn.execute("""
+                SELECT status, COUNT(*) as cnt FROM family_alerts
+                WHERE user_id = ? AND timestamp_utc >= ?
+                GROUP BY status
+            """, (patient_id, week_ago)).fetchall()
 
-        pending = sum(r["cnt"] for r in nurse_alerts if r["status"] == "pending")
-        total = sum(r["cnt"] for r in nurse_alerts)
-        if total > 3 and pending / total > 0.6:
-            result["signals"].append(f"Nurse alerts unresolved: {pending}/{total}")
-    except Exception:
-        pass
+            pending = sum(r["cnt"] for r in family_alerts if r["status"] == "pending")
+            total = sum(r["cnt"] for r in family_alerts)
+            if total > 0 and pending / total > 0.5:
+                result["signals"].append(f"Family alerts unanswered: {pending}/{total}")
+        except Exception:
+            pass
 
-    conn.close()
+        # Check nurse alert response patterns
+        try:
+            nurse_alerts = conn.execute("""
+                SELECT status, COUNT(*) as cnt FROM nurse_alerts
+                WHERE user_id = ? AND timestamp_utc >= ?
+                GROUP BY status
+            """, (patient_id, week_ago)).fetchall()
 
-    # Score fatigue level
-    signal_count = len(result["signals"])
-    if signal_count >= 3:
-        result["fatigue_detected"] = True
-        result["fatigue_level"] = "high"
-        result["recommendation"] = "Consider reducing alert frequency, scheduling caregiver support call"
-    elif signal_count >= 2:
-        result["fatigue_detected"] = True
-        result["fatigue_level"] = "moderate"
-        result["recommendation"] = "Monitor closely, consider consolidating alerts into daily digest"
-    elif signal_count >= 1:
-        result["fatigue_level"] = "mild"
-        result["recommendation"] = "Some signs of alert overload, review alert thresholds"
+            pending = sum(r["cnt"] for r in nurse_alerts if r["status"] == "pending")
+            total = sum(r["cnt"] for r in nurse_alerts)
+            if total > 3 and pending / total > 0.6:
+                result["signals"].append(f"Nurse alerts unresolved: {pending}/{total}")
+        except Exception:
+            pass
 
-    return result
+        # Score fatigue level
+        signal_count = len(result["signals"])
+        if signal_count >= 3:
+            result["fatigue_detected"] = True
+            result["fatigue_level"] = "high"
+            result["recommendation"] = "Consider reducing alert frequency, scheduling caregiver support call"
+        elif signal_count >= 2:
+            result["fatigue_detected"] = True
+            result["fatigue_level"] = "moderate"
+            result["recommendation"] = "Monitor closely, consider consolidating alerts into daily digest"
+        elif signal_count >= 1:
+            result["fatigue_level"] = "mild"
+            result["recommendation"] = "Some signs of alert overload, review alert thresholds"
+
+        return result
+    finally:
+        conn.close()
 
 
 # ============================================================================
@@ -3246,7 +3349,9 @@ def _get_merlion_forecast(observations: List[Dict]) -> Dict:
     try:
         from merlion_risk_engine import MerlionRiskEngine
         engine = MerlionRiskEngine()
-        glucose_history = [obs.get("glucose_avg", 7.0) for obs in observations[-12:]]
+        glucose_history = [obs.get("glucose_avg") for obs in observations[-12:] if obs.get("glucose_avg") is not None]
+        if len(glucose_history) < 3:
+            return {"risk_level": "unknown", "message": "Insufficient glucose data for forecast"}
         return engine.calculate_risk(glucose_history)
     except Exception as e:
         logger.warning(f"Merlion forecast failed: {e}")
@@ -3264,7 +3369,7 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
     """Safe fallback when Gemini is unavailable. Uses HMM data for rule-based response."""
     state = hmm_context.get("current_state", "STABLE")
     risk = hmm_context.get("risk_48h", 0)
-    name = patient_profile.get("name", "there")
+    name = patient_profile.get("name", patient_profile.get("display_name", "there"))
     latest = hmm_context.get("latest_obs", {})
     glucose = latest.get("glucose_avg")
 
@@ -3527,7 +3632,7 @@ def classify_response_safety(message: str, patient_profile: Dict, hmm_context: D
     FAIL-CLOSED: If the classifier cannot run (API down, error, etc.), the response
     is blocked and replaced with a safe fallback. Healthcare AI must never fail-open.
     """
-    if not message or len(message) < 10:
+    if not message:
         return {"verdict": "SAFE", "flags": []}
 
     # If Gemini is unavailable, FAIL CLOSED — block the response

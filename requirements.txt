@@ -10,12 +10,15 @@ python-multipart>=0.0.6
 # --- AI/ML ---
 google-generativeai>=0.3.0
 numpy>=1.24.0
-salesforce-merlion>=2.0.0
+scipy>=1.10.0
+pandas>=1.5.0
+# salesforce-merlion>=2.0.0  # Optional: falls back to kinematic mock
 
 # --- Environment ---
 python-dotenv>=1.0.0
 
 # --- HTTP ---
+openai>=1.0.0
 requests>=2.31.0
 
 # --- Utilities ---

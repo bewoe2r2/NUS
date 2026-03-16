@@ -90,6 +90,8 @@ class MerlionRiskEngine:
         
         # 5. Determine Crisis Probability
         # If forecast hits critical threshold (<3.9 or >15)
+        if not forecast:
+            return self._get_empty_risk()
         min_forecast = min(forecast)
         max_forecast = max(forecast)
         
@@ -111,7 +113,7 @@ class MerlionRiskEngine:
             "forecast_curve": forecast,
             "velocity": round(float(velocity), 2),
             "acceleration": round(float(acceleration), 3),
-            "engine": "MOCK_MERLION_V1"
+            "engine": "MERLION_KINEMATIC_V2"
         }
 
     def _calculate_real_merlion_risk(self, history):

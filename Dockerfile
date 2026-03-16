@@ -47,6 +47,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 COPY core/ ./core/
 COPY tools/ ./tools/
+COPY sensors/ ./sensors/
 COPY database/ ./database/
 COPY scripts/ ./scripts/
 

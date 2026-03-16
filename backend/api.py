@@ -20,8 +20,8 @@ import sqlite3
 import logging
 import time
 import json
+import math
 import tempfile
-import secrets  # noqa: F401 — reserved for future token generation
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
@@ -66,7 +66,7 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 
 @asynccontextmanager
 async def lifespan(app):
-    await startup_event()
+    startup_event()
     yield
 
 app = FastAPI(
@@ -112,7 +112,7 @@ async def health_check():
 _rate_limit_store: Dict[str, list] = {}
 RATE_LIMIT_WINDOW = 60  # seconds
 RATE_LIMIT_MAX = 60  # requests per window (per IP)
-RATE_LIMIT_CHAT_MAX = 10  # stricter limit for /chat (Gemini calls cost money)
+RATE_LIMIT_CHAT_MAX = 30  # stricter limit for /chat (Gemini calls cost money)
 
 @app.middleware("http")
 async def security_middleware(request: Request, call_next):
@@ -197,8 +197,14 @@ class ChatResponse(BaseModel):
     priority_factor: Optional[str] = None
     hmm_state: Optional[str] = None
 
+class FoodInput(BaseModel):
+    description: str
+    carbs_grams: float = 0
+    meal_type: str = "snack"  # breakfast, lunch, dinner, snack
+    patient_id: str = "P001"
+
 class GlucoseInput(BaseModel):
-    value: float
+    value: float = Field(..., gt=0, le=50.0)
     unit: str = "mmol/L"
     source: str = "MANUAL"
     patient_id: str = "P001"
@@ -222,6 +228,24 @@ class VoucherResponse(BaseModel):
     can_redeem: bool
     streak_days: int = 0
     deductions_today: List[dict] = []
+
+class CaregiverResponseInput(BaseModel):
+    caregiver_id: str = ""
+    response_type: str = "acknowledged"
+    message: str = ""
+
+class CounterfactualInput(BaseModel):
+    intervention: str = "take_medication"
+    medication: str = "Metformin"
+    dose: str = "500mg"
+    carb_reduction: int = 30
+    additional_steps: int = 3000
+
+class MoodDetectInput(BaseModel):
+    message: str = ""
+
+class DrugInteractionCheckInput(BaseModel):
+    proposed_medication: str = ""
 
 class VoiceCheckInRequest(BaseModel):
     transcript: str
@@ -286,10 +310,10 @@ def get_gemini():
         logger.error(f"Gemini init failed: {e}")
         return None
 
-def get_voucher_system():
+def get_voucher_system(user_id: str = 'demo_user'):
     """Get Voucher System instance"""
     try:
-        return VoucherSystem()
+        return VoucherSystem(user_id=user_id)
     except Exception as e:
         logger.error(f"Voucher system init failed: {e}")
         return None
@@ -557,7 +581,10 @@ async def get_analysis_detail(patient_id: str, date: str):
                 worst_row = row
                 
         # Parse observation
-        obs = json.loads(worst_row['input_vector_snapshot'])
+        try:
+            obs = json.loads(worst_row['input_vector_snapshot']) if worst_row['input_vector_snapshot'] else {}
+        except (json.JSONDecodeError, TypeError):
+            obs = {}
         
         # 2. Generate Gaussian Plots
         plots = []
@@ -658,8 +685,8 @@ def _get_patient_profile(patient_id: str) -> dict:
     # Demo fallback profiles (used only when DB has no data)
     DEMO_PROFILES = {
         "P001": {"id": "P001", "name": "Mr. Tan Ah Kow", "age": 67, "conditions": "Type 2 Diabetes, Hypertension", "medications": "Metformin 500mg BID, Lisinopril 10mg OD"},
-        "P002": {"id": "P002", "name": "Mrs. Lim Mei Ling", "age": 72, "conditions": "Type 2 Diabetes, Hyperlipidemia", "medications": "Metformin 1000mg BID, Atorvastatin 20mg OD"},
-        "P003": {"id": "P003", "name": "Mr. Wong Keng Huat", "age": 58, "conditions": "Type 2 Diabetes", "medications": "Metformin 500mg BID"},
+        "P002": {"id": "P002", "name": "Mdm. Lim Siew Eng", "age": 72, "conditions": "Type 2 Diabetes, Chronic Kidney Disease Stage 2", "medications": "Metformin 500mg, Gliclazide 80mg"},
+        "P003": {"id": "P003", "name": "Mr. Ahmad bin Ismail", "age": 58, "conditions": "Type 2 Diabetes", "medications": "Metformin 1000mg"},
     }
     try:
         conn = get_db()
@@ -798,11 +825,16 @@ async def extract_glucose_from_photo(file: UploadFile = File(...)):
                 pass
 
         if result and result.get('value'):
+            raw_confidence = result.get('confidence', 0.8)
+            if isinstance(raw_confidence, str):
+                confidence = {'high': 0.9, 'medium': 0.7, 'low': 0.3}.get(raw_confidence, 0.5)
+            else:
+                confidence = float(raw_confidence) if raw_confidence is not None else 0.8
             return GlucoseOCRResponse(
                 success=True,
                 value=result['value'],
                 unit=result.get('unit', 'mmol/L'),
-                confidence=result.get('confidence', 0.8)
+                confidence=confidence
             )
         else:
             return GlucoseOCRResponse(success=False, error="Could not read glucose value from image")
@@ -810,6 +842,30 @@ async def extract_glucose_from_photo(file: UploadFile = File(...)):
     except Exception as e:
         logger.exception(f"OCR error: {e}")
         return GlucoseOCRResponse(success=False, error="Could not process image. Please try again.")
+
+# =============================================================================
+# FOOD LOGGING ENDPOINT
+# =============================================================================
+
+@app.post("/food/log")
+async def log_food(data: FoodInput):
+    """Log a food entry with description and carbs"""
+    conn = get_db()
+    try:
+        meal_upper = data.meal_type.upper()
+        if meal_upper not in ("BREAKFAST", "LUNCH", "DINNER", "SNACK"):
+            meal_upper = "SNACK"
+        conn.execute(
+            "INSERT INTO food_logs (user_id, timestamp_utc, meal_type, description, carbs_grams, source_type) VALUES (?, ?, ?, ?, ?, ?)",
+            (data.patient_id, int(time.time()), meal_upper, data.description, data.carbs_grams, "MANUAL")
+        )
+        conn.commit()
+        return {"success": True, "message": f"Logged {data.meal_type}: {data.description}"}
+    except Exception as e:
+        logger.exception(f"Error logging food: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
 
 # =============================================================================
 # MEDICATION ENDPOINTS
@@ -834,30 +890,58 @@ async def get_medications(patient_id: str):
         medications = []
         med_id = 1
         for name in med_names:
-            base_name = name.split()[0]  # "Metformin 500mg BID" -> "Metformin"
+            parts = name.strip().split()
+            base_name = parts[0] if parts else "Unknown"
             schedules = MED_DEFAULTS.get(base_name, [{"dose": "", "time": "08:00", "with_food": False}])
             for sched in schedules:
                 medications.append({"id": med_id, "name": name, "dose": sched["dose"], "time": sched["time"], "with_food": sched["with_food"], "taken": False})
                 med_id += 1
 
-        today_start = int(time.time()) - ((int(time.time()) + 28800) % 86400)  # SGT midnight (UTC+8)
+        now = int(time.time())
+        today_start = now - ((now + 28800) % 86400)  # SGT midnight (UTC+8)
         try:
             taken_meds = conn.execute("""
-                SELECT medication_name FROM medication_logs
+                SELECT medication_name, taken_timestamp_utc FROM medication_logs
                 WHERE taken_timestamp_utc >= ? AND user_id = ?
             """, (today_start, patient_id)).fetchall()
         except sqlite3.OperationalError:
             # user_id column may not exist — fall back to unfiltered
             taken_meds = conn.execute("""
-                SELECT medication_name FROM medication_logs
+                SELECT medication_name, taken_timestamp_utc FROM medication_logs
                 WHERE taken_timestamp_utc >= ?
             """, (today_start,)).fetchall()
         conn.close()
 
-        taken_names = [row['medication_name'] for row in taken_meds]
+        # Build list of (name, sgt_hour) for each taken log
+        taken_entries = []
+        for row in taken_meds:
+            ts = row['taken_timestamp_utc']
+            if ts is None:
+                continue
+            sgt_hour = ((int(ts) + 28800) % 86400) // 3600
+            taken_entries.append((row['medication_name'], sgt_hour))
+
+        def _time_window(scheduled_time: str) -> tuple:
+            """Return (start_hour, end_hour) window for a scheduled time."""
+            try:
+                hour = int(scheduled_time.split(":")[0])
+            except (ValueError, IndexError):
+                hour = 8  # Default to morning
+            if hour < 12:
+                return (6, 12)   # morning
+            elif hour < 18:
+                return (12, 18)  # afternoon
+            else:
+                return (18, 24)  # evening
+
         for med in medications:
-            if f"{med['name']} ({med['time']})" in taken_names or med['name'] in taken_names:
-                med['taken'] = True
+            window_start, window_end = _time_window(med['time'])
+            for t_name, t_hour in taken_entries:
+                # Match on exact name (with time label) or base name, AND time window
+                name_match = (t_name == f"{med['name']} ({med['time']})" or t_name == med['name'])
+                if name_match and window_start <= t_hour < window_end:
+                    med['taken'] = True
+                    break
 
     except Exception as e:
         logger.warning(f"Error loading medications: {e}")
@@ -871,18 +955,40 @@ async def log_medication(data: MedicationLog):
     try:
         conn = get_db()
 
+        now = int(time.time())
+        today_start = now - ((now + 28800) % 86400)  # SGT midnight (UTC+8)
+
         if data.taken:
             try:
                 conn.execute("""
                     INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
                     VALUES (?, ?, ?, ?)
-                """, (data.medication_name, int(time.time()), int(time.time()), data.patient_id))
+                """, (data.medication_name, now, now, data.patient_id))
             except sqlite3.OperationalError:
                 # user_id column may not exist
                 conn.execute("""
                     INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc)
                     VALUES (?, ?, ?)
-                """, (data.medication_name, int(time.time()), int(time.time())))
+                """, (data.medication_name, now, now))
+            conn.commit()
+        else:
+            # Remove the most recent log for this medication today
+            try:
+                conn.execute("""
+                    DELETE FROM medication_logs WHERE rowid = (
+                        SELECT rowid FROM medication_logs
+                        WHERE user_id = ? AND medication_name = ? AND taken_timestamp_utc > ?
+                        ORDER BY taken_timestamp_utc DESC LIMIT 1
+                    )
+                """, (data.patient_id, data.medication_name, today_start))
+            except sqlite3.OperationalError:
+                conn.execute("""
+                    DELETE FROM medication_logs WHERE rowid = (
+                        SELECT rowid FROM medication_logs
+                        WHERE medication_name = ? AND taken_timestamp_utc > ?
+                        ORDER BY taken_timestamp_utc DESC LIMIT 1
+                    )
+                """, (data.medication_name, today_start))
             conn.commit()
 
         conn.close()
@@ -900,7 +1006,7 @@ async def log_medication(data: MedicationLog):
 async def get_voucher(patient_id: str):
     """Get current voucher status"""
     try:
-        vs = get_voucher_system()
+        vs = get_voucher_system(user_id=patient_id)
         if not vs:
             return VoucherResponse(
                 current_value=5.00,
@@ -911,6 +1017,7 @@ async def get_voucher(patient_id: str):
                 deductions_today=[]
             )
 
+        vs.check_and_apply_daily_penalties()
         voucher = vs.get_current_voucher()
 
         # Compute streak_days from agent streaks if available
@@ -949,7 +1056,7 @@ async def get_voucher(patient_id: str):
 async def get_voucher_qr(patient_id: str):
     """Generate QR code for voucher redemption"""
     try:
-        vs = get_voucher_system()
+        vs = get_voucher_system(user_id=patient_id)
         if not vs:
             raise HTTPException(status_code=500, detail="Voucher system unavailable")
 
@@ -1307,6 +1414,7 @@ async def get_agent_status(patient_id: str):
 @app.get("/agent/actions/{patient_id}")
 async def get_agent_actions(patient_id: str, limit: int = 20):
     """Get recent agent actions and tool executions for a patient."""
+    limit = max(1, min(limit, 100))
     try:
         conn = get_db()
         rows = conn.execute("""
@@ -1326,6 +1434,7 @@ async def get_agent_actions(patient_id: str, limit: int = 20):
 @app.get("/agent/conversation/{patient_id}")
 async def get_conversation_history_endpoint(patient_id: str, limit: int = 20):
     """Get conversation history between patient and AI agent."""
+    limit = max(1, min(limit, 200))
     try:
         conn = get_db()
         rows = conn.execute("""
@@ -1342,24 +1451,22 @@ async def get_conversation_history_endpoint(patient_id: str, limit: int = 20):
 
 
 @app.post("/agent/counterfactual/{patient_id}")
-async def run_counterfactual(patient_id: str, intervention: str = "take_medication",
-                             medication: str = "Metformin", dose: str = "500mg",
-                             carb_reduction: int = 30, additional_steps: int = 3000):
+async def run_counterfactual(patient_id: str, body: CounterfactualInput):
     """Run a counterfactual 'what-if' scenario directly."""
     try:
         from clinical_interventions import calculate_counterfactual_tool
 
         params = {}
-        if intervention == "take_medication":
-            params = {"medication": medication, "dose": dose}
-        elif intervention == "adjust_carbs":
-            params = {"carb_reduction": carb_reduction}
-        elif intervention == "increase_activity":
-            params = {"additional_steps": additional_steps}
+        if body.intervention == "take_medication":
+            params = {"medication": body.medication, "dose": body.dose}
+        elif body.intervention == "adjust_carbs":
+            params = {"carb_reduction": body.carb_reduction}
+        elif body.intervention == "increase_activity":
+            params = {"additional_steps": body.additional_steps}
 
         result = calculate_counterfactual_tool(
             patient_id=patient_id,
-            intervention=intervention,
+            intervention=body.intervention,
             intervention_params=params,
             horizon_hours=24,
         )
@@ -1420,10 +1527,10 @@ async def get_nudge_times(patient_id: str):
 
 
 @app.post("/agent/detect-mood")
-async def detect_mood(message: str = ""):
+async def detect_mood(body: MoodDetectInput):
     """Detect mood/sentiment from a message (for testing)."""
     try:
-        mood = detect_mood_from_message(message)
+        mood = detect_mood_from_message(body.message)
         return mood
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -1480,7 +1587,7 @@ async def _require_admin(request: Request):
 
 
 @app.post("/admin/inject-scenario", dependencies=[Depends(_require_admin)])
-async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier: str = "PREMIUM"):
+async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier: str = "PREMIUM", patient_id: str = "P001"):
     """Inject demo scenario data (for testing)"""
     try:
         engine = get_engine()
@@ -1506,7 +1613,7 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
                 conn.execute("""
                     INSERT INTO glucose_readings (user_id, reading_value, reading_timestamp_utc, source_type)
                     VALUES (?, ?, ?, ?)
-                """, ('P001', obs['glucose_avg'], t, 'MANUAL'))
+                """, (patient_id, obs['glucose_avg'], t, 'MANUAL'))
 
             steps = obs.get('steps_daily', 0) or 0
             conn.execute("""
@@ -1519,7 +1626,7 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
                     conn.execute("""
                         INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
                         VALUES (?, ?, ?, ?)
-                    """, ('Metformin', t + 100, t, 'P001'))
+                    """, ('Metformin', t + 100, t, patient_id))
                 except sqlite3.OperationalError:
                     conn.execute("""
                         INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc)
@@ -1734,7 +1841,7 @@ async def get_drug_interactions(patient_id: str):
 
 
 @app.post("/patient/{patient_id}/drug-interactions/check")
-async def check_proposed_interaction(patient_id: str, proposed_medication: str = ""):
+async def check_proposed_interaction(patient_id: str, body: DrugInteractionCheckInput):
     """Check a proposed new medication against patient's current medications."""
     try:
         profile = _get_patient_profile_from_db(patient_id)
@@ -1745,8 +1852,8 @@ async def check_proposed_interaction(patient_id: str, proposed_medication: str =
             med_list = meds
         else:
             med_list = []
-        result = check_drug_interactions(med_list, proposed_medication)
-        return {"success": True, "patient_id": patient_id, "proposed": proposed_medication, **result}
+        result = check_drug_interactions(med_list, body.proposed_medication)
+        return {"success": True, "patient_id": patient_id, "proposed": body.proposed_medication, **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -1836,10 +1943,10 @@ async def get_proactive_history(patient_id: str):
 # =============================================================================
 
 @app.post("/caregiver/respond/{alert_id}")
-async def caregiver_respond(alert_id: int, caregiver_id: str = "", response_type: str = "acknowledged", message: str = ""):
+async def caregiver_respond(alert_id: int, body: CaregiverResponseInput):
     """Submit caregiver response to an alert (acknowledged/on_the_way/need_help/escalate/note)."""
     try:
-        result = process_caregiver_response(alert_id, caregiver_id, response_type, message)
+        result = process_caregiver_response(alert_id, body.caregiver_id, body.response_type, body.message)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -1973,7 +2080,7 @@ async def get_hmm_params(patient_id: str):
 # STARTUP
 # =============================================================================
 
-async def startup_event():
+def startup_event():
     """Initialize on startup — auto-creates schema and seeds demo data if DB is empty."""
     logger.info("Starting Bewo Health API v4.0 (Diamond v7 + 7 Ceiling Features)...")
 
@@ -2021,12 +2128,14 @@ def _auto_init_database():
             return
 
     # Check if demo data exists
-    patient_count = conn.execute("SELECT COUNT(*) FROM patients").fetchone()[0]
+    patient_row = conn.execute("SELECT COUNT(*) FROM patients").fetchone()
+    patient_count = patient_row[0] if patient_row else 0
     if patient_count == 0:
         logger.info("No patients found — seeding demo data...")
         _seed_demo_patients(conn)
 
-    glucose_count = conn.execute("SELECT COUNT(*) FROM glucose_readings").fetchone()[0]
+    glucose_row = conn.execute("SELECT COUNT(*) FROM glucose_readings").fetchone()
+    glucose_count = glucose_row[0] if glucose_row else 0
     if glucose_count == 0:
         logger.info("No glucose data — injecting demo scenario...")
         conn.close()
