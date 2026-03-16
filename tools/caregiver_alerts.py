@@ -248,27 +248,29 @@ def _check_rate_limit(patient_id: str, severity: str) -> bool:
         return True
 
     conn = sqlite3.connect(DB_PATH)
-    one_hour_ago = int(time.time()) - 3600
+    try:
+        one_hour_ago = int(time.time()) - 3600
 
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS caregiver_alerts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id TEXT,
-            timestamp_utc INTEGER,
-            alert_type TEXT,
-            severity TEXT,
-            message TEXT,
-            delivery_results_json TEXT
-        )
-    """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS caregiver_alerts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patient_id TEXT,
+                timestamp_utc INTEGER,
+                alert_type TEXT,
+                severity TEXT,
+                message TEXT,
+                delivery_results_json TEXT
+            )
+        """)
 
-    count = conn.execute(
-        "SELECT COUNT(*) FROM caregiver_alerts WHERE patient_id = ? AND severity = ? AND timestamp_utc >= ?",
-        (patient_id, severity, one_hour_ago),
-    ).fetchone()[0]
+        count = conn.execute(
+            "SELECT COUNT(*) FROM caregiver_alerts WHERE patient_id = ? AND severity = ? AND timestamp_utc >= ?",
+            (patient_id, severity, one_hour_ago),
+        ).fetchone()[0]
 
-    conn.close()
-    return count < limit
+        return count < limit
+    finally:
+        conn.close()
 
 
 def _determine_delivery_method(severity: str) -> str:
@@ -283,17 +285,20 @@ def _get_caregiver_contacts(patient_id: str) -> List[Dict]:
     Production: query patient profile / caregiver registry table.
     Demo: returns mock contacts with redacted phone numbers.
     """
+    conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         rows = conn.execute(
             "SELECT * FROM caregiver_contacts WHERE patient_id = ?", (patient_id,)
         ).fetchall()
-        conn.close()
         if rows:
             return [dict(r) for r in rows]
-    except Exception:
+    except sqlite3.OperationalError:
         pass  # Table may not exist yet — fall through to demo data
+    finally:
+        if conn:
+            conn.close()
 
     # Demo fallback
     return [
@@ -385,28 +390,30 @@ def _log_alert(
 ):
     """Log alert in database for audit trail and rate limiting."""
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS caregiver_alerts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id TEXT,
-            timestamp_utc INTEGER,
-            alert_type TEXT,
-            severity TEXT,
-            message TEXT,
-            delivery_results_json TEXT
-        )
-    """)
-    conn.execute("""
-        INSERT INTO caregiver_alerts
-        (patient_id, timestamp_utc, alert_type, severity, message, delivery_results_json)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        patient_id,
-        int(time.time()),
-        alert_type,
-        severity,
-        message,
-        json.dumps(delivery_results),
-    ))
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS caregiver_alerts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patient_id TEXT,
+                timestamp_utc INTEGER,
+                alert_type TEXT,
+                severity TEXT,
+                message TEXT,
+                delivery_results_json TEXT
+            )
+        """)
+        conn.execute("""
+            INSERT INTO caregiver_alerts
+            (patient_id, timestamp_utc, alert_type, severity, message, delivery_results_json)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            patient_id,
+            int(time.time()),
+            alert_type,
+            severity,
+            message,
+            json.dumps(delivery_results),
+        ))
+        conn.commit()
+    finally:
+        conn.close()

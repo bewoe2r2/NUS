@@ -474,7 +474,7 @@ def _exec_award_voucher(args, patient_id, conn, now):
     amount = min(float(args.get("amount", 1)), 5.0)
     cursor = conn.execute("""
         UPDATE voucher_tracker
-        SET current_value = MIN(current_value + ?, 10.0),
+        SET current_value = MIN(COALESCE(current_value, 0) + ?, 10.0),
             bonus_earned = COALESCE(bonus_earned, 0) + ?
         WHERE user_id = ?
     """, (amount, amount, patient_id))
@@ -591,7 +591,7 @@ def _exec_celebrate_streak(args, patient_id, conn, now):
     # Award voucher bonus
     cursor = conn.execute("""
         UPDATE voucher_tracker
-        SET current_value = MIN(current_value + ?, 10.0),
+        SET current_value = MIN(COALESCE(current_value, 0) + ?, 10.0),
             bonus_earned = COALESCE(bonus_earned, 0) + ?
         WHERE user_id = ?
     """, (bonus, bonus, patient_id))

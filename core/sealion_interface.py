@@ -264,7 +264,7 @@ Write it as a warm, clear message to a family member in Singlish. 2-3 sentences 
             if result:
                 return result
 
-        return f"Family update: {sbar_data.get('situation', 'Patient needs attention')}. Please check in lah."
+        return f"Family update: {sbar_data.get('Situation', sbar_data.get('situation', 'Patient needs attention'))}. Please check in lah."
 
     def get_backend_info(self):
         """Returns which backend is active — useful for debugging and demo."""

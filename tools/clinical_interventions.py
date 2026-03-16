@@ -18,6 +18,7 @@ COUNTERFACTUAL EXAMPLES:
 
 import logging
 import json
+import os
 from typing import Dict, Any, Optional
 import copy
 
@@ -78,19 +79,21 @@ def calculate_counterfactual_tool(
     
     try:
         # Import here to avoid circular dependency
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core"))
         from hmm_engine import HMMEngine
         
         engine = HMMEngine()
         
         # 1. Get current observations
-        observations = engine.fetch_observations(days=7)
+        observations = engine.fetch_observations(days=7, patient_id=patient_id)
         if not observations:
             return {
                 "success": False,
                 "error": "No observation data available"
             }
-        
-        current_obs = observations[-1].copy()
+
+        current_obs = copy.deepcopy(observations[-1])
         
         # 2. Run baseline projection (no intervention)
         baseline_result = engine.run_inference(observations, patient_id=patient_id)
@@ -311,11 +314,3 @@ def suggest_medication_adjustment_tool(
             "success": False,
             "error": str(e)
         }
-
-
-# Register with agent runtime
-def register_with_runtime():
-    """Register these tools with the AgentRuntime"""
-    from agent_runtime import register_tool
-    register_tool("calculate_counterfactual")(calculate_counterfactual_tool)
-    register_tool("suggest_medication_adjustment")(suggest_medication_adjustment_tool)

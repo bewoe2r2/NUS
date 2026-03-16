@@ -207,7 +207,7 @@ class HealthHubProvider(AppointmentProvider):
         return {
             "slot_id": slot_resource.get("id"),
             "datetime": slot_resource.get("start"),
-            "time_category": "morning" if "T0" in slot_resource.get("start", "T12") else "afternoon",
+            "time_category": "morning" if int(slot_resource.get("start", "T12:00")[11:13]) < 12 else "afternoon",
             "doctor": slot_resource.get("_practitioner_name", ""),
             "clinic": slot_resource.get("_location_name", ""),
             "specialization": "",
@@ -308,6 +308,7 @@ def book_appointment_tool(
 
 def _load_patient_preferences(patient_id: str) -> Dict:
     """Load patient preferences from agent_memory table."""
+    conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -315,7 +316,6 @@ def _load_patient_preferences(patient_id: str) -> Dict:
             "SELECT key, value_json FROM agent_memory WHERE patient_id = ? AND memory_type = 'preference'",
             (patient_id,),
         ).fetchall()
-        conn.close()
 
         prefs = {}
         for row in rows:
@@ -324,6 +324,9 @@ def _load_patient_preferences(patient_id: str) -> Dict:
     except Exception as e:
         logger.warning(f"Could not load preferences: {e}")
         return {}
+    finally:
+        if conn:
+            conn.close()
 
 
 def _select_optimal_slot(slots: List[Dict], preferred_times: List[str], patient_prefs: Dict) -> Dict:
@@ -336,7 +339,11 @@ def _select_optimal_slot(slots: List[Dict], preferred_times: List[str], patient_
         Soonest available      — 20%
         Sleep-friendly timing  — 10%
     """
+    if not slots:
+        raise ValueError("No slots available to select from")
+
     scored_slots = []
+    now = datetime.now()
     for slot in slots:
         score = 0.0
         if slot["time_category"] in preferred_times:
@@ -344,7 +351,7 @@ def _select_optimal_slot(slots: List[Dict], preferred_times: List[str], patient_
         if patient_prefs.get("preferred_doctor") == slot["doctor"]:
             score += 30
         slot_time = datetime.fromisoformat(slot["datetime"])
-        days_out = (slot_time - datetime.now()).days
+        days_out = max(0, (slot_time - now).days)
         score += max(0, 20 - days_out * 2)
         if slot_time.hour >= 10:
             score += 10
@@ -357,38 +364,40 @@ def _select_optimal_slot(slots: List[Dict], preferred_times: List[str], patient_
 def _store_appointment_in_db(patient_id: str, booking: Dict):
     """Store appointment in database for audit trail."""
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id TEXT,
-            appointment_datetime TEXT,
-            doctor_name TEXT,
-            clinic_location TEXT,
-            reason TEXT,
-            booked_by TEXT,
-            status TEXT,
-            confirmation_code TEXT,
-            created_at INTEGER
-        )
-    """)
-    conn.execute("""
-        INSERT INTO appointments
-        (patient_id, appointment_datetime, doctor_name, clinic_location, reason,
-         booked_by, status, confirmation_code, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        patient_id,
-        booking["datetime"],
-        booking["doctor"],
-        booking["clinic"],
-        booking["reason"],
-        "agent",
-        booking["status"],
-        booking["confirmation_code"],
-        int(time.time()),
-    ))
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS appointments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patient_id TEXT,
+                appointment_datetime TEXT,
+                doctor_name TEXT,
+                clinic_location TEXT,
+                reason TEXT,
+                booked_by TEXT,
+                status TEXT,
+                confirmation_code TEXT,
+                created_at INTEGER
+            )
+        """)
+        conn.execute("""
+            INSERT INTO appointments
+            (patient_id, appointment_datetime, doctor_name, clinic_location, reason,
+             booked_by, status, confirmation_code, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            patient_id,
+            booking["datetime"],
+            booking["doctor"],
+            booking["clinic"],
+            booking["reason"],
+            "agent",
+            booking["status"],
+            booking["confirmation_code"],
+            int(time.time()),
+        ))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def _estimate_travel_time(clinic: str) -> str:

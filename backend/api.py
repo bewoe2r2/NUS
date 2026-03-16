@@ -670,7 +670,7 @@ def _get_patient_profile(patient_id: str) -> dict:
         conn = get_db()
         try:
             row = conn.execute(
-                "SELECT user_id, display_name, age, conditions, medications FROM patients WHERE user_id = ?",
+                "SELECT user_id, name, age, conditions, medications FROM patients WHERE user_id = ?",
                 (patient_id,)
             ).fetchone()
             if row:
@@ -688,7 +688,7 @@ def _get_patient_profile(patient_id: str) -> dict:
                     pass
                 return {
                     "id": row["user_id"],
-                    "name": row["display_name"] or f"Patient {patient_id}",
+                    "name": row["name"] or f"Patient {patient_id}",
                     "age": row["age"] if "age" in row.keys() else 67,
                     "conditions": conditions,
                     "medications": medications,
@@ -1545,10 +1545,6 @@ async def run_hmm_analysis():
     """Run HMM analysis on current data"""
     try:
         engine = get_engine()
-        observations = engine.fetch_observations(days=14)  # Admin: all patients
-
-        if not observations:
-            return {"success": False, "error": "No data available"}
 
         conn = get_db()
         now = int(time.time())
@@ -1558,25 +1554,38 @@ async def run_hmm_analysis():
         # Clear old HMM states
         conn.execute("DELETE FROM hmm_states WHERE timestamp_utc >= ?", (start_time,))
 
-        for i, obs in enumerate(observations):
-            obs_time = start_time + (i * window_size)
-            window_start = max(0, i - 42)  # 7 days context
-            window_obs = observations[window_start:i+1]
+        patient_ids = ["P001", "P002", "P003"]
+        total_analyzed = 0
 
-            if window_obs:
-                result = engine.run_inference(window_obs)
+        for patient_id in patient_ids:
+            observations = engine.fetch_observations(days=14, patient_id=patient_id)
+            if not observations:
+                continue
 
-                conn.execute("""
-                    INSERT INTO hmm_states (timestamp_utc, detected_state, confidence_score,
-                                           confidence_margin, patient_tier, input_vector_snapshot, user_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (obs_time, result['current_state'], result['confidence'],
-                      result.get('confidence_margin', 0), 'PREMIUM', json.dumps(obs), obs.get('user_id', 'P001')))
+            for i, obs in enumerate(observations):
+                obs_time = start_time + (i * window_size)
+                window_start = max(0, i - 42)  # 7 days context
+                window_obs = observations[window_start:i+1]
+
+                if window_obs:
+                    result = engine.run_inference(window_obs)
+
+                    conn.execute("""
+                        INSERT INTO hmm_states (timestamp_utc, detected_state, confidence_score,
+                                               confidence_margin, patient_tier, input_vector_snapshot, user_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (obs_time, result['current_state'], result['confidence'],
+                          result.get('confidence_margin', 0), 'PREMIUM', json.dumps(obs), patient_id))
+
+            total_analyzed += len(observations)
 
         conn.commit()
         conn.close()
 
-        return {"success": True, "analyzed": len(observations)}
+        if total_analyzed == 0:
+            return {"success": False, "error": "No data available"}
+
+        return {"success": True, "analyzed": total_analyzed}
 
     except Exception as e:
         logger.exception(f"Error running HMM: {e}")

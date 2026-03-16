@@ -143,8 +143,8 @@ class ClinicalEngine:
         """
         if not observations:
              return {
-                 'glucose_avg': 0, 'glucose_max': 0, 
-                 'adherence_pct': 0, 'sleep_hours': 0, 'steps': 0
+                 'glucose_avg': 0, 'glucose_max': 0,
+                 'adherence_pct': 0, 'sleep_quality': 0, 'sleep_hours': 0, 'steps': 0
              }
 
         # Observation format: [(timestamp, feature_name, value), ...]
