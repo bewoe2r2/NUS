@@ -1,0 +1,280 @@
+{
+  "test1_cohort": {
+    "total_patients": 3000,
+    "overall_accuracy": 100.0,
+    "macro_f1": 1.0,
+    "per_class": {
+      "STABLE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "specificity": 1.0,
+        "f1": 1.0,
+        "tp": 1000,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2000,
+        "support": 1000
+      },
+      "WARNING": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "specificity": 1.0,
+        "f1": 1.0,
+        "tp": 1000,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2000,
+        "support": 1000
+      },
+      "CRISIS": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "specificity": 1.0,
+        "f1": 1.0,
+        "tp": 1000,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2000,
+        "support": 1000
+      }
+    },
+    "confusion_matrix": {
+      "STABLE": {
+        "STABLE": 1000,
+        "WARNING": 0,
+        "CRISIS": 0
+      },
+      "WARNING": {
+        "STABLE": 0,
+        "WARNING": 1000,
+        "CRISIS": 0
+      },
+      "CRISIS": {
+        "STABLE": 0,
+        "WARNING": 0,
+        "CRISIS": 1000
+      }
+    },
+    "roc_auc": {
+      "STABLE": 1.0,
+      "WARNING": 1.0,
+      "CRISIS": 1.0
+    },
+    "mean_confidence": 0.99
+  },
+  "test2_noise": [
+    {
+      "noise": 0.05,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.1,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.15,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.2,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.3,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.4,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.5,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.6,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.7,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 0.8,
+      "accuracy": 100.0
+    },
+    {
+      "noise": 1.0,
+      "accuracy": 99.3
+    }
+  ],
+  "test3_missing": [
+    {
+      "missing_rate": 0.0,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.1,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.2,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.3,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.4,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.5,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.6,
+      "accuracy": 100.0
+    },
+    {
+      "missing_rate": 0.7,
+      "accuracy": 99.7
+    },
+    {
+      "missing_rate": 0.8,
+      "accuracy": 99.0
+    }
+  ],
+  "test4_seq_length": [
+    {
+      "n_obs": 1,
+      "accuracy": 95.0
+    },
+    {
+      "n_obs": 2,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 3,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 4,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 6,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 8,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 12,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 18,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 24,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 36,
+      "accuracy": 100.0
+    },
+    {
+      "n_obs": 48,
+      "accuracy": 100.0
+    }
+  ],
+  "test5_scenarios": {
+    "stable_perfect": {
+      "expected": "STABLE",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "stable_realistic": {
+      "expected": "STABLE",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "stable_noisy": {
+      "expected": "STABLE",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "gradual_decline": {
+      "expected": "WARNING",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "warning_to_crisis": {
+      "expected": "CRISIS",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "sudden_crisis": {
+      "expected": "CRISIS",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "recovery": {
+      "expected": "STABLE",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "demo_full_crisis": {
+      "expected": "CRISIS",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    },
+    "demo_counterfactual": {
+      "expected": "WARNING",
+      "exact_accuracy": 100.0,
+      "adjacent_accuracy": 100.0,
+      "count": 200
+    }
+  },
+  "test6_safety": {
+    "false_positive_rate": 0.0,
+    "true_positive_rate": 100.0,
+    "boundary_accuracy": "11/11"
+  },
+  "test7_transitions": "5/5 passed",
+  "test8_monte_carlo": [
+    {
+      "state": "STABLE",
+      "mean_risk": 20.9,
+      "std": 2.7
+    },
+    {
+      "state": "WARNING",
+      "mean_risk": 39.1,
+      "std": 3.3
+    },
+    {
+      "state": "CRISIS",
+      "mean_risk": 100.0,
+      "std": 0.0
+    }
+  ],
+  "test9_interventions": "See output above",
+  "summary": {
+    "quality": "EXCELLENT",
+    "runtime_seconds": 26.1,
+    "timestamp": "2026-03-16T03:59:58.175502"
+  }
+}
