@@ -1136,7 +1136,7 @@ class GeminiIntegration:
                 SELECT current_value FROM voucher_tracker
                 ORDER BY week_start_utc DESC LIMIT 1
             """).fetchone()
-            voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
+            voucher_balance = (voucher_row['current_value'] if voucher_row and voucher_row['current_value'] is not None else 5.00)
         except Exception as e:
             logger.warning(f"Error fetching HMM/voucher state: {e}")
         finally:
@@ -1603,7 +1603,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
                 SELECT current_value FROM voucher_tracker
                 ORDER BY week_start_utc DESC LIMIT 1
             """).fetchone()
-            voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
+            voucher_balance = (voucher_row['current_value'] if voucher_row and voucher_row['current_value'] is not None else 5.00)
         except Exception as e:
             logger.warning(f"Could not fetch voucher balance: {e}")
         finally:

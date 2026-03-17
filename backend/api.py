@@ -1894,7 +1894,7 @@ async def run_hmm_analysis():
                 window_obs = observations[window_start:i+1]
 
                 if window_obs:
-                    result = engine.run_inference(window_obs, patient_id=patient_id)
+                    result = engine.run_inference(window_obs, patient_id=patient_id) or {}
 
                     conn.execute("""
                         INSERT INTO hmm_states (timestamp_utc, detected_state, confidence_score,

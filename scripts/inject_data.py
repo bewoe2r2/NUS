@@ -243,35 +243,35 @@ def run_analysis_and_save(engine, days=14):
 def print_summary(engine, days=14):
     """Print a summary of the analysis."""
     conn = get_db_connection()
+    try:
+        # Get state distribution
+        rows = conn.execute("""
+            SELECT detected_state, COUNT(*) as count, AVG(confidence_score) as avg_conf
+            FROM hmm_states
+            GROUP BY detected_state
+        """).fetchall()
 
-    # Get state distribution
-    rows = conn.execute("""
-        SELECT detected_state, COUNT(*) as count, AVG(confidence_score) as avg_conf
-        FROM hmm_states
-        GROUP BY detected_state
-    """).fetchall()
+        print("\n" + "=" * 50)
+        print("HMM ANALYSIS SUMMARY")
+        print("=" * 50)
 
-    print("\n" + "=" * 50)
-    print("HMM ANALYSIS SUMMARY")
-    print("=" * 50)
+        for row in rows:
+            print(f"  {row['detected_state']}: {row['count']} buckets (avg confidence: {row['avg_conf']:.1%})")
 
-    for row in rows:
-        print(f"  {row['detected_state']}: {row['count']} buckets (avg confidence: {row['avg_conf']:.1%})")
+        # Get latest state
+        latest = conn.execute("""
+            SELECT detected_state, confidence_score, confidence_margin
+            FROM hmm_states
+            ORDER BY timestamp_utc DESC
+            LIMIT 1
+        """).fetchone()
 
-    # Get latest state
-    latest = conn.execute("""
-        SELECT detected_state, confidence_score, confidence_margin
-        FROM hmm_states
-        ORDER BY timestamp_utc DESC
-        LIMIT 1
-    """).fetchone()
-
-    if latest:
-        print(f"\nCurrent State: {latest['detected_state']}")
-        print(f"Confidence: {latest['confidence_score']:.1%}")
-        print(f"Margin: {latest['confidence_margin']:.1%}")
-
-    conn.close()
+        if latest:
+            print(f"\nCurrent State: {latest['detected_state']}")
+            print(f"Confidence: {latest['confidence_score']:.1%}")
+            print(f"Margin: {latest['confidence_margin']:.1%}")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     import argparse

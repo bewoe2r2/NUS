@@ -35,16 +35,16 @@ class VoucherSystem:
     def get_current_voucher(self, user_id=None):
         """Get this week's voucher status"""
         user_id = user_id or self.user_id
+        # Compute datetime values outside try block so they're always available
+        now = datetime.now()
+        days_since_monday = now.weekday()
+        week_start = now - timedelta(days=days_since_monday)
+        # Normalize to start of day
+        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start_ts = int(week_start.timestamp())
         conn = None
         try:
             conn = sqlite3.connect(self.db_path)
-            # Get week start (Monday)
-            now = datetime.now()
-            days_since_monday = now.weekday()
-            week_start = now - timedelta(days=days_since_monday)
-            # Normalize to start of day
-            week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
-            week_start_ts = int(week_start.timestamp())
 
             # Check if voucher exists for this week
             row = conn.execute("""

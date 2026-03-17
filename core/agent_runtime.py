@@ -321,7 +321,10 @@ def execute_tool(tool_name: str, tool_args: Dict, patient_id: str, patient_profi
 
 def _exec_book_appointment(args, patient_id, conn, now):
     """Blind booking: sends only urgency + clinical category, never patient ID."""
-    from appointment_booking import book_appointment_tool
+    try:
+        from appointment_booking import book_appointment_tool
+    except ModuleNotFoundError:
+        from tools.appointment_booking import book_appointment_tool
     result = book_appointment_tool(
         patient_id=patient_id,
         urgency=args.get("urgency", "routine"),
@@ -342,7 +345,10 @@ def _exec_book_appointment(args, patient_id, conn, now):
 
 def _exec_caregiver_alert(args, patient_id, conn, now):
     """Three-tier alert with rate limiting and escalation."""
-    from caregiver_alerts import send_tiered_alert_tool
+    try:
+        from caregiver_alerts import send_tiered_alert_tool
+    except ModuleNotFoundError:
+        from tools.caregiver_alerts import send_tiered_alert_tool
     result = send_tiered_alert_tool(
         patient_id=patient_id,
         message=args.get("message", "Health update"),
@@ -354,7 +360,10 @@ def _exec_caregiver_alert(args, patient_id, conn, now):
 
 def _exec_counterfactual(args, patient_id):
     """Run HMM what-if simulation."""
-    from clinical_interventions import calculate_counterfactual_tool
+    try:
+        from clinical_interventions import calculate_counterfactual_tool
+    except ModuleNotFoundError:
+        from tools.clinical_interventions import calculate_counterfactual_tool
     params = args.get("intervention_params", {})
     if isinstance(params, str):
         try:
@@ -371,7 +380,10 @@ def _exec_counterfactual(args, patient_id):
 
 def _exec_medication_suggestion(args, patient_id):
     """Generate medication recommendation for doctor review."""
-    from clinical_interventions import suggest_medication_adjustment_tool
+    try:
+        from clinical_interventions import suggest_medication_adjustment_tool
+    except ModuleNotFoundError:
+        from tools.clinical_interventions import suggest_medication_adjustment_tool
     factors = args.get("hmm_factors", {})
     if isinstance(factors, str):
         try:
@@ -430,7 +442,10 @@ def _exec_alert_nurse(args, patient_id, conn, now):
     sbar_json = None
     if priority in ("medium", "high", "critical"):
         try:
-            from clinical_engine import ClinicalEngine
+            try:
+                from clinical_engine import ClinicalEngine
+            except ModuleNotFoundError:
+                from core.clinical_engine import ClinicalEngine
             ce = ClinicalEngine(db_path=DB_PATH)
             pipeline_result = ce.execute_pipeline(patient_id)
             if pipeline_result and pipeline_result.get("sbar"):
@@ -526,7 +541,10 @@ def _exec_escalate_doctor(args, patient_id, conn, now):
     # Auto-generate SBAR for doctor escalations
     sbar_json = None
     try:
-        from clinical_engine import ClinicalEngine
+        try:
+            from clinical_engine import ClinicalEngine
+        except ModuleNotFoundError:
+            from core.clinical_engine import ClinicalEngine
         ce = ClinicalEngine(db_path=DB_PATH)
         pipeline_result = ce.execute_pipeline(patient_id)
         if pipeline_result and pipeline_result.get("sbar"):
@@ -692,7 +710,10 @@ def _exec_clinician_summary(args, patient_id, conn, now):
 
     # 1. SBAR via ClinicalEngine
     try:
-        from clinical_engine import ClinicalEngine
+        try:
+            from clinical_engine import ClinicalEngine
+        except ModuleNotFoundError:
+            from core.clinical_engine import ClinicalEngine
         ce = ClinicalEngine(db_path=DB_PATH)
         pipeline_result = ce.execute_pipeline(patient_id)
         if pipeline_result:
@@ -2548,7 +2569,10 @@ def run_agent(
     msg = result.get("message_to_patient", "")
     if msg:
         try:
-            from sealion_interface import SeaLionInterface
+            try:
+                from sealion_interface import SeaLionInterface
+            except ModuleNotFoundError:
+                from core.sealion_interface import SeaLionInterface
             sealion = SeaLionInterface()
             tone = result.get("tone", "calm")
             translated = sealion.translate_message(msg, "singlish_elder", tone)
@@ -3419,7 +3443,10 @@ def _get_merlion_forecast(observations: List[Dict]) -> Dict:
     by changing only MerlionRiskEngine._calculate_real_merlion_risk().
     """
     try:
-        from merlion_risk_engine import MerlionRiskEngine
+        try:
+            from merlion_risk_engine import MerlionRiskEngine
+        except ModuleNotFoundError:
+            from core.merlion_risk_engine import MerlionRiskEngine
         engine = MerlionRiskEngine()
         glucose_history = [obs.get("glucose_avg") for obs in observations[-12:] if obs.get("glucose_avg") is not None]
         if len(glucose_history) < 3:
