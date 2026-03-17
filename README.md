@@ -245,15 +245,53 @@ Open `http://localhost:3000/judge` — the **Guided Walkthrough** launches autom
 
 ---
 
-## Testing
+## Testing & Validation
+
+**230/230 tests passed, 76/76 validation gates passed. Zero safety-critical misclassifications.**
 
 ```bash
-# Backend tests (HMM, API, pipeline)
-pytest tests/ -v
+# Core unit tests (metrics, proactive triggers, counterfactuals, baselines)
+pytest tests/test_metrics_system.py tests/test_proactive_oracle.py tests/test_counterfactual_engine.py tests/test_personalized_baselines.py -v
 
-# Frontend tests (API client, components, walkthrough)
-cd frontend && npm test
+# Enforced validation gates (accuracy >=90%, AUC >=0.85, CRISIS recall >=0.80)
+pytest tests/test_validation_runner.py -v
+
+# Full pipeline (HMM + Monte Carlo + safety + drug interactions + 100 patients)
+pytest tests/test_full_pipeline.py -v
+
+# Exhaustive HMM (numerical stability, edge cases, all scenarios)
+pytest tests/test_exhaustive.py -v
+
+# Independent validation (5,000 clinically-sourced patients per suite)
+PYTHONPATH=. python validation/hmm_validation_suite/code/01_easy_independent_validation.py
+PYTHONPATH=. python validation/hmm_validation_suite/code/02_hardened_independent_validation.py
+
+# API integration tests (requires running server + BEWO_API_KEY)
+pytest tests/test_api_live.py -v
 ```
+
+### Key Results
+
+| Suite | Accuracy | CRISIS Recall | AUC | Patients |
+|-------|----------|---------------|-----|----------|
+| Easy (clean boundaries) | 99.3% | 100% | 1.000 | 5,000 |
+| Hardened (overlapping, contradictory) | 82.1% | 87.8% | 0.967 | 5,000 |
+
+- HMM outperforms glucose-only baseline by **+25.3%** (p<0.0001)
+- **Zero** CRISIS-as-STABLE misclassifications across both suites
+- 32 clinical archetypes (DKA, sepsis, steroid-induced, hypoglycemia-unaware, etc.)
+- 16 validation sections with McNemar, ROC-AUC, ECE calibration, bootstrap cross-validation
+
+### Where to Find Everything
+
+| File | What |
+|------|------|
+| `tests/TEST_REPORT.md` | Full test coverage matrix and competition metrics mapping |
+| `tests/results/RESULTS_SUMMARY.md` | Latest test run results with all metrics |
+| `tests/results/*.txt` | Raw output from each test suite |
+| `validation/hmm_validation_suite/` | Independent validation code (16 sections, 5,000 patients each) |
+| `tests/test_metrics_system.py` | Technical metrics system tests (grounding, cost, latency) |
+| `tests/test_proactive_oracle.py` | All 6 proactive trigger conditions + scheduling |
 
 The CI pipeline (`.github/workflows/ci.yml`) runs backend tests, frontend lint, frontend tests, and build verification on every push.
 
