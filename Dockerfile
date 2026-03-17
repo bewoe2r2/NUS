@@ -63,8 +63,15 @@ USER bewo
 EXPOSE 8000 3000
 
 # Health check against the FastAPI backend
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
-# Start both services
-CMD ["sh", "-c", "cd /app/frontend && npm run start & cd /app && uvicorn backend.api:app --host 0.0.0.0 --port 8000"]
+# Startup validation and launch
+CMD ["sh", "-c", "\
+    echo 'Validating environment...' && \
+    if [ -z \"$BEWO_API_KEY\" ] && [ \"$DEBUG_MODE\" != 'True' ]; then \
+        echo 'ERROR: BEWO_API_KEY must be set in production. Set DEBUG_MODE=True for development.' && exit 1; \
+    fi && \
+    cd /app/frontend && npm run start & \
+    cd /app && uvicorn backend.api:app --host 0.0.0.0 --port 8000 \
+"]

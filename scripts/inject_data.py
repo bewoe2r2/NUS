@@ -48,7 +48,13 @@ def _inject_tiered_scenario_impl(conn, observations, tier, days):
     window_size = 4 * 3600
 
     print(f"Cleaning old data from {DB_PATH}...")
-    # Clear ALL data tables first
+    # Clear ALL data tables first (allowlisted table names only — never user input)
+    _ALLOWED_TABLES = frozenset({
+        'glucose_readings', 'cgm_readings', 'passive_metrics',
+        'medication_logs', 'food_logs', 'fitbit_activity',
+        'fitbit_heart_rate', 'fitbit_sleep', 'hmm_states',
+    })
+
     all_tables = [
         ('glucose_readings', 'reading_timestamp_utc'),
         ('cgm_readings', 'timestamp_utc'),
@@ -62,11 +68,14 @@ def _inject_tiered_scenario_impl(conn, observations, tier, days):
     ]
 
     for table, ts_col in all_tables:
+        if table not in _ALLOWED_TABLES:
+            raise ValueError(f"Table '{table}' is not in the allowlist")
         try:
-            conn.execute(f"DELETE FROM {table}")
+            # Table name validated against allowlist above; parameterized queries
+            # cannot be used for table names in SQLite.
+            conn.execute(f"DELETE FROM {table}")  # noqa: S608
         except Exception as e:
             print(f"Warning clearing {table}: {e}")
-            pass
 
     # Seed prescribed medications
     medications_data = [

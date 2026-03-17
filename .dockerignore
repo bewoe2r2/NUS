@@ -2,6 +2,7 @@ node_modules
 .next
 .git
 .env
+.env.*
 *.pyc
 __pycache__
 archive/
@@ -19,3 +20,7 @@ test_results/
 *.md
 !README.md
 .claude/
+# Prevent patient data from being baked into images
+database/*.db
+database/*.db-wal
+database/*.db-shm

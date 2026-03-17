@@ -22,11 +22,13 @@ import time
 import json
 import math
 import tempfile
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 
@@ -71,10 +73,37 @@ app = FastAPI(
     description="Complete Backend for Bewo Healthcare Companion",
     version="4.0.0",
     lifespan=lifespan,
+    openapi_tags=[{"name": "health", "description": "Health check endpoints"}],
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1},
 )
 
+# --- OpenAPI Security Scheme ---
+from fastapi.openapi.utils import get_openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+        }
+    }
+    openapi_schema["security"] = [{"ApiKeyAuth": []}]
+    app.openapi_schema = openapi_schema
+    return openapi_schema
+
+app.openapi = custom_openapi
+
 # --- CORS (locked to known origins only) ---
-ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://localhost:3002").split(",")
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -84,10 +113,19 @@ app.add_middleware(
 )
 
 # --- API Key Authentication ---
-API_KEY = os.getenv("BEWO_API_KEY", "bewo-dev-key-2026")  # Override in production via env var
-if API_KEY == "bewo-dev-key-2026":
-    logging.getLogger("BewoAPI").warning("SECURITY: Using default API key. Set BEWO_API_KEY env var in production.")
-ADMIN_KEY = os.getenv("BEWO_ADMIN_KEY", API_KEY)  # Separate admin key; defaults to API_KEY for dev
+_raw_api_key = os.getenv("BEWO_API_KEY", "")
+if not _raw_api_key or _raw_api_key == "bewo-dev-key-2026":
+    if os.getenv("DEBUG_MODE", "False").lower() == "true":
+        _raw_api_key = "bewo-dev-key-2026"
+        logging.getLogger("BewoAPI").warning("SECURITY: Using default API key. Set BEWO_API_KEY env var in production.")
+    else:
+        raise RuntimeError(
+            "BEWO_API_KEY is not set or is using the insecure default. "
+            "Set a strong, unique BEWO_API_KEY in your environment. "
+            "To run in dev mode, also set DEBUG_MODE=True."
+        )
+API_KEY = _raw_api_key
+ADMIN_KEY = os.getenv("BEWO_ADMIN_KEY", API_KEY)
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
@@ -113,16 +151,19 @@ RATE_LIMIT_CHAT_MAX = 30  # stricter limit for /chat (Gemini calls cost money)
 
 @app.middleware("http")
 async def security_middleware(request: Request, call_next):
-    """Combined auth + rate limiting middleware. Runs on every request."""
+    """Combined auth + rate limiting + security headers middleware."""
     from starlette.responses import JSONResponse
     path = request.url.path
 
     # 1. Skip auth for CORS preflight and public paths
     if request.method == "OPTIONS" or path in PUBLIC_PATHS:
-        return await call_next(request)
+        response = await call_next(request)
+        _add_security_headers(response)
+        return response
 
+    # Constant-time API key comparison to prevent timing attacks
     api_key = request.headers.get("X-API-Key", "")
-    if api_key != API_KEY:
+    if not secrets.compare_digest(api_key, API_KEY):
         return JSONResponse(status_code=403, content={"detail": "Invalid or missing API key. Set X-API-Key header."})
 
     # 2. Rate limiting per client IP
@@ -133,13 +174,32 @@ async def security_middleware(request: Request, call_next):
     else:
         _rate_limit_store[client_ip] = []
 
-    max_req = RATE_LIMIT_CHAT_MAX if "/chat" in path else RATE_LIMIT_MAX
+    # Rate-limit /glucose/ocr uploads too (prevent abuse)
+    if "/chat" in path:
+        max_req = RATE_LIMIT_CHAT_MAX
+    elif "/glucose/ocr" in path:
+        max_req = RATE_LIMIT_CHAT_MAX
+    else:
+        max_req = RATE_LIMIT_MAX
+
     if len(_rate_limit_store[client_ip]) >= max_req:
         return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded. Try again later."})
 
     _rate_limit_store[client_ip].append(now)
     response = await call_next(request)
+    _add_security_headers(response)
     return response
+
+
+def _add_security_headers(response: Response):
+    """Add security headers to every response."""
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(self), camera=(self)"
 
 # =============================================================================
 # PYDANTIC MODELS
@@ -185,7 +245,7 @@ class PatientHistoryResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
-    patient_id: str = "P001"
+    patient_id: str = Field(..., min_length=1, description="Patient identifier (required)")
 
 class ChatResponse(BaseModel):
     message: str
@@ -196,15 +256,15 @@ class ChatResponse(BaseModel):
 
 class FoodInput(BaseModel):
     description: str
-    carbs_grams: float = 0
+    carbs_grams: float = Field(0, ge=0, le=500.0)
     meal_type: str = "snack"  # breakfast, lunch, dinner, snack
-    patient_id: str = "P001"
+    patient_id: str = Field(..., min_length=1, description="Patient identifier (required)")
 
 class GlucoseInput(BaseModel):
-    value: float = Field(..., gt=0, le=50.0)
+    value: float = Field(..., gt=1.0, le=35.0, description="Glucose in mmol/L (realistic range 1.0-35.0)")
     unit: str = "mmol/L"
     source: str = "MANUAL"
-    patient_id: str = "P001"
+    patient_id: str = Field(..., min_length=1, description="Patient identifier (required)")
 
 class GlucoseOCRResponse(BaseModel):
     success: bool
@@ -216,7 +276,7 @@ class GlucoseOCRResponse(BaseModel):
 class MedicationLog(BaseModel):
     medication_name: str
     taken: bool
-    patient_id: str = "P001"
+    patient_id: str = Field(..., min_length=1, description="Patient identifier (required)")
 
 class VoucherResponse(BaseModel):
     current_value: float
@@ -246,7 +306,7 @@ class DrugInteractionCheckInput(BaseModel):
 
 class VoiceCheckInRequest(BaseModel):
     transcript: str
-    patient_id: str = "P001"
+    patient_id: str = Field(..., min_length=1, description="Patient identifier (required)")
 
 class VoiceCheckInResponse(BaseModel):
     sentiment_score: float
@@ -274,9 +334,12 @@ class NurseAlert(BaseModel):
 # =============================================================================
 
 def get_db():
-    """Get database connection"""
-    conn = sqlite3.connect(DB_PATH)
+    """Get database connection with WAL mode and foreign keys enabled."""
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=5000")
     return conn
 
 _cached_engine = None
@@ -789,13 +852,34 @@ async def log_glucose(data: GlucoseInput):
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB max file upload
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
 
+# Magic bytes for file type validation (MIME type can be spoofed)
+_IMAGE_MAGIC_BYTES = {
+    b'\xff\xd8\xff': "image/jpeg",
+    b'\x89PNG': "image/png",
+    b'RIFF': "image/webp",  # WebP starts with RIFF....WEBP
+}
+
+
+def _validate_image_magic(content: bytes) -> bool:
+    """Validate file content by checking magic bytes, not just MIME type."""
+    if len(content) < 12:
+        return False
+    for magic, _ in _IMAGE_MAGIC_BYTES.items():
+        if content[:len(magic)] == magic:
+            return True
+    # HEIC/HEIF: check for ftyp box
+    if content[4:8] == b'ftyp':
+        return True
+    return False
+
+
 @app.post("/glucose/ocr", response_model=GlucoseOCRResponse)
 async def extract_glucose_from_photo(file: UploadFile = File(...)):
     """Extract glucose reading from photo using Gemini OCR"""
     try:
-        # Validate file type
+        # Validate MIME type
         if file.content_type and file.content_type not in ALLOWED_IMAGE_TYPES:
-            return GlucoseOCRResponse(success=False, error=f"Invalid file type. Allowed: JPEG, PNG, WebP, HEIC")
+            return GlucoseOCRResponse(success=False, error="Invalid file type. Allowed: JPEG, PNG, WebP, HEIC")
 
         gi = get_gemini()
         if not gi:
@@ -806,8 +890,12 @@ async def extract_glucose_from_photo(file: UploadFile = File(...)):
         if len(content) > MAX_UPLOAD_SIZE:
             return GlucoseOCRResponse(success=False, error=f"File too large. Max {MAX_UPLOAD_SIZE // (1024*1024)}MB")
 
-        # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp:
+        # Validate magic bytes (defense against MIME spoofing)
+        if not _validate_image_magic(content):
+            return GlucoseOCRResponse(success=False, error="File content does not match a valid image format")
+
+        # Save uploaded file temporarily (secure temp directory)
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg', dir=tempfile.gettempdir()) as tmp:
             tmp.write(content)
             tmp_path = tmp.name
 
@@ -2095,9 +2183,32 @@ async def get_hmm_params(patient_id: str):
 # STARTUP
 # =============================================================================
 
+def _validate_environment():
+    """Validate required environment variables at startup."""
+    warnings = []
+    gemini_key = os.getenv("GEMINI_API_KEY", "")
+    if not gemini_key:
+        warnings.append("GEMINI_API_KEY is not set — AI chat and OCR features will be unavailable")
+
+    if os.getenv("DEBUG_MODE", "False").lower() == "true":
+        warnings.append("DEBUG_MODE is enabled — disable in production (set DEBUG_MODE=False)")
+
+    log_level = os.getenv("LOG_LEVEL", "WARNING").upper()
+    if log_level in ("DEBUG", "INFO") and os.getenv("DEBUG_MODE", "False").lower() != "true":
+        warnings.append(f"LOG_LEVEL={log_level} may expose sensitive data in production")
+
+    for w in warnings:
+        logger.warning(f"STARTUP: {w}")
+
+    return warnings
+
+
 def startup_event():
     """Initialize on startup — auto-creates schema and seeds demo data if DB is empty."""
     logger.info("Starting Bewo Health API v4.0 (Diamond v7 + 7 Ceiling Features)...")
+
+    # Validate environment configuration
+    _validate_environment()
 
     # Auto-initialize schema if database is empty or missing core tables
     try:

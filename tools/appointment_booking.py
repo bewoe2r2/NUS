@@ -217,6 +217,12 @@ class HealthHubProvider(AppointmentProvider):
 def _get_provider() -> AppointmentProvider:
     """Factory: returns the configured appointment provider."""
     if APPOINTMENT_PROVIDER == "healthhub":
+        if not HEALTHHUB_API_KEY:
+            logger.error(
+                "APPOINTMENT_PROVIDER=healthhub but HEALTHHUB_API_KEY is not set. "
+                "Falling back to mock provider."
+            )
+            return MockProvider()
         return HealthHubProvider()
     return MockProvider()
 

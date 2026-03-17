@@ -21,12 +21,23 @@ import os
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 # Default Home Location (Singapore City Hall approx — configurable per patient via env vars)
+_DEFAULT_HOME_LAT = 1.2931
+_DEFAULT_HOME_LON = 103.8558
+
 try:
-    HOME_LAT = float(os.environ.get("BEWO_HOME_LAT", "1.2931"))
-    HOME_LON = float(os.environ.get("BEWO_HOME_LON", "103.8558"))
-except ValueError:
-    HOME_LAT = 1.2931
-    HOME_LON = 103.8558
+    _raw_lat = float(os.environ.get("BEWO_HOME_LAT", str(_DEFAULT_HOME_LAT)))
+    _raw_lon = float(os.environ.get("BEWO_HOME_LON", str(_DEFAULT_HOME_LON)))
+    if not (-90 <= _raw_lat <= 90):
+        raise ValueError(f"BEWO_HOME_LAT={_raw_lat} is outside valid range [-90, 90]")
+    if not (-180 <= _raw_lon <= 180):
+        raise ValueError(f"BEWO_HOME_LON={_raw_lon} is outside valid range [-180, 180]")
+    HOME_LAT = _raw_lat
+    HOME_LON = _raw_lon
+except ValueError as e:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(f"Invalid home coordinates: {e}. Using Singapore defaults.")
+    HOME_LAT = _DEFAULT_HOME_LAT
+    HOME_LON = _DEFAULT_HOME_LON
 
 class LocationTracker:
     def __init__(self, db_path=DB_PATH):

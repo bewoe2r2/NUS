@@ -138,6 +138,13 @@ class TwilioDelivery(AlertDeliveryProvider):
 def _get_delivery_provider() -> AlertDeliveryProvider:
     """Factory: returns the configured alert delivery provider."""
     if ALERT_PROVIDER == "twilio":
+        if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER]):
+            logger.error(
+                "ALERT_PROVIDER=twilio but Twilio credentials are missing. "
+                "Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER. "
+                "Falling back to mock provider."
+            )
+            return MockDelivery()
         return TwilioDelivery()
     return MockDelivery()
 

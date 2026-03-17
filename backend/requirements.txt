@@ -1,30 +1,31 @@
 # ==============================================================================
 # Bewo 2026 - Python Dependencies
+# Pin versions for reproducible builds. Update regularly.
 # ==============================================================================
 
 # --- Core API ---
-fastapi>=0.100.0
-uvicorn>=0.20.0
-pydantic>=2.0.0
-python-multipart>=0.0.6          # Required by FastAPI for UploadFile/Form
+fastapi==0.115.0
+uvicorn==0.30.0
+pydantic==2.9.0
+python-multipart==0.0.9          # Required by FastAPI for UploadFile/Form
 
 # --- AI / ML ---
-google-generativeai>=0.3.0       # Gemini API (gemini_integration, sealion_interface)
-numpy>=1.24.0                    # HMM engine, risk engine, tests
-scipy>=1.10.0                    # scipy.stats.norm in merlion_risk_engine
+google-generativeai==0.8.0       # Gemini API (gemini_integration, sealion_interface)
+numpy==1.26.4                    # HMM engine, risk engine, tests
+scipy==1.13.0                    # scipy.stats.norm in merlion_risk_engine
 # salesforce-merlion>=2.0.0      # Optional: time-series forecasting (falls back to mock)
 
 # --- Networking / HTTP ---
-openai>=1.0.0                    # SEA-LION Official API client (OpenAI-compatible)
-requests>=2.28.0                 # Cloudflare Workers AI fallback
+openai==1.50.0                   # SEA-LION Official API client (OpenAI-compatible)
+requests==2.32.3                 # Cloudflare Workers AI fallback
 
 # --- Utilities ---
-python-dotenv>=1.0.0             # .env loading for API keys
-qrcode[pil]>=7.4                 # QR code generation (voucher_system)
-Pillow>=9.4.0                    # Image handling (qrcode dependency, OCR upload)
+python-dotenv==1.0.1             # .env loading for API keys
+qrcode[pil]==7.4.2               # QR code generation (voucher_system)
+Pillow==10.4.0                   # Image handling (qrcode dependency, OCR upload)
 
 # --- Data ---
-pandas>=1.5.0                    # Merlion risk engine, data processing
+pandas==2.2.2                    # Merlion risk engine, data processing
 
 # --- Optional (scripts, archive dashboards) ---
 # streamlit>=1.28.0              # Archive Streamlit dashboards
@@ -32,5 +33,5 @@ pandas>=1.5.0                    # Merlion risk engine, data processing
 # python-pptx>=0.6.21            # PowerPoint generation (scripts/)
 
 # --- Testing ---
-pytest>=7.2.0                    # Test runner
-hypothesis>=6.70.0               # Property-based testing
+pytest==8.3.2                    # Test runner
+hypothesis==6.112.0              # Property-based testing

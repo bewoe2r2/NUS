@@ -27,14 +27,15 @@ CREATE TABLE IF NOT EXISTS patients (
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS glucose_readings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     reading_value REAL NOT NULL,
     reading_timestamp_utc INTEGER NOT NULL,
     source_type TEXT CHECK(source_type IN ('MANUAL', 'OCR_GEMINI', 'VOICE_GEMINI')) NOT NULL,
     confidence_score REAL DEFAULT 1.0,
     photo_deleted_flag BOOLEAN DEFAULT 0,
     is_synced BOOLEAN DEFAULT 0, -- Valid if NO value is synced, only "event"
-    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000) -- +6 months
+    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000), -- +6 months
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
 -- Optimization: HMM needs last 24h fast
@@ -46,14 +47,15 @@ CREATE INDEX IF NOT EXISTS idx_glucose_recent ON glucose_readings(user_id, readi
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS medication_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     medication_name TEXT NOT NULL,
     dosage TEXT,
     taken_timestamp_utc INTEGER NOT NULL,
     scheduled_timestamp_utc INTEGER,
     source_type TEXT DEFAULT 'TAP',
     is_synced BOOLEAN DEFAULT 0,
-    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000)
+    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_meds_time ON medication_logs(taken_timestamp_utc DESC);
@@ -82,27 +84,28 @@ CREATE INDEX IF NOT EXISTS idx_medications_user ON medications(user_id);
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS passive_metrics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     window_start_utc INTEGER NOT NULL,
     window_end_utc INTEGER NOT NULL,
-    
+
     -- Gait / Activity
     step_count INTEGER DEFAULT 0,
     walking_speed_avg REAL,
     gait_asymmetry_score REAL,
-    
+
     -- Digital Phenotyping
     screen_time_seconds INTEGER DEFAULT 0,
     typing_speed_cpm REAL,
     typing_correction_rate REAL,
     social_interactions INTEGER DEFAULT 0,
-    
+
     -- Location (Privacy Preserving zones only)
     time_at_home_seconds INTEGER DEFAULT 0,
     max_distance_from_home_km REAL DEFAULT 0,
-    
+
     is_synced BOOLEAN DEFAULT 0,
-    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000)
+    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_passive_time ON passive_metrics(window_start_utc DESC);
@@ -114,14 +117,15 @@ CREATE INDEX IF NOT EXISTS idx_passive_metrics_user ON passive_metrics(user_id);
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS voice_checkins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     timestamp_utc INTEGER NOT NULL,
     transcript_text TEXT,
     sentiment_score REAL,
     topics_detected TEXT,
     audio_deleted_flag BOOLEAN DEFAULT 1,
-    is_synced BOOLEAN DEFAULT 0, 
-    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000)
+    is_synced BOOLEAN DEFAULT 0,
+    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_voice_time ON voice_checkins(timestamp_utc DESC);
@@ -132,7 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_voice_checkins_user ON voice_checkins(user_id);
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS hmm_states (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     timestamp_utc INTEGER NOT NULL,
     detected_state TEXT CHECK(detected_state IN ('STABLE', 'WARNING', 'CRISIS')) NOT NULL,
     confidence_score REAL NOT NULL,
@@ -141,7 +145,8 @@ CREATE TABLE IF NOT EXISTS hmm_states (
     contributing_factors TEXT,
     input_vector_snapshot TEXT,
     is_synced BOOLEAN DEFAULT 0,
-    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000)
+    retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
 -- Optimization: HMM state history for last 7 days
@@ -155,12 +160,13 @@ CREATE INDEX IF NOT EXISTS idx_hmm_recent ON hmm_states(user_id, timestamp_utc D
 -- Voucher System (Loss Aversion Gamification)
 CREATE TABLE IF NOT EXISTS voucher_tracker (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     week_start_utc INTEGER NOT NULL,
     current_value REAL NOT NULL DEFAULT 5.00,
     bonus_earned REAL DEFAULT 0,
     penalties_json TEXT DEFAULT '[]',
-    created_at_utc INTEGER DEFAULT (strftime('%s', 'now'))
+    created_at_utc INTEGER DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_voucher_week ON voucher_tracker(user_id, week_start_utc);
@@ -213,7 +219,9 @@ CREATE TABLE IF NOT EXISTS demo_scenarios (
 
 -- Trigger: Auto-delete expired Tier 2 Data (Rolling 6 months)
 -- Runs on meaningful inserts to clean old data.
-CREATE TRIGGER IF NOT EXISTS auto_purge_glucose 
+-- NOTE: Also implement a scheduled daily cleanup job for inactive patients
+-- whose data won't be purged by insert triggers alone.
+CREATE TRIGGER IF NOT EXISTS auto_purge_glucose
 AFTER INSERT ON glucose_readings
 BEGIN
     DELETE FROM glucose_readings WHERE retention_until < strftime('%s', 'now');
@@ -223,6 +231,24 @@ CREATE TRIGGER IF NOT EXISTS auto_purge_states
 AFTER INSERT ON hmm_states
 BEGIN
     DELETE FROM hmm_states WHERE retention_until < strftime('%s', 'now');
+END;
+
+CREATE TRIGGER IF NOT EXISTS auto_purge_medication_logs
+AFTER INSERT ON medication_logs
+BEGIN
+    DELETE FROM medication_logs WHERE retention_until < strftime('%s', 'now');
+END;
+
+CREATE TRIGGER IF NOT EXISTS auto_purge_passive_metrics
+AFTER INSERT ON passive_metrics
+BEGIN
+    DELETE FROM passive_metrics WHERE retention_until < strftime('%s', 'now');
+END;
+
+CREATE TRIGGER IF NOT EXISTS auto_purge_voice_checkins
+AFTER INSERT ON voice_checkins
+BEGIN
+    DELETE FROM voice_checkins WHERE retention_until < strftime('%s', 'now');
 END;
 
 -- Views for HMM (Updated)
@@ -247,11 +273,12 @@ WHERE taken_timestamp_utc >= strftime('%s', 'now') - 604800;
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS cgm_readings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     glucose_value REAL NOT NULL,
     timestamp_utc INTEGER NOT NULL,
     device_id TEXT,
-    is_synced BOOLEAN DEFAULT 0
+    is_synced BOOLEAN DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_cgm_recent ON cgm_readings(user_id, timestamp_utc DESC);
 
@@ -260,13 +287,14 @@ CREATE INDEX IF NOT EXISTS idx_cgm_recent ON cgm_readings(user_id, timestamp_utc
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS food_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     timestamp_utc INTEGER NOT NULL,
     meal_type TEXT CHECK(meal_type IN ('BREAKFAST', 'LUNCH', 'DINNER', 'SNACK')),
     description TEXT,
     carbs_grams REAL,
     source_type TEXT DEFAULT 'MANUAL',
-    is_synced BOOLEAN DEFAULT 0
+    is_synced BOOLEAN DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_food_time ON food_logs(user_id, timestamp_utc DESC);
 
@@ -275,14 +303,15 @@ CREATE INDEX IF NOT EXISTS idx_food_time ON food_logs(user_id, timestamp_utc DES
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS fitbit_activity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     date INTEGER NOT NULL,
     steps INTEGER DEFAULT 0,
     active_minutes INTEGER DEFAULT 0,
     sedentary_minutes INTEGER DEFAULT 0,
     calories_burned INTEGER DEFAULT 0,
     is_synced BOOLEAN DEFAULT 0,
-    UNIQUE(user_id, date)
+    UNIQUE(user_id, date),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_fitbit_activity_date ON fitbit_activity(user_id, date DESC);
 
@@ -297,14 +326,15 @@ CREATE INDEX IF NOT EXISTS idx_fitbit_activity_date ON fitbit_activity(user_id, 
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS fitbit_heart_rate (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     date INTEGER NOT NULL,
     resting_heart_rate INTEGER,
     average_heart_rate INTEGER,
     hrv_rmssd REAL,  -- Heart Rate Variability (RMSSD method, in milliseconds)
     hrv_sdnn REAL,   -- Alternative HRV metric (standard deviation of NN intervals)
     is_synced BOOLEAN DEFAULT 0,
-    UNIQUE(user_id, date)
+    UNIQUE(user_id, date),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_fitbit_hr_date ON fitbit_heart_rate(user_id, date DESC);
 
@@ -313,12 +343,13 @@ CREATE INDEX IF NOT EXISTS idx_fitbit_hr_date ON fitbit_heart_rate(user_id, date
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS fitbit_sleep (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     date INTEGER NOT NULL,
     total_sleep_minutes INTEGER,
     sleep_score REAL,
     is_synced BOOLEAN DEFAULT 0,
-    UNIQUE(user_id, date)
+    UNIQUE(user_id, date),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_fitbit_sleep_date ON fitbit_sleep(user_id, date DESC);
 
@@ -329,14 +360,15 @@ CREATE INDEX IF NOT EXISTS idx_fitbit_sleep_date ON fitbit_sleep(user_id, date D
 -- One insight per user per day - regenerate only on state change
 CREATE TABLE IF NOT EXISTS daily_insights (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     date INTEGER NOT NULL,  -- Date as YYYYMMDD integer for easy comparison
     insight_json TEXT NOT NULL,  -- Full Gemini response cached
     generated_at_utc INTEGER NOT NULL,
     hmm_state_at_generation TEXT,  -- State when insight was generated
     pattern_detected TEXT,  -- For analytics: what patterns were found
     trigger_reason TEXT DEFAULT 'DAILY',  -- DAILY, STATE_CHANGE, MANUAL
-    UNIQUE(user_id, date)
+    UNIQUE(user_id, date),
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_daily_insights_date ON daily_insights(user_id, date DESC);
 
@@ -346,7 +378,7 @@ CREATE INDEX IF NOT EXISTS idx_daily_insights_date ON daily_insights(user_id, da
 -- Tracks HMM state transitions for triggering Gemini and nurse alerts
 CREATE TABLE IF NOT EXISTS state_change_alerts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     timestamp_utc INTEGER NOT NULL,
     previous_state TEXT NOT NULL,
     new_state TEXT NOT NULL,
@@ -355,7 +387,8 @@ CREATE TABLE IF NOT EXISTS state_change_alerts (
     sbar_generated BOOLEAN DEFAULT 0,  -- Was SBAR auto-generated?
     nurse_notified BOOLEAN DEFAULT 0,  -- Was nurse portal flagged?
     dismissed BOOLEAN DEFAULT 0,  -- Nurse dismissed as false positive
-    notes TEXT  -- Optional nurse notes
+    notes TEXT,  -- Optional nurse notes
+    FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_state_alerts_time ON state_change_alerts(user_id, timestamp_utc DESC);
 CREATE INDEX IF NOT EXISTS idx_state_alerts_pending ON state_change_alerts(nurse_notified) WHERE nurse_notified = 0;
