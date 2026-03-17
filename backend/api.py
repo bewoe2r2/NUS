@@ -26,7 +26,7 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, Request, Security
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.security import APIKeyHeader
@@ -37,7 +37,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 
-from hmm_engine import HMMEngine, TRANSITION_PROBS, EMISSION_PARAMS, WEIGHTS, gaussian_pdf, safe_log, STATES, LOG_TRANSITIONS, INITIAL_PROBS
+from hmm_engine import HMMEngine, TRANSITION_PROBS, EMISSION_PARAMS, WEIGHTS, gaussian_pdf, safe_log, INITIAL_PROBS
 from gemini_integration import GeminiIntegration
 from voucher_system import VoucherSystem
 from agent_runtime import (run_agent, ensure_runtime_tables, build_full_hmm_context,
@@ -46,12 +46,12 @@ from agent_runtime import (run_agent, ensure_runtime_tables, build_full_hmm_cont
                             calculate_engagement_score, generate_daily_challenge,
                             detect_caregiver_fatigue, generate_glucose_narrative,
                             compute_impact_metrics, _exec_clinician_summary,
-                            _get_merlion_forecast, check_drug_interactions,
-                            classify_response_safety, compute_tool_effectiveness_scores,
-                            run_proactive_scan, _check_proactive_triggers,
+                            check_drug_interactions,
+                            compute_tool_effectiveness_scores,
+                            run_proactive_scan,
                             process_caregiver_response, compute_caregiver_burden_score,
-                            generate_nurse_triage, compute_attention_score,
-                            _load_agent_memory, _consolidate_memories,
+                            generate_nurse_triage,
+                            _consolidate_memories,
                             _get_patient_profile_from_db)
 
 # --- CONFIGURATION ---
@@ -332,6 +332,10 @@ class MoodDetectInput(BaseModel):
 
 class DrugInteractionCheckInput(BaseModel):
     proposed_medication: str = ""
+
+class SeaLionTranslateRequest(BaseModel):
+    message: str
+    tone: str = "calm"
 
 class VoiceCheckInRequest(BaseModel):
     transcript: str
@@ -2386,6 +2390,36 @@ async def get_hmm_params(patient_id: str):
             "source": "baum_welch" if has_custom_transitions else "population",
         }
     except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+
+
+# =============================================================================
+# SEA-LION ENDPOINTS
+# =============================================================================
+
+from sealion_interface import SeaLionInterface
+
+
+@app.get("/sealion/status")
+async def sealion_status(api_key: str = Depends(verify_api_key)):
+    """Returns SEA-LION backend info (which model/backend is active)."""
+    try:
+        info = SeaLionInterface().get_backend_info()
+        return info
+    except Exception as e:
+        logger.exception(f"SEA-LION status error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+
+
+@app.post("/sealion/translate")
+async def sealion_translate(body: SeaLionTranslateRequest, api_key: str = Depends(verify_api_key)):
+    """Translate a clinical message into culturally-adapted Singlish via SEA-LION."""
+    try:
+        sl = SeaLionInterface()
+        translated = sl.translate_message(body.message, "singlish_elder", body.tone)
+        return {"original": body.message, "translated": translated, "tone": body.tone}
+    except Exception as e:
+        logger.exception(f"SEA-LION translate error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
 

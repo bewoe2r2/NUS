@@ -401,5 +401,22 @@ export const api = {
         const res = await authFetch(`${API_BASE}/admin/run-hmm`, { method: "POST" });
         if (!res.ok) throw new Error("Failed to run HMM");
         return res.json();
-    }
+    },
+
+    // --- SEA-LION ---
+    getSeaLionStatus: async (): Promise<{ backend: string; model: string | null; status: string; api_base?: string }> => {
+        const res = await authFetch(`${API_BASE}/sealion/status`);
+        if (!res.ok) throw new Error("Failed to fetch SEA-LION status");
+        return res.json();
+    },
+
+    translateWithSeaLion: async (message: string, tone?: string): Promise<{ original: string; translated: string; tone: string }> => {
+        const res = await authFetch(`${API_BASE}/sealion/translate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message, tone: tone || "calm" }),
+        });
+        if (!res.ok) throw new Error("SEA-LION translation failed");
+        return res.json();
+    },
 };

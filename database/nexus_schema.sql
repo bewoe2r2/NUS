@@ -58,8 +58,7 @@ CREATE TABLE IF NOT EXISTS medication_logs (
     FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_meds_time ON medication_logs(taken_timestamp_utc DESC);
-CREATE INDEX IF NOT EXISTS idx_medication_logs_user ON medication_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_medication_logs_user_time ON medication_logs(user_id, taken_timestamp_utc DESC);
 
 -- ==============================================================================
 -- 2b. MEDICATIONS (Prescribed medications - not same as medication_logs)
@@ -108,8 +107,7 @@ CREATE TABLE IF NOT EXISTS passive_metrics (
     FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_passive_time ON passive_metrics(window_start_utc DESC);
-CREATE INDEX IF NOT EXISTS idx_passive_metrics_user ON passive_metrics(user_id);
+CREATE INDEX IF NOT EXISTS idx_passive_metrics_user_time ON passive_metrics(user_id, window_start_utc DESC);
 
 -- ==============================================================================
 -- 4. VOICE CHECK-INS (Tier 2 - Transcript Only, 6 Months Retention)
@@ -128,8 +126,7 @@ CREATE TABLE IF NOT EXISTS voice_checkins (
     FOREIGN KEY (user_id) REFERENCES patients(user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_voice_time ON voice_checkins(timestamp_utc DESC);
-CREATE INDEX IF NOT EXISTS idx_voice_checkins_user ON voice_checkins(user_id);
+CREATE INDEX IF NOT EXISTS idx_voice_checkins_user_time ON voice_checkins(user_id, timestamp_utc DESC);
 
 -- ==============================================================================
 -- 5. HMM STATES (Tier 2 - Derived, 6 Months Retention)
@@ -508,6 +505,8 @@ CREATE TABLE IF NOT EXISTS caregiver_responses (
     timestamp_utc INTEGER
 );
 
+CREATE INDEX IF NOT EXISTS idx_reminders_user_status ON reminders(user_id, status);
+
 -- ==============================================================================
 -- 21. AGENT ACTIONS LOG (required by api.py and agent_runtime.py)
 -- ==============================================================================
@@ -526,6 +525,8 @@ CREATE TABLE IF NOT EXISTS agent_actions_log (
     reasoning TEXT
 );
 
+CREATE INDEX IF NOT EXISTS idx_agent_actions_patient ON agent_actions_log(patient_id, timestamp_utc DESC);
+
 -- ==============================================================================
 -- 22. CONVERSATION HISTORY (required by api.py)
 -- ==============================================================================
@@ -538,6 +539,8 @@ CREATE TABLE IF NOT EXISTS conversation_history (
     hmm_state TEXT,
     actions_taken TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_conversation_history_patient ON conversation_history(patient_id, timestamp_utc DESC);
 
 -- ==============================================================================
 -- 23. PROACTIVE CHECKINS (required by api.py)
@@ -553,6 +556,8 @@ CREATE TABLE IF NOT EXISTS proactive_checkins (
     completed_at INTEGER
 );
 
+CREATE INDEX IF NOT EXISTS idx_proactive_checkins_patient ON proactive_checkins(patient_id, created_at DESC);
+
 -- ==============================================================================
 -- 24. CAREGIVER ALERTS (required by api.py)
 -- ==============================================================================
@@ -565,6 +570,8 @@ CREATE TABLE IF NOT EXISTS caregiver_alerts (
     message TEXT,
     delivery_results_json TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_caregiver_alerts_patient ON caregiver_alerts(patient_id, timestamp_utc DESC);
 
 -- ==============================================================================
 -- 25. IMPACT METRICS (required by agent_runtime.py)
