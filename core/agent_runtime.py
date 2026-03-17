@@ -1142,7 +1142,120 @@ def _ensure_runtime_tables_inner(conn):
                 conn.execute(f"ALTER TABLE agent_memory ADD COLUMN {col} {typedef}")
             except sqlite3.OperationalError:
                 pass
+    # Technical metrics table for competition evaluation
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS agent_metrics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id TEXT NOT NULL,
+            timestamp_utc INTEGER NOT NULL,
+            success INTEGER DEFAULT 1,
+            turns_used INTEGER DEFAULT 1,
+            max_turns INTEGER DEFAULT 3,
+            tools_called INTEGER DEFAULT 0,
+            tools_succeeded INTEGER DEFAULT 0,
+            latency_ms REAL DEFAULT 0,
+            input_tokens INTEGER DEFAULT 0,
+            output_tokens INTEGER DEFAULT 0,
+            grounding_score REAL DEFAULT 0,
+            safety_verdict TEXT DEFAULT 'SAFE',
+            error_message TEXT
+        )
+    """)
     conn.commit()
+
+
+def log_interaction_metrics(
+    patient_id: str,
+    success: bool,
+    turns_used: int,
+    max_turns: int,
+    tool_trace: list,
+    latency_ms: float,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+    grounding_score: float = 0.0,
+    safety_verdict: str = "SAFE",
+    error_message: str = None,
+):
+    """Log technical metrics for a single agent interaction."""
+    tools_called = len(tool_trace)
+    tools_succeeded = sum(1 for t in tool_trace if t.get("result", {}).get("success", False))
+    try:
+        conn = _get_db()
+        try:
+            conn.execute("""
+                INSERT INTO agent_metrics
+                (patient_id, timestamp_utc, success, turns_used, max_turns,
+                 tools_called, tools_succeeded, latency_ms,
+                 input_tokens, output_tokens, grounding_score,
+                 safety_verdict, error_message)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                patient_id, int(time.time()), int(success), turns_used, max_turns,
+                tools_called, tools_succeeded, latency_ms,
+                input_tokens, output_tokens, grounding_score,
+                safety_verdict, error_message,
+            ))
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.warning(f"Failed to log interaction metrics: {e}")
+
+
+def compute_grounding_score(response_text: str, patient_id: str) -> float:
+    """
+    Score how well the response references actual patient data vs generic advice.
+    Returns 0.0-1.0. Higher = more grounded in patient-specific data.
+    """
+    if not response_text:
+        return 0.0
+
+    score = 0.0
+    checks = 0
+
+    # Check for patient-specific data references
+    patient_markers = [
+        patient_id,
+        "mmol", "mg/dL",            # glucose values
+        "bpm", "heart rate", "HR",   # vitals
+        "steps",                      # activity
+        "HbA1c",                      # lab values
+        "Metformin", "Lisinopril", "Atorvastatin", "Aspirin",  # medications
+    ]
+    for marker in patient_markers:
+        checks += 1
+        if marker.lower() in response_text.lower():
+            score += 1
+
+    # Check for numeric values (suggests referencing actual data)
+    import re
+    numbers = re.findall(r'\d+\.?\d*', response_text)
+    checks += 1
+    if len(numbers) >= 2:
+        score += 1
+
+    # Penalize generic phrases
+    generic_phrases = [
+        "in general", "typically", "usually", "most people",
+        "it is recommended", "studies show", "experts suggest",
+    ]
+    generic_count = sum(1 for p in generic_phrases if p.lower() in response_text.lower())
+    checks += 1
+    if generic_count == 0:
+        score += 1
+
+    return round(min(score / max(checks, 1), 1.0), 3)
+
+
+def compute_interaction_cost(input_tokens: int, output_tokens: int) -> float:
+    """
+    Estimate cost in USD based on Gemini 1.5 Pro pricing.
+    Input: $1.25/1M tokens, Output: $5.00/1M tokens (as of 2025).
+    """
+    input_cost = (input_tokens / 1_000_000) * 1.25
+    output_cost = (output_tokens / 1_000_000) * 5.00
+    return round(input_cost + output_cost, 6)
 
 
 def compute_impact_metrics(patient_id: str, period_days: int = 30) -> Dict:
@@ -2649,6 +2762,15 @@ def run_agent(
         logger.warning(f"Memory extraction failed (non-critical): {e}")
 
     # 8. Add metadata
+    end_time = time.time()
+    latency_ms = (end_time - (end_time - (result.get("_turns_used", 1) * 0))) * 1000  # placeholder
+    tool_trace = result.get("_tool_trace", [])
+    turns_used = result.get("_turns_used", 1)
+
+    # Compute grounding score
+    response_text = result.get("message_to_patient", result.get("message", ""))
+    grounding = compute_grounding_score(response_text, patient_id)
+
     result["_metadata"] = {
         "hmm_state": hmm_context.get("current_state"),
         "confidence": hmm_context.get("confidence"),
@@ -2656,11 +2778,13 @@ def run_agent(
         "trend": hmm_context.get("trend"),
         "executed_tools": tool_trace,
         "tools_called": len(tool_trace),
-        "turns_used": result.get("_turns_used", 1),
+        "turns_used": turns_used,
+        "max_turns": 3,
         "merlion_45min": merlion_risk,
         "timestamp": time.time(),
         "state_change": hmm_context.get("state_change", {}),
         "architecture": "diamond_v7_multiturn",
+        "grounding_score": grounding,
     }
 
     # Preserve backward compat keys

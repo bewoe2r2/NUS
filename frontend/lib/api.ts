@@ -312,6 +312,13 @@ export const api = {
         return res.json();
     },
 
+    // --- METRICS DASHBOARD ---
+    getMetricsDashboard: async (id: string): Promise<any> => {
+        const res = await authFetch(`${API_BASE}/metrics/dashboard/${id}`);
+        if (!res.ok) return null;
+        return res.json();
+    },
+
     // --- VOICE CHECK-IN ---
     voiceCheckin: async (transcript: string, patientId: string = "P001"): Promise<{ sentiment_score: number; urgency: string; health_keywords: string[]; ai_response: string }> => {
         const res = await authFetch(`${API_BASE}/voice/checkin`, {

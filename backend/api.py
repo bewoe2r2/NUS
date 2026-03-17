@@ -52,7 +52,9 @@ from agent_runtime import (run_agent, ensure_runtime_tables, build_full_hmm_cont
                             process_caregiver_response, compute_caregiver_burden_score,
                             generate_nurse_triage,
                             _consolidate_memories,
-                            _get_patient_profile_from_db)
+                            _get_patient_profile_from_db,
+                            log_interaction_metrics, compute_grounding_score,
+                            compute_interaction_cost)
 
 # --- CONFIGURATION ---
 logging.basicConfig(
@@ -844,6 +846,7 @@ def _get_patient_profile(patient_id: str) -> dict:
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_ai(request: ChatRequest):
     """Chat with the agentic AI — powered by AgentRuntime with full HMM + tool execution."""
+    chat_start = time.time()
     try:
         sanitized_message = _sanitize_user_input(request.message)
         if not sanitized_message:
@@ -863,11 +866,29 @@ async def chat_with_ai(request: ChatRequest):
             gemini_integration=gi,
         ) or {}
 
+        # Log technical metrics
+        metadata = result.get("_metadata", {})
+        latency_ms = (time.time() - chat_start) * 1000
+        tool_trace = metadata.get("executed_tools", [])
+        try:
+            log_interaction_metrics(
+                patient_id=request.patient_id,
+                success=True,
+                turns_used=metadata.get("turns_used", 1),
+                max_turns=metadata.get("max_turns", 3),
+                tool_trace=tool_trace,
+                latency_ms=latency_ms,
+                grounding_score=metadata.get("grounding_score", 0.0),
+                safety_verdict=result.get("_safety_verdict", "SAFE"),
+            )
+        except Exception:
+            pass  # metrics logging must never break chat
+
         # Convert tool_calls to actions for backward compat
         actions = []
         for tc in result.get("tool_calls", []):
             actions.append({"action": tc.get("tool", ""), "params": tc.get("args", {})})
-        for et in result.get("_metadata", {}).get("executed_tools", []):
+        for et in tool_trace:
             actions.append({"action": et.get("tool", ""), "params": et.get("args", {}),
                            "result": et.get("result", {})})
 
@@ -876,10 +897,25 @@ async def chat_with_ai(request: ChatRequest):
             tone=result.get("tone"),
             actions=actions,
             priority_factor=result.get("priority_factor"),
-            hmm_state=result.get("_metadata", {}).get("hmm_state"),
+            hmm_state=metadata.get("hmm_state"),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
+        # Log failed interaction
+        try:
+            log_interaction_metrics(
+                patient_id=request.patient_id,
+                success=False,
+                turns_used=0,
+                max_turns=3,
+                tool_trace=[],
+                latency_ms=(time.time() - chat_start) * 1000,
+                error_message=str(e)[:500],
+            )
+        except Exception:
+            pass
         logger.exception(f"Chat error: {e}")
         raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
@@ -2516,6 +2552,327 @@ def _auto_init_database():
     if need_scenario:
         logger.info("No glucose data — injecting demo scenario...")
         _seed_demo_scenario()
+
+
+# =============================================================================
+# TECHNICAL METRICS ENDPOINTS (NUS-Synapxe-IMDA Competition)
+# =============================================================================
+
+@app.get("/metrics/task-success/{patient_id}")
+async def get_task_success(patient_id: str):
+    """Task success rate — fraction of agent interactions that completed without error."""
+    try:
+        conn = get_db()
+        try:
+            row = conn.execute("""
+                SELECT COUNT(*) as total,
+                       SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as succeeded
+                FROM agent_metrics WHERE patient_id = ?
+            """, (patient_id,)).fetchone()
+            total = row["total"] if row else 0
+            succeeded = row["succeeded"] if row else 0
+            rate = round(succeeded / max(total, 1) * 100, 1)
+            return {
+                "patient_id": patient_id,
+                "total_interactions": total,
+                "successful": succeeded,
+                "failed": total - succeeded,
+                "success_rate_pct": rate,
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Task success metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/trajectory/{patient_id}")
+async def get_trajectory_efficiency(patient_id: str):
+    """Trajectory efficiency — turns used vs max allowed. Fewer = more efficient."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT turns_used, max_turns FROM agent_metrics
+                WHERE patient_id = ? AND success = 1
+                ORDER BY timestamp_utc DESC LIMIT 100
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {"patient_id": patient_id, "interactions": 0, "avg_efficiency_pct": 0}
+            efficiencies = []
+            for r in rows:
+                used = r["turns_used"] or 1
+                mx = r["max_turns"] or 3
+                efficiencies.append(round((1 - (used - 1) / max(mx - 1, 1)) * 100, 1))
+            avg_eff = round(sum(efficiencies) / len(efficiencies), 1)
+            avg_turns = round(sum(r["turns_used"] for r in rows) / len(rows), 2)
+            return {
+                "patient_id": patient_id,
+                "interactions": len(rows),
+                "avg_turns_used": avg_turns,
+                "avg_max_turns": round(sum(r["max_turns"] for r in rows) / len(rows), 2),
+                "avg_efficiency_pct": avg_eff,
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Trajectory metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/steps-to-success/{patient_id}")
+async def get_steps_to_success(patient_id: str):
+    """Steps to success — average tool calls per successful interaction."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT tools_called FROM agent_metrics
+                WHERE patient_id = ? AND success = 1
+                ORDER BY timestamp_utc DESC LIMIT 100
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {"patient_id": patient_id, "interactions": 0, "avg_steps": 0}
+            steps = [r["tools_called"] for r in rows]
+            return {
+                "patient_id": patient_id,
+                "interactions": len(steps),
+                "avg_steps": round(sum(steps) / len(steps), 2),
+                "min_steps": min(steps),
+                "max_steps": max(steps),
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Steps-to-success metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/latency/{patient_id}")
+async def get_latency_metrics(patient_id: str):
+    """Latency — avg, p50, p95, p99 response times in milliseconds."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT latency_ms FROM agent_metrics
+                WHERE patient_id = ? ORDER BY timestamp_utc DESC LIMIT 500
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {"patient_id": patient_id, "interactions": 0,
+                        "avg_ms": 0, "p50_ms": 0, "p95_ms": 0, "p99_ms": 0}
+            latencies = sorted([r["latency_ms"] for r in rows])
+            n = len(latencies)
+            return {
+                "patient_id": patient_id,
+                "interactions": n,
+                "avg_ms": round(sum(latencies) / n, 1),
+                "p50_ms": round(latencies[n // 2], 1),
+                "p95_ms": round(latencies[int(n * 0.95)], 1) if n > 1 else round(latencies[0], 1),
+                "p99_ms": round(latencies[int(n * 0.99)], 1) if n > 1 else round(latencies[0], 1),
+                "min_ms": round(latencies[0], 1),
+                "max_ms": round(latencies[-1], 1),
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Latency metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/cost/{patient_id}")
+async def get_cost_metrics(patient_id: str):
+    """Cost per interaction — estimated USD based on Gemini token pricing."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT input_tokens, output_tokens FROM agent_metrics
+                WHERE patient_id = ? ORDER BY timestamp_utc DESC LIMIT 500
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {"patient_id": patient_id, "interactions": 0,
+                        "avg_cost_usd": 0, "total_cost_usd": 0}
+            costs = [compute_interaction_cost(r["input_tokens"] or 0, r["output_tokens"] or 0) for r in rows]
+            total_input = sum(r["input_tokens"] or 0 for r in rows)
+            total_output = sum(r["output_tokens"] or 0 for r in rows)
+            return {
+                "patient_id": patient_id,
+                "interactions": len(costs),
+                "avg_cost_usd": round(sum(costs) / len(costs), 6),
+                "total_cost_usd": round(sum(costs), 4),
+                "total_input_tokens": total_input,
+                "total_output_tokens": total_output,
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Cost metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/grounding/{patient_id}")
+async def get_grounding_metrics(patient_id: str):
+    """Grounding score — how well responses reference actual patient data vs generic advice."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT grounding_score FROM agent_metrics
+                WHERE patient_id = ? AND success = 1
+                ORDER BY timestamp_utc DESC LIMIT 100
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {"patient_id": patient_id, "interactions": 0, "avg_score": 0}
+            scores = [r["grounding_score"] or 0 for r in rows]
+            return {
+                "patient_id": patient_id,
+                "interactions": len(scores),
+                "avg_score": round(sum(scores) / len(scores), 3),
+                "min_score": round(min(scores), 3),
+                "max_score": round(max(scores), 3),
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Grounding metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/safety/{patient_id}")
+async def get_safety_metrics(patient_id: str):
+    """Safety score — pass/caution/unsafe rates from safety classifier."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT safety_verdict FROM agent_metrics
+                WHERE patient_id = ?
+            """, (patient_id,)).fetchall()
+            if not rows:
+                return {"patient_id": patient_id, "interactions": 0,
+                        "safe_pct": 100, "caution_pct": 0, "unsafe_pct": 0}
+            total = len(rows)
+            safe = sum(1 for r in rows if (r["safety_verdict"] or "SAFE") == "SAFE")
+            caution = sum(1 for r in rows if (r["safety_verdict"] or "") == "CAUTION")
+            unsafe = sum(1 for r in rows if (r["safety_verdict"] or "") == "UNSAFE")
+            return {
+                "patient_id": patient_id,
+                "interactions": total,
+                "safe_count": safe,
+                "caution_count": caution,
+                "unsafe_count": unsafe,
+                "safe_pct": round(safe / total * 100, 1),
+                "caution_pct": round(caution / total * 100, 1),
+                "unsafe_pct": round(unsafe / total * 100, 1),
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Safety metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.get("/metrics/dashboard/{patient_id}")
+async def get_metrics_dashboard(patient_id: str):
+    """Combined dashboard — ALL technical metrics in one call."""
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT * FROM agent_metrics
+                WHERE patient_id = ? ORDER BY timestamp_utc DESC LIMIT 500
+            """, (patient_id,)).fetchall()
+
+            if not rows:
+                return {
+                    "patient_id": patient_id,
+                    "total_interactions": 0,
+                    "task_success": {"rate_pct": 0, "total": 0, "succeeded": 0},
+                    "trajectory": {"avg_turns": 0, "avg_efficiency_pct": 0},
+                    "steps_to_success": {"avg_steps": 0},
+                    "latency": {"avg_ms": 0, "p50_ms": 0, "p95_ms": 0, "p99_ms": 0},
+                    "cost": {"avg_usd": 0, "total_usd": 0},
+                    "grounding": {"avg_score": 0},
+                    "safety": {"safe_pct": 100, "caution_pct": 0, "unsafe_pct": 0},
+                    "tool_effectiveness": {},
+                }
+
+            data = [dict(r) for r in rows]
+            total = len(data)
+            succeeded = sum(1 for d in data if d["success"])
+            success_data = [d for d in data if d["success"]]
+
+            # Latency
+            latencies = sorted([d["latency_ms"] for d in data])
+            n = len(latencies)
+
+            # Safety
+            safe = sum(1 for d in data if (d.get("safety_verdict") or "SAFE") == "SAFE")
+            caution = sum(1 for d in data if (d.get("safety_verdict") or "") == "CAUTION")
+            unsafe = sum(1 for d in data if (d.get("safety_verdict") or "") == "UNSAFE")
+
+            # Grounding
+            g_scores = [d.get("grounding_score") or 0 for d in success_data]
+            avg_grounding = round(sum(g_scores) / max(len(g_scores), 1), 3)
+
+            # Steps
+            steps = [d.get("tools_called") or 0 for d in success_data]
+            avg_steps = round(sum(steps) / max(len(steps), 1), 2)
+
+            # Turns / efficiency
+            turns = [d.get("turns_used") or 1 for d in success_data]
+            avg_turns = round(sum(turns) / max(len(turns), 1), 2)
+
+            # Cost
+            costs = [compute_interaction_cost(d.get("input_tokens") or 0, d.get("output_tokens") or 0) for d in data]
+
+            # Tool effectiveness (from existing system)
+            tool_eff = compute_tool_effectiveness_scores(patient_id) or {}
+
+            return {
+                "patient_id": patient_id,
+                "total_interactions": total,
+                "task_success": {
+                    "rate_pct": round(succeeded / total * 100, 1),
+                    "total": total,
+                    "succeeded": succeeded,
+                    "failed": total - succeeded,
+                },
+                "trajectory": {
+                    "avg_turns": avg_turns,
+                    "avg_efficiency_pct": round((1 - (avg_turns - 1) / 2) * 100, 1),
+                },
+                "steps_to_success": {
+                    "avg_steps": avg_steps,
+                    "min_steps": min(steps) if steps else 0,
+                    "max_steps": max(steps) if steps else 0,
+                },
+                "latency": {
+                    "avg_ms": round(sum(latencies) / n, 1),
+                    "p50_ms": round(latencies[n // 2], 1),
+                    "p95_ms": round(latencies[int(n * 0.95)], 1) if n > 1 else round(latencies[0], 1),
+                    "p99_ms": round(latencies[int(n * 0.99)], 1) if n > 1 else round(latencies[0], 1),
+                },
+                "cost": {
+                    "avg_usd": round(sum(costs) / len(costs), 6),
+                    "total_usd": round(sum(costs), 4),
+                },
+                "grounding": {
+                    "avg_score": avg_grounding,
+                },
+                "safety": {
+                    "safe_pct": round(safe / total * 100, 1),
+                    "caution_pct": round(caution / total * 100, 1),
+                    "unsafe_pct": round(unsafe / total * 100, 1),
+                },
+                "tool_effectiveness": tool_eff,
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.exception(f"Dashboard metric error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 def _seed_demo_patients(conn):
