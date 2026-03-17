@@ -322,8 +322,8 @@ class GeminiIntegration:
 
                 # Compare first half to second half
                 mid = len(states) // 2
-                first_half_avg = sum(state_values[s] for s in states[:mid]) / max(mid, 1)
-                second_half_avg = sum(state_values[s] for s in states[mid:]) / max(len(states) - mid, 1)
+                first_half_avg = sum(state_values.get(s, 0) for s in states[:mid]) / max(mid, 1)
+                second_half_avg = sum(state_values.get(s, 0) for s in states[mid:]) / max(len(states) - mid, 1)
 
                 if second_half_avg < first_half_avg - 0.3:
                     context['trend'] = 'IMPROVING'
@@ -637,7 +637,7 @@ class GeminiIntegration:
         
         # HMM Data
         state = hmm_result.get('current_state', 'UNKNOWN')
-        confidence = hmm_result.get('confidence', 0)
+        confidence = hmm_result.get('confidence') or 0
         top_factors = hmm_result.get('top_factors', [])
 
         # Merlion Data (Future Risk)
@@ -647,12 +647,16 @@ class GeminiIntegration:
         if full_context.get('glucose_pattern') and full_context.get('glucose_pattern').get('readings_24h', 0) > 0:
              # Ideally fetch actual list, here we might have to mock if full history not in context dict yet
              # For now, let's look for it in the DB or use a placeholder
-             conn = self._get_db_connection()
+             conn = None
              try:
+                 conn = self._get_db_connection()
                  rows = conn.execute("SELECT reading_value FROM glucose_readings ORDER BY reading_timestamp_utc DESC LIMIT 12").fetchall()
                  glucose_history = [r[0] for r in rows][::-1] # Reverse to chronological
+             except Exception as e:
+                 logger.warning(f"Could not fetch glucose history: {e}")
              finally:
-                 conn.close()
+                 if conn:
+                     conn.close()
 
         merlion_risk = merlion.calculate_risk(glucose_history)
         
@@ -902,14 +906,14 @@ class GeminiIntegration:
 
         Returns None if cache miss (triggers new generation).
         """
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
-
-        # Get today's date as YYYYMMDD integer
-        from datetime import datetime
-        today = int(datetime.now().strftime('%Y%m%d'))
-
+        conn = None
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
+
+            # Get today's date as YYYYMMDD integer
+            from datetime import datetime
+            today = int(datetime.now().strftime('%Y%m%d'))
             # Check for today's cached insight
             row = conn.execute("""
                 SELECT insight_json, hmm_state_at_generation, generated_at_utc
@@ -941,20 +945,21 @@ class GeminiIntegration:
             logger.warning(f"Cache lookup error: {e}")
             return None
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def cache_daily_insight(self, insight, hmm_state, user_id='current_user',
                            trigger_reason='DAILY', pattern_detected=None):
         """
         Caches a daily insight to avoid repeated Gemini API calls.
         """
-        conn = self._get_db_connection()
-
         from datetime import datetime
         today = int(datetime.now().strftime('%Y%m%d'))
         now = int(time.time())
 
+        conn = None
         try:
+            conn = self._get_db_connection()
             # Use INSERT OR REPLACE to handle existing entries
             conn.execute("""
                 INSERT OR REPLACE INTO daily_insights
@@ -968,7 +973,8 @@ class GeminiIntegration:
         except Exception as e:
             logger.warning(f"Failed to cache insight: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def detect_food_glucose_patterns(self, days=7):
         """
@@ -982,12 +988,12 @@ class GeminiIntegration:
         - At least 3 occurrences
         - Correlation confidence > 60%
         """
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
-
         patterns = []
+        conn = None
 
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
             now = int(time.time())
             start_time = now - (days * 24 * 3600)
 
@@ -1062,7 +1068,8 @@ class GeminiIntegration:
         except Exception as e:
             logger.warning(f"Pattern detection error: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
         return patterns[:3]  # Return top 3 patterns
 
@@ -1107,16 +1114,21 @@ class GeminiIntegration:
         food_patterns = self.detect_food_glucose_patterns(days=7)
 
         # Get current HMM state
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
+        current_state = 'UNKNOWN'
+        confidence = 0
+        recent_obs = {}
+        voucher_balance = 5.00
+        conn = None
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
             hmm_row = conn.execute("""
                 SELECT detected_state, confidence_score, input_vector_snapshot
                 FROM hmm_states ORDER BY timestamp_utc DESC LIMIT 1
             """).fetchone()
 
             current_state = hmm_row['detected_state'] if hmm_row else 'UNKNOWN'
-            confidence = hmm_row['confidence_score'] if hmm_row else 0
+            confidence = (hmm_row['confidence_score'] if hmm_row else 0) or 0
             recent_obs = json.loads(hmm_row['input_vector_snapshot']) if hmm_row and hmm_row['input_vector_snapshot'] else {}
 
             # Get voucher status
@@ -1125,8 +1137,11 @@ class GeminiIntegration:
                 ORDER BY week_start_utc DESC LIMIT 1
             """).fetchone()
             voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
+        except Exception as e:
+            logger.warning(f"Error fetching HMM/voucher state: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
         # Build pattern insight text
         pattern_text = ""
@@ -1255,10 +1270,11 @@ Return JSON:
 
         Called by HMM when state transitions (STABLE→WARNING, WARNING→CRISIS, etc.)
         """
-        conn = self._get_db_connection()
         now = int(time.time())
+        conn = None
 
         try:
+            conn = self._get_db_connection()
             conn.execute("""
                 INSERT INTO state_change_alerts
                 (user_id, timestamp_utc, previous_state, new_state, confidence_score)
@@ -1271,16 +1287,18 @@ Return JSON:
             logger.warning(f"Failed to log state change: {e}")
             return False
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_pending_alerts(self, user_id='current_user'):
         """
         Gets unprocessed state change alerts for the nurse portal.
         """
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
+        conn = None
 
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT id, timestamp_utc, previous_state, new_state, confidence_score,
                        alert_sent, sbar_generated, nurse_notified
@@ -1295,7 +1313,8 @@ Return JSON:
             logger.warning(f"Failed to get pending alerts: {e}")
             return []
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     # ==========================================================================
     # AGENTIC BEWO v4.0 - FULL HMM INTEGRATION + AGENTIC CAPABILITIES
@@ -1495,7 +1514,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
         hmm_result = hmm_engine.run_inference(observations, patient_id=user_id)
 
         current_state = hmm_result.get('current_state', 'UNKNOWN')
-        confidence = hmm_result.get('confidence', 0)
+        confidence = hmm_result.get('confidence') or 0
         state_probs = hmm_result.get('state_probabilities', {})
         top_factors = hmm_result.get('top_factors', [])
         risk_48h = hmm_result.get('predictions', {}).get('risk_48h', 0)
@@ -1575,16 +1594,21 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
         full_context = self.fetch_full_context(days=7)
 
         # Get voucher balance
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
+        voucher_balance = 5.00
+        conn = None
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
             voucher_row = conn.execute("""
                 SELECT current_value FROM voucher_tracker
                 ORDER BY week_start_utc DESC LIMIT 1
             """).fetchone()
             voucher_balance = voucher_row['current_value'] if voucher_row else 5.00
+        except Exception as e:
+            logger.warning(f"Could not fetch voucher balance: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
         # =====================================================================
         # STEP 6: BUILD COMPREHENSIVE PROMPT
@@ -1595,7 +1619,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
         if top_factors:
             factors_list = []
             for i, f in enumerate(top_factors[:5], 1):
-                factors_list.append(f"{i}. {f['feature']}: {f['value']:.2f} (weight: {f['weight']:.2f})")
+                factors_list.append(f"{i}. {f['feature']}: {(f.get('value') or 0):.2f} (weight: {(f.get('weight') or 0):.2f})")
             factors_text = "\n".join(factors_list)
 
         # Format counterfactuals
@@ -1757,10 +1781,11 @@ Return your response as valid JSON following the format in the system prompt.
         action_type = action.get('action', '')
         params = action.get('params', {})
 
-        conn = self._get_db_connection()
+        conn = None
         now = int(time.time())
 
         try:
+            conn = self._get_db_connection()
             if action_type == 'SET_REMINDER':
                 # Store reminder in database
                 conn.execute("""
@@ -1846,7 +1871,8 @@ Return your response as valid JSON following the format in the system prompt.
             logger.error(f"Action {action_type} failed: {e}")
             return {'action': action_type, 'status': 'error', 'error': str(e)}
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def _generate_fallback_agentic_response(self, state, latest_obs, patient_profile, voucher_balance):
         """
@@ -1887,7 +1913,7 @@ Return your response as valid JSON following the format in the system prompt.
         Creates necessary database tables for agentic features.
         Call this on app initialization.
         """
-        conn = self._get_db_connection()
+        conn = None
 
         tables = [
             """
@@ -1966,6 +1992,7 @@ Return your response as valid JSON following the format in the system prompt.
         ]
 
         try:
+            conn = self._get_db_connection()
             for table_sql in tables:
                 conn.execute(table_sql)
             conn.commit()
@@ -1973,14 +2000,16 @@ Return your response as valid JSON following the format in the system prompt.
         except Exception as e:
             logger.warning(f"Table creation error: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_pending_reminders(self, user_id='current_user'):
         """Gets all pending reminders for a user."""
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
+        conn = None
 
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT * FROM reminders
                 WHERE user_id = ? AND status = 'pending'
@@ -1990,15 +2019,13 @@ Return your response as valid JSON following the format in the system prompt.
         except Exception:
             return []
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_nurse_dashboard_data(self, user_id='current_user'):
         """
         Gets all pending alerts and requests for the nurse dashboard.
         """
-        conn = self._get_db_connection()
-        conn.row_factory = sqlite3.Row
-
         data = {
             'nurse_alerts': [],
             'medication_videos': [],
@@ -2006,7 +2033,10 @@ Return your response as valid JSON following the format in the system prompt.
             'doctor_escalations': []
         }
 
+        conn = None
         try:
+            conn = self._get_db_connection()
+            conn.row_factory = sqlite3.Row
             # Nurse alerts
             rows = conn.execute("""
                 SELECT * FROM nurse_alerts
@@ -2042,7 +2072,8 @@ Return your response as valid JSON following the format in the system prompt.
         except Exception as e:
             logger.warning(f"Nurse dashboard data error: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
         return data
 
@@ -2056,10 +2087,9 @@ Return your response as valid JSON following the format in the system prompt.
             video_path: Path to saved video file
             self_reported_taken: Boolean - did patient say they took it?
         """
-        conn = self._get_db_connection()
-        now = int(time.time())
-
+        conn = None
         try:
+            conn = self._get_db_connection()
             conn.execute("""
                 UPDATE medication_video_requests
                 SET status = 'submitted',
@@ -2072,16 +2102,17 @@ Return your response as valid JSON following the format in the system prompt.
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def nurse_verify_medication(self, request_id, verified, nurse_id):
         """
         Nurse verifies whether medication was taken based on video.
         """
-        conn = self._get_db_connection()
-        now = int(time.time())
-
+        conn = None
         try:
+            conn = self._get_db_connection()
+            now = int(time.time())
             conn.execute("""
                 UPDATE medication_video_requests
                 SET status = 'verified',
@@ -2094,7 +2125,8 @@ Return your response as valid JSON following the format in the system prompt.
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
 
     # =========================================================================
@@ -2103,8 +2135,9 @@ Return your response as valid JSON following the format in the system prompt.
 
     def _ensure_conversation_table(self):
         """Ensure conversation_history table exists (called internally)."""
-        conn = self._get_db_connection()
+        conn = None
         try:
+            conn = self._get_db_connection()
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS conversation_history (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2118,8 +2151,9 @@ Return your response as valid JSON following the format in the system prompt.
             """)
             conn.commit()
         finally:
-            conn.close()
-    
+            if conn:
+                conn.close()
+
     def generate_agentic_reasoning(
         self, 
         prompt: str, 

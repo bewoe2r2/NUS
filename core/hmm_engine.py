@@ -807,6 +807,7 @@ class HMMEngine:
         belief_cumsum = np.cumsum(current_belief)
         start_randoms = np.random.random(N)
         current_states = np.searchsorted(belief_cumsum, start_randoms)
+        current_states = np.clip(current_states, 0, len(STATES) - 1)
 
         # Track time-to-crisis for each simulation (0 = no crisis yet)
         crisis_times = np.zeros(N, dtype=np.float64)
@@ -830,7 +831,7 @@ class HMMEngine:
             # Vectorized state transition using advanced indexing
             # For each active path, look up its transition CDF row and sample
             next_states = np.array([
-                np.searchsorted(trans_cumsum[s], r)
+                min(np.searchsorted(trans_cumsum[s], r), len(STATES) - 1)
                 for s, r in zip(active_states, trans_randoms)
             ])
 
@@ -883,7 +884,7 @@ class HMMEngine:
                 survival_prob = 1.0
             else:
                 survived = np.sum(~hit_crisis | (crisis_times > time_hours))
-                survival_prob = float(survived / N)  # Convert to native float for JSON
+                survival_prob = float(survived / N) if N > 0 else 0.0  # Convert to native float for JSON
             survival_curve.append({"hours": time_hours, "survival_prob": round(survival_prob, 4)})
 
         return {
@@ -1460,10 +1461,11 @@ class HMMEngine:
                             new_mean = feat_weighted_sum[feat][s] / count
                             new_var = (feat_weighted_sq_sum[feat][s] / count) - (new_mean ** 2)
                             # Clamp mean to physical bounds
-                            new_mean = max(bounds[0], min(bounds[1], new_mean))
-                            # Floor variance (prevent collapse)
+                            if bounds[0] is not None and bounds[1] is not None:
+                                new_mean = max(bounds[0], min(bounds[1], new_mean))
+                            # Floor variance (prevent collapse and negative from numerical error)
                             pop_var = self.emission_params[feat]['vars'][s]
-                            new_var = max(new_var, pop_var * 0.1)
+                            new_var = max(new_var, pop_var * 0.1, 1e-10)
                             current_emissions[feat]['means'][s] = new_mean
                             current_emissions[feat]['vars'][s] = new_var
 
@@ -1658,7 +1660,10 @@ class HMMEngine:
         """
         total_log_prob = 0.0
         details = {}
-        
+
+        if observation is None:
+            observation = {}
+
         # Use provided params (personalized) or default (population)
         params_source = emission_params if emission_params else self.emission_params
 
@@ -1973,6 +1978,12 @@ class HMMEngine:
             List of observation dicts, one per 4-hour window
         """
         conn = self._get_db_connection()
+        try:
+            return self._fetch_observations_inner(conn, days, patient_id)
+        finally:
+            conn.close()
+
+    def _fetch_observations_inner(self, conn, days, patient_id):
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
@@ -2245,7 +2256,6 @@ class HMMEngine:
 
             observations.append(obs)
 
-        conn.close()
         return observations
 
     # ==========================================================================
@@ -2288,6 +2298,11 @@ class HMMEngine:
 
         # Generate x values
         num_points = 100
+        if max_x <= min_x:
+            # Degenerate range: expand around the single value
+            mid = (max_x + min_x) / 2.0
+            min_x = mid - 1.0
+            max_x = mid + 1.0
         step = (max_x - min_x) / num_points
         x_values = [min_x + i * step for i in range(num_points + 1)]
 

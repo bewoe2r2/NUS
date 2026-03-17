@@ -472,7 +472,10 @@ def _exec_alert_family(args, patient_id, conn, now):
 
 
 def _exec_award_voucher(args, patient_id, conn, now):
-    amount = min(float(args.get("amount", 1)), 5.0)
+    try:
+        amount = min(float(args.get("amount", 1)), 5.0)
+    except (ValueError, TypeError):
+        amount = 1.0
     cursor = conn.execute("""
         UPDATE voucher_tracker
         SET current_value = CASE WHEN COALESCE(current_value, 0) + ? > 10.0 THEN 10.0
@@ -588,7 +591,10 @@ def _exec_celebrate_streak(args, patient_id, conn, now):
     """Award bonus for streak milestone and log it."""
     streak_type = args.get("streak_type", "medication")
     streak_days = args.get("streak_days", 3)
-    bonus = min(float(args.get("bonus_amount", 2)), 5.0)
+    try:
+        bonus = min(float(args.get("bonus_amount", 2)), 5.0)
+    except (ValueError, TypeError):
+        bonus = 2.0
 
     # Award voucher bonus
     cursor = conn.execute("""
@@ -672,7 +678,10 @@ def _exec_clinician_summary(args, patient_id, conn, now):
     Generate structured clinician intelligence briefing.
     Combines SBAR + HMM trajectory + Merlion forecast + recent interventions.
     """
-    period_days = int(args.get("period_days", 7))
+    try:
+        period_days = int(args.get("period_days", 7))
+    except (ValueError, TypeError):
+        period_days = 7
     period_start = now - (period_days * 86400)
 
     summary = {
@@ -686,8 +695,12 @@ def _exec_clinician_summary(args, patient_id, conn, now):
         from clinical_engine import ClinicalEngine
         ce = ClinicalEngine(db_path=DB_PATH)
         pipeline_result = ce.execute_pipeline(patient_id)
-        summary["sbar"] = pipeline_result.get("sbar", {})
-        summary["clinical_metrics"] = pipeline_result.get("metrics", {})
+        if pipeline_result:
+            summary["sbar"] = pipeline_result.get("sbar", {})
+            summary["clinical_metrics"] = pipeline_result.get("metrics", {})
+        else:
+            summary["sbar"] = {"error": "Pipeline returned None"}
+            summary["clinical_metrics"] = {}
     except Exception as e:
         logger.warning(f"SBAR generation failed: {e}")
         summary["sbar"] = {"error": str(e)}
@@ -1000,6 +1013,7 @@ def _ensure_runtime_tables_inner(conn):
             age INTEGER,
             conditions TEXT,
             medications TEXT,
+            tier TEXT DEFAULT 'BASIC',
             last_hba1c REAL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -1046,6 +1060,14 @@ def _ensure_runtime_tables_inner(conn):
     except sqlite3.OperationalError:
         try:
             conn.execute("ALTER TABLE patients ADD COLUMN age INTEGER")
+        except sqlite3.OperationalError:
+            pass
+    # Ensure patients has tier column (may have been created without it)
+    try:
+        conn.execute("SELECT tier FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        try:
+            conn.execute("ALTER TABLE patients ADD COLUMN tier TEXT DEFAULT 'BASIC'")
         except sqlite3.OperationalError:
             pass
 
@@ -1310,17 +1332,17 @@ Return ONLY the JSON array, no other text."""
 def _consolidate_memories(patient_id, gemini_integration):
     """Merge episodic memories into semantic patterns. Called during weekly reports."""
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    episodic = conn.execute("""
-        SELECT id, key, value_json FROM agent_memory
-        WHERE patient_id = ? AND memory_type = 'episodic' AND consolidated = 0
-        ORDER BY created_at DESC LIMIT 50
-    """, (patient_id,)).fetchall()
-    if len(episodic) < 3:
-        conn.close()
-        return
-    facts = [f"- {r['key']}: {r['value_json']}" for r in episodic]
-    prompt = f"""Given these episodic patient memories, identify repeating PATTERNS and consolidate into semantic memories.
+    try:
+        conn.row_factory = sqlite3.Row
+        episodic = conn.execute("""
+            SELECT id, key, value_json FROM agent_memory
+            WHERE patient_id = ? AND memory_type = 'episodic' AND consolidated = 0
+            ORDER BY created_at DESC LIMIT 50
+        """, (patient_id,)).fetchall()
+        if len(episodic) < 3:
+            return
+        facts = [f"- {r['key']}: {r['value_json']}" for r in episodic]
+        prompt = f"""Given these episodic patient memories, identify repeating PATTERNS and consolidate into semantic memories.
 
 Episodic memories:
 {chr(10).join(facts[:30])}
@@ -1328,10 +1350,8 @@ Episodic memories:
 Return JSON array of semantic patterns:
 [{{"key": "pattern_name", "value": "the consolidated pattern description", "confidence": 0.5-1.0}}]
 Only return patterns that appear 2+ times. Return ONLY the JSON array."""
-    try:
         parsed = _call_gemini(gemini_integration, prompt)
         if not parsed or not isinstance(parsed, list):
-            conn.close()
             return
         now = int(time.time())
         for pattern in parsed[:10]:
@@ -1379,7 +1399,7 @@ def _load_agent_memory(patient_id):
                 val = json.loads(r["value_json"]).get("value", r["value_json"])
             except (json.JSONDecodeError, AttributeError):
                 val = r["value_json"]
-            grouped[mt].append(f"    - {r['key']}: {val} (confidence: {r['confidence']:.0%})")
+            grouped[mt].append(f"    - {r['key']}: {val} (confidence: {(r['confidence'] or 0):.0%})")
         lines = []
         for mt in ["preference", "semantic", "medical_note", "episodic"]:
             if mt in grouped:
@@ -1458,7 +1478,24 @@ def build_full_hmm_context(hmm_engine, observations: List[Dict], patient_id: str
         from core.hmm_engine import STATES
 
     if not observations:
-        return {"error": "No observations", "current_state": "NO_DATA"}
+        return {
+            "error": "No observations",
+            "current_state": "NO_DATA",
+            "confidence": 0,
+            "state_probabilities": {"STABLE": 0, "WARNING": 0, "CRISIS": 0},
+            "top_factors": [],
+            "path_states": [],
+            "latest_obs": {},
+            "monte_carlo": {"prob_crisis_percent": 0, "risk_level": "UNKNOWN"},
+            "counterfactuals": {},
+            "state_change": {},
+            "trend": "STABLE",
+            "survival_curve": [],
+            "data_quality": {},
+            "risk_48h": 0,
+            "risk_level": "UNKNOWN",
+            "expected_hours_to_crisis": None,
+        }
 
     # 1. Core HMM inference
     hmm_result = hmm_engine.run_inference(observations, patient_id=patient_id)
@@ -1968,7 +2005,7 @@ Return valid JSON:
     ) or "  No factor data"
 
     cf_text = "\n".join(
-        f"  - If {name}: risk drops {cf['risk_reduction_pct']}% -> new crisis risk {cf['new_crisis_risk']}%"
+        f"  - If {name}: risk drops {cf.get('risk_reduction_pct', 0)}% -> new crisis risk {cf.get('new_crisis_risk', 0)}%"
         for name, cf in hmm_context.get("counterfactuals", {}).items()
     ) or "  No counterfactual data"
 
@@ -2055,7 +2092,7 @@ Forecast engine: {merlion_risk.get('engine', 'unknown')}
 """
     forecast_curve = merlion_risk.get("forecast_curve", [])
     if forecast_curve:
-        curve_str = " -> ".join(f"{v:.1f}" for v in forecast_curve[:6])
+        curve_str = " -> ".join(f"{v:.1f}" for v in forecast_curve[:6] if v is not None)
         merlion_section += f"Forecast curve (next 6 windows): {curve_str}\n"
 
     # Loop control instructions
@@ -2303,6 +2340,7 @@ def run_agent_loop(
     result = None
     start_time = time.time()
     MAX_AGENT_SECONDS = 55  # 55 second timeout for entire loop
+    turn = 0
 
     for turn in range(max_turns):
         # Check overall timeout before each Gemini call
@@ -2424,13 +2462,15 @@ def store_conversation_turn(patient_id: str, role: str, message: str,
     """Store a conversation turn."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        conn.execute("""
-            INSERT INTO conversation_history
-            (patient_id, timestamp_utc, role, message, hmm_state, actions_taken)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (patient_id, int(time.time()), role, message, hmm_state, actions_taken))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("""
+                INSERT INTO conversation_history
+                (patient_id, timestamp_utc, role, message, hmm_state, actions_taken)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (patient_id, int(time.time()), role, message, hmm_state, actions_taken))
+            conn.commit()
+        finally:
+            conn.close()
     except Exception as e:
         logger.warning(f"Failed to store conversation: {e}")
 
@@ -3018,7 +3058,7 @@ def _calculate_engagement_inner(patient_id: str, conn) -> Dict:
         # Query actual prescribed medication count for expected doses
         try:
             med_row = conn.execute(
-                "SELECT COUNT(*) as med_count FROM medications WHERE patient_id = ?",
+                "SELECT COUNT(*) as med_count FROM medications WHERE user_id = ?",
                 (patient_id,)
             ).fetchone()
             daily_doses = (med_row["med_count"] if med_row else 2) or 2
@@ -3336,7 +3376,7 @@ def _call_gemini(gemini_integration, prompt: str, max_retries: int = 3) -> Optio
     Call Gemini and parse JSON response with retry + exponential backoff.
     Returns None on failure. Reusable across single-shot and multi-turn agent loops.
     """
-    if not gemini_integration or not gemini_integration.api_key:
+    if not gemini_integration or not getattr(gemini_integration, 'api_key', None):
         return None
 
     for attempt in range(max_retries):
@@ -4228,7 +4268,7 @@ def _generate_one_line_sbar(patient_id, state, risk, hmm_result):
     """One-line SBAR for triage dashboard."""
     profile = _get_patient_profile_from_db(patient_id)
     factors = hmm_result.get("top_factors", [])
-    top_factor = factors[0]["feature"] if factors else "unknown"
+    top_factor = factors[0].get("feature", "unknown") if factors else "unknown"
     top_value = f"{factors[0]['value']:.1f}" if factors and "value" in factors[0] else "?"
     return (
         f"S: {state} | "

@@ -115,7 +115,7 @@ app.add_middleware(
 # --- API Key Authentication ---
 _raw_api_key = os.getenv("BEWO_API_KEY", "")
 if not _raw_api_key or _raw_api_key == "bewo-dev-key-2026":
-    if os.getenv("DEBUG_MODE", "False").lower() == "true":
+    if os.getenv("DEBUG_MODE", "False").lower() == "true" or not _raw_api_key:
         _raw_api_key = "bewo-dev-key-2026"
         logging.getLogger("BewoAPI").warning("SECURITY: Using default API key. Set BEWO_API_KEY env var in production.")
     else:
@@ -422,7 +422,7 @@ async def get_patient_state(patient_id: str):
             )
 
         # Run HMM inference
-        result = engine.run_inference(observations, patient_id=patient_id)
+        result = engine.run_inference(observations, patient_id=patient_id) or {}
         latest_obs = observations[-1]
 
         # Extract values safely (use `is not None` to preserve valid 0 values)
@@ -459,7 +459,7 @@ async def get_patient_state(patient_id: str):
                 trend = "DECLINING"
 
         # Get forecast data
-        forecast = engine.predict_time_to_crisis(latest_obs, horizon_hours=48)
+        forecast = engine.predict_time_to_crisis(latest_obs, horizon_hours=48) or {}
         survival_curve = [SurvivalPoint(hours=p['hours'], survival_prob=p['survival_prob']) for p in forecast.get('survival_curve', [])]
 
         return PatientStateResponse(
@@ -713,7 +713,9 @@ async def get_analysis_detail(patient_id: str, date: str):
             # 3. Calculate Evidence Contribution
             # Compare log-likelihoods across states to determine which state
             # this feature's value most supports
-            params = engine.emission_params[feat]
+            params = engine.emission_params.get(feat)
+            if not params:
+                continue
             state_names = ["STABLE", "WARNING", "CRISIS"]
             max_prob = -float('inf')
             likely_state = "STABLE"
@@ -830,7 +832,7 @@ async def chat_with_ai(request: ChatRequest):
             patient_id=request.patient_id,
             user_message=request.message,
             gemini_integration=gi,
-        )
+        ) or {}
 
         # Convert tool_calls to actions for backward compat
         actions = []
@@ -971,8 +973,9 @@ async def extract_glucose_from_photo(file: UploadFile = File(...)):
 @app.post("/food/log")
 async def log_food(data: FoodInput):
     """Log a food entry with description and carbs"""
-    conn = get_db()
+    conn = None
     try:
+        conn = get_db()
         meal_upper = data.meal_type.upper()
         if meal_upper not in ("BREAKFAST", "LUNCH", "DINNER", "SNACK"):
             meal_upper = "SNACK"
@@ -986,7 +989,8 @@ async def log_food(data: FoodInput):
         logger.exception(f"Error logging food: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # =============================================================================
 # MEDICATION ENDPOINTS
@@ -1196,6 +1200,8 @@ async def voice_checkin(data: VoiceCheckInRequest):
 
         if gi:
             result = gi.analyze_voice_sentiment(data.transcript)
+            if not isinstance(result, dict):
+                result = {}
 
             # Store in database
             conn = get_db()
@@ -1429,7 +1435,7 @@ async def get_all_patients():
         for p in patients:
             observations = engine.fetch_observations(days=2, patient_id=p['id'])
             if observations:
-                result = engine.run_inference(observations, patient_id=p['id'])
+                result = engine.run_inference(observations, patient_id=p['id']) or {}
                 latest = observations[-1]
 
                 results.append({
@@ -1485,7 +1491,7 @@ async def trigger_proactive_checkin(patient_id: str):
             patient_id=patient_id,
             user_message=None,  # Proactive — no user message
             gemini_integration=gi,
-        )
+        ) or {}
 
         return {
             "success": True,
@@ -1509,7 +1515,7 @@ async def get_agent_status(patient_id: str):
         engine = get_engine()
         observations = engine.fetch_observations(days=7, patient_id=patient_id)
 
-        hmm_context = build_full_hmm_context(engine, observations, patient_id)
+        hmm_context = build_full_hmm_context(engine, observations, patient_id) or {}
 
         return {
             "patient_id": patient_id,
@@ -1674,7 +1680,7 @@ async def get_daily_challenge(patient_id: str):
     try:
         engine = get_engine()
         observations = engine.fetch_observations(days=7, patient_id=patient_id)
-        hmm_context = build_full_hmm_context(engine, observations, patient_id)
+        hmm_context = build_full_hmm_context(engine, observations, patient_id) or {}
         challenge = generate_daily_challenge(patient_id, hmm_context)
         return challenge
     except Exception as e:
@@ -1699,7 +1705,7 @@ async def get_glucose_narrative(patient_id: str):
     try:
         engine = get_engine()
         observations = engine.fetch_observations(days=7, patient_id=patient_id)
-        hmm_context = build_full_hmm_context(engine, observations, patient_id)
+        hmm_context = build_full_hmm_context(engine, observations, patient_id) or {}
         narrative = generate_glucose_narrative(patient_id, hmm_context)
         return narrative
     except Exception as e:
@@ -1894,7 +1900,7 @@ async def run_hmm_analysis():
                         INSERT INTO hmm_states (timestamp_utc, detected_state, confidence_score,
                                                confidence_margin, patient_tier, input_vector_snapshot, user_id)
                         VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (obs_time, result['current_state'], result['confidence'],
+                    """, (obs_time, result.get('current_state', 'STABLE'), result.get('confidence', 0.5),
                           result.get('confidence_margin', 0), 'PREMIUM', json.dumps(obs), patient_id))
 
             total_analyzed += len(observations)
@@ -1947,7 +1953,7 @@ async def get_clinician_summary(patient_id: str, period_days: int = 7):
     try:
         _conn = get_db()
         try:
-            summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(time.time()))
+            summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(time.time())) or {}
             # Sanitize NaN/Inf values that break JSON serialization
             def _sanitize(obj):
                 if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
@@ -1981,7 +1987,7 @@ async def get_impact_metrics(patient_id: str, period_days: int = 30):
 async def get_intervention_effectiveness(patient_id: str):
     """Which agent tools led to state improvements? Correlates tool execution with HMM state transitions."""
     try:
-        metrics = compute_impact_metrics(patient_id, period_days=90)
+        metrics = compute_impact_metrics(patient_id, period_days=90) or {}
         effectiveness = metrics.get("intervention_effectiveness", {})
         return {
             "success": True,
@@ -2053,7 +2059,7 @@ async def delete_memory(patient_id: str, memory_id: int):
 async def get_drug_interactions(patient_id: str):
     """View all current drug interactions for a patient's medications."""
     try:
-        profile = _get_patient_profile_from_db(patient_id)
+        profile = _get_patient_profile_from_db(patient_id) or {}
         meds = profile.get("medications", "")
         if isinstance(meds, str):
             med_list = [m.strip() for m in meds.split(",") if m.strip()]
@@ -2061,7 +2067,7 @@ async def get_drug_interactions(patient_id: str):
             med_list = meds
         else:
             med_list = []
-        result = check_drug_interactions(med_list)
+        result = check_drug_interactions(med_list) or {}
         return {"success": True, "patient_id": patient_id, "medications": med_list, **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -2071,7 +2077,7 @@ async def get_drug_interactions(patient_id: str):
 async def check_proposed_interaction(patient_id: str, body: DrugInteractionCheckInput):
     """Check a proposed new medication against patient's current medications."""
     try:
-        profile = _get_patient_profile_from_db(patient_id)
+        profile = _get_patient_profile_from_db(patient_id) or {}
         meds = profile.get("medications", "")
         if isinstance(meds, str):
             med_list = [m.strip() for m in meds.split(",") if m.strip()]
@@ -2079,7 +2085,7 @@ async def check_proposed_interaction(patient_id: str, body: DrugInteractionCheck
             med_list = meds
         else:
             med_list = []
-        result = check_drug_interactions(med_list, body.proposed_medication)
+        result = check_drug_interactions(med_list, body.proposed_medication) or {}
         return {"success": True, "patient_id": patient_id, "proposed": body.proposed_medication, **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -2187,8 +2193,8 @@ async def caregiver_respond(alert_id: int, body: CaregiverResponseInput):
 async def caregiver_dashboard(patient_id: str):
     """Caregiver view: patient status + recent alerts + burden score."""
     try:
-        profile = _get_patient_profile_from_db(patient_id)
-        burden = compute_caregiver_burden_score(patient_id)
+        profile = _get_patient_profile_from_db(patient_id) or {}
+        burden = compute_caregiver_burden_score(patient_id) or {}
         # sqlite3 already imported at module level
         db = DB_PATH
         conn = sqlite3.connect(db)
@@ -2219,7 +2225,7 @@ async def caregiver_dashboard(patient_id: str):
 async def get_caregiver_burden(patient_id: str):
     """Caregiver burden score (0-100) with burnout signals."""
     try:
-        return {"success": True, "patient_id": patient_id, **compute_caregiver_burden_score(patient_id)}
+        return {"success": True, "patient_id": patient_id, **(compute_caregiver_burden_score(patient_id) or {})}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
@@ -2232,7 +2238,7 @@ async def get_caregiver_burden(patient_id: str):
 async def nurse_triage():
     """Multi-patient clinical triage dashboard: urgency-sorted with SBAR for critical patients."""
     try:
-        return {"success": True, **generate_nurse_triage()}
+        return {"success": True, **(generate_nurse_triage() or {})}
     except Exception as e:
         logger.exception(f"Nurse triage failed: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -2242,8 +2248,9 @@ async def nurse_triage():
 async def nurse_triage_single(patient_id: str):
     """Single patient triage detail."""
     try:
-        result = generate_nurse_triage([patient_id])
-        patient = result["patients"][0] if result["patients"] else {}
+        result = generate_nurse_triage([patient_id]) or {}
+        patients_list = result.get("patients", [])
+        patient = patients_list[0] if patients_list else {}
         return {"success": True, "patient_id": patient_id, **patient}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
@@ -2275,7 +2282,7 @@ async def train_hmm_baum_welch(patient_id: str, days: int = 30):
             max_iter=20,
             tol=1e-4,
         )
-        return {"success": True, "patient_id": patient_id, **result}
+        return {"success": True, "patient_id": patient_id, **(result or {})}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 

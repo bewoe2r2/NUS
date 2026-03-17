@@ -15,7 +15,11 @@ import time
 import logging
 from datetime import datetime, timedelta
 import io
-import qrcode
+try:
+    import qrcode
+    QRCODE_AVAILABLE = True
+except ImportError:
+    QRCODE_AVAILABLE = False
 import base64
 import json
 
@@ -61,6 +65,10 @@ class VoucherSystem:
                 conn.commit()
                 value = self.WEEKLY_START
                 penalties = "[]"
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"Voucher lookup error: {e}")
+            value = self.WEEKLY_START
+            penalties = "[]"
         finally:
             if conn:
                 conn.close()
@@ -99,16 +107,20 @@ class VoucherSystem:
         penalties_json = json.dumps(existing_penalties)
 
         # Update DB
-        conn = sqlite3.connect(self.db_path)
+        conn = None
         try:
+            conn = sqlite3.connect(self.db_path)
             conn.execute("""
                 UPDATE voucher_tracker
                 SET current_value = ?, penalties_json = ?
                 WHERE user_id = ? AND week_start_utc = ?
             """, (new_value, penalties_json, user_id, week_start_ts))
             conn.commit()
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"Penalty update error: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
         return new_value
     
@@ -158,6 +170,8 @@ class VoucherSystem:
 
     def generate_qr_code(self, amount):
         """Generate QR code for redemption"""
+        if not QRCODE_AVAILABLE:
+            return None
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(f"BEWO_VOUCHER:${amount:.2f}")
         qr.make(fit=True)

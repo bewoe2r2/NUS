@@ -20,7 +20,11 @@ Backend priority:
 import json
 import logging
 import os
-import requests
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -92,7 +96,7 @@ class SeaLionInterface:
         # --- Backend 2: Cloudflare Workers AI (fallback) ---
         self.cf_account_id = os.getenv('CLOUDFLARE_ACCOUNT_ID')
         self.cf_auth_token = os.getenv('CLOUDFLARE_AUTH_TOKEN')
-        self.use_cloudflare = bool(self.cf_account_id and self.cf_auth_token)
+        self.use_cloudflare = bool(REQUESTS_AVAILABLE and self.cf_account_id and self.cf_auth_token)
 
         # --- Backend 3: Gemini mock (last resort, always initialized as fallback) ---
         self.gemini_key = api_key or os.getenv('GEMINI_API_KEY')

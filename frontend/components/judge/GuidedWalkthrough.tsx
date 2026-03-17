@@ -452,11 +452,13 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
     ];
 
-    const step = steps[currentStep];
-    const isFirst = currentStep === 0;
-    const isLast = currentStep === steps.length - 1;
+    const safeStep = Math.max(0, Math.min(currentStep, steps.length - 1));
+    const step = steps[safeStep];
+    if (!step) return null;
+    const isFirst = safeStep === 0;
+    const isLast = safeStep === steps.length - 1;
     const hasAction = !!step.action;
-    const isDone = actionDone.has(currentStep);
+    const isDone = actionDone.has(safeStep);
 
     const canProceed = !hasAction || isDone;
 
@@ -472,14 +474,14 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
     const goNext = () => {
         if (isLast) { onClose(); return; }
         animateTransition("next", () => {
-            setCurrentStep(currentStep + 1);
+            setCurrentStep(safeStep + 1);
         });
     };
 
     const goPrev = () => {
         if (isFirst) return;
         animateTransition("prev", () => {
-            setCurrentStep(currentStep - 1);
+            setCurrentStep(safeStep - 1);
         });
     };
 
@@ -495,7 +497,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         const handler = (e: KeyboardEvent) => {
             if (e.key === "Escape") { onClose(); return; }
             if (e.key === "ArrowRight" && canProceedRef.current && !actionRunningRef.current) goNext();
-            if (e.key === "ArrowLeft" && !isFirstRef.current) goPrev();
+            if (e.key === "ArrowLeft" && !isFirstRef.current && !actionRunningRef.current) goPrev();
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
@@ -504,7 +506,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
     // Tab switching + step reporting
     useEffect(() => {
         if (step.tab) onTabChange(step.tab);
-        onStepChange?.(currentStep);
+        onStepChange?.(safeStep);
     }, [currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Scroll card body to top on step change
@@ -630,7 +632,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
     ];
 
     const avgSecondsPerStep = 25;
-    const remainingSteps = steps.length - currentStep - 1;
+    const remainingSteps = steps.length - safeStep - 1;
     const minutesLeft = Math.max(1, Math.ceil((remainingSteps * avgSecondsPerStep) / 60));
 
     return (
@@ -672,7 +674,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                     ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
                 `}
                 role="dialog"
-                aria-label={`Walkthrough step ${currentStep + 1} of ${steps.length}: ${step.title}`}
+                aria-label={`Walkthrough step ${safeStep + 1} of ${steps.length}: ${step.title}`}
                 aria-modal="true"
                 style={{
                     top: cardPos.top,
@@ -697,7 +699,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                                 ~{minutesLeft}min left
                             </span>
                             <span className="text-white/70 text-[12px] font-mono font-semibold">
-                                {currentStep + 1}/{steps.length}
+                                {safeStep + 1}/{steps.length}
                             </span>
                         </div>
                     </div>
@@ -723,26 +725,26 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                     <div className="mt-2.5 flex items-center gap-0.5">
                         {phases.map((p, pi) => {
                             const phaseStart = p.steps[0];
-                            const isPastPhase = p.steps[p.steps.length - 1] < currentStep;
+                            const isPastPhase = p.steps[p.steps.length - 1] < safeStep;
                             return (
                                 <button
                                     key={pi}
                                     onClick={() => {
-                                        if (phaseStart !== currentStep) {
-                                            animateTransition(phaseStart > currentStep ? "next" : "prev", () => {
+                                        if (phaseStart !== safeStep && !actionRunning) {
+                                            animateTransition(phaseStart > safeStep ? "next" : "prev", () => {
                                                 setCurrentStep(phaseStart);
                                             });
                                         }
                                     }}
-                                    className="flex-1 flex gap-px group cursor-pointer"
+                                    className={`flex-1 flex gap-px group ${actionRunning ? 'cursor-wait' : 'cursor-pointer'}`}
                                     title={`Jump to ${p.name}`}
                                 >
                                     {p.steps.map((si) => (
                                         <div
                                             key={si}
                                             className={`h-[3px] flex-1 rounded-full transition-all duration-300 group-hover:opacity-80 ${
-                                                si === currentStep ? "bg-white" :
-                                                si < currentStep ? "bg-white/50" : "bg-white/15"
+                                                si === safeStep ? "bg-white" :
+                                                si < safeStep ? "bg-white/50" : "bg-white/15"
                                             } ${isPastPhase ? "group-hover:bg-white/60" : "group-hover:bg-white/30"}`}
                                         />
                                     ))}
@@ -803,7 +805,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                         {hasAction && (
                             <div className="mt-3">
                                 <button
-                                    onClick={() => runAction(step.action!, currentStep)}
+                                    onClick={() => runAction(step.action!, safeStep)}
                                     disabled={actionRunning || isDone}
                                     className={`w-full rounded-lg text-[12px] font-bold flex items-center justify-center gap-2 transition-all
                                         ${actionRunning ? "h-14 py-2" : "h-10"}
@@ -863,7 +865,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                             {!isFirst && (
                                 <button
                                     onClick={goPrev}
-                                    className="h-8 px-3 rounded-lg border border-zinc-200 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 flex items-center gap-0.5 transition-colors"
+                                    disabled={actionRunning}
+                                    className="h-8 px-3 rounded-lg border border-zinc-200 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 flex items-center gap-0.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                     aria-label="Previous step"
                                 >
                                     <ChevronLeft size={13} /> Back
