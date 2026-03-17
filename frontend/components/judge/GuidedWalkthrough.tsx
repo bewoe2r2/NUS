@@ -237,7 +237,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 2: DAYS 1-5 — Everything is fine (Steps 4-6)
+        // ACT 2: DAYS 1-5 — Everything is fine (Steps 5-8)
         // ===============================================
         {
             id: "inject_stable",
@@ -307,7 +307,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 3: DAYS 6-10 — Something shifts (Steps 7-10)
+        // ACT 3: DAYS 6-10 — Something shifts (Steps 9-12)
         // ===============================================
         {
             id: "crisis_narrative",
@@ -369,7 +369,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 4: DAYS 11-14 — Full crisis (Steps 11-13)
+        // ACT 4: DAYS 11-14 — Full crisis (Steps 13-15)
         // ===============================================
         {
             id: "inject_crisis",
@@ -418,7 +418,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 5: RECOVERY (Steps 14-15)
+        // ACT 5: RECOVERY (Steps 16-17)
         // ===============================================
         {
             id: "inject_recovery",
@@ -453,7 +453,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 6: DEEP DIVE (Steps 16-17)
+        // ACT 6: DEEP DIVE (Steps 18-19)
         // ===============================================
         {
             id: "tool_demo",
@@ -485,7 +485,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // CLOSING (Step 18)
+        // CLOSING (Step 20)
         // ===============================================
         {
             id: "closing",
