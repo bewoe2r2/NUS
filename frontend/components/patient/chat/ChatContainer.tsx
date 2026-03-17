@@ -61,6 +61,10 @@ export function ChatContainer() {
             // REAL API CALL
             const res = await api.chatWithAgent(text);
 
+            if (!res || typeof res.message !== "string") {
+                throw new Error("Invalid response from server");
+            }
+
             const aiMsg: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: "ai",

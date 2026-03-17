@@ -77,6 +77,7 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
         } catch (e) {
             console.error(e);
             setLoading(false);
+            setError("Failed to save reading. Please try again.");
         }
     };
 

@@ -42,7 +42,7 @@ export function TimelineStrip({ days, selectedDate, onSelectDate }: TimelineStri
         <div className="w-full overflow-x-auto pb-2 no-scrollbar">
             <div className="flex gap-2 min-w-max px-1">
                 {days.map((day, index) => {
-                    const config = stateConfig[day.state];
+                    const config = stateConfig[day.state] ?? stateConfig.STABLE;
                     const isSelected = selectedDate === day.date;
                     const { day: dayNum, month } = formatDate(day.date);
                     const isToday = index === days.length - 1;

@@ -19,7 +19,10 @@ import time
 # Add current directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from hmm_engine import HMMEngine
+try:
+    from core.hmm_engine import HMMEngine
+except ImportError:
+    from hmm_engine import HMMEngine
 try:
     from inject_data import inject_tiered_scenario_to_db, run_analysis_and_save
 except ImportError:

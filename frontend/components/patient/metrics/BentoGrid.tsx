@@ -20,7 +20,9 @@ interface BentoGridProps {
 }
 
 export function BentoGrid({ biometrics, className }: BentoGridProps) {
-    const { glucose, steps, hr } = biometrics;
+    const glucose = biometrics?.glucose ?? 0;
+    const steps = biometrics?.steps ?? 0;
+    const hr = biometrics?.hr ?? 0;
 
     // Logic for colors — detect hypo (<4.0), normal (4.0-7.8), elevated (>7.8)
     const isHypo = glucose < 4.0;

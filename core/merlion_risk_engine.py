@@ -22,10 +22,12 @@ logger = logging.getLogger("MerlionRiskEngine")
 try:
     from merlion.models.forecast.arima import Arima, ArimaConfig
     from merlion.utils import TimeSeries
+    from scipy.stats import norm as _scipy_norm
     import pandas as pd
     MERLION_AVAILABLE = True
 except ImportError:
     MERLION_AVAILABLE = False
+    _scipy_norm = None
     logger.info("salesforce-merlion not found. Running in MOCK mode.")
 
 class MerlionRiskEngine:
@@ -177,10 +179,9 @@ class MerlionRiskEngine:
             for i, (fv, se) in enumerate(zip(forecast_vals, stderr_vals)):
                 se = max(float(se), 0.01)  # avoid div by zero
                 # P(glucose < 3.9) using normal CDF
-                from scipy.stats import norm
-                p_hypo = norm.cdf(3.9, loc=float(fv), scale=se)
+                p_hypo = _scipy_norm.cdf(3.9, loc=float(fv), scale=se)
                 # P(glucose > 15.0) using normal survival
-                p_hyper = 1.0 - norm.cdf(15.0, loc=float(fv), scale=se)
+                p_hyper = 1.0 - _scipy_norm.cdf(15.0, loc=float(fv), scale=se)
                 prob = max(prob, p_hypo + p_hyper)
 
             return {

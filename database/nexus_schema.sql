@@ -507,3 +507,75 @@ CREATE TABLE IF NOT EXISTS caregiver_responses (
     message TEXT,
     timestamp_utc INTEGER
 );
+
+-- ==============================================================================
+-- 21. AGENT ACTIONS LOG (required by api.py and agent_runtime.py)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS agent_actions_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT,
+    timestamp_utc INTEGER,
+    action_type TEXT,
+    action_data TEXT,
+    tool_name TEXT,
+    tool_args TEXT,
+    tool_result TEXT,
+    status TEXT DEFAULT 'pending',
+    hmm_state TEXT,
+    risk_48h REAL,
+    reasoning TEXT
+);
+
+-- ==============================================================================
+-- 22. CONVERSATION HISTORY (required by api.py)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS conversation_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT,
+    timestamp_utc INTEGER,
+    role TEXT,
+    message TEXT,
+    hmm_state TEXT,
+    actions_taken TEXT
+);
+
+-- ==============================================================================
+-- 23. PROACTIVE CHECKINS (required by api.py)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS proactive_checkins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT,
+    scheduled_time TEXT,
+    checkin_type TEXT,
+    reason TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at INTEGER,
+    completed_at INTEGER
+);
+
+-- ==============================================================================
+-- 24. CAREGIVER ALERTS (required by api.py)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS caregiver_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT,
+    timestamp_utc INTEGER,
+    alert_type TEXT,
+    severity TEXT,
+    message TEXT,
+    delivery_results_json TEXT
+);
+
+-- ==============================================================================
+-- 25. IMPACT METRICS (required by agent_runtime.py)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS impact_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT,
+    timestamp_utc INTEGER,
+    metric_type TEXT,
+    metric_value REAL,
+    period_start INTEGER,
+    period_end INTEGER,
+    details TEXT
+);

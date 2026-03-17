@@ -333,8 +333,9 @@ export function calculateLogLikelihood(features: FeatureDistribution[]): {
         }
 
         const logProb = (mean: number, variance: number): number => {
+            const safeVariance = Math.max(variance, 1e-6);
             const diff = val - mean;
-            return -0.5 * Math.log(2 * Math.PI * variance) - (diff * diff) / (2 * variance);
+            return -0.5 * Math.log(2 * Math.PI * safeVariance) - (diff * diff) / (2 * safeVariance);
         };
 
         return {
@@ -354,12 +355,14 @@ export function generateGaussianCurve(
     variance: number,
     numPoints: number = 50
 ): { x: number; y: number }[] {
-    const std = Math.sqrt(variance);
+    const safeVariance = Math.max(variance, 1e-6);
+    const safeNumPoints = Math.max(numPoints, 1);
+    const std = Math.sqrt(safeVariance);
     const minX = mean - 3.5 * std;
     const maxX = mean + 3.5 * std;
-    const step = (maxX - minX) / numPoints;
+    const step = (maxX - minX) / safeNumPoints;
 
-    return Array.from({ length: numPoints }, (_, i) => {
+    return Array.from({ length: safeNumPoints }, (_, i) => {
         const x = minX + i * step;
         const y = (1 / (std * Math.sqrt(2 * Math.PI))) *
             Math.exp(-0.5 * Math.pow((x - mean) / std, 2));

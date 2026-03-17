@@ -10,7 +10,7 @@ interface HMMTransitionHeatmapProps {
 }
 
 export function HMMTransitionHeatmap({ matrix }: HMMTransitionHeatmapProps) {
-    if (!matrix || matrix.length !== 3) {
+    if (!matrix || matrix.length !== 3 || matrix.some(row => !Array.isArray(row) || row.length !== 3)) {
         return (
             <Card className="h-full bg-slate-900/50 border-slate-800 backdrop-blur-sm">
                 <CardContent className="flex items-center justify-center h-full text-slate-500">
