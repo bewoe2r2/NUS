@@ -88,7 +88,7 @@ The agent autonomously decides which tools to use based on patient context:
 ```
 Healthcare/
 ├── backend/
-│   └── api.py                  # FastAPI server (54 API routes)
+│   └── api.py                  # FastAPI server (66 API routes)
 ├── core/
 │   ├── hmm_engine.py           # HMM + Viterbi + Baum-Welch
 │   ├── agent_runtime.py        # Agentic orchestration, 18 tools
@@ -171,7 +171,7 @@ Open `http://localhost:3000/judge` — the **Guided Walkthrough** launches autom
 
 ---
 
-## API Overview (54 Routes)
+## API Overview (66 Routes)
 
 ### Patient
 | Method | Endpoint | Description |

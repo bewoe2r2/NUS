@@ -2,7 +2,7 @@
 
 **Generated:** 2026-03-17
 **Total Test Files:** 11 (8 in `tests/`, 2 in `validation/`, 1 test matrix)
-**Total Lines of Test Code:** 6,801
+**Total Lines of Test Code:** 8,772
 **Total Assertions:** 319+
 **Pass/Fail Gates:** 76 (38 per validation round)
 
@@ -156,7 +156,7 @@ python validation/hmm_validation_suite/code/02_hardened_independent_validation.p
 | Metric | Value |
 |---|---|
 | Total test files | 11 |
-| Total lines of test code | 6,801 |
+| Total lines of test code | 8,772 |
 | Total individual assertions | 319+ |
 | Hard pass/fail gates (validation) | 76 (38 per round) |
 | Independent validation patients | 5,000 per round (10,000 total) |

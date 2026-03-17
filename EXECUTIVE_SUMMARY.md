@@ -47,7 +47,7 @@ PDPA-compliant by design. HMM runs fully offline — no internet needed for stat
 
 ## Prototype
 
-**43,000+ lines of production code.** FastAPI backend (53 endpoints), custom HMM + risk engines (11K lines Python), Next.js frontend — fully functional, not a mockup. Generalises to hypertension, COPD, and heart failure by retraining emission parameters.
+**~32,400 lines of production code.** FastAPI backend (66 endpoints), custom HMM + risk engines (22K lines Python), Next.js frontend — fully functional, not a mockup. Generalises to hypertension, COPD, and heart failure by retraining emission parameters.
 
 ---
 
