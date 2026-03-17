@@ -74,6 +74,15 @@ build_output.txt
 database/*.db-shm
 database/*.db-wal
 
+# Legacy/archive directories (not part of submission)
+website/
+website-present/
+website-v2/
+video/
+slide-deck/
+slide_captures/
+research_results/
+
 # Tools
 .agent/
 .claude/
