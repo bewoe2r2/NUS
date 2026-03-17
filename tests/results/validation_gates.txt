@@ -1,0 +1,23 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\brigh\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\brigh\.gemini\antigravity\healthcare
+plugins: anyio-4.9.0, timeout-2.4.0
+collecting ... collected 14 items
+
+tests/test_validation_runner.py::TestAccuracyGates::test_overall_accuracy_above_90 PASSED [  7%]
+tests/test_validation_runner.py::TestAccuracyGates::test_macro_f1_above_085 PASSED [ 14%]
+tests/test_validation_runner.py::TestAccuracyGates::test_crisis_recall_above_080 PASSED [ 21%]
+tests/test_validation_runner.py::TestAccuracyGates::test_crisis_precision_above_070 PASSED [ 28%]
+tests/test_validation_runner.py::TestAccuracyGates::test_stable_recall_above_075 PASSED [ 35%]
+tests/test_validation_runner.py::TestAUCGates::test_stable_auc_above_085 PASSED [ 42%]
+tests/test_validation_runner.py::TestAUCGates::test_warning_auc_above_085 PASSED [ 50%]
+tests/test_validation_runner.py::TestAUCGates::test_crisis_auc_above_085 PASSED [ 57%]
+tests/test_validation_runner.py::TestSafetyGates::test_no_crisis_classified_as_stable PASSED [ 64%]
+tests/test_validation_runner.py::TestSafetyGates::test_safety_monitor_fires_on_extreme_glucose PASSED [ 71%]
+tests/test_validation_runner.py::TestSafetyGates::test_safety_monitor_fires_on_hypoglycemia PASSED [ 78%]
+tests/test_validation_runner.py::TestArchetypeValidation::test_archetype_accuracy_above_70 PASSED [ 85%]
+tests/test_validation_runner.py::TestArchetypeValidation::test_no_crisis_archetype_classified_stable PASSED [ 92%]
+tests/test_validation_runner.py::TestRuntimeGate::test_cohort_results_computed_within_60s PASSED [100%]
+
+============================= 14 passed in 0.75s ==============================

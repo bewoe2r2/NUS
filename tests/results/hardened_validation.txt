@@ -1,0 +1,320 @@
+================================================================================
+  NEXUS 2026 — INDEPENDENT HMM VALIDATION SUITE
+  2026-03-17T23:33:07.410862
+  Data source: CLINICAL_RANGES (independent of EMISSION_PARAMS)
+================================================================================
+
+  [Independence Check] Mean offset between test data and model parameters:
+    glucose_avg               STABLE  : model=6.5 test=7.2 offset=0.57 SDs
+    glucose_avg               WARNING : model=11.5 test=10.0 offset=0.75 SDs
+    glucose_avg               CRISIS  : model=18.0 test=16.0 offset=0.40 SDs
+    glucose_variability       STABLE  : model=25.0 test=24.0 offset=0.17 SDs
+    glucose_variability       WARNING : model=38.0 test=36.0 offset=0.29 SDs
+    glucose_variability       CRISIS  : model=55.0 test=48.0 offset=0.58 SDs
+    meds_adherence            STABLE  : model=0.9 test=0.8 offset=1.00 SDs
+    meds_adherence            WARNING : model=0.7 test=0.6 offset=0.47 SDs
+    carbs_intake              STABLE  : model=155.0 test=165.0 offset=0.40 SDs
+    carbs_intake              WARNING : model=230.0 test=210.0 offset=0.57 SDs
+    carbs_intake              CRISIS  : model=320.0 test=280.0 offset=0.67 SDs
+    steps_daily               STABLE  : model=5500.0 test=5200.0 offset=0.20 SDs
+    steps_daily               WARNING : model=3000.0 test=3500.0 offset=0.50 SDs
+    steps_daily               CRISIS  : model=800.0 test=1200.0 offset=1.00 SDs
+    resting_hr                STABLE  : model=68.0 test=72.0 offset=0.80 SDs
+    resting_hr                WARNING : model=82.0 test=80.0 offset=0.29 SDs
+    resting_hr                CRISIS  : model=98.0 test=95.0 offset=0.27 SDs
+    hrv_rmssd                 STABLE  : model=32.0 test=26.0 offset=0.75 SDs
+    hrv_rmssd                 WARNING : model=18.0 test=17.0 offset=0.20 SDs
+    sleep_quality             STABLE  : model=7.5 test=6.8 offset=0.70 SDs
+    sleep_quality             CRISIS  : model=2.5 test=3.0 offset=0.50 SDs
+    social_engagement         STABLE  : model=10.0 test=8.0 offset=0.67 SDs
+    social_engagement         CRISIS  : model=1.5 test=2.0 offset=0.50 SDs
+
+================================================================================
+  SECTION 1: INDEPENDENT COHORT CLASSIFICATION (5,000 patients)
+  Data: CLINICAL_RANGES — zero overlap with EMISSION_PARAMS
+================================================================================
+
+  Part A: Clean patients (1000/state)
+  STABLE  : 917/1000 = 91.7% [95% CI: 89.8%-93.3%]
+  WARNING : 965/1000 = 96.5% [95% CI: 95.2%-97.5%]
+  CRISIS  : 1000/1000 = 100.0% [95% CI: 99.6%-100.0%]
+
+  Part B: Contradictory-signal patients (667/state, 3 features from wrong state)
+  STABLE  : 220/667 = 33.0% [95% CI: 29.5%-36.6%]
+  WARNING : 541/667 = 81.1% [95% CI: 78.0%-83.9%]
+  CRISIS  : 462/666 = 69.4% [95% CI: 65.8%-72.8%]
+
+  OVERALL: 4105/5000 = 82.1%
+  Macro F1: 0.8219
+
+  State          Prec   Recall     Spec       F1
+  --------------------------------------------
+  STABLE        0.980    0.682    0.993    0.804
+  WARNING       0.694    0.903    0.801    0.785
+  CRISIS        0.875    0.878    0.937    0.876
+
+  Confusion Matrix:
+  True\Pred      STABLE  WARNING   CRISIS
+  STABLE           1137      459       71
+  WARNING            23     1506      138
+  CRISIS              0      204     1462
+
+  ROC-AUC: STABLE: 0.9412 | WARNING: 0.9070 | CRISIS: 0.9671
+
+================================================================================
+  SECTION 2: DISCRIMINATIVE BOUNDARY STRESS TEST
+  Patients generated at exact midpoints between states
+================================================================================
+  STABLE-WARNING boundary blend=0.3: 100.0% classified as STABLE or WARNING
+  STABLE-WARNING boundary blend=0.5: 100.0% classified as STABLE or WARNING
+  STABLE-WARNING boundary blend=0.7: 99.5% classified as STABLE or WARNING
+  WARNING-CRISIS boundary blend=0.3: 100.0% classified as WARNING or CRISIS
+  WARNING-CRISIS boundary blend=0.5: 100.0% classified as WARNING or CRISIS
+  WARNING-CRISIS boundary blend=0.7: 100.0% classified as WARNING or CRISIS
+  STABLE-CRISIS boundary blend=0.3: 7.5% classified as STABLE or CRISIS
+  STABLE-CRISIS boundary blend=0.5: 19.0% classified as STABLE or CRISIS
+  STABLE-CRISIS boundary blend=0.7: 48.0% classified as STABLE or CRISIS
+
+================================================================================
+  SECTION 3: CLINICAL ARCHETYPE VALIDATION (20 hand-crafted profiles)
+  Each profile is a recognizable real-world patient scenario
+================================================================================
+  [OK] well_controlled_elderly                  expect=STABLE   got=STABLE   conf=0.993 via HMM
+  [OK] active_grandmother                       expect=STABLE   got=STABLE   conf=0.995 via HMM
+  [OK] borderline_stable                        expect=STABLE   got=STABLE   conf=0.923 via HMM
+  [OK] fit_low_glucose                          expect=STABLE   got=STABLE   conf=0.999 via HMM
+  [OK] slipping_compliance                      expect=WARNING  got=WARNING  conf=0.842 via HMM
+  [OK] post_illness_recovery                    expect=WARNING  got=WARNING  conf=0.638 via HMM
+  [OK] new_diagnosis_struggling                 expect=WARNING  got=WARNING  conf=0.960 via HMM
+  [OK] depressed_elderly                        expect=WARNING  got=WARNING  conf=0.890 via HMM
+  [OK] stress_hyperglycemia                     expect=WARNING  got=WARNING  conf=0.948 via HMM
+  [OK] mild_infection                           expect=WARNING  got=WARNING  conf=0.910 via HMM
+  [OK] dka_presentation                         expect=CRISIS   got=CRISIS   conf=0.984 via RULE_OVERRIDE
+  [OK] hypoglycemia_severe                      expect=CRISIS   got=CRISIS   conf=0.801 via RULE_OVERRIDE
+  [OK] sepsis_pattern                           expect=CRISIS   got=CRISIS   conf=0.829 via RULE_OVERRIDE
+  [OK] complete_neglect                         expect=CRISIS   got=CRISIS   conf=0.958 via RULE_OVERRIDE
+  [OK] cardiac_decompensation                   expect=CRISIS   got=CRISIS   conf=0.507 via RULE_OVERRIDE
+  [OK] steroid_induced                          expect=CRISIS   got=CRISIS   conf=0.623 via RULE_OVERRIDE
+  [OK] athletic_low_hr                          expect=STABLE   got=STABLE   conf=1.000 via HMM
+  [OK] high_glucose_great_everything_else       expect=WARNING  got=WARNING  conf=0.512 via HMM
+  [OK] low_social_but_healthy                   expect=STABLE   got=STABLE   conf=0.958 via HMM
+  [OK] brittle_diabetic                         expect=WARNING  got=WARNING  conf=0.624 via RULE_OVERRIDE
+  [!!] glucose_warning_body_stable              expect=WARNING  got=STABLE   conf=0.647 via HMM
+  [OK] body_crisis_glucose_normal               expect=WARNING  got=WARNING  conf=0.819 via RULE_OVERRIDE
+  [OK] crisis_glucose_stable_body               expect=CRISIS   got=CRISIS   conf=1.000 via RULE_OVERRIDE
+  [OK] borderline_stable_warning                expect=STABLE   got=STABLE   conf=0.731 via HMM
+  [OK] borderline_warning_crisis                expect=WARNING  got=WARNING  conf=0.918 via RULE_OVERRIDE
+  [OK] hypoglycemia_unaware                     expect=CRISIS   got=CRISIS   conf=0.900 via RULE_OVERRIDE
+  [OK] good_meds_bad_diet_sedentary             expect=WARNING  got=WARNING  conf=0.776 via HMM
+  [OK] night_shift_worker                       expect=STABLE   got=STABLE   conf=0.901 via HMM
+  [OK] early_sepsis_subtle                      expect=CRISIS   got=CRISIS   conf=0.859 via RULE_OVERRIDE
+  [OK] weekend_binge_stable                     expect=STABLE   got=STABLE   conf=0.884 via HMM
+  [OK] anxious_but_healthy                      expect=STABLE   got=STABLE   conf=0.927 via HMM
+  [OK] slowly_declining                         expect=WARNING  got=WARNING  conf=0.740 via HMM
+
+  Archetype accuracy: 31/32 = 97%
+  Dangerous misclassifications (CRISIS->STABLE): 0
+
+================================================================================
+  SECTION 4: ADVERSARIAL & CONTRADICTORY INPUT ROBUSTNESS
+================================================================================
+  [OK] All features at bounds minimum                          -> CRISIS   conf=0.954
+  [OK] All features at bounds maximum                          -> CRISIS   conf=1.000
+  [OK] Mixed signals: crisis glucose + perfect everything else -> CRISIS   conf=1.000
+  [OK] Mixed signals: perfect glucose + crisis everything else -> CRISIS   conf=0.851
+  [OK] Single feature only: glucose                            -> CRISIS   conf=0.410
+  [OK] Single feature only: meds_adherence                     -> WARNING  conf=0.513
+  [OK] Empty observation                                       -> STABLE   conf=0.400
+  [OK] All None values                                         -> STABLE   conf=0.400
+  [OK] Extreme outlier: glucose 35 mmol/L                      -> CRISIS   conf=1.000
+
+================================================================================
+  SECTION 5: TEMPORAL COHERENCE & STATE TRANSITION DETECTION
+================================================================================
+  Stable -> Warning (gradual)                  : 95.5% (expect WARNING)
+  Stable -> Warning -> Crisis                  : 100.0% (expect CRISIS)
+  Crisis -> Warning -> Stable (recovery)       : 91.0% (expect STABLE)
+  Stable -> Sudden Crisis                      : 100.0% (expect CRISIS)
+  Sustained Warning                            : 95.5% (expect WARNING)
+  Sustained Crisis                             : 100.0% (expect CRISIS)
+
+================================================================================
+  SECTION 6: NOISE ROBUSTNESS (independent data with increasing noise)
+================================================================================
+  noise_boost=0.00:  95.3% ###############################################
+  noise_boost=0.25:  90.0% #############################################
+  noise_boost=0.50:  85.0% ##########################################
+  noise_boost=0.75:  81.7% ########################################
+  noise_boost=1.00:  73.7% ####################################
+  noise_boost=1.50:  66.0% #################################
+  noise_boost=2.00:  57.0% ############################
+  noise_boost=3.00:  46.7% #######################
+
+================================================================================
+  SECTION 7: MISSING DATA DEGRADATION CURVE
+================================================================================
+  missing=0%:  98.7% #################################################
+  missing=10%:  99.0% #################################################
+  missing=20%:  98.7% #################################################
+  missing=30%:  98.7% #################################################
+  missing=40%:  99.0% #################################################
+  missing=50%:  98.7% #################################################
+  missing=60%:  98.7% #################################################
+  missing=70%:  98.3% #################################################
+  missing=80%:  92.7% ##############################################
+  missing=90%:  72.7% ####################################
+
+================================================================================
+  SECTION 8: SAFETY MONITOR EXHAUSTIVE BOUNDARY SWEEP
+================================================================================
+  [OK] Hypo Level 2 trigger (glucose_avg=2.5): expected alert, got=alert
+  [OK] Hypo Level 2 safe (glucose_avg=4.5): expected none, got=none
+  [OK] Hypo Level 1 trigger (glucose_avg=3.4): expected alert, got=alert
+  [OK] Hypo Level 1 safe (glucose_avg=4.5): expected none, got=none
+  [OK] Hyper severe trigger (glucose_avg=17.2): expected alert, got=alert
+  [OK] Hyper severe safe (glucose_avg=12.0): expected none, got=none
+  [OK] Hyper uncontrolled (no overlap) trigger (glucose_avg=14.4): expected alert, got=alert
+  [OK] Hyper uncontrolled (no overlap) safe (glucose_avg=12.0): expected none, got=none
+  [OK] Poor meds trigger (meds_adherence=0.0): expected alert, got=alert
+  [OK] Poor meds safe (meds_adherence=0.8): expected none, got=none
+  [OK] Tachycardia trigger (resting_hr=120.5): expected alert, got=alert
+  [OK] Tachycardia safe (resting_hr=80): expected none, got=none
+  [OK] Bradycardia trigger (resting_hr=44.5): expected alert, got=alert
+  [OK] Bradycardia safe (resting_hr=65): expected none, got=none
+  [OK] HRV dysfunction trigger (hrv_rmssd=9.5): expected alert, got=alert
+  [OK] HRV dysfunction safe (hrv_rmssd=25): expected none, got=none
+  [OK] Extreme variability trigger (glucose_variability=50.5): expected alert, got=alert
+  [OK] Extreme variability safe (glucose_variability=30): expected none, got=none
+
+  Combined safety rules:
+  [OK] Hyper + poor meds: expected=alert, got=alert (CRISIS)
+  [OK] Hyper + tachycardia: expected=alert, got=alert (CRISIS)
+  [OK] Low activity + low HRV + high glucose: expected=alert, got=alert (CRISIS)
+  [OK] Normal glucose + good meds: expected=none, got=none
+
+  Safety accuracy: 22/22 = 100%
+
+================================================================================
+  SECTION 9: CALIBRATION ANALYSIS (ECE, Brier, Reliability)
+================================================================================
+  Brier Score:  0.2738  (0 = perfect, 2 = worst)
+  ECE:          0.1104  (0 = perfectly calibrated)
+
+  Reliability Diagram:
+  Bin           Count   Avg Conf    Avg Acc      Gap
+  0.4-0.5           2     0.4641     0.5000   0.0359
+  0.5-0.6         152     0.5512     0.6711   0.1198
+  0.6-0.7         169     0.6520     0.6805   0.0285
+  0.7-0.8         253     0.7536     0.6126   0.1409
+  0.8-0.9         616     0.8573     0.7451   0.1121
+  0.9-1.0        3808     0.9709     0.8595   0.1114
+
+================================================================================
+  SECTION 10: MONTE CARLO RISK PREDICTION VS GROUND TRUTH
+================================================================================
+  STABLE   -> 48h crisis risk: 22.0% +/- 4.7%
+  WARNING  -> 48h crisis risk: 38.8% +/- 3.2%
+  CRISIS   -> 48h crisis risk: 91.1% +/- 20.2%
+
+================================================================================
+  SECTION 11: INTERVENTION SIMULATION CONSISTENCY & MONOTONICITY
+================================================================================
+  [OK] Perfect meds from WARNING               : risk delta=+0.1525 (0.303 -> 0.150)
+  [OK] Perfect meds from CRISIS                : risk delta=+0.1962 (0.687 -> 0.491)
+  [OK] Stop meds from STABLE                   : risk delta=-0.4719 (0.029 -> 0.501)
+  [OK] Exercise from WARNING                   : risk delta=+0.3030 (0.303 -> 0.000)
+  [OK] Better diet from WARNING                : risk delta=+0.0468 (0.303 -> 0.256)
+  [OK] Multi-intervention WARNING              : risk delta=+0.3817 (0.382 -> 0.000)
+  [OK] Multi-intervention CRISIS               : risk delta=+0.7208 (0.724 -> 0.003)
+
+  Monotonicity: single intervention reduction=0.1780, multi=0.3817 -> OK
+
+================================================================================
+  SECTION 12: BOOTSTRAP CROSS-VALIDATION (20 resamples)
+================================================================================
+  Mean accuracy: 95.8% +/- 0.8%
+  95% CI: [94.2%, 97.0%]
+  Min: 94.0%  Max: 97.2%
+
+================================================================================
+  SECTION 13: FEATURE IMPORTANCE & ABLATION (drop-one-feature)
+================================================================================
+  Baseline (all features): 94.9%
+
+  Drop glucose_avg              : 99.1% (+4.2%) 
+  Drop glucose_variability      : 94.7% (-0.2%) 
+  Drop meds_adherence           : 97.1% (+2.2%) 
+  Drop carbs_intake             : 94.9% (0.0%) 
+  Drop steps_daily              : 94.9% (0.0%) 
+  Drop resting_hr               : 95.3% (+0.4%) 
+  Drop hrv_rmssd                : 95.8% (+0.9%) 
+  Drop sleep_quality            : 94.9% (0.0%) 
+  Drop social_engagement        : 95.1% (+0.2%) 
+
+  WARNING: Dropping these features IMPROVES accuracy (investigate):
+    glucose_avg: +4.2%
+    meds_adherence: +2.2%
+
+================================================================================
+  SECTION 14: HMM vs NAIVE BASELINES (on independent data)
+================================================================================
+  Model                            Accuracy
+  ------------------------------------------
+  HMM (our model)                     96.4%
+  Glucose-only threshold              71.1%
+  Weighted feature scoring            74.0%
+  Majority class                      33.3%
+
+  HMM lift over glucose-only:     +25.3%
+  HMM lift over weighted scoring:  +22.4%
+
+  McNemar's test (HMM vs glucose): chi2=303.04, p=0.0000
+  -> Statistically significant difference (p < 0.05)
+
+================================================================================
+  SECTION 15: SEQUENCE LENGTH vs ACCURACY CONVERGENCE
+================================================================================
+  n_obs=  1:  84.7% ##########################################
+  n_obs=  2:  91.3% #############################################
+  n_obs=  3:  94.7% ###############################################
+  n_obs=  4:  97.0% ################################################
+  n_obs=  6:  96.0% ################################################
+  n_obs=  8:  95.3% ###############################################
+  n_obs= 12:  96.3% ################################################
+  n_obs= 18:  95.0% ###############################################
+  n_obs= 24:  95.0% ###############################################
+  n_obs= 36:  97.3% ################################################
+
+================================================================================
+  SECTION 16: STATISTICAL SIGNIFICANCE SUMMARY
+================================================================================
+  Overall accuracy: 82.1% [95% CI: 81.0%-83.1%]
+  STABLE recall: 68.2% [95% CI: 65.9%-70.4%]
+  WARNING recall: 90.3% [95% CI: 88.8%-91.7%]
+  CRISIS recall: 87.8% [95% CI: 86.1%-89.2%]
+
+  Cohen's h (HMM vs glucose-only): 0.754
+  -> Medium effect size
+
+================================================================================
+  FINAL VERDICT
+================================================================================
+
+  Gates passed: 38/38
+
+  ALL GATES PASSED
+
+  Key metrics (on INDEPENDENT data):
+    Overall accuracy:    82.1%
+    Macro F1:            0.8219
+    CRISIS recall:       87.8%
+    Brier score:         0.2738
+    ECE:                 0.1104
+    HMM vs glucose-only: +25.3%
+    Bootstrap stability: 95.8% +/- 0.8%
+    Runtime:             54.7s
+
+  VERDICT: PASS — Model validated on fully independent data
+================================================================================
+
+  Report saved to: C:\Users\brigh\.gemini\antigravity\healthcare\validation\hmm_validation_suite\code\reports\independent_validation.json

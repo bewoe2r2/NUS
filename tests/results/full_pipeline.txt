@@ -1,0 +1,87 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\brigh\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\brigh\.gemini\antigravity\healthcare
+plugins: anyio-4.9.0, timeout-2.4.0
+collecting ... collected 11 items
+
+tests/test_full_pipeline.py::test_hmm_core PASSED                        [  9%]
+tests/test_full_pipeline.py::test_monte_carlo PASSED                     [ 18%]
+tests/test_full_pipeline.py::test_baum_welch PASSED                      [ 27%]
+tests/test_full_pipeline.py::test_drug_interactions PASSED               [ 36%]
+tests/test_full_pipeline.py::test_mass_simulation PASSED                 [ 45%]
+tests/test_full_pipeline.py::test_demo_scenarios PASSED                  [ 54%]
+tests/test_full_pipeline.py::test_validation_suite PASSED                [ 63%]
+tests/test_full_pipeline.py::test_database PASSED                        [ 72%]
+tests/test_full_pipeline.py::test_merlion PASSED                         [ 81%]
+tests/test_full_pipeline.py::test_safety_offline PASSED                  [ 90%]
+tests/test_full_pipeline.py::test_gaussian_plots PASSED                  [100%]
+
+============================== warnings summary ===============================
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:306: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    MeanTimeToDetect = partial(accumulate_tsad_score, metric=TSADScoreAccumulator.mean_time_to_detect)
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:309: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    F1 = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:312: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    Precision = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:315: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    Recall = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:320: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    PointwiseF1 = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:323: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    PointwisePrecision = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:326: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    PointwiseRecall = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:331: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    PointAdjustedF1 = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:334: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    PointAdjustedPrecision = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:337: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    PointAdjustedRecall = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:342: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    NABScore = partial(accumulate_tsad_score, metric=TSADScoreAccumulator.nab_score)
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:343: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    NABScoreLowFN = partial(accumulate_tsad_score, metric=partial(TSADScoreAccumulator.nab_score, fn_weight=2.0))
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:344: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    NABScoreLowFP = partial(accumulate_tsad_score, metric=partial(TSADScoreAccumulator.nab_score, fp_weight=0.22))
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:347: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    F2 = partial(
+
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\evaluate\anomaly.py:351: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    F5 = partial(
+
+tests/test_full_pipeline.py::test_merlion
+tests/test_full_pipeline.py::test_merlion
+  C:\Users\brigh\AppData\Local\Programs\Python\Python313\Lib\site-packages\merlion\models\forecast\sarima.py:112: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+    self._last_val = train_data[-1]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 11 passed, 17 warnings in 9.85s =======================
