@@ -68,8 +68,13 @@ class GeminiIntegration:
         logger.info(f"Gemini Integration initialized with model: {self.model_name}")
 
     def _get_db_connection(self):
-        """Returns a database connection."""
-        return sqlite3.connect(self.db_path)
+        """Returns a database connection with WAL mode, foreign keys, and row_factory."""
+        conn = sqlite3.connect(self.db_path, timeout=10)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.execute("PRAGMA busy_timeout=5000")
+        return conn
 
     def fetch_full_context(self, days=7, patient_id=None):
         """
@@ -99,7 +104,6 @@ class GeminiIntegration:
                 'sleep_details': {}, 'glucose_pattern': {}, 'hmm_trajectory': [],
                 'medication_details': []
             }
-        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         now = int(time.time())
@@ -909,7 +913,6 @@ class GeminiIntegration:
         conn = None
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
 
             # Get today's date as YYYYMMDD integer
             from datetime import datetime
@@ -993,7 +996,6 @@ class GeminiIntegration:
 
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
             now = int(time.time())
             start_time = now - (days * 24 * 3600)
 
@@ -1121,7 +1123,6 @@ class GeminiIntegration:
         conn = None
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
             hmm_row = conn.execute("""
                 SELECT detected_state, confidence_score, input_vector_snapshot
                 FROM hmm_states ORDER BY timestamp_utc DESC LIMIT 1
@@ -1284,7 +1285,7 @@ Return JSON:
             logger.info(f"State change logged: {previous_state} → {new_state}")
             return True
         except Exception as e:
-            logger.warning(f"Failed to log state change: {e}")
+            logger.error(f"Failed to log state change ({previous_state} -> {new_state}) for user {user_id}: {e}")
             return False
         finally:
             if conn:
@@ -1298,7 +1299,6 @@ Return JSON:
 
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT id, timestamp_utc, previous_state, new_state, confidence_score,
                        alert_sent, sbar_generated, nurse_notified
@@ -1598,7 +1598,6 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
         conn = None
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
             voucher_row = conn.execute("""
                 SELECT current_value FROM voucher_tracker
                 ORDER BY week_start_utc DESC LIMIT 1
@@ -2009,7 +2008,6 @@ Return your response as valid JSON following the format in the system prompt.
 
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT * FROM reminders
                 WHERE user_id = ? AND status = 'pending'
@@ -2036,7 +2034,6 @@ Return your response as valid JSON following the format in the system prompt.
         conn = None
         try:
             conn = self._get_db_connection()
-            conn.row_factory = sqlite3.Row
             # Nurse alerts
             rows = conn.execute("""
                 SELECT * FROM nurse_alerts
@@ -2375,7 +2372,7 @@ RESPOND IN JSON:
             finally:
                 conn.close()
         except Exception as e:
-            logger.warning(f"Could not store conversation: {e}")
+            logger.error(f"Failed to store conversation for patient {patient_id}: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

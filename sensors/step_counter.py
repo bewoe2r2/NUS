@@ -90,9 +90,9 @@ class StepCounter:
             # Check existing row for this hour window, then upsert
             row = cursor.execute("""
                 SELECT id, step_count FROM passive_metrics
-                WHERE window_start_utc = ?
+                WHERE window_start_utc = ? AND user_id = ?
                 ORDER BY id DESC LIMIT 1
-            """, (hour_start,)).fetchone()
+            """, (hour_start, self.user_id)).fetchone()
 
             if row:
                 new_total = (row[1] or 0) + self.step_count

@@ -96,9 +96,9 @@ class LocationTracker:
             row = cursor.execute("""
                 SELECT id, time_at_home_seconds, max_distance_from_home_km
                 FROM passive_metrics
-                WHERE window_start_utc = ?
+                WHERE window_start_utc = ? AND user_id = ?
                 ORDER BY id DESC LIMIT 1
-            """, (hour_start,)).fetchone()
+            """, (hour_start, self.user_id)).fetchone()
 
             if row:
                 # Aggregate time, keep max dist

@@ -36,6 +36,16 @@ logger = logging.getLogger("AgentRuntime")
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 
+def _get_db():
+    """Get database connection with WAL mode, foreign keys, and row_factory."""
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
+
+
 # ============================================================================
 # PDPA-COMPLIANT DATA DE-IDENTIFICATION
 # ============================================================================
@@ -251,7 +261,7 @@ def execute_tool(tool_name: str, tool_args: Dict, patient_id: str, patient_profi
     Execute a tool by name with given arguments.
     Returns result dict with success/failure status.
     """
-    conn = sqlite3.connect(DB_PATH)
+    conn = _get_db()
     now = int(time.time())
 
     try:
@@ -451,7 +461,7 @@ def _exec_alert_nurse(args, patient_id, conn, now):
             if pipeline_result and pipeline_result.get("sbar"):
                 sbar_json = json.dumps(pipeline_result["sbar"])
         except Exception as e:
-            logger.warning(f"SBAR generation failed (non-critical): {e}")
+            logger.error(f"SBAR generation failed for nurse alert (patient {patient_id}): {e}")
 
     # Insert with sbar_json column (ALTER TABLE fallback if column missing)
     try:
@@ -550,7 +560,7 @@ def _exec_escalate_doctor(args, patient_id, conn, now):
         if pipeline_result and pipeline_result.get("sbar"):
             sbar_json = json.dumps(pipeline_result["sbar"])
     except Exception as e:
-        logger.warning(f"SBAR generation for doctor escalation failed: {e}")
+        logger.error(f"SBAR generation for doctor escalation failed (patient {patient_id}): {e}")
 
     try:
         conn.execute("""
@@ -593,15 +603,31 @@ def _exec_recommend_food(args, patient_id, conn, now):
 
 
 def _exec_schedule_checkin(args, patient_id, conn, now):
+    checkin_time = args.get("checkin_time", "10:00")
+    # Validate time format — accept HH:MM or full ISO datetime, fallback to default
+    if checkin_time:
+        try:
+            if "T" in str(checkin_time) or "-" in str(checkin_time):
+                datetime.fromisoformat(str(checkin_time))
+            else:
+                parts = str(checkin_time).split(":")
+                h, m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+                if not (0 <= h <= 23 and 0 <= m <= 59):
+                    raise ValueError(f"Invalid time: {checkin_time}")
+        except (ValueError, IndexError, TypeError):
+            logger.warning(f"Invalid checkin_time '{checkin_time}' for {patient_id}, defaulting to 10:00")
+            checkin_time = "10:00"
+    else:
+        checkin_time = "10:00"
     conn.execute("""
         INSERT INTO proactive_checkins
         (patient_id, scheduled_time, checkin_type, reason, status, created_at)
         VALUES (?, ?, ?, ?, 'pending', ?)
-    """, (patient_id, args.get("checkin_time", "10:00"),
+    """, (patient_id, checkin_time,
           args.get("checkin_type", "wellness"),
           args.get("reason", "Scheduled check-in"), now))
     conn.commit()
-    return {"success": True, "checkin_time": args.get("checkin_time"),
+    return {"success": True, "checkin_time": checkin_time,
             "checkin_type": args.get("checkin_type")}
 
 
@@ -824,7 +850,7 @@ def _exec_clinician_summary(args, patient_id, conn, now):
 
 def ensure_runtime_tables():
     """Create tables needed by the agent runtime."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = _get_db()
     try:
         _ensure_runtime_tables_inner(conn)
     finally:
@@ -1128,8 +1154,7 @@ def compute_impact_metrics(patient_id: str, period_days: int = 30) -> Dict:
       3. Engagement trend (weekly scores)
       4. Intervention effectiveness (tool -> state improvement correlation)
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         return _compute_impact_metrics_inner(patient_id, period_days, conn)
     finally:
@@ -1329,7 +1354,7 @@ Return ONLY the JSON array, no other text."""
         parsed = _call_gemini(gemini_integration, prompt)
         if not parsed or not isinstance(parsed, list):
             return
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
             now = int(time.time())
             for mem in parsed[:5]:
@@ -1352,9 +1377,8 @@ Return ONLY the JSON array, no other text."""
 
 def _consolidate_memories(patient_id, gemini_integration):
     """Merge episodic memories into semantic patterns. Called during weekly reports."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = _get_db()
     try:
-        conn.row_factory = sqlite3.Row
         episodic = conn.execute("""
             SELECT id, key, value_json FROM agent_memory
             WHERE patient_id = ? AND memory_type = 'episodic' AND consolidated = 0
@@ -1378,13 +1402,20 @@ Only return patterns that appear 2+ times. Return ONLY the JSON array."""
         for pattern in parsed[:10]:
             if not isinstance(pattern, dict):
                 continue
+            pattern_key = pattern.get("key") or "pattern"
+            pattern_key = str(pattern_key)[:100]
+            try:
+                confidence = float(pattern.get("confidence", 0.7))
+                confidence = max(0.0, min(1.0, confidence))
+            except (ValueError, TypeError):
+                confidence = 0.7
             conn.execute("""
                 INSERT OR REPLACE INTO agent_memory
                 (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
                 VALUES (?, 'semantic', ?, ?, ?, ?, ?, 'consolidation')
-            """, (patient_id, pattern.get("key", "pattern")[:100],
+            """, (patient_id, pattern_key,
                   json.dumps({"value": pattern.get("value", ""), "source_count": len(episodic)}),
-                  pattern.get("confidence", 0.7), now, now))
+                  confidence, now, now))
         for r in episodic:
             conn.execute("UPDATE agent_memory SET consolidated = 1 WHERE id = ?", (r["id"],))
         conn.commit()
@@ -1397,9 +1428,8 @@ Only return patterns that appear 2+ times. Return ONLY the JSON array."""
 def _load_agent_memory(patient_id):
     """Load top memories for injection into agent prompt. Returns formatted string."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT memory_type, key, value_json, confidence
                 FROM agent_memory
@@ -1435,9 +1465,8 @@ def _load_agent_memory(patient_id):
 def _update_tool_preferences(patient_id):
     """Compute which tools have worked best for this patient. Returns formatted string."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
-            conn.row_factory = sqlite3.Row
             now = int(time.time())
             state_order = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
             rows = conn.execute("""
@@ -1657,8 +1686,7 @@ def build_agent_prompt(
     # Voucher balance
     voucher_balance = 5.00
     try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
+        conn = _get_db()
         try:
             row = conn.execute(
                 "SELECT current_value FROM voucher_tracker WHERE user_id = ? ORDER BY week_start_utc DESC LIMIT 1",
@@ -2056,8 +2084,7 @@ Return valid JSON:
 
     voucher_balance = 5.00
     try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
+        conn = _get_db()
         try:
             row = conn.execute(
                 "SELECT current_value FROM voucher_tracker WHERE user_id = ? ORDER BY week_start_utc DESC LIMIT 1",
@@ -2423,7 +2450,7 @@ def run_agent_loop(
 
             # Log each tool execution
             try:
-                conn = sqlite3.connect(DB_PATH)
+                conn = _get_db()
                 try:
                     conn.execute("""
                         INSERT INTO agent_actions_log
@@ -2461,9 +2488,8 @@ def run_agent_loop(
 def get_conversation_history(patient_id: str, limit: int = 10) -> List[Dict]:
     """Fetch recent conversation turns."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT role, message, hmm_state, timestamp_utc
                 FROM conversation_history
@@ -2482,7 +2508,7 @@ def store_conversation_turn(patient_id: str, role: str, message: str,
                             hmm_state: str = None, actions_taken: str = None):
     """Store a conversation turn."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
             conn.execute("""
                 INSERT INTO conversation_history
@@ -2549,9 +2575,12 @@ def run_agent(
         store_conversation_turn(patient_id, "user", user_message,
                                 hmm_state=hmm_context.get("current_state"))
 
-    # 5. Run multi-turn agentic reasoning loop
+    # 5. De-identify patient profile before any LLM calls (PDPA compliance)
+    safe_profile = _deidentify_profile_for_llm(patient_profile)
+
+    # Run multi-turn agentic reasoning loop
     result = run_agent_loop(
-        patient_profile=patient_profile,
+        patient_profile=safe_profile,
         hmm_context=hmm_context,
         full_context=full_context,
         merlion_risk=merlion_risk,
@@ -2585,7 +2614,7 @@ def run_agent(
     # 6b. Apply safety classifier on ORIGINAL (pre-translation) message
     #     Safety rules are designed for English, not Singlish-translated text
     try:
-        safety = classify_response_safety(original_for_safety, patient_profile, hmm_context, gemini_integration)
+        safety = classify_response_safety(original_for_safety, safe_profile, hmm_context, gemini_integration)
         verdict = safety.get("verdict", "SAFE")
         if verdict == "UNSAFE":
             corrected = safety.get("corrected_message")
@@ -2650,8 +2679,7 @@ def get_patient_streaks(patient_id: str) -> Dict:
     Calculate current streaks for medication, glucose logging, exercise, and app usage.
     Drives retention through visible progress + loss aversion ("Don't break your streak!").
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         streaks = {
             "medication": {"current": 0, "best": 0, "last_action": None},
@@ -2775,8 +2803,7 @@ def get_optimal_nudge_times(patient_id: str) -> Dict:
     Learn WHEN the patient is most responsive to messages.
     Analyzes conversation response patterns to find optimal nudge windows.
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
 
     response_by_hour = {}
 
@@ -2847,8 +2874,7 @@ def generate_weekly_report(patient_id: str, patient_profile: Dict) -> Dict:
     Auto-generate weekly health summary for patient AND caregiver.
     Covers: glucose trends, adherence, activity, streaks, HMM state history, achievements.
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         return _generate_weekly_report_inner(patient_id, patient_profile, conn)
     finally:
@@ -3032,8 +3058,7 @@ def calculate_engagement_score(patient_id: str) -> Dict:
     - Response rate to nudges (15%)
     - Streak maintenance (15%)
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         return _calculate_engagement_inner(patient_id, conn)
     finally:
@@ -3233,8 +3258,7 @@ def detect_caregiver_fatigue(patient_id: str) -> Dict:
     - Missed critical alerts
     - No app check-ins from caregiver
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         now = int(time.time())
         week_ago = now - (7 * 86400)
@@ -3664,9 +3688,12 @@ def check_drug_interactions(current_medications: List[str], proposed_medication:
     Check drug interactions. Swappable to DrugBank/OpenFDA API.
     Returns severity-ranked interactions with mechanisms and recommendations.
     """
-    all_meds = [m.lower().strip().split()[0] for m in current_medications if m.strip()]
-    if proposed_medication:
-        check_pairs = [(proposed_medication.lower().strip().split()[0], m) for m in all_meds]
+    all_meds = [m.lower().strip().split()[0] for m in current_medications if m and m.strip()]
+    if proposed_medication and proposed_medication.strip():
+        proposed_normalized = proposed_medication.lower().strip().split()[0]
+        check_pairs = [(proposed_normalized, m) for m in all_meds]
+    elif proposed_medication and not proposed_medication.strip():
+        check_pairs = []
     else:
         check_pairs = [(all_meds[i], all_meds[j])
                        for i in range(len(all_meds))
@@ -3802,7 +3829,7 @@ def _apply_safety_filter(result: Dict, patient_profile: Dict, hmm_context: Dict,
 def _log_safety_event(patient_id, verdict, flags, original_message):
     """Log safety classifier events for audit."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
             conn.execute("""
                 INSERT INTO agent_actions_log
@@ -3830,9 +3857,8 @@ def compute_tool_effectiveness_scores(patient_id: str) -> Dict:
     """
     import math
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
-            conn.row_factory = sqlite3.Row
             now = int(time.time())
             state_order = {"STABLE": 0, "WARNING": 1, "CRISIS": 2}
             rows = conn.execute("""
@@ -3890,7 +3916,7 @@ def compute_tool_effectiveness_scores(patient_id: str) -> Dict:
 def _get_all_patient_ids() -> List[str]:
     """Get all patient IDs from database."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
             rows = conn.execute("SELECT user_id FROM patients").fetchall()
         finally:
@@ -3908,9 +3934,8 @@ def _get_patient_profile_from_db(patient_id: str) -> Dict:
         "medications": ["Metformin 500mg", "Lisinopril 10mg", "Atorvastatin 20mg", "Aspirin 100mg"]
     }
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
-            conn.row_factory = sqlite3.Row
             # Explicit columns — never SELECT *, prevents accidental PII leakage
             row = conn.execute(
                 "SELECT user_id, name, age, conditions, medications FROM patients WHERE user_id = ?",
@@ -3936,8 +3961,7 @@ def _get_patient_profile_from_db(patient_id: str) -> Dict:
 def _check_proactive_triggers(patient_id: str) -> List[Dict]:
     """Check 6 proactive trigger conditions for a patient."""
     triggers = []
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         now = int(time.time())
 
@@ -3953,8 +3977,8 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
                 merlion = _get_merlion_forecast(obs)
                 if merlion.get("velocity", 0) > 0.3 and merlion.get("acceleration", 0) > 0:
                     triggers.append({"type": "glucose_rising", "reason": f"Glucose rising: velocity={merlion['velocity']:.2f}, acceleration={merlion['acceleration']:.2f}"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Proactive trigger 'glucose_rising' failed for {patient_id}: {e}")
 
         # 2. Sustained WARNING/CRISIS
         try:
@@ -3965,8 +3989,8 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
             """, (patient_id,)).fetchall()
             if len(recent) >= 2 and all(r["hmm_state"] in ("WARNING", "CRISIS") for r in recent):
                 triggers.append({"type": "sustained_risk", "reason": f"Sustained {recent[0]['hmm_state']} state for last {len(recent)} observations"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Proactive trigger 'sustained_risk' failed for {patient_id}: {e}")
 
         # 3. Logging gap (no glucose reading in 6+ hours)
         try:
@@ -3977,8 +4001,8 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
                 hours_gap = (now - last_reading["last_ts"]) / 3600
                 if hours_gap > 6:
                     triggers.append({"type": "logging_gap", "reason": f"No glucose reading for {hours_gap:.0f} hours"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Proactive trigger 'logging_gap' failed for {patient_id}: {e}")
 
         # 4. Medication nudge (optimal time + not logged today)
         try:
@@ -3992,8 +4016,8 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
                 """, (today_start, patient_id)).fetchone()
                 if med_today and med_today["cnt"] == 0:
                     triggers.append({"type": "medication_nudge", "reason": "Optimal nudge time and no medication logged today"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Proactive trigger 'medication_nudge' failed for {patient_id}: {e}")
 
         # 5. Streak about to break
         try:
@@ -4006,8 +4030,8 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
                         if last_action == yesterday:
                             triggers.append({"type": "streak_save", "reason": f"{streak_type} streak ({data.get('current', 0)} days) at risk — no action today"})
                             break
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Proactive trigger 'streak_save' failed for {patient_id}: {e}")
 
         # 6. Mood follow-up
         try:
@@ -4020,8 +4044,8 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
                 mood = detect_mood_from_message(last_msg["message"])
                 if mood.get("mood") in ("frustrated", "sad", "worried"):
                     triggers.append({"type": "mood_followup", "reason": f"Previous mood: {mood['mood']} — follow-up needed"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Proactive trigger 'mood_followup' failed for {patient_id}: {e}")
     finally:
         conn.close()
 
@@ -4062,7 +4086,7 @@ def run_proactive_scan(patient_ids: List[str] = None) -> List[Dict]:
                     patient_id=pid, user_message=None, gemini_integration=gi,
                 )
                 # Store in proactive_checkins
-                conn = sqlite3.connect(DB_PATH)
+                conn = _get_db()
                 try:
                     conn.execute("""
                         INSERT INTO proactive_checkins
@@ -4089,8 +4113,7 @@ def process_caregiver_response(alert_id: int, caregiver_id: str, response_type: 
     Handle incoming caregiver responses to alerts.
     Closes the communication loop: alert -> acknowledgment/escalation/note.
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         now = int(time.time())
         conn.execute("""
@@ -4144,8 +4167,7 @@ def compute_caregiver_burden_score(patient_id: str) -> Dict:
     Enhanced caregiver burden scoring: 0-100 with 4 weighted factors.
     Auto-enables digest mode at score > 70 to prevent caregiver burnout.
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_db()
     try:
         now = int(time.time())
         week_ago = now - (7 * 86400)
@@ -4251,9 +4273,8 @@ def compute_caregiver_burden_score(patient_id: str) -> Dict:
 def compute_attention_score(patient_id: str) -> Dict:
     """How much clinical attention has this patient received recently?"""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = _get_db()
         try:
-            conn.row_factory = sqlite3.Row
             now = int(time.time())
             week_ago = now - (7 * 86400)
             nurse_count, last_nurse = 0, 0

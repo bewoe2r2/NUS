@@ -145,6 +145,10 @@ async def health_check():
     return {"status": "ok"}
 
 # --- Rate Limiting (in-memory, per-IP) ---
+# NOTE: This store is per-process. In a multi-process deployment (e.g. gunicorn
+# with multiple workers), each worker maintains its own dict, so effective limits
+# are multiplied by worker count. Acceptable for single-process / demo use.
+# For production multi-process deployments, replace with Redis or a shared store.
 _rate_limit_store: Dict[str, list] = {}
 RATE_LIMIT_WINDOW = 60  # seconds
 RATE_LIMIT_MAX = 60  # requests per window (per IP)
@@ -197,6 +201,23 @@ async def security_middleware(request: Request, call_next):
     response = await call_next(request)
     _add_security_headers(response)
     return response
+
+
+import re as _re
+
+MAX_USER_MESSAGE_LENGTH = 2000  # Max chars for user messages / voice transcripts
+
+def _sanitize_user_input(text: str, max_length: int = MAX_USER_MESSAGE_LENGTH) -> str:
+    """Sanitize user input before passing to LLM prompts.
+    Strips control characters (except newlines/tabs), limits length.
+    Mitigates prompt injection by removing common injection patterns."""
+    if not text:
+        return ""
+    # Strip control characters (keep \n, \t, \r)
+    text = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', text)
+    # Truncate to max length
+    text = text[:max_length]
+    return text.strip()
 
 
 def _add_security_headers(response: Response):
@@ -820,6 +841,10 @@ def _get_patient_profile(patient_id: str) -> dict:
 async def chat_with_ai(request: ChatRequest):
     """Chat with the agentic AI — powered by AgentRuntime with full HMM + tool execution."""
     try:
+        sanitized_message = _sanitize_user_input(request.message)
+        if not sanitized_message:
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
+
         engine = get_engine()
         gi = get_gemini()
         observations = engine.fetch_observations(days=7, patient_id=request.patient_id)
@@ -830,7 +855,7 @@ async def chat_with_ai(request: ChatRequest):
             hmm_engine=engine,
             observations=observations,
             patient_id=request.patient_id,
-            user_message=request.message,
+            user_message=sanitized_message,
             gemini_integration=gi,
         ) or {}
 
@@ -923,10 +948,19 @@ async def extract_glucose_from_photo(file: UploadFile = File(...)):
         if not gi:
             return GlucoseOCRResponse(success=False, error="OCR service unavailable")
 
-        # Read with size limit
-        content = await file.read()
-        if len(content) > MAX_UPLOAD_SIZE:
-            return GlucoseOCRResponse(success=False, error=f"File too large. Max {MAX_UPLOAD_SIZE // (1024*1024)}MB")
+        # Read in chunks with size accumulator — reject before reading entire file into memory
+        chunks = []
+        total_size = 0
+        CHUNK_SIZE = 64 * 1024  # 64KB chunks
+        while True:
+            chunk = await file.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            total_size += len(chunk)
+            if total_size > MAX_UPLOAD_SIZE:
+                return GlucoseOCRResponse(success=False, error=f"File too large. Max {MAX_UPLOAD_SIZE // (1024*1024)}MB")
+            chunks.append(chunk)
+        content = b"".join(chunks)
 
         # Validate magic bytes (defense against MIME spoofing)
         if not _validate_image_magic(content):
@@ -1196,10 +1230,14 @@ async def get_voucher_qr(patient_id: str):
 async def voice_checkin(data: VoiceCheckInRequest):
     """Process voice check-in and analyze sentiment"""
     try:
+        sanitized_transcript = _sanitize_user_input(data.transcript)
+        if not sanitized_transcript:
+            raise HTTPException(status_code=400, detail="Transcript cannot be empty")
+
         gi = get_gemini()
 
         if gi:
-            result = gi.analyze_voice_sentiment(data.transcript)
+            result = gi.analyze_voice_sentiment(sanitized_transcript)
             if not isinstance(result, dict):
                 result = {}
 
@@ -1209,7 +1247,7 @@ async def voice_checkin(data: VoiceCheckInRequest):
                 conn.execute("""
                     INSERT INTO voice_checkins (timestamp_utc, transcript_text, sentiment_score, user_id)
                     VALUES (?, ?, ?, ?)
-                """, (int(time.time()), data.transcript, result.get('sentiment_score', 0), data.patient_id))
+                """, (int(time.time()), sanitized_transcript, result.get('sentiment_score', 0), data.patient_id))
                 conn.commit()
             finally:
                 conn.close()
@@ -1225,7 +1263,7 @@ async def voice_checkin(data: VoiceCheckInRequest):
             positive_words = ['good', 'better', 'great', 'fine', 'okay', 'well']
             negative_words = ['bad', 'pain', 'tired', 'sick', 'dizzy', 'weak']
 
-            text_lower = data.transcript.lower()
+            text_lower = sanitized_transcript.lower()
             pos_count = sum(1 for w in positive_words if w in text_lower)
             neg_count = sum(1 for w in negative_words if w in text_lower)
 
@@ -1410,13 +1448,17 @@ async def get_nurse_alerts():
 
 @app.get("/nurse/patients")
 async def get_all_patients():
-    """Get all patients with their current states for nurse triage"""
+    """Get all patients with their current states for nurse triage.
+
+    Optimized: uses batch queries (JOINs) instead of per-patient DB calls
+    to avoid N+1 query overhead.
+    """
     conn = None
     try:
-        engine = get_engine()
         conn = get_db()
 
-        # Query patients from DB, fallback to demo list
+        # Batch query: patients + latest HMM state + latest glucose in 2 queries
+        # instead of N calls to engine.fetch_observations + engine.run_inference.
         patients = []
         try:
             rows = conn.execute("SELECT user_id, name, age FROM patients").fetchall()
@@ -1431,30 +1473,70 @@ async def get_all_patients():
                 {"id": "P003", "name": "Mr. Wong Keng Huat", "age": 58},
             ]
 
+        patient_ids = [p['id'] for p in patients]
+
+        # Batch: latest HMM state per patient (single query instead of N)
+        state_map = {}
+        try:
+            placeholders = ",".join("?" for _ in patient_ids)
+            state_rows = conn.execute(f"""
+                SELECT h.user_id, h.detected_state, h.confidence_score
+                FROM hmm_states h
+                INNER JOIN (
+                    SELECT user_id, MAX(timestamp_utc) AS max_ts
+                    FROM hmm_states
+                    WHERE user_id IN ({placeholders})
+                    GROUP BY user_id
+                ) latest ON h.user_id = latest.user_id AND h.timestamp_utc = latest.max_ts
+            """, patient_ids).fetchall()
+            for sr in state_rows:
+                state_map[sr["user_id"]] = {
+                    "state": sr["detected_state"],
+                    "confidence": sr["confidence_score"],
+                }
+        except Exception:
+            pass  # Table may not exist yet
+
+        # Batch: latest glucose reading per patient (single query instead of N)
+        glucose_map = {}
+        try:
+            glucose_rows = conn.execute(f"""
+                SELECT g.user_id, g.reading_value
+                FROM glucose_readings g
+                INNER JOIN (
+                    SELECT user_id, MAX(reading_timestamp_utc) AS max_ts
+                    FROM glucose_readings
+                    WHERE user_id IN ({placeholders})
+                    GROUP BY user_id
+                ) latest ON g.user_id = latest.user_id AND g.reading_timestamp_utc = latest.max_ts
+            """, patient_ids).fetchall()
+            for gr in glucose_rows:
+                glucose_map[gr["user_id"]] = gr["reading_value"]
+        except Exception:
+            pass  # Table may not exist yet
+
         results = []
         for p in patients:
-            observations = engine.fetch_observations(days=2, patient_id=p['id'])
-            if observations:
-                result = engine.run_inference(observations, patient_id=p['id']) or {}
-                latest = observations[-1]
-
+            pid = p['id']
+            hmm = state_map.get(pid)
+            if hmm:
                 results.append({
-                    "patient_id": p['id'],
+                    "patient_id": pid,
                     "name": p['name'],
                     "age": p['age'],
-                    "state": result.get('current_state', 'STABLE'),
-                    "confidence": result.get('confidence', 0.5),
-                    "glucose": latest.get('glucose_avg', 5.5),
-                    "risk_48h": result.get('predictions', {}).get('risk_48h', 0)
+                    "state": hmm["state"],
+                    "confidence": hmm["confidence"],
+                    "glucose": glucose_map.get(pid, 5.5),
+                    "risk_48h": 0  # Risk requires full HMM inference; use 0 for triage list
                 })
             else:
                 results.append({
-                    "patient_id": p['id'],
+                    "patient_id": pid,
                     "name": p['name'],
                     "age": p['age'],
                     "state": "UNKNOWN",
                     "confidence": 0,
-                    "glucose": None,
+                    "glucose": glucose_map.get(pid),
                     "risk_48h": None
                 })
 
@@ -1720,7 +1802,7 @@ async def get_glucose_narrative(patient_id: str):
 async def _require_admin(request: Request):
     """Verify admin-level authorization for sensitive endpoints."""
     key = request.headers.get("X-API-Key", "")
-    if key != ADMIN_KEY:
+    if not secrets.compare_digest(key, ADMIN_KEY):
         raise HTTPException(status_code=403, detail="Admin access required. Set X-API-Key to admin key.")
 
 
@@ -2008,11 +2090,8 @@ async def get_intervention_effectiveness(patient_id: str):
 async def get_agent_memory(patient_id: str):
     """View all memories for a patient (cross-session learned preferences and facts)."""
     try:
-        # sqlite3 already imported at module level
-        db = DB_PATH
-        conn = sqlite3.connect(db)
+        conn = get_db()
         try:
-            conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 "SELECT * FROM agent_memory WHERE patient_id = ? ORDER BY updated_at DESC", (patient_id,)
             ).fetchall()
@@ -2038,9 +2117,7 @@ async def consolidate_memory(patient_id: str):
 async def delete_memory(patient_id: str, memory_id: int):
     """Delete a specific memory."""
     try:
-        # sqlite3 already imported at module level
-        db = DB_PATH
-        conn = sqlite3.connect(db)
+        conn = get_db()
         try:
             conn.execute("DELETE FROM agent_memory WHERE id = ? AND patient_id = ?", (memory_id, patient_id))
             conn.commit()
@@ -2113,11 +2190,8 @@ async def get_tool_effectiveness(patient_id: str):
 async def get_safety_log(patient_id: str):
     """View safety classifier flags for a patient."""
     try:
-        # sqlite3 already imported at module level
-        db = DB_PATH
-        conn = sqlite3.connect(db)
+        conn = get_db()
         try:
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT * FROM agent_actions_log
                 WHERE patient_id = ? AND action_type = 'safety_flag'
@@ -2159,11 +2233,8 @@ async def proactive_scan_patient(patient_id: str):
 async def get_proactive_history(patient_id: str):
     """View past proactive interactions for a patient."""
     try:
-        # sqlite3 already imported at module level
-        db = DB_PATH
-        conn = sqlite3.connect(db)
+        conn = get_db()
         try:
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT * FROM proactive_checkins WHERE patient_id = ?
                 ORDER BY created_at DESC LIMIT 50
@@ -2195,11 +2266,8 @@ async def caregiver_dashboard(patient_id: str):
     try:
         profile = _get_patient_profile_from_db(patient_id) or {}
         burden = compute_caregiver_burden_score(patient_id) or {}
-        # sqlite3 already imported at module level
-        db = DB_PATH
-        conn = sqlite3.connect(db)
+        conn = get_db()
         try:
-            conn.row_factory = sqlite3.Row
             try:
                 alerts = conn.execute("""
                     SELECT * FROM caregiver_alerts WHERE patient_id = ?

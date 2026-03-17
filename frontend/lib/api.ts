@@ -1,6 +1,9 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-const API_KEY = process.env.NEXT_PUBLIC_BEWO_API_KEY || "bewo-dev-key-2026";
+const API_KEY = process.env.NEXT_PUBLIC_BEWO_API_KEY;
+if (!API_KEY) {
+    throw new Error("NEXT_PUBLIC_BEWO_API_KEY environment variable is not set. Cannot start without API key.");
+}
 const FETCH_TIMEOUT_MS = 30_000;
 
 // Authenticated fetch wrapper — all requests include API key + 30s timeout

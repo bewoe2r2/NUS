@@ -68,8 +68,8 @@ class ScreenTimeTracker:
             night_start = day_start_sgt - 2 * 3600   # Yesterday 10pm SGT
             night_end = day_start_sgt + 6 * 3600      # Today 6am SGT
             row = conn.execute(
-                "SELECT SUM(screen_time_seconds) FROM passive_metrics WHERE window_start_utc >= ? AND window_start_utc < ?",
-                (night_start, night_end)
+                "SELECT SUM(screen_time_seconds) FROM passive_metrics WHERE window_start_utc >= ? AND window_start_utc < ? AND user_id = ?",
+                (night_start, night_end, self.user_id)
             ).fetchone()
             if row and row[0] is not None:
                 night_usage_seconds = row[0]
@@ -99,9 +99,9 @@ class ScreenTimeTracker:
             # Check existing
             row = cursor.execute("""
                 SELECT id, screen_time_seconds FROM passive_metrics
-                WHERE window_start_utc = ?
+                WHERE window_start_utc = ? AND user_id = ?
                 ORDER BY id DESC LIMIT 1
-            """, (hour_start,)).fetchone()
+            """, (hour_start, self.user_id)).fetchone()
 
             if row:
                 new_val = (row[1] or 0) + screen_seconds

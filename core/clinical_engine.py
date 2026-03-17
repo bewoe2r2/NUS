@@ -223,9 +223,11 @@ class ClinicalEngine:
                 VALUES (?, ?, ?, ?)
             """, (user_id, timestamp_utc, "sbar", json.dumps(sbar)))
             conn.commit()
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
             # Table might not exist yet if schema update hasn't run
-            pass
+            logger.error(f"Failed to save SBAR history for {user_id}: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error saving SBAR history for {user_id}: {e}", exc_info=True)
         finally:
             if conn:
                 conn.close()

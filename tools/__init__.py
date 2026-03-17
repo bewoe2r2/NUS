@@ -9,7 +9,6 @@ Available tools:
 - appointment_booking: Schedule medical appointments
 - clinical_interventions: Clinical decision support
 - caregiver_alerts: Send notifications to caregivers
-- test_kit_ordering: Order diagnostic supplies
 """
 
 from .appointment_booking import book_appointment_tool

@@ -1571,7 +1571,7 @@ class HMMEngine:
             str: 'STABLE', 'WARNING', or 'CRISIS'
         """
         if obs is None:
-            return 'STABLE'  # Default assumption
+            return 'UNKNOWN'  # No data — cannot assume stable
 
         # Check glucose first (most important indicator)
         glucose = obs.get('glucose_avg')
@@ -1731,7 +1731,7 @@ class HMMEngine:
         """
         if not observations:
             return {
-                "current_state": "STABLE",
+                "current_state": "UNKNOWN",
                 "confidence": 0.0,
                 "confidence_margin": 0.0,
                 "certainty_index": 0.0,
@@ -1808,7 +1808,13 @@ class HMMEngine:
         # Termination & Scoring
         final_log_probs = viterbi[T-1]
         max_lp = max(final_log_probs)
-        probs = [math.exp(lp - max_lp) for lp in final_log_probs]
+        # Guard against -inf max (all states impossible) and NaN from inf arithmetic
+        if math.isinf(max_lp) and max_lp < 0:
+            probs = [1/N] * N
+        else:
+            probs = [math.exp(lp - max_lp) for lp in final_log_probs]
+            # Replace any NaN values with 0
+            probs = [0.0 if math.isnan(p) else p for p in probs]
         total_p = sum(probs)
         normalized_probs = [p / total_p for p in probs] if total_p > 0 else [1/N] * N
 
@@ -1816,7 +1822,8 @@ class HMMEngine:
         hmm_state_idx = sorted_indices[0]
         hmm_state = STATES[hmm_state_idx]
         best_prob = normalized_probs[hmm_state_idx]
-        confidence_margin = best_prob - normalized_probs[sorted_indices[1]]
+        # Safe margin calculation: if only 1 state has probability (others are 0), margin is the full probability
+        confidence_margin = best_prob - normalized_probs[sorted_indices[1]] if len(sorted_indices) > 1 else best_prob
         
         # Path Backtracking
         best_path = [0] * T
@@ -3627,10 +3634,10 @@ def run_tests():
     print("\n[TEST GROUP 3] Edge Cases")
     print("-" * 50)
 
-    # Test 3.1: Empty observations -> Default STABLE
+    # Test 3.1: Empty observations -> Default UNKNOWN (not STABLE — clinically dangerous)
     result = engine.run_inference([])
-    test("Empty observations -> STABLE (default)",
-         result['current_state'] == 'STABLE' and result['interpretation'] == 'NO_DATA',
+    test("Empty observations -> UNKNOWN (default)",
+         result['current_state'] == 'UNKNOWN' and result['interpretation'] == 'NO_DATA',
          f"Got {result['current_state']}")
 
     # Test 3.2: Single observation (minimal data)

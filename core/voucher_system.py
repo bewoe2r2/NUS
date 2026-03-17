@@ -32,6 +32,15 @@ class VoucherSystem:
         self.user_id = user_id
         self.WEEKLY_START = 5.00  # Start with $5
 
+    def _get_db(self):
+        """Get database connection with WAL mode, foreign keys, and row_factory."""
+        conn = sqlite3.connect(self.db_path, timeout=10)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.execute("PRAGMA busy_timeout=5000")
+        return conn
+
     def get_current_voucher(self, user_id=None):
         """Get this week's voucher status"""
         user_id = user_id or self.user_id
@@ -44,7 +53,7 @@ class VoucherSystem:
         week_start_ts = int(week_start.timestamp())
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = self._get_db()
 
             # Check if voucher exists for this week
             row = conn.execute("""
@@ -109,7 +118,7 @@ class VoucherSystem:
         # Update DB
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = self._get_db()
             conn.execute("""
                 UPDATE voucher_tracker
                 SET current_value = ?, penalties_json = ?
@@ -128,7 +137,7 @@ class VoucherSystem:
         """Check for missed actions today and apply penalties (lazy evaluation)."""
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = self._get_db()
             now = int(time.time())
             today_start = now - ((now + 28800) % 86400)  # SGT midnight
             sgt_hour = ((now + 28800) % 86400) // 3600
