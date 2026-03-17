@@ -1773,6 +1773,92 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
         if conn:
             conn.close()
 
+@app.post("/admin/inject-phase", dependencies=[Depends(_require_admin)])
+async def inject_phase(
+    scenario: str = "warning_to_crisis",
+    day_start: int = 0,
+    day_end: int = 4,
+    total_days: int = 14,
+    clear: bool = False,
+    patient_id: str = "P001",
+):
+    """Inject a specific day range from a scenario (for guided walkthrough).
+
+    Example: inject days 0-4 (stable phase) of warning_to_crisis, then later
+    inject days 5-9 (warning phase), then days 10-13 (crisis phase).
+    Each call appends data without clearing unless clear=True.
+    """
+    conn = None
+    try:
+        engine = get_engine()
+        # Generate the full scenario to maintain consistent random seed
+        all_observations = engine.generate_demo_scenario(scenario, days=total_days)
+        if not all_observations:
+            raise HTTPException(status_code=400, detail=f"Unknown scenario '{scenario}'")
+
+        buckets_per_day = 6
+        start_bucket = day_start * buckets_per_day
+        end_bucket = min((day_end + 1) * buckets_per_day, len(all_observations))
+
+        if start_bucket >= len(all_observations):
+            raise HTTPException(status_code=400, detail=f"day_start={day_start} exceeds scenario length")
+
+        phase_observations = all_observations[start_bucket:end_bucket]
+
+        conn = get_db()
+        now = int(time.time())
+        scenario_start = now - (total_days * 24 * 3600)
+        window_size = 4 * 3600
+
+        if clear:
+            SAFE_TABLES = {'glucose_readings', 'passive_metrics', 'medication_logs'}
+            for table in SAFE_TABLES:
+                try:
+                    conn.execute(f"DELETE FROM {table}")  # nosec: hardcoded allowlist
+                except Exception as e:
+                    logger.debug(f"Could not clear {table}: {e}")
+
+        for i, obs in enumerate(phase_observations):
+            bucket_index = start_bucket + i
+            t = scenario_start + (bucket_index * window_size)
+
+            if obs.get('glucose_avg'):
+                conn.execute("""
+                    INSERT INTO glucose_readings (user_id, reading_value, reading_timestamp_utc, source_type)
+                    VALUES (?, ?, ?, ?)
+                """, (patient_id, obs['glucose_avg'], t, 'MANUAL'))
+
+            steps = obs.get('steps_daily', 0) or 0
+            conn.execute("""
+                INSERT INTO passive_metrics (user_id, window_start_utc, window_end_utc, step_count, screen_time_seconds, time_at_home_seconds)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (patient_id, t, t + window_size, int(steps / 6), 3600, 3600))
+
+            if obs.get('meds_adherence', 0) and obs['meds_adherence'] > 0.5:
+                conn.execute("""
+                    INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
+                    VALUES (?, ?, ?, ?)
+                """, ('Metformin', t + 100, t, patient_id))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "scenario": scenario,
+            "day_range": f"{day_start}-{day_end}",
+            "observations_injected": len(phase_observations),
+            "total_observations": len(all_observations),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error injecting phase: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
+
 @app.post("/admin/run-hmm", dependencies=[Depends(_require_admin)])
 async def run_hmm_analysis():
     """Run HMM analysis on current data"""

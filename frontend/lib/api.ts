@@ -381,6 +381,19 @@ export const api = {
         return res.json();
     },
 
+    injectPhase: async (scenario: string, dayStart: number, dayEnd: number, clear: boolean = false): Promise<any> => {
+        const params = new URLSearchParams({
+            scenario,
+            day_start: String(dayStart),
+            day_end: String(dayEnd),
+            total_days: "14",
+            clear: String(clear),
+        });
+        const res = await authFetch(`${API_BASE}/admin/inject-phase?${params}`, { method: "POST" });
+        if (!res.ok) throw new Error("Failed to inject phase");
+        return res.json();
+    },
+
     runHMM: async (): Promise<any> => {
         const res = await authFetch(`${API_BASE}/admin/run-hmm`, { method: "POST" });
         return res.json();

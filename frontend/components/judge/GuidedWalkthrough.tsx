@@ -27,6 +27,7 @@ import {
     Mic,
     Clock,
     DollarSign,
+    Zap,
 } from "lucide-react";
 
 type TabId = "overview" | "patient" | "nurse" | "intelligence" | "tooldemo";
@@ -81,7 +82,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         setPipelineStage("Initializing...");
 
         const stageObserver = setInterval(() => {
-            const consoleEl = document.querySelector('#sidebar-console .space-y-1');
+            const consoleEl = document.querySelector('#sidebar-console');
             if (consoleEl) {
                 const lastLine = consoleEl.lastElementChild?.textContent?.trim();
                 if (lastLine && lastLine.length > 5) {
@@ -106,6 +107,19 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         }
     }, [onRefresh]);
 
+    // Inject a specific day range and run HMM
+    const injectPhaseAndAnalyze = useCallback(async (
+        scenario: string,
+        dayStart: number,
+        dayEnd: number,
+        clear: boolean = false,
+    ) => {
+        await api.injectPhase(scenario, dayStart, dayEnd, clear);
+        try { await api.runHMM(); } catch { /* HMM may not converge on small data */ }
+        try { await api.trainHMM("P001"); } catch { /* ok */ }
+    }, []);
+
+    // Full scenario inject via sidebar (legacy, used for recovery)
     const injectScenario = useCallback(async (scenario: string) => {
         const scenarioBtn = document.querySelector(`[data-scenario="${scenario}"]`) as HTMLButtonElement | null;
         if (scenarioBtn) {
@@ -136,7 +150,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
 
     const steps: WalkthroughStep[] = [
         // ===============================================
-        // ACT 1: SETUP — Meet the characters (Steps 0-5)
+        // ACT 1: SETUP (Steps 0-4) — Meet the characters
         // ===============================================
         {
             id: "welcome",
@@ -144,10 +158,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             phaseColor: "from-blue-600 to-indigo-600",
             title: judgeName ? `Welcome, ${judgeName}` : "Welcome to Bewo",
             subtitle: "Chronic disease management that acts before crisis hits",
-            body: "Singapore spends $2.5B/year on diabetes complications — 61% are preventable with early intervention. Bewo detects health crises 48 hours before they happen, then autonomously intervenes.\n\nThis is a live, working system. Every button fires real API calls — HMM inference, Monte Carlo simulation, agentic AI reasoning, and safety classification. Nothing is mocked.\n\nThis walkthrough takes ~7 minutes. You'll meet the patient, the nurse, trigger a real crisis, and watch the system save a life.",
-            insight: "You control everything. The left sidebar lets you inject 7 different clinical scenarios and watch the entire system respond live. Most competition demos are pre-recorded — ours lets you drive.",
+            body: "Singapore spends $2.5B/year on diabetes complications — 61% are preventable with early intervention.\n\nBewo is a 5-layer AI pipeline — we call it the Diamond Architecture:\n\n1. HMM Engine — classifies patient state from 9 biomarkers\n2. Merlion Risk Engine — 48h glucose forecasting\n3. Gemini Agent — 18 autonomous tools, 5-turn reasoning\n4. Safety Classifier — 6-dimension check on every response\n5. SEA-LION — Singlish cultural translation\n\nThis walkthrough demonstrates every layer live. You'll watch real data flow through the pipeline as a patient goes from healthy → crisis → recovery.",
+            insight: "Everything fires real API calls. Nothing is mocked. You'll inject data day-by-day and watch the HMM, agent, and safety layers respond in real-time.",
             icon: <Sparkles size={20} />,
-            stat: { value: "$2.5B", label: "Annual Cost" },
+            stat: { value: "5", label: "Diamond Layers" },
             highlight: "#sidebar-brand",
             pos: "right",
         },
@@ -156,9 +170,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             phase: "MEET MR. TAN",
             phaseColor: "from-emerald-600 to-teal-600",
             title: "Meet Mr. Tan Ah Kow",
-            subtitle: "67 years old. Type 2 Diabetes. Lives alone in Toa Payoh.",
-            body: "This is the Patient View — what Mr. Tan sees on his phone every day.\n\nNotice what's NOT here: no HMM states, no probability curves, no clinical jargon. Instead, he sees:\n\n• A Daily Insight Card — simple risk indicator with a warm, encouraging message\n• His Merlion Risk Score — a single percentage he can understand\n• His biometrics — glucose, steps, heart rate in a clean layout\n\nThe clinical complexity is completely hidden. Mr. Tan sees a caring companion, not a medical dashboard.",
-            insight: "Trust is the intervention. If Mr. Tan doesn't trust the app, no algorithm matters. The patient view uses warm language, Singlish when appropriate, and never shows alarming clinical jargon. UX is the treatment adherence strategy.",
+            subtitle: "67 years old. Type 2 Diabetes + Hypertension. Lives alone in Toa Payoh.",
+            body: "This is the Patient View — what Mr. Tan sees on his phone.\n\nNotice what's NOT here: no HMM states, no probability curves, no clinical jargon. Instead:\n\n• Daily Insight Card — simple risk indicator with warm, encouraging text\n• Merlion Risk Score — one percentage he can understand\n• Biometrics — glucose, steps, heart rate in a clean layout\n\nThe clinical complexity is hidden. Mr. Tan sees a caring companion.\n\nBelow: the NTUC Voucher Card — S$5/week that decays S$0.25 per missed action. This is loss aversion (Kahneman & Tversky): losing hurts 2.5× more than gaining. He fights to keep his voucher.",
+            insight: "Trust is the intervention. If Mr. Tan doesn't trust the app, no algorithm matters. Warm language, Singlish, NTUC vouchers — this is behavioral design for Singapore's elderly, not generic gamification.",
             tab: "patient",
             icon: <Heart size={20} />,
             stat: { value: "67M", label: "Mr. Tan Ah Kow" },
@@ -166,28 +180,13 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             pos: "left",
         },
         {
-            id: "voucher",
+            id: "ai_companion",
             phase: "MEET MR. TAN",
             phaseColor: "from-emerald-600 to-teal-600",
-            title: "NTUC Voucher Gamification",
-            subtitle: "He fights to keep what he has — that's Prospect Theory",
-            body: "Mr. Tan starts each week with S$5.00 in NTUC FairPrice vouchers. Every missed medication or check-in costs him S$0.25. He redeems on Sundays via QR code.\n\nThis is loss aversion (Kahneman & Tversky): losing $5 hurts 2–2.5× more than gaining $5. Mr. Tan fights harder to keep his voucher than he would to earn one.\n\nBelow: his Medication Schedule — swipe-to-confirm, grouped by morning/afternoon/evening, with visual streaks.",
-            insight: "Why NTUC vouchers? Singapore's elderly want groceries, not points. Mr. Tan buys his kopi-o and bread. Mdm. Lee buys rice and vegetables. This is behavioral design for Singapore, not generic gamification.",
-            tab: "patient",
-            icon: <Award size={20} />,
-            stat: { value: "$5", label: "Weekly Voucher" },
-            highlight: "#patient-voucher",
-            scrollTo: "#patient-voucher",
-            pos: "left",
-        },
-        {
-            id: "chat",
-            phase: "MEET MR. TAN",
-            phaseColor: "from-emerald-600 to-teal-600",
-            title: "AI Care Assistant",
-            subtitle: "Singlish-aware, mood-detecting, tool-executing companion",
-            body: "The Care Assistant is a real AI chat powered by Gemini + an 18-tool agentic runtime.\n\nType a message and it fires a real API call. Try: \"What should I eat for dinner?\" or \"My glucose high, how?\"\n\n• Speaks Singlish when appropriate (\"Wah, uncle, your glucose quite high leh\")\n• Detects mood from text and adjusts tone\n• Executes real tools: book appointments, check drug interactions, recommend food\n• Remembers previous conversations across sessions",
-            insight: "This isn't ChatGPT with a healthcare prompt. It's a 5-turn ReAct agent that reasons over the patient's full clinical context — HMM state, medications, biometrics, conversation history — before choosing which of 18 tools to execute. Every response passes a 6-dimension safety classifier.",
+            title: "AI Care Companion",
+            subtitle: "Diamond Layer 3 (Gemini) + Layer 5 (SEA-LION) in action",
+            body: "The Care Assistant is a real AI chat. Type a message — it fires a real API call through the full diamond pipeline.\n\nTry: \"What should I eat for dinner?\" or \"My glucose high, how?\"\n\n• Layer 3 (Gemini): 5-turn ReAct agent reasons over Mr. Tan's full clinical context — HMM state, medications, biometrics, memories — then picks from 18 tools\n• Layer 4 (Safety): Every response checked on 6 dimensions before sending\n• Layer 5 (SEA-LION): Translates to Singlish (\"Wah, uncle, sugar quite high leh\")\n\n3 input modes: text, glucose OCR (photo of glucometer), and voice check-in with sentiment analysis.",
+            insight: "This isn't ChatGPT with a healthcare prompt. The agent has cross-session memory (3 types: episodic, semantic, preference). It remembers Mr. Tan prefers Hokkien, skips breakfast on Sundays, and responds better to gentle nudges than clinical warnings.",
             tab: "patient",
             icon: <MessageSquare size={20} />,
             stat: { value: "18", label: "Agent Tools" },
@@ -196,173 +195,123 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             pos: "left",
         },
         {
-            id: "patient_input",
-            phase: "MEET MR. TAN",
-            phaseColor: "from-emerald-600 to-teal-600",
-            title: "Patient Input Modes",
-            subtitle: "Three ways to feed data into the system",
-            body: "Tap the floating + button (bottom-right) to see 3 input modes:\n\n1. Log Glucose — manual entry or camera OCR (photo of glucometer → Gemini Vision extracts the reading)\n\n2. Log Food — describe in natural language (\"chicken rice with teh c\"). AI understands local food and estimates nutritional impact.\n\n3. Voice Check-in — speech-to-text + sentiment analysis. Detects frustration, anxiety, or positive mood.\n\nAll inputs feed into the HMM's 9-biomarker observation vector. More data = earlier detection.",
-            insight: "Voice check-in is a mental health signal. If Mr. Tan sounds frustrated 3 days in a row, the system detects declining engagement and proactively adjusts: shorter messages, more encouragement, maybe a voucher bonus. Emotional state is clinical data.",
-            tab: "patient",
-            icon: <Mic size={20} />,
-            stat: { value: "3", label: "Input Modes" },
-            highlight: "#patient-actions-area",
-            pos: "left",
-        },
-
-        // ===============================================
-        // ACT 2: THE NURSE — Clinical perspective (Steps 5-7)
-        // ===============================================
-        {
             id: "nurse_intro",
             phase: "NURSE DASHBOARD",
             phaseColor: "from-blue-600 to-cyan-600",
             title: "Meet Nurse Sarah Chen",
-            subtitle: "She manages 600+ patients at a polyclinic. This is her dashboard.",
-            body: "The Nurse View is now active — this is what Sarah sees at the start of her shift.\n\nTop bar: Mr. Tan's profile with his current health status badge.\n\nBelow: the 14-Day Health Timeline — each day is color-coded by HMM state (green/amber/red) with confidence percentages. Click any day to drill into the detailed analysis.\n\nThis view is designed for speed: glance at the timeline, see the color, click the day, read the SBAR, act. Under 60 seconds from dashboard to clinical decision.",
-            insight: "Singapore polyclinics assign 600+ patients per nurse. Manual chart review takes 20+ minutes each. Bewo's auto-triage means the nurse only reviews patients that need attention, in priority order. Zero chart-pulling.",
+            subtitle: "She manages 600+ patients. This is her clinical dashboard.",
+            body: "The Nurse View shows what Sarah sees at the start of her shift.\n\nTop: Mr. Tan's profile with health status badge.\nBelow: 14-Day Health Timeline — each day color-coded by HMM state (green/amber/red) with confidence %.\n\nClick any day to drill into the detailed analysis:\n• Gaussian probability curves per biomarker\n• Evidence table — which features pulled toward which state\n• Log-likelihood breakdown — the raw probability matrix\n\nThis is full HMM interpretability — every decision is explainable, auditable, defensible. Required under Singapore's PDPA and AI governance framework.",
+            insight: "A polyclinic nurse with 600 patients can't review charts manually (20+ min each). Bewo auto-triages: the nurse only sees patients that need attention, ranked by urgency. Zero manual chart-pulling.",
             tab: "nurse",
             icon: <Stethoscope size={20} />,
-            stat: { value: "600+", label: "Patients Per Nurse" },
+            stat: { value: "600+", label: "Patients/Nurse" },
             highlight: "#nurse-header",
             pos: "below",
         },
+
+        // ===============================================
+        // ACT 2: DAYS 1-5 — Everything is fine (Steps 4-6)
+        // ===============================================
         {
-            id: "nurse_timeline",
-            phase: "NURSE DASHBOARD",
-            phaseColor: "from-blue-600 to-cyan-600",
-            title: "HMM Explainability",
-            subtitle: "Click any day — see exactly why the AI made its decision",
-            body: "The color-coded timeline:\n• Green = STABLE | Amber = WARNING | Red = CRISIS\n• Confidence % shown below each day\n\nClick a day to expand:\n• Gaussian probability curves — one per biomarker, showing fit to each state\n• Evidence table — which features pulled toward which state, and by how much\n• Log-likelihood breakdown — the raw probability matrix\n\nEvery clinical decision is explainable, auditable, and defensible. No black-box predictions.",
-            insight: "Interpretability isn't optional in healthcare — it's legally required. Under Singapore's PDPA and AI governance framework, clinical AI must explain its reasoning. HMM gives us this by design: state emissions, transition probabilities, and feature contributions are all transparent.",
-            tab: "nurse",
-            icon: <Brain size={20} />,
-            stat: { value: "9", label: "Biomarker Features" },
-            visualHint: "Click any day on the timeline strip to see the detailed analysis",
-            highlight: "#nurse-timeline",
+            id: "inject_stable",
+            phase: "DAYS 1–5: STABLE",
+            phaseColor: "from-emerald-600 to-green-600",
+            title: "Days 1–5: Mr. Tan Is Doing Well",
+            subtitle: "Injecting 5 days of healthy patient data into the pipeline",
+            body: "Let's start the story. Click below to inject 5 days of stable data:\n\n• Glucose: 5.8 mmol/L (normal range)\n• Medication adherence: 98%\n• Steps: ~6,000/day\n• Heart rate variability: 46ms (healthy)\n• Sleep quality: 8.0/10\n• Social engagement: active\n\nThe pipeline runs:\n1. Data injected → 30 observations (6 per day × 5 days)\n2. HMM Viterbi decodes the hidden state sequence\n3. Baum-Welch learns Mr. Tan's personal parameters\n\nWatch the state cards — they should show STABLE (green).",
+            insight: "Even in STABLE state, the system is working. Layer 3 (Gemini Agent) runs proactive check-ins, manages voucher balance, celebrates medication streaks, and schedules nudges at optimal times. The patient doesn't know AI is running in the background.",
+            tab: "overview",
+            action: () => injectPhaseAndAnalyze("warning_to_crisis", 0, 4, true),
+            actionLabel: "Inject Days 1–5 (Stable Phase)",
+            icon: <CheckCircle2 size={20} />,
+            stat: { value: "5.8", label: "mmol/L Glucose" },
+            highlight: "#sidebar-console",
             pos: "right",
         },
         {
-            id: "nurse_intelligence",
-            phase: "NURSE DASHBOARD",
-            phaseColor: "from-blue-600 to-cyan-600",
-            title: "Predictive Intelligence",
-            subtitle: "State distribution, transition dynamics, Monte Carlo forecast",
-            body: "Three panels below the timeline:\n\n1. State Distribution (donut) — what % of 14 days were STABLE vs WARNING vs CRISIS\n\n2. Transition Heatmap (3×3 grid) — learned via Baum-Welch EM algorithm. Shows that crisis states are \"sticky\" — P(CRISIS→CRISIS) is high\n\n3. Monte Carlo Forecast (area chart) — 2,000 simulated trajectories showing crisis probability over 48 hours. Red area = danger zone\n\nBelow: 24h biometric trends, SBAR report, drug interactions, triage — all from the nurse's perspective.",
-            insight: "The transition matrix is learned via Expectation-Maximization, not hardcoded. As data accumulates, the model personalizes to each patient. Mr. Tan's crisis-to-stable transition probability becomes unique to his biology and behavior.",
-            tab: "nurse",
-            icon: <TrendingUp size={20} />,
-            stat: { value: "2K", label: "Monte Carlo Paths" },
-            highlight: "#nurse-hmm-center",
-            scrollTo: "#nurse-hmm-center",
+            id: "stable_analysis",
+            phase: "DAYS 1–5: STABLE",
+            phaseColor: "from-emerald-600 to-green-600",
+            title: "Diamond Layer 1: HMM Says STABLE",
+            subtitle: "9 biomarkers → Viterbi decoding → state classification",
+            body: "The state cards updated automatically:\n\n• HMM State: STABLE (green) — all 9 biomarkers within healthy ranges\n• Risk Score: Low — composite risk weighted by clinical significance\n• 48h Crisis Prob: <10% — 2,000 Monte Carlo simulations show safe trajectory\n\nThe HMM processed 9 features simultaneously:\nglucose_avg (25%), meds_adherence (18%), sleep_quality (10%), social_engagement (10%), glucose_variability (10%), steps_daily (8%), carbs_intake (7%), hrv_rmssd (7%), resting_hr (5%)\n\nSwitch to the Nurse View — the 14-day timeline shows green for days 1–5.\nSwitch to the Patient View — Mr. Tan sees \"You are doing well!\" with an encouraging message.",
+            insight: "Why HMM over deep learning? Explainability. A neural network says \"STABLE\" with no reason. HMM shows exactly which biomarkers confirm the state and by how much. Every clinical decision is traceable — legally required in Singapore.",
+            tab: "overview",
+            icon: <Activity size={20} />,
+            stat: { value: "<10%", label: "Crisis Probability" },
+            visualHint: "Check the 4 state cards at the top. Switch to Nurse and Patient tabs to see different views.",
+            highlight: "#state-cards-grid",
             pos: "below",
+        },
+        {
+            id: "stable_gemini",
+            phase: "DAYS 1–5: STABLE",
+            phaseColor: "from-emerald-600 to-green-600",
+            title: "Diamond Layers 3–5: What Gemini Does in STABLE",
+            subtitle: "The agent is proactively managing Mr. Tan — even when everything's fine",
+            body: "In STABLE state, Layer 3 (Gemini Agent) runs these tools automatically:\n\n• schedule_proactive_checkin — morning check-in (\"Good morning uncle! Remember to take your Metformin with breakfast\")\n• celebrate_streak — \"3-day medication streak! Keep it up!\"\n• award_voucher_bonus — maintains S$5 weekly balance\n• recommend_food — culturally-aware suggestions (\"For lunch, try fish soup from the hawker centre — low carb, high protein\")\n• adjust_nudge_schedule — optimizes reminder timing based on when Mr. Tan actually responds\n\nLayer 4 (Safety) checks every message: medical accuracy, emotional tone, hallucination, cultural sensitivity, scope, dangerous advice.\n\nLayer 5 (SEA-LION) translates to Singlish for Mr. Tan.",
+            insight: "Tool effectiveness is tracked per-patient, per-state. The system learns that medication reminders at 8am work 85% of the time for Mr. Tan but only 40% at noon. Over time, the agent preferentially selects tools that work for each individual.",
+            tab: "overview",
+            icon: <Brain size={20} />,
+            stat: { value: "6", label: "Safety Dimensions" },
+            pos: "center",
         },
 
         // ===============================================
-        // ACT 3: THE CRISIS — Tension builds (Steps 8-11)
+        // ACT 3: DAYS 6-10 — Something shifts (Steps 7-10)
         // ===============================================
         {
             id: "crisis_narrative",
-            phase: "CRISIS",
-            phaseColor: "from-rose-600 to-red-600",
-            title: "It's Day 6.",
-            subtitle: "Mr. Tan has been stable for 5 days. Then things start to change.",
-            body: "Here's what happens over 14 days:\n\nDays 1–5: Mr. Tan is doing well. Glucose 5–7 mmol/L, taking his medications, walking daily, sleeping normally. The system shows green across the board.\n\nDays 6–10: Something shifts. Maybe stress, maybe he's skipping meals. Glucose starts creeping up. Steps drop. Heart rate variability falls. He misses a medication dose, then another.\n\nDays 11–14: Full crisis. Glucose above 15 mmol/L. Adherence collapsed to 30%. HRV crashed. Without intervention, the next stop is the ER — an $8,000–$15,000 admission.\n\nA traditional app catches this after he collapses. Bewo catches it 48 hours before symptoms become critical.",
-            insight: "This isn't hypothetical. 61% of diabetes-related ER admissions in Singapore follow exactly this pattern — gradual decline over 1–2 weeks that goes unnoticed until it's too late. Bewo's HMM detects the trajectory change, not just the threshold breach.",
+            phase: "DAYS 6–10: WARNING",
+            phaseColor: "from-amber-500 to-orange-500",
+            title: "It's Day 6. Something Shifts.",
+            subtitle: "Mr. Tan's daughter is travelling. He's eating out more. Skipping walks.",
+            body: "The data tells the story:\n\n• Glucose creeping up: 6.0 → 7.5 → 9.0 mmol/L\n• Medication adherence dropping: 95% → 80% → 65%\n• Steps declining: 5,500 → 3,500 → 2,000/day\n• HRV falling: 44ms → 35ms → 26ms (autonomic stress)\n• Sleep quality dropping: 7.5 → 6.0 → 5.0\n• Social interactions: decreasing\n\nIndividually, none of these trigger an alert. Mr. Tan's glucose is \"borderline.\" His step count is \"a bit low.\" Any single metric looks okay.\n\nBut the HMM sees all 9 features TOGETHER — and detects a pattern that no threshold-based system would catch.\n\nClick below to inject days 6–10 and watch the HMM detect the shift.",
+            insight: "This is the critical difference: threshold-based alerts only fire when ONE metric crosses a line (e.g., glucose > 11). HMM fires when the PATTERN across multiple metrics shifts — even if no single metric is alarming yet. That's 48h of early warning.",
             tab: "overview",
+            action: () => injectPhaseAndAnalyze("warning_to_crisis", 5, 9),
+            actionLabel: "Inject Days 6–10 (Warning Phase)",
             icon: <AlertTriangle size={20} />,
             stat: { value: "48h", label: "Early Warning" },
+            highlight: "#sidebar-console",
+            pos: "right",
+        },
+        {
+            id: "warning_detected",
+            phase: "DAYS 6–10: WARNING",
+            phaseColor: "from-amber-500 to-orange-500",
+            title: "Diamond Layer 1: HMM Catches It",
+            subtitle: "State changed from STABLE → WARNING. No nurse clicked anything.",
+            body: "The state cards updated:\n\n• HMM State: WARNING (amber) — pattern shift detected across multiple biomarkers\n• Risk Score: ~55% — significant increase from <10%\n• 48h Crisis Prob: ~40% — Monte Carlo shows rising danger\n\nSwitch to the Nurse View — the timeline now shows green (days 1–5) turning to amber (days 6–10). Click a warning day to see:\n• Which biomarkers triggered the state change\n• Gaussian probability curves showing the shift from STABLE distribution to WARNING distribution\n• Confidence percentages per day\n\nMr. Tan hasn't collapsed. He hasn't called the clinic. He might not even feel different. But the system KNOWS.",
+            insight: "The Nurse Triage panel auto-ranked Mr. Tan as SOON (elevated urgency). An SBAR report was auto-generated with the clinical summary. Sarah Chen can act immediately — no chart review needed.",
+            tab: "overview",
+            icon: <TrendingUp size={20} />,
+            stat: { value: "~55%", label: "Risk Score" },
+            visualHint: "State cards should be amber. Check the Nurse View timeline — green turning to amber.",
+            highlight: "#state-cards-grid",
+            pos: "below",
+        },
+        {
+            id: "warning_gemini_acts",
+            phase: "DAYS 6–10: WARNING",
+            phaseColor: "from-amber-500 to-orange-500",
+            title: "Diamond Layers 3–5: The Agent Intervenes",
+            subtitle: "Gemini shifts strategy — from maintenance to active intervention",
+            body: "In WARNING state, the agent's behavior changes dramatically:\n\n• set_reminder — medication reminders increase in frequency and urgency\n• send_caregiver_alert (info tier) — Mrs. Tan Mei Ling (daughter) gets a push notification: \"Dad's health metrics declining slightly. Encourage him to take medication.\"\n• calculate_counterfactual — shows Mr. Tan: \"If you take your medication today, your risk drops from 45% → 18%\" (motivates via evidence, not guilt)\n• recommend_food — suggests specific meals to stabilize glucose\n• suggest_activity — gentle encouragement: \"Uncle, try a short walk to the market? Even 10 minutes helps.\"\n• schedule_proactive_checkin — AI initiates conversation: \"Uncle, I notice you haven't logged your glucose today. Everything okay?\"\n\nLayer 4 (Safety) adjusts tone — no cheerful messages during WARNING state.",
+            insight: "The counterfactual analysis is powerful. Instead of saying \"take your meds,\" it shows \"if you had taken your meds, your risk would be 18% instead of 45%.\" Evidence-based motivation. Mr. Tan sees his OWN data proving it matters.",
+            tab: "overview",
+            icon: <Zap size={20} />,
+            stat: { value: "6", label: "Active Interventions" },
             pos: "center",
         },
         {
-            id: "inject_crisis",
-            phase: "CRISIS",
-            phaseColor: "from-rose-600 to-red-600",
-            title: "Trigger the Crisis",
-            subtitle: "Inject 14 days of deteriorating data — watch the system respond live",
-            body: "Click the button below to inject the Warning → Crisis scenario. Watch the console log on the left — it shows each pipeline stage in real-time:\n\n1. Data injection — 14 days × 9 biomarkers\n2. HMM Viterbi decoding — most likely hidden state sequence\n3. Baum-Welch learning — EM algorithm adapts to this patient\n4. Monte Carlo simulation — 2,000 forward trajectories\n\nAll computed in under 2 seconds.",
-            insight: "Why HMM over deep learning? Explainability. A neural network says \"CRISIS\" with no reason. Our HMM shows exactly which biomarkers triggered the state change: glucose variability 35%, medication adherence 28%, HRV 15%. Every decision is traceable.",
-            tab: "overview",
-            action: () => injectScenario("warning_to_crisis"),
-            actionLabel: "Inject Warning → Crisis Scenario",
-            icon: <Play size={20} />,
-            stat: { value: "<2s", label: "Detection Time" },
-            highlight: "#sidebar-console",
-            pos: "right",
-        },
-        {
-            id: "system_detects",
-            phase: "CRISIS",
-            phaseColor: "from-rose-600 to-red-600",
-            title: "The System's Verdict",
-            subtitle: "Four metrics updated automatically — no nurse clicked anything",
-            body: "Look at the 4 state cards at the top:\n\n1. HMM State: CRISIS (red) — Viterbi decoded 14 days of 9 biomarkers\n\n2. Risk Score: ~95% — composite risk weighted by clinical significance\n\n3. 48h Crisis Probability: ~95% — 2,000 Monte Carlo simulations; this fraction hit crisis\n\n4. Drug Interactions — medication pairs checked for contraindications\n\nMr. Tan went from healthy to crisis in 14 days. The system caught it automatically. No nurse reviewed a chart. No doctor opened a file.",
-            insight: "A polyclinic nurse managing 600 patients cannot manually review each one. Without Bewo, Mr. Tan's decline goes unnoticed until he's in the ER. With Bewo, the nurse gets an alert with a full clinical summary before the patient even feels symptoms.",
-            tab: "overview",
-            icon: <Activity size={20} />,
-            stat: { value: "95%", label: "Crisis Probability" },
-            visualHint: "Look at the 4 colored state cards at the top of the dashboard",
-            highlight: "#state-cards-grid",
-            pos: "below",
-        },
-        {
-            id: "sbar_triage",
-            phase: "CRISIS",
-            phaseColor: "from-rose-600 to-red-600",
-            title: "Auto-SBAR & Nurse Triage",
-            subtitle: "Clinical handoff + multi-patient priority ranking — zero effort",
-            body: "Scroll down to see two panels:\n\nSBAR Clinical Report (auto-generated in 3 seconds):\n• S (Situation): Current state and what's happening\n• B (Background): 67M, T2DM + HTN + HLD, medications\n• A (Assessment): HMM + Monte Carlo + safety analysis\n• R (Recommendation): Actionable next steps by urgency\n\nNurse Triage (multi-patient):\n• Patients ranked by urgency 0–100%\n• IMMEDIATE (red) → SOON (amber) → MONITOR (blue) → STABLE (green)\n• Mr. Tan auto-surfaced to the top\n\nSBAR is the standard clinical handoff used in every Singapore hospital. Nurses spend 15–20 minutes writing these manually. Bewo does it in 3 seconds.",
-            insight: "Drug interactions are checked continuously, not just at prescription time. What's safe at STABLE may be dangerous at CRISIS (e.g., Metformin + renal stress). This is contextual pharmacovigilance — 16 medication pairs monitored on every state transition.",
-            tab: "overview",
-            icon: <FileText size={20} />,
-            stat: { value: "3s", label: "SBAR Generation" },
-            highlight: "#sbar-section",
-            scrollTo: "#sbar-section",
-            pos: "right",
-        },
-
-        // ===============================================
-        // ACT 4: THE RECOVERY — Resolution (Steps 12-14)
-        // ===============================================
-        {
-            id: "recovery_narrative",
-            phase: "RECOVERY",
-            phaseColor: "from-emerald-600 to-green-600",
-            title: "Bewo Doesn't Just Detect — It Acts",
-            subtitle: "6 autonomous interventions, zero human effort",
-            body: "This is Bewo's key differentiator. Other systems alert. Bewo intervenes.\n\nWhen the crisis was detected, the agent autonomously:\n• Sent medication reminders at optimal times\n• Alerted Mrs. Tan Mei Ling (daughter) via caregiver notification\n• Booked a follow-up at NUH Diabetes Centre\n• Celebrated Mr. Tan's medication adherence streak\n• Adjusted nudge timing based on response patterns\n• Reduced caregiver alert frequency to prevent Mrs. Tan's burnout\n\nClick below to inject the Recovery scenario and watch Mr. Tan go from CRISIS → WARNING → STABLE over 14 days.",
-            insight: "6 autonomous interventions, zero human effort. The agent booked a clinic appointment, alerted the caregiver, adjusted reminders, celebrated the streak — all without a nurse clicking anything. This is what \"agentic\" means: the AI doesn't suggest, it acts.",
-            tab: "overview",
-            action: () => injectScenario("recovery"),
-            actionLabel: "Inject Recovery Scenario",
-            icon: <CheckCircle2 size={20} />,
-            stat: { value: "6", label: "Auto Interventions" },
-            highlight: "#sidebar-console",
-            pos: "right",
-        },
-        {
-            id: "crisis_averted",
-            phase: "RECOVERY",
-            phaseColor: "from-emerald-600 to-green-600",
-            title: "Crisis Averted",
-            subtitle: "Mr. Tan stays home. Not in the ER. Bewo paid for itself.",
-            body: "The dashboard now shows:\n\n• HMM State: STABLE (green) — recovered\n• Risk Score: ~22% (down from 95%)\n• 48h Crisis Prob: Low — Monte Carlo shows safe trajectory\n• Triage: Mr. Tan moved from IMMEDIATE → STABLE\n\nCheck the other views:\n• Nurse View — timeline shows CRISIS → WARNING → STABLE with confidence per day\n• Patient View — Daily Insight Card is green: \"You are doing well!\"\n\nOne prevented ER visit saves $8,000–$15,000. Bewo costs $3/month. That's 2,900 patient-months funded per avoided admission.",
-            insight: "At $3/patient/month and 100,000 target patients, Bewo's annual cost is $3.6M. Preventing just 450 ER visits covers that entirely. Singapore has 440,000 diabetics — the ROI is arithmetic, not theoretical.",
-            tab: "overview",
-            icon: <DollarSign size={20} />,
-            stat: { value: "95→22%", label: "Risk Reduction" },
-            visualHint: "State cards should now be green. Check the Nurse and Patient views too.",
-            highlight: "#state-cards-grid",
-            pos: "below",
-        },
-        {
-            id: "three_stakeholders",
-            phase: "RECOVERY",
-            phaseColor: "from-emerald-600 to-green-600",
-            title: "Three Stakeholders, One Event",
-            subtitle: "Same recovery — 3 completely different interfaces",
-            body: "Click through the tabs to see how the same event looks different:\n\nOverview: Raw HMM states, risk scores, Monte Carlo, SBAR, triage — the technical truth\n\nNurse View: 14-day timeline with clickable daily analysis, transition heatmap, biometric trends returning to normal\n\nPatient View: Green insight card (\"You are doing well!\"), voucher balance intact, streak continuing, AI companion giving encouragement\n\nThe right information, at the right abstraction level, for the right person. The patient gets empathy. The nurse gets efficiency. The caregiver gets peace of mind.",
-            insight: "Most health AI shows everyone the same dashboard. Bewo gives clinicians clinical data, patients emotional support, and caregivers actionable status updates. Same HMM, three completely different user experiences.",
+            id: "warning_stakeholders",
+            phase: "DAYS 6–10: WARNING",
+            phaseColor: "from-amber-500 to-orange-500",
+            title: "Three Stakeholders, Same Event",
+            subtitle: "Same WARNING — 3 completely different interfaces",
+            body: "Click through the tabs to see how the same event looks different:\n\nPatient View: Mr. Tan sees a yellow insight card: \"Take extra care today.\" Gentle nudge, no panic. His voucher balance shows a small deduction for missed medication.\n\nNurse View: Sarah Chen sees the timeline shift to amber, an auto-generated SBAR report, and Mr. Tan ranked as SOON in triage.\n\nAI Intelligence tab: Shows the agent's memory updating (\"Mr. Tan missed evening Metformin 3 days in a row\"), tool effectiveness scores, and the proactive check-in schedule.\n\nThe right information, at the right abstraction level, for the right person.",
+            insight: "Most health AI shows everyone the same dashboard. Bewo gives clinicians clinical data, patients emotional support, and caregivers actionable status updates. Same underlying HMM, three completely different user experiences.",
             tab: "overview",
             icon: <Shield size={20} />,
             stat: { value: "3", label: "Stakeholder Views" },
@@ -371,30 +320,114 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 5: UNDER THE HOOD (Steps 15-16)
+        // ACT 4: DAYS 11-14 — Full crisis (Steps 11-13)
+        // ===============================================
+        {
+            id: "inject_crisis",
+            phase: "DAYS 11–14: CRISIS",
+            phaseColor: "from-rose-600 to-red-600",
+            title: "Days 11–14: Full Crisis",
+            subtitle: "Glucose 15+ mmol/L. Adherence collapsed. HRV crashed.",
+            body: "Despite the interventions, Mr. Tan's condition worsens:\n\n• Glucose: 9.5 → 12.0 → 15.0+ mmol/L\n• Medication adherence: collapsed to ~30%\n• Steps: barely 400/day\n• HRV: crashed to <15ms (severe autonomic stress)\n• Sleep: 2.0/10\n• Social engagement: withdrawn\n\nThis is the pattern that leads to an ER visit. Without intervention, the next stop is a $8,000–$15,000 hospital admission.\n\nClick below to inject the crisis days. Watch the system escalate.",
+            insight: "61% of diabetes-related ER admissions in Singapore follow this exact pattern — gradual decline over 1–2 weeks that goes unnoticed. The fact that you watched it happen day-by-day shows why passive monitoring isn't enough. You need an AI that ACTS.",
+            tab: "overview",
+            action: () => injectPhaseAndAnalyze("warning_to_crisis", 10, 13),
+            actionLabel: "Inject Days 11–14 (Crisis Phase)",
+            icon: <AlertTriangle size={20} />,
+            stat: { value: "15+", label: "mmol/L Glucose" },
+            highlight: "#sidebar-console",
+            pos: "right",
+        },
+        {
+            id: "crisis_detected",
+            phase: "DAYS 11–14: CRISIS",
+            phaseColor: "from-rose-600 to-red-600",
+            title: "Full Escalation: All 5 Diamond Layers",
+            subtitle: "Every layer fires simultaneously — detection to intervention in seconds",
+            body: "The full pipeline fires:\n\nLayer 1 (HMM): CRISIS state — 95%+ confidence\nLayer 2 (Merlion): Glucose velocity +0.4 mmol/h, accelerating\n\nLayer 3 (Gemini Agent) — maximum escalation:\n• alert_nurse — SBAR auto-generated, Sarah gets alert\n• escalate_to_doctor — critical flag for physician review\n• send_caregiver_alert (critical tier) — Mrs. Tan gets urgent notification\n• book_appointment — schedules NUH Diabetes Centre visit\n• suggest_medication_adjustment — dose recommendation FOR DOCTOR\n\nLayer 4 (Safety): Blocks any cheerful/dismissive tone. Forces urgent, clear language.\nLayer 5 (SEA-LION): \"Uncle, this one serious. Must see doctor. Your daughter coming.\"\n\nNurse Triage: Mr. Tan at #1 — IMMEDIATE.",
+            insight: "The auto-generated SBAR report contains: current HMM state, 14-day biometric trends, drug interaction check (16 pairs), Monte Carlo forecast, and recommended actions ranked by urgency. Nurses spend 15–20 minutes writing these manually. Bewo does it in 3 seconds.",
+            tab: "overview",
+            icon: <Activity size={20} />,
+            stat: { value: "95%", label: "Crisis Confidence" },
+            visualHint: "State cards should be red. Check the SBAR report and triage panel below.",
+            highlight: "#state-cards-grid",
+            pos: "below",
+        },
+        {
+            id: "crisis_nurse_view",
+            phase: "DAYS 11–14: CRISIS",
+            phaseColor: "from-rose-600 to-red-600",
+            title: "The Nurse View: 14 Days of Evidence",
+            subtitle: "Green → Amber → Red — the full trajectory, fully explainable",
+            body: "Switch to the Nurse View and look at the 14-day timeline:\n\n• Days 1–5: Green (STABLE) — high confidence\n• Days 6–10: Amber (WARNING) — confidence shifting\n• Days 11–14: Red (CRISIS) — high confidence\n\nClick any crisis day to see:\n• The exact biomarkers that drove the state change\n• Gaussian emission probabilities showing how far each metric deviated\n• The transition matrix showing that crisis states are \"sticky\" — P(CRISIS→CRISIS) is high\n\nBelow: Monte Carlo chart shows 2,000 simulated trajectories — nearly all hit crisis within 48h.\n\nThis is evidence for clinical decisions, not a black box.",
+            insight: "The transition matrix is learned via Baum-Welch (EM algorithm), not hardcoded. It adapts to each patient. Mr. Tan's personal crisis-to-stable probability is learned from HIS data. Personalized medicine at the algorithm level.",
+            tab: "nurse",
+            icon: <Brain size={20} />,
+            stat: { value: "2K", label: "Monte Carlo Paths" },
+            highlight: "#nurse-timeline",
+            pos: "right",
+        },
+
+        // ===============================================
+        // ACT 5: RECOVERY (Steps 14-15)
+        // ===============================================
+        {
+            id: "inject_recovery",
+            phase: "RECOVERY",
+            phaseColor: "from-teal-600 to-emerald-600",
+            title: "Bewo Intervened. Now Watch Recovery.",
+            subtitle: "The interventions worked — Mr. Tan recovers over 14 days",
+            body: "The autonomous interventions triggered during WARNING and CRISIS are working:\n\n• Medication reminders → Mr. Tan resumes taking Metformin\n• Caregiver alert → Mrs. Tan calls her father daily\n• Appointment booked → doctor reviewed and adjusted plan\n• Activity nudges → Mr. Tan starts walking to the market again\n• Voucher incentive → he wants to keep his $5 for groceries\n• Caregiver burden management → Mrs. Tan's alerts reduced to daily digest (prevents burnout)\n\nClick below to inject a full recovery scenario — CRISIS → WARNING → STABLE — and watch every metric return to normal.",
+            insight: "6 autonomous interventions, zero nurse effort. The agent booked a clinic appointment, alerted the caregiver, adjusted reminders, celebrated streaks — all without a nurse clicking anything. This is what \"agentic\" actually means.",
+            tab: "overview",
+            action: () => injectScenario("recovery"),
+            actionLabel: "Inject Recovery Scenario (14 days)",
+            icon: <CheckCircle2 size={20} />,
+            stat: { value: "6", label: "Auto Interventions" },
+            highlight: "#sidebar-console",
+            pos: "right",
+        },
+        {
+            id: "crisis_averted",
+            phase: "RECOVERY",
+            phaseColor: "from-teal-600 to-emerald-600",
+            title: "Crisis Averted",
+            subtitle: "Mr. Tan stays home. Not in the ER. Bewo paid for itself.",
+            body: "The dashboard now shows:\n\n• HMM State: STABLE (green) — recovered\n• Risk Score: ~22% (down from 95%)\n• 48h Crisis Prob: Low — Monte Carlo shows safe trajectory\n• Triage: IMMEDIATE → STABLE\n\nCheck the Nurse View — the timeline shows the full recovery arc with confidence per day. The transition matrix learned that Mr. Tan responds well to combined medication + caregiver + appointment interventions.\n\nCheck the Patient View — green insight card: \"You are doing well!\" Streak counter reset. Voucher balance intact.\n\nOne prevented ER visit saves $8,000–$15,000. Bewo costs $3/month per patient.",
+            insight: "At 100,000 patients × $3/month = $3.6M/year. Preventing just 450 ER visits covers that entirely. Singapore has 440,000 diabetics. The ROI is arithmetic, not theoretical.",
+            tab: "overview",
+            icon: <DollarSign size={20} />,
+            stat: { value: "95→22%", label: "Risk Reduction" },
+            visualHint: "State cards should be green. Check Nurse and Patient views for the recovery arc.",
+            highlight: "#state-cards-grid",
+            pos: "below",
+        },
+
+        // ===============================================
+        // ACT 6: DEEP DIVE (Steps 16-17)
         // ===============================================
         {
             id: "tool_demo",
-            phase: "UNDER THE HOOD",
+            phase: "DEEP DIVE",
             phaseColor: "from-cyan-600 to-blue-600",
-            title: "18 Agentic AI Tools",
+            title: "All 18 Tools — Live",
             subtitle: "Every tool fires against a real API endpoint",
-            body: "The Tool Demo tab is now active. Try clicking individual tools:\n\n• Drug Interaction Check — queries real interaction database (16 pairs)\n• SBAR Report — generates clinical summary from current HMM state\n• Caregiver Alert — sends alert with intelligent burden scoring\n• Food Recommendation — culturally-aware (knows hawker food)\n\nThen click \"Run All 18 Tools\" to see the full 5-phase pipeline:\n\n1. Safety Pre-Check (drug interactions + 6-dimension safety classifier)\n2. Clinical Intelligence (SBAR + triage)\n3. Patient Engagement (food recs + streak celebration)\n4. Proactive Communication (appointments + caregiver alerts)\n5. Remaining Tools (medication, activity, escalation, nudge scheduling)\n\nWatch the terminal — exact function calls, arguments, real responses.",
-            insight: "Safety comes FIRST — before any patient-facing action, the system checks drug interactions and runs the safety classifier. Every AI response is verified on 6 dimensions: medical accuracy, emotional appropriateness, hallucination detection, cultural sensitivity, scope boundaries, and dangerous advice prevention.",
+            body: "The Tool Demo tab lets you trigger individual tools or run all 18.\n\nTry clicking individual tools:\n• Drug Interaction Check — 16 pairs, 39 drug-to-class mappings\n• SBAR Report — generates from current HMM state\n• Caregiver Alert — 3-tier severity (info → push, warning → SMS, critical → call)\n• Food Recommendation — knows hawker food\n\nThen click \"Run All 18 Tools\" — watch the 5-phase pipeline:\n1. Safety Pre-Check (drug interactions + 6-dim classifier)\n2. Clinical Intelligence (SBAR + triage)\n3. Patient Engagement (food recs + streak celebration)\n4. Proactive Communication (appointments + caregiver)\n5. Remaining Tools (medication, activity, escalation, nudge scheduling)\n\nThe terminal shows exact function calls, arguments, and real API responses.",
+            insight: "Each tool tracks effectiveness per-patient, per-state. The system learns that medication reminders work 85% for Mr. Tan in WARNING but only 40% in CRISIS. Over time, the agent preferentially selects tools that work for each individual. This is outcome-based tool selection.",
             tab: "tooldemo",
             icon: <Terminal size={20} />,
-            stat: { value: "6", label: "Safety Dimensions" },
+            stat: { value: "18", label: "Agent Tools" },
             highlight: "#tool-grid",
             pos: "below",
         },
         {
             id: "intelligence",
-            phase: "UNDER THE HOOD",
+            phase: "DEEP DIVE",
             phaseColor: "from-purple-600 to-violet-600",
             title: "The Learning Engine",
-            subtitle: "Memory, effectiveness tracking, caregiver burden, proactive care",
-            body: "The AI Intelligence tab shows the agent's internal state:\n\n• Agent Memory — 3 types: episodic (events), semantic (medical knowledge), preference (patient likes/dislikes). Persists across sessions.\n\n• Tool Effectiveness — per-tool, per-state success rates. Learns which interventions work for each patient.\n\n• Caregiver Burden — scores alert fatigue (0–100). If Mrs. Tan is overwhelmed, the system auto-switches to daily digest. No competitor monitors caregiver wellbeing.\n\n• Proactive Check-ins — 6 triggers: missed med, glucose anomaly, declining engagement, streak milestone, scheduled check-in, mood change.\n\n• Counterfactual Analysis — \"What if you had taken your medication?\" Shows risk would drop from 35% → 12%.",
-            insight: "Most health AI chatbots are stateless — they forget between sessions. Bewo remembers that Mr. Tan prefers Hokkien, skips breakfast on Sundays, and responds better to gentle nudges than clinical warnings. 3 memory types working together make the AI feel like it actually knows the patient.",
+            subtitle: "Memory, effectiveness, caregiver burden, proactive care",
+            body: "The AI Intelligence tab shows the agent's internal state:\n\n• Agent Memory — 3 types: episodic (events), semantic (medical knowledge), preference (Mr. Tan likes Hokkien, skips Sunday breakfast)\n\n• Tool Effectiveness — per-tool, per-state success rates. Learns which interventions work.\n\n• Caregiver Burden (0–100) — tracks Mrs. Tan's alert fatigue. Above 70 → auto-switch to daily digest mode. No competitor monitors caregiver wellbeing.\n\n• Proactive Triggers — 6 types: missed med, glucose anomaly, declining engagement, streak milestone, scheduled check-in, mood change\n\n• Counterfactual Analysis — \"What if you had taken your medication?\" Risk drops from 35% → 12%",
+            insight: "Most health AI chatbots are stateless — they forget between sessions. Bewo's 3 memory types persist across sessions. Weekly consolidation converts episodic memories into semantic patterns. The AI genuinely learns each patient.",
             tab: "intelligence",
             icon: <Brain size={20} />,
             stat: { value: "3", label: "Memory Types" },
@@ -403,16 +436,16 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // CLOSING (Step 17)
+        // CLOSING (Step 18)
         // ===============================================
         {
             id: "closing",
             phase: "SUMMARY",
             phaseColor: "from-zinc-800 to-zinc-900",
             title: "Before Crisis. Not After.",
-            subtitle: judgeName ? `Thank you, ${judgeName}. Everything you saw is live.` : "A working system. Not a prototype. Not a pitch deck.",
-            body: "What you just experienced:\n\n• 3-state HMM with Viterbi decoding + Baum-Welch learning\n• 9 biomarkers from CGM + Fitbit + App\n• 2,000-path Monte Carlo for 48h risk forecasting\n• 5-turn ReAct agent with 18 tools and cross-session memory\n• 6-dimension safety classifier on every AI response\n• Auto-SBAR, auto-triage, continuous drug interaction monitoring\n• Loss-aversion voucher gamification (Prospect Theory)\n• Caregiver burden scoring (prevents alert fatigue)\n• 3 stakeholder views: patient → nurse → caregiver\n\nYou can now explore freely — inject any scenario, chat with the AI, click every button. Everything is live.\n\n7 injectable scenarios. Each produces completely different system behavior across HMM, SBAR, triage, Monte Carlo, and all 18 agent tools.",
-            insight: "Singapore's diabetic population will double by 2035. Bewo is culturally aware (Singlish, hawker food, NTUC vouchers), clinically rigorous (HMM, SBAR, pharmacovigilance), and designed to scale across polyclinics at S$3/patient/month. Built for Singapore. Designed for ASEAN.",
+            subtitle: judgeName ? `Thank you, ${judgeName}. Everything you saw is live.` : "A working system. Not a prototype.",
+            body: "You just watched data flow through all 5 Diamond layers:\n\n1. HMM Engine — detected STABLE → WARNING → CRISIS from 9 biomarkers\n2. Merlion Risk Engine — forecasted glucose trajectory\n3. Gemini Agent — 18 tools acted autonomously at each state\n4. Safety Classifier — 6-dimension check on every response\n5. SEA-LION — culturally adapted every message to Singlish\n\nThe system caught a crisis 48 hours early. It intervened autonomously. The patient recovered. One prevented ER visit: $8,000–$15,000 saved.\n\nYou can now explore freely — inject any of the 7 scenarios from the sidebar, chat with the AI, click every button. Everything is live.",
+            insight: "Singapore's diabetic population will double by 2035. Bewo is culturally aware (Singlish, hawker food, NTUC vouchers), clinically rigorous (HMM, SBAR, pharmacovigilance), and scales at S$3/patient/month. Built for Singapore. Designed for ASEAN's 56M diabetics.",
             icon: <Sparkles size={20} />,
             stat: { value: "S$3", label: "Per Patient/Month" },
             pos: "center",
@@ -584,24 +617,25 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         return () => clearTimeout(timer);
     }, [currentStep, step.highlight, step.pos, step.scrollTo, step.tab, resizeTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Group steps into phases for progress indicator
+    // Phases for progress indicator
     const phases = [
         { name: "Welcome", steps: [0], color: "bg-blue-500" },
-        { name: "Patient", steps: [1, 2, 3, 4], color: "bg-emerald-500" },
-        { name: "Nurse", steps: [5, 6, 7], color: "bg-cyan-500" },
-        { name: "Crisis", steps: [8, 9, 10, 11], color: "bg-rose-500" },
-        { name: "Recovery", steps: [12, 13, 14], color: "bg-green-500" },
-        { name: "Deep Dive", steps: [15, 16], color: "bg-purple-500" },
-        { name: "Close", steps: [17], color: "bg-zinc-700" },
+        { name: "Characters", steps: [1, 2, 3], color: "bg-emerald-500" },
+        { name: "Stable", steps: [4, 5, 6], color: "bg-green-500" },
+        { name: "Warning", steps: [7, 8, 9, 10], color: "bg-amber-500" },
+        { name: "Crisis", steps: [11, 12, 13], color: "bg-rose-500" },
+        { name: "Recovery", steps: [14, 15], color: "bg-teal-500" },
+        { name: "Deep Dive", steps: [16, 17], color: "bg-purple-500" },
+        { name: "Close", steps: [18], color: "bg-zinc-700" },
     ];
 
-    const avgSecondsPerStep = 22;
+    const avgSecondsPerStep = 25;
     const remainingSteps = steps.length - currentStep - 1;
     const minutesLeft = Math.max(1, Math.ceil((remainingSteps * avgSecondsPerStep) / 60));
 
     return (
         <>
-            {/* Scrim — blocks interaction but does NOT close on click */}
+            {/* Scrim — does NOT close on click (prevents accidental dismissal) */}
             <div
                 className="fixed inset-0 z-[189]"
                 role="presentation"
@@ -794,7 +828,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                                     ) : isDone ? (
                                         <>
                                             <CheckCircle2 size={14} />
-                                            <span>Complete — Pipeline Executed Successfully</span>
+                                            <span>Complete — Pipeline Executed</span>
                                         </>
                                     ) : (
                                         <>
@@ -822,7 +856,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                 <div className="px-4 py-2.5 border-t border-zinc-100 bg-zinc-50/80 shrink-0">
                     <div className="flex items-center justify-between">
                         <span className="text-[10px] text-zinc-400 font-medium">
-                            Arrow keys to navigate · Esc to close
+                            Arrow keys · Esc to close
                         </span>
 
                         <div className="flex items-center gap-1.5">
