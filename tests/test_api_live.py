@@ -11,7 +11,10 @@ import sys, os, json, time, subprocess, signal, requests, traceback
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 BASE_URL = "http://127.0.0.1:8000"
-API_KEY = os.environ.get("BEWO_API_KEY", "bewo-dev-key-2026")
+API_KEY = os.environ.get("BEWO_API_KEY", "")
+if not API_KEY:
+    print("ERROR: BEWO_API_KEY environment variable is required. Set it before running tests.")
+    sys.exit(1)
 HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
 PASS = 0
 FAIL = 0

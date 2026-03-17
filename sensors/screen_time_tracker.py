@@ -15,8 +15,9 @@ import random
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 class ScreenTimeTracker:
-    def __init__(self, db_path=DB_PATH):
+    def __init__(self, db_path=DB_PATH, user_id=None):
         self.db_path = db_path
+        self.user_id = user_id
         
     def _mock_os_usage_stats(self):
         """
@@ -102,11 +103,14 @@ class ScreenTimeTracker:
             if row:
                 new_val = (row[1] or 0) + screen_seconds
                 cursor.execute("UPDATE passive_metrics SET screen_time_seconds = ?, window_end_utc = ? WHERE id = ?", (new_val, now, row[0]))
-            else:
+            elif self.user_id:
                 cursor.execute("""
-                    INSERT INTO passive_metrics (window_start_utc, window_end_utc, screen_time_seconds)
-                    VALUES (?, ?, ?)
-                """, (hour_start, now, screen_seconds))
+                    INSERT INTO passive_metrics (user_id, window_start_utc, window_end_utc, screen_time_seconds)
+                    VALUES (?, ?, ?, ?)
+                """, (self.user_id, hour_start, now, screen_seconds))
+            else:
+                print("[ScreenTime] Warning: no user_id set, skipping DB insert")
+                return
 
             conn.commit()
             print(f"[ScreenTime] Logged {screen_seconds}s usage.")

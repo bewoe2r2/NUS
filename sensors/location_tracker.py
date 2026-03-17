@@ -40,8 +40,9 @@ except ValueError as e:
     HOME_LON = _DEFAULT_HOME_LON
 
 class LocationTracker:
-    def __init__(self, db_path=DB_PATH):
+    def __init__(self, db_path=DB_PATH, user_id=None):
         self.db_path = db_path
+        self.user_id = user_id
         self.time_at_home_seconds = 0
         self.max_dist_km = 0.0
         
@@ -106,11 +107,14 @@ class LocationTracker:
                     SET time_at_home_seconds = ?, max_distance_from_home_km = ?, window_end_utc = ?
                     WHERE id = ?
                 """, (new_time, new_max, now, row[0]))
-            else:
+            elif self.user_id:
                 cursor.execute("""
-                    INSERT INTO passive_metrics (window_start_utc, window_end_utc, time_at_home_seconds, max_distance_from_home_km)
-                    VALUES (?, ?, ?, ?)
-                """, (hour_start, now, self.time_at_home_seconds, self.max_dist_km))
+                    INSERT INTO passive_metrics (user_id, window_start_utc, window_end_utc, time_at_home_seconds, max_distance_from_home_km)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (self.user_id, hour_start, now, self.time_at_home_seconds, self.max_dist_km))
+            else:
+                print("[Location] Warning: no user_id set, skipping DB insert")
+                return
 
             conn.commit()
             print(f"[Location] Saved: Home {self.time_at_home_seconds}s, Max Dist {self.max_dist_km:.3f}km")

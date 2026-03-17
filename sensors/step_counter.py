@@ -18,8 +18,9 @@ import os
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
 class StepCounter:
-    def __init__(self, db_path=DB_PATH):
+    def __init__(self, db_path=DB_PATH, user_id=None):
         self.db_path = db_path
+        self.user_id = user_id
         self.step_count = 0
         self.accel_buffer = deque(maxlen=50) # 1 second window @ 50hz
         self.last_step_time = 0
@@ -93,11 +94,14 @@ class StepCounter:
             if row:
                 new_total = (row[1] or 0) + self.step_count
                 cursor.execute("UPDATE passive_metrics SET step_count = ?, window_end_utc = ? WHERE id = ?", (new_total, now, row[0]))
-            else:
+            elif self.user_id:
                 cursor.execute("""
-                    INSERT INTO passive_metrics (window_start_utc, window_end_utc, step_count)
-                    VALUES (?, ?, ?)
-                """, (hour_start, now, self.step_count))
+                    INSERT INTO passive_metrics (user_id, window_start_utc, window_end_utc, step_count)
+                    VALUES (?, ?, ?, ?)
+                """, (self.user_id, hour_start, now, self.step_count))
+            else:
+                print("[StepCounter] Warning: no user_id set, skipping DB insert")
+                return
 
             conn.commit()
 

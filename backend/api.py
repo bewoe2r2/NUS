@@ -169,6 +169,13 @@ async def security_middleware(request: Request, call_next):
     # 2. Rate limiting per client IP
     client_ip = request.client.host if request.client else "unknown"
     now = time.time()
+
+    # Periodic cleanup: evict IPs with no recent activity (prevent memory leak)
+    if len(_rate_limit_store) > 10000:
+        stale = [ip for ip, ts in _rate_limit_store.items() if not ts or now - ts[-1] > RATE_LIMIT_WINDOW * 2]
+        for ip in stale:
+            del _rate_limit_store[ip]
+
     if client_ip in _rate_limit_store:
         _rate_limit_store[client_ip] = [t for t in _rate_limit_store[client_ip] if now - t < RATE_LIMIT_WINDOW]
     else:
@@ -342,33 +349,41 @@ def get_db():
     conn.execute("PRAGMA busy_timeout=5000")
     return conn
 
+import threading
 _cached_engine = None
 _cached_gemini = None
+_init_lock = threading.Lock()
 
 def get_engine():
-    """Get HMM Engine instance (cached singleton)"""
+    """Get HMM Engine instance (cached singleton, thread-safe)"""
     global _cached_engine
     if _cached_engine is not None:
         return _cached_engine
-    try:
-        _cached_engine = HMMEngine()
-        return _cached_engine
-    except Exception as e:
-        logger.error(f"Engine init failed: {e}")
-        raise HTTPException(status_code=500, detail="HMM Engine unavailable")
+    with _init_lock:
+        if _cached_engine is not None:
+            return _cached_engine
+        try:
+            _cached_engine = HMMEngine()
+            return _cached_engine
+        except Exception as e:
+            logger.error(f"Engine init failed: {e}")
+            raise HTTPException(status_code=500, detail="HMM Engine unavailable")
 
 def get_gemini():
-    """Get Gemini Integration instance (cached singleton)"""
+    """Get Gemini Integration instance (cached singleton, thread-safe)"""
     global _cached_gemini
     if _cached_gemini is not None:
         return _cached_gemini
-    try:
-        gi = GeminiIntegration()
-        _cached_gemini = gi
-        return _cached_gemini
-    except Exception as e:
-        logger.error(f"Gemini init failed: {e}")
-        return None
+    with _init_lock:
+        if _cached_gemini is not None:
+            return _cached_gemini
+        try:
+            gi = GeminiIntegration()
+            _cached_gemini = gi
+            return _cached_gemini
+        except Exception as e:
+            logger.error(f"Gemini init failed: {e}")
+            return None
 
 def get_voucher_system(user_id: str = 'demo_user'):
     """Get Voucher System instance"""
@@ -505,6 +520,7 @@ class PatientAnalysisResponse(BaseModel):
 @app.get("/patient/{patient_id}/analysis/14days", response_model=PatientAnalysisResponse)
 async def get_patient_analysis(patient_id: str):
     """Get stable 14-day HMM analysis (Worst-Case Aggregation)"""
+    conn = None
     try:
         conn = get_db()
         
@@ -518,11 +534,9 @@ async def get_patient_analysis(patient_id: str):
                 detected_state,
                 confidence_score
             FROM hmm_states
-            WHERE timestamp_utc >= ? AND (user_id = ? OR user_id = 'current_user')
+            WHERE timestamp_utc >= ? AND user_id = ?
             ORDER BY timestamp_utc ASC
         """, (start_time, patient_id)).fetchall()
-        
-        conn.close()
         
         # Aggregation Logic: Group by Date -> Worst Case State
         daily_map = {} # date -> {states: [], confs: []}
@@ -565,6 +579,9 @@ async def get_patient_analysis(patient_id: str):
     except Exception as e:
         logger.exception(f"Error getting 14-day analysis: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 class GaussianPoint(BaseModel):
     x: float
@@ -605,6 +622,12 @@ async def get_analysis_detail(patient_id: str, date: str):
     Get deep-dive analysis for a specific date.
     Returns Gaussian curves vs observed values for all features.
     """
+    # Validate date format (YYYY-MM-DD)
+    import re
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+    conn = None
     try:
         conn = get_db()
         engine = get_engine()
@@ -617,11 +640,9 @@ async def get_analysis_detail(patient_id: str, date: str):
                 input_vector_snapshot,
                 timestamp_utc
             FROM hmm_states
-            WHERE date(timestamp_utc, 'unixepoch', 'localtime') = ? AND (user_id = ? OR user_id = 'current_user')
+            WHERE date(timestamp_utc, 'unixepoch', 'localtime') = ? AND user_id = ?
             ORDER BY timestamp_utc ASC
         """, (date, patient_id)).fetchall()
-        
-        conn.close()
         
         if not rows:
             # Return empty/safe response if no data for that day
@@ -739,6 +760,9 @@ async def get_analysis_detail(patient_id: str, date: str):
     except Exception as e:
         logger.exception(f"Error getting analysis detail: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 def _get_patient_profile(patient_id: str) -> dict:
     """Get patient profile from database, with demo fallback."""
@@ -828,6 +852,7 @@ async def chat_with_ai(request: ChatRequest):
 @app.post("/glucose/log")
 async def log_glucose(data: GlucoseInput):
     """Log a glucose reading"""
+    conn = None
     try:
         conn = get_db()
 
@@ -841,13 +866,15 @@ async def log_glucose(data: GlucoseInput):
             VALUES (?, ?, ?, ?)
         """, (data.patient_id, value, int(time.time()), data.source))
         conn.commit()
-        conn.close()
 
         return {"success": True, "value": value, "unit": "mmol/L"}
 
     except Exception as e:
         logger.exception(f"Error logging glucose: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB max file upload
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
@@ -856,7 +883,6 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
 _IMAGE_MAGIC_BYTES = {
     b'\xff\xd8\xff': "image/jpeg",
     b'\x89PNG': "image/png",
-    b'RIFF': "image/webp",  # WebP starts with RIFF....WEBP
 }
 
 
@@ -867,6 +893,9 @@ def _validate_image_magic(content: bytes) -> bool:
     for magic, _ in _IMAGE_MAGIC_BYTES.items():
         if content[:len(magic)] == magic:
             return True
+    # WebP: must be RIFF....WEBP (not just RIFF, which includes WAV/AVI)
+    if content[:4] == b'RIFF' and content[8:12] == b'WEBP':
+        return True
     # HEIC/HEIF: check for ftyp box
     if content[4:8] == b'ftyp':
         return True
@@ -959,6 +988,7 @@ async def log_food(data: FoodInput):
 @app.get("/medications/{patient_id}")
 async def get_medications(patient_id: str):
     """Get today's medication schedule from patient profile"""
+    conn = None
     try:
         conn = get_db()
         profile = _get_patient_profile(patient_id)
@@ -995,7 +1025,6 @@ async def get_medications(patient_id: str):
                 SELECT medication_name, taken_timestamp_utc FROM medication_logs
                 WHERE taken_timestamp_utc >= ?
             """, (today_start,)).fetchall()
-        conn.close()
 
         # Build list of (name, sgt_hour) for each taken log
         taken_entries = []
@@ -1031,12 +1060,16 @@ async def get_medications(patient_id: str):
     except Exception as e:
         logger.warning(f"Error loading medications: {e}")
         medications = []
+    finally:
+        if conn:
+            conn.close()
 
     return {"medications": medications}
 
 @app.post("/medications/log")
 async def log_medication(data: MedicationLog):
     """Log medication taken"""
+    conn = None
     try:
         conn = get_db()
 
@@ -1044,44 +1077,30 @@ async def log_medication(data: MedicationLog):
         today_start = now - ((now + 28800) % 86400)  # SGT midnight (UTC+8)
 
         if data.taken:
-            try:
-                conn.execute("""
-                    INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
-                    VALUES (?, ?, ?, ?)
-                """, (data.medication_name, now, now, data.patient_id))
-            except sqlite3.OperationalError:
-                # user_id column may not exist
-                conn.execute("""
-                    INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc)
-                    VALUES (?, ?, ?)
-                """, (data.medication_name, now, now))
+            conn.execute("""
+                INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
+                VALUES (?, ?, ?, ?)
+            """, (data.medication_name, now, now, data.patient_id))
             conn.commit()
         else:
             # Remove the most recent log for this medication today
-            try:
-                conn.execute("""
-                    DELETE FROM medication_logs WHERE rowid = (
-                        SELECT rowid FROM medication_logs
-                        WHERE user_id = ? AND medication_name = ? AND taken_timestamp_utc > ?
-                        ORDER BY taken_timestamp_utc DESC LIMIT 1
-                    )
-                """, (data.patient_id, data.medication_name, today_start))
-            except sqlite3.OperationalError:
-                conn.execute("""
-                    DELETE FROM medication_logs WHERE rowid = (
-                        SELECT rowid FROM medication_logs
-                        WHERE medication_name = ? AND taken_timestamp_utc > ?
-                        ORDER BY taken_timestamp_utc DESC LIMIT 1
-                    )
-                """, (data.medication_name, today_start))
+            conn.execute("""
+                DELETE FROM medication_logs WHERE rowid = (
+                    SELECT rowid FROM medication_logs
+                    WHERE user_id = ? AND medication_name = ? AND taken_timestamp_utc > ?
+                    ORDER BY taken_timestamp_utc DESC LIMIT 1
+                )
+            """, (data.patient_id, data.medication_name, today_start))
             conn.commit()
 
-        conn.close()
         return {"success": True, "medication": data.medication_name, "taken": data.taken}
 
     except Exception as e:
         logger.exception(f"Error logging medication: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 # =============================================================================
 # VOUCHER ENDPOINTS
@@ -1216,6 +1235,7 @@ async def voice_checkin(data: VoiceCheckInRequest):
 @app.get("/reminders/{patient_id}")
 async def get_reminders(patient_id: str):
     """Get pending reminders for patient"""
+    conn = None
     try:
         conn = get_db()
 
@@ -1225,7 +1245,6 @@ async def get_reminders(patient_id: str):
             WHERE user_id = ? AND status = 'pending'
             ORDER BY reminder_time
         """, (patient_id,)).fetchall()
-        conn.close()
 
         reminders = []
         for row in rows:
@@ -1242,6 +1261,9 @@ async def get_reminders(patient_id: str):
     except Exception as e:
         logger.warning(f"Error getting reminders: {e}")
         return {"reminders": []}
+    finally:
+        if conn:
+            conn.close()
 
 @app.post("/reminders/{patient_id}/dismiss/{reminder_id}")
 async def dismiss_reminder(patient_id: str, reminder_id: int):
@@ -1266,6 +1288,7 @@ async def dismiss_reminder(patient_id: str, reminder_id: int):
 @app.get("/nurse/alerts")
 async def get_nurse_alerts():
     """Get all pending alerts across ALL patients for nurse dashboard."""
+    conn = None
     try:
         conn = get_db()
         data = {
@@ -1359,17 +1382,20 @@ async def get_nurse_alerts():
         except Exception:
             pass
 
-        conn.close()
         return data
 
     except Exception as e:
         logger.exception(f"Error getting nurse alerts: {e}")
         return {"nurse_alerts": [], "medication_videos": [], "appointment_requests": [],
                 "doctor_escalations": [], "family_alerts": [], "caregiver_alerts": [], "agent_actions": []}
+    finally:
+        if conn:
+            conn.close()
 
 @app.get("/nurse/patients")
 async def get_all_patients():
     """Get all patients with their current states for nurse triage"""
+    conn = None
     try:
         engine = get_engine()
         conn = get_db()
@@ -1425,6 +1451,9 @@ async def get_all_patients():
     except Exception as e:
         logger.exception(f"Error getting patients: {e}")
         return {"patients": []}
+    finally:
+        if conn:
+            conn.close()
 
 # =============================================================================
 # AGENTIC ENDPOINTS
@@ -1502,6 +1531,7 @@ async def get_agent_status(patient_id: str):
 async def get_agent_actions(patient_id: str, limit: int = 20):
     """Get recent agent actions and tool executions for a patient."""
     limit = max(1, min(limit, 100))
+    conn = None
     try:
         conn = get_db()
         rows = conn.execute("""
@@ -1511,17 +1541,20 @@ async def get_agent_actions(patient_id: str, limit: int = 20):
             WHERE patient_id = ?
             ORDER BY timestamp_utc DESC LIMIT ?
         """, (patient_id, limit)).fetchall()
-        conn.close()
         return {"patient_id": patient_id, "actions": [dict(r) for r in rows]}
     except Exception as e:
         logger.warning(f"Error getting agent actions: {e}")
         return {"patient_id": patient_id, "actions": []}
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.get("/agent/conversation/{patient_id}")
 async def get_conversation_history_endpoint(patient_id: str, limit: int = 20):
     """Get conversation history between patient and AI agent."""
     limit = max(1, min(limit, 200))
+    conn = None
     try:
         conn = get_db()
         rows = conn.execute("""
@@ -1530,11 +1563,13 @@ async def get_conversation_history_endpoint(patient_id: str, limit: int = 20):
             WHERE patient_id = ?
             ORDER BY timestamp_utc DESC LIMIT ?
         """, (patient_id, limit)).fetchall()
-        conn.close()
         return {"patient_id": patient_id, "history": [dict(r) for r in reversed(rows)]}
     except Exception as e:
         logger.warning(f"Error getting conversation history: {e}")
         return {"patient_id": patient_id, "history": []}
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.post("/agent/counterfactual/{patient_id}")
@@ -1676,6 +1711,7 @@ async def _require_admin(request: Request):
 @app.post("/admin/inject-scenario", dependencies=[Depends(_require_admin)])
 async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier: str = "PREMIUM", patient_id: str = "P001"):
     """Inject demo scenario data (for testing)"""
+    conn = None
     try:
         engine = get_engine()
         observations = engine.generate_demo_scenario(scenario, days=days)
@@ -1704,34 +1740,31 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
 
             steps = obs.get('steps_daily', 0) or 0
             conn.execute("""
-                INSERT INTO passive_metrics (window_start_utc, window_end_utc, step_count, screen_time_seconds, time_at_home_seconds)
-                VALUES (?, ?, ?, ?, ?)
-            """, (t, t + window_size, int(steps / 6), 3600, 3600))
+                INSERT INTO passive_metrics (user_id, window_start_utc, window_end_utc, step_count, screen_time_seconds, time_at_home_seconds)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (patient_id, t, t + window_size, int(steps / 6), 3600, 3600))
 
             if obs.get('meds_adherence', 0) and obs['meds_adherence'] > 0.5:
-                try:
-                    conn.execute("""
-                        INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
-                        VALUES (?, ?, ?, ?)
-                    """, ('Metformin', t + 100, t, patient_id))
-                except sqlite3.OperationalError:
-                    conn.execute("""
-                        INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc)
-                        VALUES (?, ?, ?)
-                    """, ('Metformin', t + 100, t))
+                conn.execute("""
+                    INSERT INTO medication_logs (medication_name, taken_timestamp_utc, scheduled_timestamp_utc, user_id)
+                    VALUES (?, ?, ?, ?)
+                """, ('Metformin', t + 100, t, patient_id))
 
         conn.commit()
-        conn.close()
 
         return {"success": True, "scenario": scenario, "days": days, "observations": len(observations)}
 
     except Exception as e:
         logger.exception(f"Error injecting scenario: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 @app.post("/admin/run-hmm", dependencies=[Depends(_require_admin)])
 async def run_hmm_analysis():
     """Run HMM analysis on current data"""
+    conn = None
     try:
         engine = get_engine()
 
@@ -1769,7 +1802,6 @@ async def run_hmm_analysis():
             total_analyzed += len(observations)
 
         conn.commit()
-        conn.close()
 
         if total_analyzed == 0:
             return {"success": False, "error": "No data available"}
@@ -1779,12 +1811,16 @@ async def run_hmm_analysis():
     except Exception as e:
         logger.exception(f"Error running HMM: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 # ... (existing admin endpoints)
 
 @app.post("/admin/reset", dependencies=[Depends(_require_admin)])
 async def reset_data():
     """Reset all data for demo"""
+    conn = None
     try:
         conn = get_db()
         # Hardcoded allowlist — no user input in table names
@@ -1795,11 +1831,13 @@ async def reset_data():
             except Exception:
                 pass
         conn.commit()
-        conn.close()
         return {"success": True, "message": "All data reset"}
     except Exception as e:
         logger.exception(f"Error resetting data: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 # =============================================================================
 # CLINICIAN & IMPACT ENDPOINTS
