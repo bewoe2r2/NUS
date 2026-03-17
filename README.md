@@ -90,9 +90,9 @@ Healthcare/
 ├── backend/
 │   └── api.py                  # FastAPI server (54 API routes)
 ├── core/
-│   ├── hmm_engine.py           # HMM + Viterbi + Baum-Welch (3,085 lines)
-│   ├── agent_runtime.py        # Agentic orchestration, 18 tools (3,879 lines)
-│   ├── gemini_integration.py   # Gemini AI + SBAR generation (2,304 lines)
+│   ├── hmm_engine.py           # HMM + Viterbi + Baum-Welch
+│   ├── agent_runtime.py        # Agentic orchestration, 18 tools
+│   ├── gemini_integration.py   # Gemini AI + SBAR generation
 │   ├── clinical_engine.py      # Clinical decision support
 │   ├── merlion_risk_engine.py  # Monte Carlo risk forecasting
 │   ├── sealion_interface.py    # Cultural/language adaptation
@@ -102,24 +102,28 @@ Healthcare/
 │   ├── appointment_booking.py  # Appointment management
 │   ├── caregiver_alerts.py     # Alert system
 │   └── clinical_interventions.py # Medical interventions
+├── sensors/
+│   ├── location_tracker.py     # Location-based context
+│   ├── screen_time_tracker.py  # Screen time monitoring
+│   └── step_counter.py         # Activity tracking
 ├── frontend/                   # Next.js React app
-│   ├── app/                    # Patient, Nurse, Judge dashboards
-│   └── components/             # 40+ React components
+│   ├── app/                    # Patient (/), Nurse (/nurse), Judge (/judge)
+│   ├── components/             # React components
+│   └── tests/                  # Frontend tests (API client, components, walkthrough)
 ├── database/
 │   ├── nexus_schema.sql        # Full database schema
 │   └── nexus_health.db         # SQLite database (pre-seeded)
 ├── scripts/
 │   ├── init_db.py              # Database initialization
 │   └── inject_data.py          # Demo data seeding
-├── tests/                      # Backend: HMM, API, pipeline tests
-├── frontend/tests/             # Frontend: API client, component, walkthrough tests
-├── video/                      # Remotion pitch video (4K)
-├── frontend-html/              # Static HTML exports (patient, nurse, judge, walkthrough)
+├── tests/                      # Backend tests: HMM, API, pipeline, validation
+├── validation/                 # HMM validation suite
+├── slides/
+│   └── nusslides.html          # Competition presentation slides
+├── EXECUTIVE_SUMMARY.md        # One-page project overview
 ├── Dockerfile                  # Multi-stage Docker build
 ├── docker-compose.yml          # One-command deployment
-├── .github/workflows/ci.yml   # CI pipeline (backend tests, frontend lint+test+build)
-├── backend/requirements.txt    # Python dependencies
-└── .env.example                # Environment template
+└── requirements.txt            # Python dependencies
 ```
 
 ---
@@ -257,7 +261,7 @@ The CI pipeline (`.github/workflows/ci.yml`) runs backend tests, frontend lint, 
 
 ## Technical Highlights
 
-### HMM Engine (3,085 lines)
+### HMM Engine
 - 9 orthogonal features with Gaussian emission distributions
 - Weighted log-space Viterbi decoding (numerically stable)
 - Baum-Welch (EM) for personalized parameter learning
@@ -265,7 +269,7 @@ The CI pipeline (`.github/workflows/ci.yml`) runs backend tests, frontend lint, 
 - Safety rule fusion (hard overrides for critical thresholds)
 - Per-patient calibrated baselines with MLE
 
-### Agent Runtime (3,879 lines)
+### Agent Runtime
 - Multi-turn ReAct reasoning loop (5 turns max)
 - 18 tool definitions with structured execution
 - Outcome-based tool selection (exponential decay, 14-day half-life)
@@ -274,15 +278,6 @@ The CI pipeline (`.github/workflows/ci.yml`) runs backend tests, frontend lint, 
 - Proactive scheduling with 6 trigger conditions
 - Drug interaction engine (16 pairs, 39 class mappings)
 - SBAR auto-generation for nurse escalations
-
-### Codebase Metrics
-| Component | Lines of Code |
-|-----------|--------------|
-| Core engines | 12,867 |
-| API server | 1,730 |
-| Frontend components | 4,091 |
-| Tests | 1,200+ |
-| **Total** | **~43,000+** |
 
 ---
 
