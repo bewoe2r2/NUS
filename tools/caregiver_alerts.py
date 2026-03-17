@@ -293,10 +293,11 @@ def _check_rate_limit(patient_id: str, severity: str) -> bool:
         conn = sqlite3.connect(DB_PATH)
         one_hour_ago = int(time.time()) - 3600
 
-        count = conn.execute(
+        result = conn.execute(
             "SELECT COUNT(*) FROM caregiver_alerts WHERE patient_id = ? AND severity = ? AND timestamp_utc >= ?",
             (patient_id, severity, one_hour_ago),
-        ).fetchone()[0]
+        ).fetchone()
+        count = result[0] if result else 0
 
         return count < limit
     finally:

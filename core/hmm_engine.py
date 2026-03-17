@@ -42,6 +42,7 @@ import math
 import json
 import time
 import random
+import logging
 from datetime import datetime, timedelta, timezone
 import numpy as np
 
@@ -2810,7 +2811,7 @@ class HMMEngine:
             return None
 
         except Exception as e:
-            print(f"[WARN] Error fetching previous state: {e}")
+            logging.getLogger(__name__).warning(f"Error fetching previous state: {e}")
             return None
         finally:
             conn.close()

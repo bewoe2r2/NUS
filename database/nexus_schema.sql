@@ -66,7 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_medication_logs_user ON medication_logs(user_id);
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS medications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL DEFAULT 'current_user',
+    user_id TEXT NOT NULL,
     medication_name TEXT NOT NULL,
     dosage TEXT,
     frequency TEXT DEFAULT 'BID',

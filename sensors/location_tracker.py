@@ -37,8 +37,7 @@ try:
     HOME_LAT = _raw_lat
     HOME_LON = _raw_lon
 except ValueError as e:
-    import logging as _logging
-    _logging.getLogger(__name__).warning(f"Invalid home coordinates: {e}. Using Singapore defaults.")
+    logger.warning(f"Invalid home coordinates: {e}. Using Singapore defaults.")
     HOME_LAT = _DEFAULT_HOME_LAT
     HOME_LON = _DEFAULT_HOME_LON
 

@@ -793,11 +793,11 @@ def _get_patient_profile(patient_id: str) -> dict:
                 # Handle JSON-encoded lists
                 try:
                     conditions = ", ".join(json.loads(conditions)) if conditions.startswith("[") else conditions
-                except Exception:
+                except (json.JSONDecodeError, TypeError):
                     pass
                 try:
                     medications = ", ".join(json.loads(medications)) if medications.startswith("[") else medications
-                except Exception:
+                except (json.JSONDecodeError, TypeError):
                     pass
                 return {
                     "id": row["user_id"],
@@ -1140,8 +1140,8 @@ async def get_voucher(patient_id: str):
                     streak_vals = streaks.get('streaks', streaks)
                     if isinstance(streak_vals, dict):
                         streak_days = max(((v.get('current', 0) if isinstance(v, dict) else 0) for v in streak_vals.values()), default=0) if streak_vals else 0
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Streak calculation failed: {e}")
 
         return VoucherResponse(
             current_value=voucher.get('current_value', 5.00),
@@ -1321,8 +1321,8 @@ async def get_nurse_alerts():
                 LIMIT 50
             """).fetchall()
             data["nurse_alerts"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"nurse_alerts table not available: {e}")
 
         # Medication video requests
         try:
@@ -1332,8 +1332,8 @@ async def get_nurse_alerts():
                 ORDER BY timestamp_utc DESC LIMIT 20
             """).fetchall()
             data["medication_videos"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"medication_video_requests table not available: {e}")
 
         # Appointment requests
         try:
@@ -1344,8 +1344,8 @@ async def get_nurse_alerts():
                          timestamp_utc DESC LIMIT 20
             """).fetchall()
             data["appointment_requests"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"appointment_requests table not available: {e}")
 
         # Doctor escalations
         try:
@@ -1355,8 +1355,8 @@ async def get_nurse_alerts():
                 ORDER BY timestamp_utc DESC LIMIT 20
             """).fetchall()
             data["doctor_escalations"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"doctor_escalations table not available: {e}")
 
         # Family alerts
         try:
@@ -1366,8 +1366,8 @@ async def get_nurse_alerts():
                 ORDER BY timestamp_utc DESC LIMIT 20
             """).fetchall()
             data["family_alerts"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"family_alerts table not available: {e}")
 
         # Caregiver alerts (from tools)
         try:
@@ -1377,8 +1377,8 @@ async def get_nurse_alerts():
                 ORDER BY timestamp_utc DESC LIMIT 20
             """).fetchall()
             data["caregiver_alerts"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"caregiver_alerts table not available: {e}")
 
         # Recent agent actions
         try:
@@ -1389,8 +1389,8 @@ async def get_nurse_alerts():
                 ORDER BY timestamp_utc DESC LIMIT 30
             """).fetchall()
             data["agent_actions"] = [dict(r) for r in rows]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"agent_actions_log table not available: {e}")
 
         return data
 
@@ -1725,6 +1725,8 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
     try:
         engine = get_engine()
         observations = engine.generate_demo_scenario(scenario, days=days)
+        if not observations:
+            raise HTTPException(status_code=400, detail=f"Unknown scenario '{scenario}' or no observations generated.")
 
         conn = get_db()
         now = int(time.time())
@@ -1736,8 +1738,8 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
         for table in SAFE_TABLES_SCENARIO:
             try:
                 conn.execute(f"DELETE FROM {table}")  # nosec: table name from hardcoded allowlist
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Could not clear {table}: {e}")
 
         for i, obs in enumerate(observations):
             t = start_time + (i * window_size)
@@ -1838,8 +1840,8 @@ async def reset_data():
         for table in SAFE_TABLES_RESET:
             try:
                 conn.execute(f"DELETE FROM {table}")  # nosec: table name from hardcoded allowlist
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Could not clear {table}: {e}")
         conn.commit()
         return {"success": True, "message": "All data reset"}
     except Exception as e:
@@ -2112,8 +2114,9 @@ async def caregiver_dashboard(patient_id: str):
                     ORDER BY timestamp_utc DESC LIMIT 20
                 """, (patient_id,)).fetchall()
                 recent_alerts = [dict(a) for a in alerts]
-            except Exception:
-                recent_alerts = []  # Table may not exist yet
+            except Exception as e:
+                logger.debug(f"caregiver_alerts not available: {e}")
+                recent_alerts = []
             return {
                 "success": True, "patient_id": patient_id,
                 "patient_name": profile.get("name", patient_id),

@@ -378,16 +378,15 @@ class GeminiIntegration:
                 # Check if model exists in available models
                 # Models are returned as "models/gemini-3.0-flash" format
                 if any(candidate in model for model in available_models):
-                    print(f"[OK] Found model: {candidate}")
+                    logger.info(f"Found model: {candidate}")
                     return candidate
 
             # If no match found, fall back to last candidate
-            print(f"[WARN] No preferred models found. Defaulting to: {self.model_candidates[-1]}")
+            logger.warning(f"No preferred models found. Defaulting to: {self.model_candidates[-1]}")
             return self.model_candidates[-1]
 
         except Exception as e:
-            print(f"[WARN] Could not query available models: {e}")
-            print(f"       Defaulting to: {self.model_candidates[0]}")
+            logger.warning(f"Could not query available models: {e}. Defaulting to: {self.model_candidates[0]}")
             return self.model_candidates[0]
 
     def _get_model(self):
@@ -450,7 +449,7 @@ class GeminiIntegration:
             return json.loads(text)
 
         except Exception as e:
-            print(f"OCR Error: {e}")
+            logger.error(f"OCR Error: {e}")
             return {
                 'value': None,
                 'unit': 'mmol/L',
@@ -509,7 +508,7 @@ class GeminiIntegration:
             return json.loads(text)
 
         except Exception as e:
-            print(f"Sentiment Analysis Error: {e}")
+            logger.error(f"Sentiment Analysis Error: {e}")
             return {
                 'sentiment_score': 0.0,
                 'health_keywords': [],
@@ -578,7 +577,7 @@ class GeminiIntegration:
 
             return json.loads(text)
         except Exception as e:
-            print(f"SBAR Synthesis Error: {e}")
+            logger.error(f"SBAR Synthesis Error: {e}")
             # Generate useful fallback SBAR from available data
             glucose_avg = metrics.get('glucose_avg', 0)
             adherence = metrics.get('adherence_pct', 0)
@@ -933,13 +932,13 @@ class GeminiIntegration:
                     return json.loads(row['insight_json'])
                 else:
                     # State changed - invalidate cache
-                    print(f"[CACHE] State changed from {cached_state} to {current_state} - regenerating insight")
+                    logger.info(f"State changed from {cached_state} to {current_state} - regenerating insight")
                     return None
 
             return None  # No cache for today
 
         except Exception as e:
-            print(f"[WARN] Cache lookup error: {e}")
+            logger.warning(f"Cache lookup error: {e}")
             return None
         finally:
             conn.close()
@@ -965,9 +964,9 @@ class GeminiIntegration:
             """, (user_id, today, json.dumps(insight), now, hmm_state,
                   pattern_detected, trigger_reason))
             conn.commit()
-            print(f"[CACHE] Daily insight cached for {today}")
+            logger.debug(f"Daily insight cached for {today}")
         except Exception as e:
-            print(f"[WARN] Failed to cache insight: {e}")
+            logger.warning(f"Failed to cache insight: {e}")
         finally:
             conn.close()
 
@@ -1061,7 +1060,7 @@ class GeminiIntegration:
             patterns.sort(key=lambda x: x['avg_glucose_increase'], reverse=True)
 
         except Exception as e:
-            print(f"[WARN] Pattern detection error: {e}")
+            logger.warning(f"Pattern detection error: {e}")
         finally:
             conn.close()
 
@@ -1096,10 +1095,10 @@ class GeminiIntegration:
         if not force_regenerate:
             cached = self.get_cached_daily_insight(user_id)
             if cached:
-                print("[GEMINI] Returning cached daily insight")
+                logger.debug("Returning cached daily insight")
                 return cached
 
-        print("[GEMINI] Generating new daily insight...")
+        logger.info("Generating new daily insight...")
 
         # Fetch full context
         full_context = self.fetch_full_context(days=7)
@@ -1239,7 +1238,7 @@ Return JSON:
             return insight
 
         except Exception as e:
-            print(f"Daily Insight Error: {e}")
+            logger.error(f"Daily Insight Error: {e}")
             return {
                 "greeting": f"Good morning {patient_profile.get('name', 'there')}!",
                 "yesterday_summary": "Let me check your health data...",
@@ -1266,10 +1265,10 @@ Return JSON:
                 VALUES (?, ?, ?, ?, ?)
             """, (user_id, now, previous_state, new_state, confidence))
             conn.commit()
-            print(f"[ALERT] State change logged: {previous_state} → {new_state}")
+            logger.info(f"State change logged: {previous_state} → {new_state}")
             return True
         except Exception as e:
-            print(f"[WARN] Failed to log state change: {e}")
+            logger.warning(f"Failed to log state change: {e}")
             return False
         finally:
             conn.close()
@@ -1293,7 +1292,7 @@ Return JSON:
 
             return [dict(row) for row in rows]
         except Exception as e:
-            print(f"[WARN] Failed to get pending alerts: {e}")
+            logger.warning(f"Failed to get pending alerts: {e}")
             return []
         finally:
             conn.close()
@@ -1516,7 +1515,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
                 num_simulations=2000  # Balance speed vs accuracy
             )
         except Exception as e:
-            print(f"[WARN] Monte Carlo failed: {e}")
+            logger.warning(f"Monte Carlo failed: {e}")
             monte_carlo_result = {
                 "prob_crisis_percent": risk_48h * 100,
                 "risk_level": "UNKNOWN",
@@ -1548,7 +1547,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
                         "message": result.get('message', '')
                     }
             except Exception as e:
-                print(f"[WARN] Counterfactual {scenario_name} failed: {e}")
+                logger.warning(f"Counterfactual {scenario_name} failed: {e}")
 
         # =====================================================================
         # STEP 4: DETECT STATE CHANGES AND TRENDS
@@ -1744,7 +1743,7 @@ Return your response as valid JSON following the format in the system prompt.
             return result
 
         except Exception as e:
-            print(f"[ERROR] Agentic response failed: {e}")
+            logger.error(f"Agentic response failed: {e}")
             return self._generate_fallback_agentic_response(
                 current_state, latest_obs, patient_profile, voucher_balance
             )
@@ -1844,7 +1843,7 @@ Return your response as valid JSON following the format in the system prompt.
                 return {'action': action_type, 'status': 'unknown_action'}
 
         except Exception as e:
-            print(f"[ERROR] Action {action_type} failed: {e}")
+            logger.error(f"Action {action_type} failed: {e}")
             return {'action': action_type, 'status': 'error', 'error': str(e)}
         finally:
             conn.close()
@@ -1970,9 +1969,9 @@ Return your response as valid JSON following the format in the system prompt.
             for table_sql in tables:
                 conn.execute(table_sql)
             conn.commit()
-            print("[OK] Agentic tables ensured")
+            logger.info("Agentic tables ensured")
         except Exception as e:
-            print(f"[WARN] Table creation error: {e}")
+            logger.warning(f"Table creation error: {e}")
         finally:
             conn.close()
 
@@ -2041,7 +2040,7 @@ Return your response as valid JSON following the format in the system prompt.
             data['doctor_escalations'] = [dict(row) for row in rows]
 
         except Exception as e:
-            print(f"[WARN] Nurse dashboard data error: {e}")
+            logger.warning(f"Nurse dashboard data error: {e}")
         finally:
             conn.close()
 
@@ -2162,14 +2161,14 @@ Return your response as valid JSON following the format in the system prompt.
 
             # Validate tool_name is in available_tools
             if result.get('tool_name') and result['tool_name'] not in available_tools:
-                print(f"Warning: LLM suggested invalid tool '{result['tool_name']}'")
+                logger.warning(f"LLM suggested invalid tool '{result['tool_name']}'")
                 result['tool_name'] = None
                 result['action'] = 'none'
             
             return result
             
         except Exception as e:
-            print(f"Agentic reasoning error: {e}")
+            logger.error(f"Agentic reasoning error: {e}")
             return self._fallback_reasoning(observation, available_tools)
     
     def _fallback_reasoning(self, observation: dict, available_tools: list) -> dict:
@@ -2321,7 +2320,7 @@ RESPOND IN JSON:
             return result
             
         except Exception as e:
-            print(f"Agentic response error: {e}")
+            logger.error(f"Agentic response error: {e}")
             return {
                 "message_to_patient": "I'm here to help! Could you please rephrase that?",
                 "tone": "calm",
@@ -2342,7 +2341,7 @@ RESPOND IN JSON:
             finally:
                 conn.close()
         except Exception as e:
-            print(f"Warning: Could not store conversation: {e}")
+            logger.warning(f"Could not store conversation: {e}")
 
 
 if __name__ == "__main__":
