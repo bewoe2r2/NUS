@@ -100,7 +100,11 @@ class SeaLionInterface:
         if GENAI_AVAILABLE and self.gemini_key:
             # Don't call genai.configure() here — GeminiIntegration already configures it globally.
             # Calling it again overwrites global Gemini state and can cause race conditions.
-            self.gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+            try:
+                self.gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+            except Exception as e:
+                logger.warning(f"Could not initialize Gemini model: {e}")
+                self.gemini_model = None
 
         # Log which backend is active
         if self.sealion_client:

@@ -154,7 +154,8 @@ def validate_all():
         required_tables = ['glucose_readings', 'hmm_states', 'medication_logs', 'passive_metrics']
         for table in required_tables:
             try:
-                count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                result = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
+                count = result[0] if result else 0
                 print(f"  [OK] {table}: {count} rows")
             except Exception as e:
                 print(f"  [FAIL] {table}: {e}")

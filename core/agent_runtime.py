@@ -2730,13 +2730,15 @@ def get_optimal_nudge_times(patient_id: str) -> Dict:
                 sent_time = rows[i]["timestamp_utc"]
                 response_time = rows[i+1]["timestamp_utc"]
                 response_delay = response_time - sent_time
+                if response_delay <= 0:
+                    continue
 
                 hour = datetime.fromtimestamp(sent_time).hour
                 if hour not in response_by_hour:
                     response_by_hour[hour] = []
                 response_by_hour[hour].append(response_delay)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Nudge time calculation error: {e}")
     finally:
         conn.close()
 
@@ -2765,7 +2767,7 @@ def get_optimal_nudge_times(patient_id: str) -> Dict:
     return {
         "best_hours": best_hours,
         "avoid_hours": worst_hours + [0, 1, 2, 3, 4, 5],
-        "response_data": {h: {"avg_delay_min": sum(d)/len(d)/60, "count": len(d)}
+        "response_data": {h: {"avg_delay_min": sum(d)/max(len(d), 1)/60, "count": len(d)}
                           for h, d in response_by_hour.items()},
         "data_available": True,
         "recommendation": f"Best response times: {', '.join(f'{h}:00' for h in best_hours)}"
