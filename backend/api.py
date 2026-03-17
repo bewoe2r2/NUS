@@ -125,7 +125,8 @@ if not _raw_api_key or _raw_api_key == "bewo-dev-key-2026":
             "To run in dev mode, also set DEBUG_MODE=True."
         )
 API_KEY = _raw_api_key
-ADMIN_KEY = os.getenv("BEWO_ADMIN_KEY", API_KEY)
+_admin_key_env = os.getenv("BEWO_ADMIN_KEY", "")
+ADMIN_KEY = _admin_key_env if _admin_key_env else API_KEY
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
@@ -299,11 +300,11 @@ class CaregiverResponseInput(BaseModel):
     message: str = ""
 
 class CounterfactualInput(BaseModel):
-    intervention: str = "take_medication"
+    intervention: str = Field("take_medication", pattern=r"^[a-zA-Z_]+$")
     medication: str = "Metformin"
     dose: str = "500mg"
-    carb_reduction: int = 30
-    additional_steps: int = 3000
+    carb_reduction: int = Field(30, ge=0, le=200)
+    additional_steps: int = Field(3000, ge=0, le=100000)
 
 class MoodDetectInput(BaseModel):
     message: str = ""
@@ -424,10 +425,13 @@ async def get_patient_state(patient_id: str):
         result = engine.run_inference(observations, patient_id=patient_id)
         latest_obs = observations[-1]
 
-        # Extract values safely
-        glucose = latest_obs.get('glucose_avg') or 5.5
-        steps = latest_obs.get('steps_daily') or 0
-        hr = latest_obs.get('resting_hr') or 70
+        # Extract values safely (use `is not None` to preserve valid 0 values)
+        glucose = latest_obs.get('glucose_avg')
+        glucose = glucose if glucose is not None else 5.5
+        steps = latest_obs.get('steps_daily')
+        steps = steps if steps is not None else 0
+        hr = latest_obs.get('resting_hr')
+        hr = hr if hr is not None else 70
 
         curr_state = result.get('current_state', 'STABLE')
         confidence = result.get('confidence', 0.5)
@@ -445,9 +449,10 @@ async def get_patient_state(patient_id: str):
         path_states = result.get('path_states', [])
         if len(path_states) >= 6:
             state_values = {'STABLE': 0, 'WARNING': 1, 'CRISIS': 2}
-            first_avg = sum(state_values.get(s, 0) for s in path_states[:len(path_states)//2]) / (len(path_states)//2)
-            second_half = path_states[len(path_states)//2:]
-            second_avg = sum(state_values.get(s, 0) for s in second_half) / len(second_half)
+            half = len(path_states) // 2
+            first_avg = sum(state_values.get(s, 0) for s in path_states[:half]) / max(half, 1)
+            second_half = path_states[half:]
+            second_avg = sum(state_values.get(s, 0) for s in second_half) / max(len(second_half), 1)
             if second_avg < first_avg - 0.3:
                 trend = "IMPROVING"
             elif second_avg > first_avg + 0.3:
@@ -565,7 +570,7 @@ async def get_patient_analysis(patient_id: str):
                 final_state = 'WARNING'
                 
             # Avg confidence
-            avg_conf = sum(data['confs']) / len(data['confs']) if data['confs'] else 0.0
+            avg_conf = (sum(data['confs']) / len(data['confs'])) if data['confs'] else 0.0
             
             result_history.append(DailyAnalysis(
                 date=d,
@@ -622,10 +627,11 @@ async def get_analysis_detail(patient_id: str, date: str):
     Get deep-dive analysis for a specific date.
     Returns Gaussian curves vs observed values for all features.
     """
-    # Validate date format (YYYY-MM-DD)
-    import re
-    if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+    # Validate date format and semantic validity
+    try:
+        datetime.strptime(date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date. Use YYYY-MM-DD format.")
 
     conn = None
     try:
@@ -650,20 +656,21 @@ async def get_analysis_detail(patient_id: str, date: str):
                 date=date, selected_state="UNKNOWN", gaussian_plots=[], evidence=[]
             )
             
-        # Find worst state row
-        worst_row = None
+        # Find worst state row (initialize to first row as safe default)
+        worst_row = rows[0]
         severity_map = {"CRISIS": 3, "WARNING": 2, "STABLE": 1}
         max_sev = 0
-        
+
         for row in rows:
             sev = severity_map.get(row['detected_state'], 0)
             if sev >= max_sev:
                 max_sev = sev
                 worst_row = row
-                
+
         # Parse observation
         try:
-            obs = json.loads(worst_row['input_vector_snapshot']) if worst_row['input_vector_snapshot'] else {}
+            snapshot = worst_row['input_vector_snapshot'] if worst_row else None
+            obs = json.loads(snapshot) if snapshot else {}
         except (json.JSONDecodeError, TypeError):
             obs = {}
         
@@ -1132,7 +1139,7 @@ async def get_voucher(patient_id: str):
                 if isinstance(streaks, dict):
                     streak_vals = streaks.get('streaks', streaks)
                     if isinstance(streak_vals, dict):
-                        streak_days = max((v.get('current', 0) if isinstance(v, dict) else 0) for v in streak_vals.values()) if streak_vals else 0
+                        streak_days = max(((v.get('current', 0) if isinstance(v, dict) else 0) for v in streak_vals.values()), default=0) if streak_vals else 0
             except Exception:
                 pass
 
@@ -1268,6 +1275,7 @@ async def get_reminders(patient_id: str):
 @app.post("/reminders/{patient_id}/dismiss/{reminder_id}")
 async def dismiss_reminder(patient_id: str, reminder_id: int):
     """Dismiss a reminder"""
+    conn = None
     try:
         conn = get_db()
         conn.execute("""
@@ -1275,11 +1283,13 @@ async def dismiss_reminder(patient_id: str, reminder_id: int):
             WHERE id = ? AND user_id = ?
         """, (reminder_id, patient_id))
         conn.commit()
-        conn.close()
         return {"success": True}
     except Exception as e:
         logger.exception(f"Error dismissing reminder: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
+    finally:
+        if conn:
+            conn.close()
 
 # =============================================================================
 # NURSE DASHBOARD ENDPOINTS
@@ -1847,10 +1857,8 @@ async def reset_data():
 async def get_clinician_summary(patient_id: str, period_days: int = 7):
     """Structured clinician intelligence briefing with SBAR, trajectory, interventions."""
     try:
-        from agent_runtime import DB_PATH
-        _conn = sqlite3.connect(DB_PATH)
+        _conn = get_db()
         try:
-            _conn.row_factory = sqlite3.Row
             summary = _exec_clinician_summary({"period_days": period_days}, patient_id, _conn, int(time.time()))
             # Sanitize NaN/Inf values that break JSON serialization
             def _sanitize(obj):
@@ -2256,17 +2264,20 @@ def startup_event():
 
     try:
         ensure_runtime_tables()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Runtime tables init: {e}")
 
     # Ensure reminder_type column exists (added by agent_runtime but may not exist yet)
+    conn = None
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db()
         conn.execute("ALTER TABLE reminders ADD COLUMN reminder_type TEXT DEFAULT 'general'")
         conn.commit()
-        conn.close()
     except Exception:
         pass  # Column already exists or table doesn't exist yet
+    finally:
+        if conn:
+            conn.close()
 
     logger.info("API ready with AgentRuntime!")
 
@@ -2276,7 +2287,7 @@ def _auto_init_database():
     schema_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_schema.sql")
 
     # Check if core tables exist
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db()
     try:
         tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
         has_schema = "patients" in tables and "glucose_readings" in tables

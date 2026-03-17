@@ -777,6 +777,8 @@ class HMMEngine:
         max_log = max(log_likelihoods)
         probs = [math.exp(ll - max_log) for ll in log_likelihoods]
         total_prob = sum(probs)
+        if total_prob == 0:
+            total_prob = 1.0
         current_belief = np.array([p / total_prob for p in probs])
 
         # If already in CRISIS, probability is 100% immediate

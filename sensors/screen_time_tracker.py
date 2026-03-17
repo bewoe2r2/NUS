@@ -9,8 +9,11 @@ Mocks OS Interaction to track screen usage and derive sleep quality.
 
 import time
 import sqlite3
+import logging
 import os
 import random
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
@@ -57,7 +60,7 @@ class ScreenTimeTracker:
         night_usage_seconds = 0
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=10)
             now = int(time.time())
             # Look for screen time in the 10pm-6am window (last night) in SGT (UTC+8)
             sgt_now = now + 28800  # UTC+8
@@ -85,7 +88,7 @@ class ScreenTimeTracker:
     def _save_to_db(self, screen_seconds):
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=10)
             cursor = conn.cursor()
 
             now = int(time.time())
@@ -109,13 +112,13 @@ class ScreenTimeTracker:
                     VALUES (?, ?, ?, ?)
                 """, (self.user_id, hour_start, now, screen_seconds))
             else:
-                print("[ScreenTime] Warning: no user_id set, skipping DB insert")
+                logger.warning("No user_id set, skipping DB insert")
                 return
 
             conn.commit()
-            print(f"[ScreenTime] Logged {screen_seconds}s usage.")
+            logger.info(f"Logged {screen_seconds}s usage.")
         except Exception as e:
-            print(f"[ScreenTime] DB error: {e}")
+            logger.error(f"DB error: {e}")
         finally:
             if conn:
                 conn.close()

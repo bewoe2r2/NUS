@@ -27,6 +27,7 @@ import logging
 import sqlite3
 import time
 import json
+import threading
 from abc import ABC, abstractmethod
 from typing import Literal, Dict, Optional, List
 import os
@@ -249,31 +250,35 @@ def send_tiered_alert_tool(
 # =============================================================================
 
 _alerts_table_initialized = False
+_alerts_table_lock = threading.Lock()
 
 
 def _ensure_alerts_table():
     global _alerts_table_initialized
     if _alerts_table_initialized:
         return
-    conn = None
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS caregiver_alerts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                patient_id TEXT,
-                timestamp_utc INTEGER,
-                alert_type TEXT,
-                severity TEXT,
-                message TEXT,
-                delivery_results_json TEXT
-            )
-        """)
-        conn.commit()
-        _alerts_table_initialized = True
-    finally:
-        if conn:
-            conn.close()
+    with _alerts_table_lock:
+        if _alerts_table_initialized:
+            return
+        conn = None
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS caregiver_alerts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    patient_id TEXT,
+                    timestamp_utc INTEGER,
+                    alert_type TEXT,
+                    severity TEXT,
+                    message TEXT,
+                    delivery_results_json TEXT
+                )
+            """)
+            conn.commit()
+            _alerts_table_initialized = True
+        finally:
+            if conn:
+                conn.close()
 
 
 def _check_rate_limit(patient_id: str, severity: str) -> bool:

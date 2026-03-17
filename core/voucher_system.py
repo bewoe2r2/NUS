@@ -12,6 +12,7 @@ Implements the "Loss Aversion" gamification logic:
 
 import sqlite3
 import time
+import logging
 from datetime import datetime, timedelta
 import io
 import qrcode
@@ -130,25 +131,27 @@ class VoucherSystem:
             already_penalized = {p.get('reason') for p in today_penalties}
 
             # Check medication adherence today
-            med_count = conn.execute(
+            med_row = conn.execute(
                 "SELECT COUNT(*) FROM medication_logs WHERE user_id = ? AND taken_timestamp_utc > ?",
                 (self.user_id, today_start)
-            ).fetchone()[0]
+            ).fetchone()
+            med_count = med_row[0] if med_row else 0
 
             if med_count == 0 and "Missed medication today" not in already_penalized:
                 self.apply_penalty(1.0, "Missed medication today")
 
             # Check glucose logging
-            glucose_count = conn.execute(
+            glucose_row = conn.execute(
                 "SELECT COUNT(*) FROM glucose_readings WHERE user_id = ? AND reading_timestamp_utc > ?",
                 (self.user_id, today_start)
-            ).fetchone()[0]
+            ).fetchone()
+            glucose_count = glucose_row[0] if glucose_row else 0
 
             if glucose_count == 0 and "No glucose reading today" not in already_penalized:
                 self.apply_penalty(0.5, "No glucose reading today")
 
         except Exception as e:
-            print(f"[Voucher] Penalty check error: {e}")
+            logging.getLogger(__name__).warning(f"Penalty check error: {e}")
         finally:
             if conn:
                 conn.close()

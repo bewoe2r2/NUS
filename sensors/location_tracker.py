@@ -15,8 +15,11 @@ Privacy Tier 1: Raw GPS discarded after classification.
 
 import time
 import sqlite3
+import logging
 import math
 import os
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
@@ -84,7 +87,7 @@ class LocationTracker:
         """Writes hourly aggregated stats to DB."""
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=10)
             cursor = conn.cursor()
 
             now = int(time.time())
@@ -113,13 +116,13 @@ class LocationTracker:
                     VALUES (?, ?, ?, ?, ?)
                 """, (self.user_id, hour_start, now, self.time_at_home_seconds, self.max_dist_km))
             else:
-                print("[Location] Warning: no user_id set, skipping DB insert")
+                logger.warning("No user_id set, skipping DB insert")
                 return
 
             conn.commit()
-            print(f"[Location] Saved: Home {self.time_at_home_seconds}s, Max Dist {self.max_dist_km:.3f}km")
+            logger.info(f"Saved: Home {self.time_at_home_seconds}s, Max Dist {self.max_dist_km:.3f}km")
         except Exception as e:
-            print(f"[Location] DB error: {e}")
+            logger.error(f"DB error: {e}")
         finally:
             if conn:
                 conn.close()
@@ -129,7 +132,7 @@ class LocationTracker:
         self.max_dist_km = 0.0
 
     def simulate_day_movement(self):
-        print("Simulating movement...")
+        logger.info("Simulating movement...")
         # 1. Start at Home
         self.process_location_update(HOME_LAT, HOME_LON, 3600) # 1 hour
         

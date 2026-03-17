@@ -28,6 +28,7 @@ import time
 import json
 import logging
 import sqlite3
+import threading
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Literal
 from datetime import datetime, timedelta
@@ -372,34 +373,38 @@ def _select_optimal_slot(slots: List[Dict], preferred_times: List[str], patient_
 
 
 _appointments_table_initialized = False
+_appointments_table_lock = threading.Lock()
 
 
 def _ensure_appointments_table():
     global _appointments_table_initialized
     if _appointments_table_initialized:
         return
-    conn = None
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS appointments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                patient_id TEXT,
-                appointment_datetime TEXT,
-                doctor_name TEXT,
-                clinic_location TEXT,
-                reason TEXT,
-                booked_by TEXT,
-                status TEXT,
-                confirmation_code TEXT,
-                created_at INTEGER
-            )
-        """)
-        conn.commit()
-        _appointments_table_initialized = True
-    finally:
-        if conn:
-            conn.close()
+    with _appointments_table_lock:
+        if _appointments_table_initialized:
+            return
+        conn = None
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS appointments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    patient_id TEXT,
+                    appointment_datetime TEXT,
+                    doctor_name TEXT,
+                    clinic_location TEXT,
+                    reason TEXT,
+                    booked_by TEXT,
+                    status TEXT,
+                    confirmation_code TEXT,
+                    created_at INTEGER
+                )
+            """)
+            conn.commit()
+            _appointments_table_initialized = True
+        finally:
+            if conn:
+                conn.close()
 
 
 def _store_appointment_in_db(patient_id: str, booking: Dict):

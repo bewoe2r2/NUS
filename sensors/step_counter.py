@@ -10,10 +10,13 @@ Algorithm: Magnitude -> Peak Detection -> Thresholding (>1.2G)
 
 import time
 import sqlite3
+import logging
 from collections import deque
 import math
 import random
 import os
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 
@@ -78,7 +81,7 @@ class StepCounter:
             
         conn = None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=10)
             cursor = conn.cursor()
 
             now = int(time.time())
@@ -100,23 +103,23 @@ class StepCounter:
                     VALUES (?, ?, ?, ?)
                 """, (self.user_id, hour_start, now, self.step_count))
             else:
-                print("[StepCounter] Warning: no user_id set, skipping DB insert")
+                logger.warning("No user_id set, skipping DB insert")
                 return
 
             conn.commit()
 
-            print(f"[StepCounter] Saved {self.step_count} steps to DB.")
+            logger.info(f"Saved {self.step_count} steps to DB.")
             self.step_count = 0  # Reset after save
 
         except Exception as e:
-            print(f"[StepCounter] Error saving to DB: {e}")
+            logger.error(f"Error saving to DB: {e}")
         finally:
             if conn:
                 conn.close()
 
     # --- Simulation Method for Testing ---
     def simulate_walking(self, duration_seconds=10, frequency_hz=50):
-        print(f"Simulating walking for {duration_seconds}s...")
+        logger.info(f"Simulating walking for {duration_seconds}s...")
         steps_detected = 0
         start_time = time.time()
         
@@ -132,7 +135,7 @@ class StepCounter:
             if self.process_accel_sample(0, 0, val, t):
                 steps_detected += 1
                 
-        print(f"Simulation Complete. Detected {steps_detected} steps.")
+        logger.info(f"Simulation Complete. Detected {steps_detected} steps.")
         self.save_hourly_count()
 
 if __name__ == "__main__":
