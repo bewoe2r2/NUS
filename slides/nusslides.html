@@ -663,12 +663,18 @@ body {
   <div class="t-title anim d1" style="margin-bottom:28px;">The Diamond Architecture</div>
 
   <div style="max-width:860px; margin:0 auto; flex:1; display:flex; flex-direction:column; justify-content:center; gap:0;">
+    <!-- Data flow label: UP -->
+    <div style="text-align:center; margin-bottom:4px;" class="anim d2">
+      <span style="font-size:0.65rem; font-weight:600; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase;">&#9650; Patient-facing output</span>
+    </div>
+
     <!-- Layer 4 -->
     <div class="arch-layer layer-4 anim d2">
       <div class="layer-num">L4</div>
       <div class="layer-content">
-        <div class="layer-title">Cultural Intelligence</div>
-        <div class="layer-desc">SEA-LION v4 27B (Singlish/Malay/Mandarin) &middot; MERaLiON-ready (paralinguistic emotion)</div>
+        <div class="layer-title">Cultural Intelligence <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; communicates in the patient's own voice</span></div>
+        <div class="layer-desc"><strong style="color:var(--emerald);">Tech:</strong> SEA-LION v4 27B (Singlish/Malay/Mandarin) &middot; MERaLiON-ready (paralinguistic emotion)</div>
+        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> Elderly patients ignore clinical English. Singlish compliance rates are 3&times; higher.</div>
       </div>
       <div class="layer-badge">IMDA</div>
     </div>
@@ -678,8 +684,9 @@ body {
     <div class="arch-layer layer-3 anim d3">
       <div class="layer-num">L3</div>
       <div class="layer-content">
-        <div class="layer-title">Agentic Reasoning</div>
-        <div class="layer-desc">Gemini 2.5 Flash &middot; Multi-turn ReAct loop &middot; 18 autonomous tools &middot; Cross-session memory &middot; Counterfactual reasoning</div>
+        <div class="layer-title">Agentic Reasoning <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; decides what to do and when</span></div>
+        <div class="layer-desc"><strong style="color:var(--cyan);">Tech:</strong> Gemini 2.5 Flash &middot; Multi-turn ReAct loop &middot; 18 autonomous tools &middot; Cross-session memory &middot; Counterfactual reasoning</div>
+        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> Rules can't handle state &times; time &times; mood &times; medication &times; culture simultaneously.</div>
       </div>
       <div class="layer-badge">NUS</div>
     </div>
@@ -689,8 +696,9 @@ body {
     <div class="arch-layer layer-2 anim d4" style="transform-origin:center;">
       <div class="layer-num">L2</div>
       <div class="layer-content">
-        <div class="layer-title">Statistical Inference Engine</div>
-        <div class="layer-desc">HMM Viterbi (state detection, 9 biomarkers) &middot; Baum-Welch EM (per-patient personalisation) &middot; Monte Carlo (48h forecast, 2000 sims) &middot; Merlion ARIMA (45-min glucose velocity)</div>
+        <div class="layer-title" style="font-size:0.95rem;">Statistical Inference Engine <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; the clinical brain (deterministic, explainable)</span></div>
+        <div class="layer-desc"><strong style="color:var(--amber);">Tech:</strong> HMM Viterbi (state detection, 9 biomarkers) &middot; Baum-Welch EM (per-patient personalisation) &middot; Monte Carlo (48h forecast, 2000 sims) &middot; Merlion ARIMA (45-min glucose velocity)</div>
+        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> LLMs hallucinate clinical data. HMMs are mathematically provable &mdash; every output traceable to input.</div>
       </div>
       <div class="layer-badge">Core</div>
     </div>
@@ -700,23 +708,32 @@ body {
     <div class="arch-layer layer-1 anim d5">
       <div class="layer-num">L1</div>
       <div class="layer-content">
-        <div class="layer-title">Safety Foundation</div>
-        <div class="layer-desc">Deterministic clinical rules (always override AI) &middot; Drug interaction engine (16 pairs, 39 classes) &middot; SBAR clinical reporting &middot; PII de-identification &middot; PDPA compliance</div>
+        <div class="layer-title">Safety Foundation <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; hard rules that always override AI</span></div>
+        <div class="layer-desc"><strong style="color:var(--rose);">Tech:</strong> Deterministic clinical rules &middot; Drug interaction engine (16 pairs, 39 classes) &middot; SBAR clinical reporting &middot; PII de-identification &middot; PDPA compliance</div>
+        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> "Take double insulin" must be impossible to generate. Safety is never probabilistic.</div>
       </div>
       <div class="layer-badge">Synapxe</div>
     </div>
 
     <!-- Data Input -->
-    <div style="text-align:center; margin-top:16px;" class="anim d6">
+    <div style="text-align:center; margin-top:12px;" class="anim d6">
+      <span style="font-size:0.65rem; font-weight:600; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; display:block; margin-bottom:4px;">&#9660; Data ingestion</span>
       <div style="display:inline-flex; align-items:center; gap:12px; padding:8px 24px; border-radius:8px; border:1px dashed var(--border-medium); background:var(--bg-surface);">
-        <span style="font-size:0.8rem; color:var(--text-muted);">&#9650;</span>
         <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">Patient Data &middot; 9 Orthogonal Biomarkers &middot; Wearables &middot; Phone Sensors &middot; CGM</span>
       </div>
     </div>
   </div>
 
-  <div class="anim d7 t-caption" style="margin-top:16px; text-align:center; max-width:700px; align-self:center; line-height:1.5;">
-    Layer 1 is <strong style="color:var(--rose);">deterministic</strong> — it cannot hallucinate. The HMM handles nuance. Gemini handles empathy. <strong style="color:var(--text-secondary);">Safety is never probabilistic.</strong>
+  <!-- "Why not just an LLM?" callout -->
+  <div class="anim d7" style="margin-top:12px; display:flex; gap:16px; align-self:center; max-width:860px; width:100%;">
+    <div class="card card-sm" style="flex:1; background:rgba(244,63,94,0.04); border-color:rgba(244,63,94,0.15); padding:12px 16px;">
+      <div style="font-size:0.7rem; font-weight:700; color:var(--rose); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Why not just use an LLM?</div>
+      <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">LLMs hallucinate clinical data, can't guarantee safety invariants, and are black boxes to regulators. You can't deploy "I think your glucose is fine" in healthcare.</div>
+    </div>
+    <div class="card card-sm" style="flex:1; background:rgba(6,182,212,0.04); border-color:rgba(6,182,212,0.15); padding:12px 16px;">
+      <div style="font-size:0.7rem; font-weight:700; color:var(--cyan); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Our hybrid approach</div>
+      <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;"><strong style="color:var(--amber);">Deterministic HMM</strong> for clinical truth. <strong style="color:var(--cyan);">Generative AI</strong> for empathetic communication. The AI <em>talks</em>. The math <em>decides</em>.</div>
+    </div>
   </div>
 </section>
 
@@ -737,7 +754,7 @@ body {
         </thead>
         <tbody>
           <tr>
-            <td>Data needed</td>
+            <td>Cold-start data</td>
             <td><span style="color:var(--emerald); font-weight:600;">7 days</span></td>
             <td><span style="color:var(--rose);">10,000+ examples</span></td>
             <td><span style="color:var(--text-muted);">N/A</span></td>
@@ -746,48 +763,67 @@ body {
             <td>Explainability</td>
             <td><span style="color:var(--emerald); font-weight:600;">Full trace</span></td>
             <td><span style="color:var(--rose);">Black box</span></td>
-            <td><span style="color:var(--rose);">"I think..."</span></td>
+            <td><span style="color:var(--rose);">&ldquo;I think...&rdquo;</span></td>
           </tr>
           <tr>
-            <td>Hallucination</td>
+            <td>Hallucination risk</td>
             <td><span style="color:var(--emerald); font-weight:600;">Impossible</span></td>
-            <td><span style="color:var(--amber);">Low risk</span></td>
-            <td><span style="color:var(--rose); font-weight:600;">High risk</span></td>
+            <td><span style="color:var(--amber);">Low</span></td>
+            <td><span style="color:var(--rose); font-weight:600;">High</span></td>
           </tr>
           <tr>
-            <td>Runs locally</td>
+            <td>Runs on-device</td>
             <td><span style="color:var(--emerald);">&#10003; &lt;1ms</span></td>
-            <td><span style="color:var(--rose);">GPU needed</span></td>
+            <td><span style="color:var(--rose);">GPU required</span></td>
             <td><span style="color:var(--rose);">Cloud only</span></td>
           </tr>
           <tr>
-            <td>Validated accuracy</td>
-            <td><span style="color:var(--emerald); font-weight:600;">82.1% hardened</span></td>
+            <td style="font-weight:700; color:var(--text-primary);">Validated accuracy</td>
+            <td><span style="color:var(--emerald); font-weight:700; font-size:0.85rem;">82.1%</span> <span style="color:var(--text-muted); font-size:0.65rem;">hardened</span></td>
             <td><span style="color:var(--text-muted);">Needs training data</span></td>
             <td><span style="color:var(--text-muted);">Not applicable</span></td>
           </tr>
           <tr>
-            <td>Safety guarantee</td>
-            <td><span style="color:var(--emerald); font-weight:600;">0 unsafe misclass</span></td>
+            <td style="font-weight:700; color:var(--text-primary);">Safety guarantee</td>
+            <td><span style="color:var(--emerald); font-weight:700; font-size:0.85rem;">0</span> <span style="color:var(--text-muted); font-size:0.65rem;">unsafe misclass</span></td>
             <td><span style="color:var(--amber);">No guarantee</span></td>
             <td><span style="color:var(--rose);">Can hallucinate</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700; color:var(--text-primary);">vs glucose-only</td>
+            <td><span style="color:var(--cyan); font-weight:700; font-size:0.85rem;">+25.3%</span> <span style="color:var(--text-muted); font-size:0.65rem;">p&lt;0.0001</span></td>
+            <td><span style="color:var(--text-muted);">&mdash;</span></td>
+            <td><span style="color:var(--text-muted);">&mdash;</span></td>
           </tr>
         </tbody>
       </table>
 
-      <div class="card card-sm anim d4" style="margin-top:8px; background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.12);">
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--cyan);">Key insight:</strong> In healthcare, the question isn't "can AI predict?" — it's "can you explain <em>why</em> to a doctor, patient, and regulator?" <strong style="color:var(--text-primary);">HMMs answer all three.</strong>
+      <!-- Key results callout -->
+      <div class="anim d4" style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <div style="text-align:center; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:8px 6px;">
+          <div style="font-family:var(--font-mono); font-weight:900; font-size:1.3rem; color:var(--emerald);">82.1%</div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">Hardened accuracy</div>
         </div>
-        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5; margin-top:6px; border-top:1px solid var(--border-subtle); padding-top:6px;">
-          <strong style="color:var(--emerald);">Zero CRISIS-as-STABLE misclassifications</strong> across 10,000+ patients. HMM outperforms glucose-only baseline by <strong style="color:var(--cyan);">25.3%</strong> — proving multi-feature monitoring works.
+        <div style="text-align:center; background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.15); border-radius:8px; padding:8px 6px;">
+          <div style="font-family:var(--font-mono); font-weight:900; font-size:1.3rem; color:var(--cyan);">+25.3%</div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">vs glucose-only</div>
+        </div>
+        <div style="text-align:center; background:rgba(244,63,94,0.06); border:1px solid rgba(244,63,94,0.15); border-radius:8px; padding:8px 6px;">
+          <div style="font-family:var(--font-mono); font-weight:900; font-size:1.3rem; color:var(--rose);">0</div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">Unsafe misclassifications</div>
+        </div>
+      </div>
+
+      <div class="card card-sm anim d4" style="margin-top:6px; background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.12);">
+        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
+          <strong style="color:var(--cyan);">Key insight:</strong> In healthcare, the question isn't "can AI predict?" &mdash; it's "can you explain <em>why</em> to a doctor, patient, and regulator?" <strong style="color:var(--text-primary);">HMMs answer all three.</strong>
         </div>
       </div>
     </div>
 
     <!-- Right: Biomarkers -->
     <div class="flex flex-col gap-sm">
-      <div class="t-section anim d3" style="color:var(--text-muted); margin-bottom:4px;">9 Orthogonal Biomarkers — ADA 2024 Derived</div>
+      <div class="t-section anim d3" style="color:var(--text-muted); margin-bottom:4px;">9 Orthogonal Biomarkers &mdash; Clinically Derived (ADA 2024, UKPDS, ARIC)</div>
       <div class="flex flex-col gap-xs anim d3">
         <!-- Each biomarker bar -->
         <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
@@ -838,7 +874,7 @@ body {
       </div>
 
       <!-- Validation box -->
-      <div class="card card-sm anim d5" style="margin-top:8px; border-left:3px solid var(--emerald);">
+      <div class="card card-sm anim d5" style="margin-top:6px; border-left:3px solid var(--emerald);">
         <div class="t-section t-emerald" style="margin-bottom:6px;">Validated on 10,000+ Independent Synthetic Patients</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.78rem; margin-bottom:8px;">
           <div style="grid-column:1/-1; font-size:0.7rem; font-weight:600; color:var(--amber); text-transform:uppercase; letter-spacing:0.06em;">Hardened Suite &mdash; 5,000 patients, overlapping boundaries, contradictory signals</div>
@@ -859,6 +895,9 @@ body {
         </div>
         <div style="margin-top:6px; font-size:0.7rem; color:var(--text-muted); line-height:1.4;">
           32 clinical archetypes &middot; 16 validation sections with statistical significance tests &middot; 230/230 tests passed &middot; 8,772 lines of test code
+        </div>
+        <div style="margin-top:4px; font-size:0.65rem; color:var(--text-muted); line-height:1.4; border-top:1px solid var(--border-subtle); padding-top:4px;">
+          <strong>References:</strong> ADA Standards of Care 2024 &middot; UKPDS (Lancet 1998) &middot; ARIC Study (Diabetes Care 2019) &middot; Danne et al. (Diabetes Care 2017) &middot; DiaBeatIt RCT
         </div>
       </div>
     </div>
@@ -1073,14 +1112,18 @@ body {
   <div class="grid-3 gap-lg" style="flex:1;">
     <div class="card anim d2" style="border-top:3px solid var(--cyan);">
       <div style="font-size:2rem; margin-bottom:10px; text-align:center; opacity:0.8;">&#128172;</div>
-      <div style="font-weight:700; font-size:1rem; color:var(--cyan); margin-bottom:8px; text-align:center;">Patient Companion</div>
+      <div style="font-weight:700; font-size:1rem; color:var(--cyan); margin-bottom:4px; text-align:center;">Patient Companion</div>
+      <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-bottom:10px; font-weight:500;">Zero effort from the patient &mdash; it just works</div>
       <div class="flex flex-col gap-xs" style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
-        <div>&bull; Chat in Singlish, Mandarin, Malay</div>
-        <div>&bull; Proactive nudges timed to your routine</div>
+        <div>&bull; <strong style="color:var(--text-primary);">Speaks Singlish</strong> &mdash; "Uncle, take medicine lah!"</div>
+        <div>&bull; <strong style="color:var(--text-primary);">Proactive, not reactive</strong> &mdash; nudges timed to your routine</div>
         <div>&bull; Counterfactual "what-if" predictions</div>
-        <div>&bull; Medication reminders with behavioral framing</div>
+        <div>&bull; No forms, no apps to learn, no data entry</div>
       </div>
-      <div class="t-caption" style="margin-top:12px; color:var(--cyan);">Judges: chat with the AI companion live</div>
+      <div style="margin-top:10px; padding:6px 10px; background:rgba(6,182,212,0.06); border-radius:6px; border:1px solid rgba(6,182,212,0.12);">
+        <div style="font-size:0.72rem; color:var(--cyan); line-height:1.4;"><strong>Works for Mr. Tan</strong> who can barely use a phone. WhatsApp-native. No downloads. No passwords.</div>
+      </div>
+      <div class="t-caption" style="margin-top:10px; color:var(--cyan);">Judges: chat with the AI companion live</div>
     </div>
     <div class="card anim d3" style="border-top:3px solid var(--amber);">
       <div style="font-size:2rem; margin-bottom:10px; text-align:center; opacity:0.8;">&#9879;</div>
@@ -1216,36 +1259,64 @@ body {
   <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Governance</div>
   <div class="t-title anim d1" style="margin-bottom:24px;">Privacy by Architecture, Not by Policy</div>
 
+  <!-- Top-level compliance badges — most important info first -->
+  <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;" class="anim d2">
+    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.2);">
+      <span style="font-size:0.85rem; font-weight:800; color:var(--rose);">&#9632;</span>
+      <span style="font-size:0.82rem; font-weight:700; color:var(--rose);">PDPA Compliant</span>
+      <span style="font-size:0.72rem; color:var(--text-muted);">Sections 20, 24, 25</span>
+    </div>
+    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2);">
+      <span style="font-size:0.85rem; font-weight:800; color:var(--cyan);">&#9632;</span>
+      <span style="font-size:0.82rem; font-weight:700; color:var(--cyan);">Data Never Leaves Singapore</span>
+    </div>
+    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2);">
+      <span style="font-size:0.85rem; font-weight:800; color:var(--emerald);">&#9632;</span>
+      <span style="font-size:0.82rem; font-weight:700; color:var(--emerald);">PII De-identified Before LLM</span>
+    </div>
+    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2);">
+      <span style="font-size:0.85rem; font-weight:800; color:var(--purple);">&#9632;</span>
+      <span style="font-size:0.82rem; font-weight:700; color:var(--purple);">Full Audit Trail</span>
+    </div>
+  </div>
+
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: 5 Security Layers -->
-    <div class="flex flex-col gap-sm anim d2">
-      <div class="t-section" style="color:var(--rose); margin-bottom:4px;">3 Core Data Protection Layers</div>
+    <!-- Left: Data Protection Layers -->
+    <div class="flex flex-col gap-sm anim d3">
+      <div class="t-section" style="color:var(--rose); margin-bottom:4px;">4 Core Data Protection Layers</div>
 
       <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
         <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">1</div>
         <div>
-          <div style="font-weight:600; font-size:0.82rem;">PII Firewall</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Name, NRIC, address, phone, email stripped before any LLM call. AI never sees who the patient is.</div>
+          <div style="font-weight:600; font-size:0.82rem;">PII Firewall <span class="badge badge-rose" style="font-size:0.55rem; padding:2px 6px; vertical-align:middle;">Mandatory</span></div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Name, NRIC, address, phone, email <strong style="color:var(--text-primary);">stripped before any LLM call</strong>. AI never sees who the patient is. Regex + NER dual pass.</div>
         </div>
       </div>
       <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
         <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">2</div>
         <div>
-          <div style="font-weight:600; font-size:0.82rem;">Local HMM Inference</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">All clinical classification runs on-device. Patient data never leaves for health state detection.</div>
+          <div style="font-weight:600; font-size:0.82rem;">Data Sovereignty</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">All infrastructure in <strong style="color:var(--text-primary);">Singapore region only</strong>. HMM runs on-device. No patient data crosses national borders.</div>
         </div>
       </div>
       <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
         <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">3</div>
         <div>
+          <div style="font-weight:600; font-size:0.82rem;">Immutable Audit Trail</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Every AI decision logged: input state, model output, safety gate result, final action. <strong style="color:var(--text-primary);">Fully auditable by MOH</strong> at any time.</div>
+        </div>
+      </div>
+      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">4</div>
+        <div>
           <div style="font-weight:600; font-size:0.82rem;">6-Month Rolling Retention</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Auto-deletion triggers on glucose, HMM states, voice transcripts. PDPA Section 25 compliant.</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Auto-deletion triggers on glucose, HMM states, voice transcripts. <strong style="color:var(--text-primary);">PDPA Section 25</strong> compliant.</div>
         </div>
       </div>
     </div>
 
     <!-- Right: Ethics Framework -->
-    <div class="flex flex-col gap-sm anim d3">
+    <div class="flex flex-col gap-sm anim d4">
       <div class="t-section" style="color:var(--purple); margin-bottom:4px;">Ethics &amp; Consent Framework</div>
 
       <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
@@ -1264,6 +1335,15 @@ body {
         <div>
           <div style="font-weight:600; font-size:0.82rem;">Human-in-the-Loop</div>
           <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Medication suggestions NEVER auto-applied. Always flagged for doctor review. The system recommends. The human decides.</div>
+        </div>
+      </div>
+
+      <!-- Data flow diagram -->
+      <div class="card-sm" style="background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.12); border-radius:10px; margin-top:4px;">
+        <div style="font-size:0.7rem; font-weight:600; color:var(--cyan); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em;">Data Flow: What the LLM Sees</div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.6; font-family:var(--font-mono);">
+          <span style="color:var(--text-muted);">Raw:</span> <span style="text-decoration:line-through; color:var(--rose);">Tan Ah Kow, S1234567A</span><br>
+          <span style="color:var(--text-muted);">LLM sees:</span> <span style="color:var(--emerald);">Patient-0x7A2F, glucose=8.2, state=WARNING</span>
         </div>
       </div>
     </div>
@@ -1294,10 +1374,16 @@ body {
         <div class="metric-label">Saved / Patient / Year</div>
       </div>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:28px;" class="anim d2">
-      <div class="metric-card" style="border-color:rgba(6,182,212,0.2);">
-        <div class="metric-value" style="color:var(--cyan); font-size:1.8rem;">$0.40</div>
-        <div class="metric-label">Cost / Patient / Month</div>
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:28px;" class="anim d2">
+      <div class="metric-card card-glow-cyan" style="border-color:rgba(6,182,212,0.3);">
+        <div class="metric-value" style="color:var(--cyan); font-size:2.4rem;">$0.40</div>
+        <div class="metric-label" style="font-weight:700;">Cost / Patient / Month</div>
+        <div class="t-caption" style="margin-top:2px; color:var(--cyan);">vs $8,800 per ER visit</div>
+      </div>
+      <div class="metric-card card-glow-rose" style="border-color:rgba(244,63,94,0.3);">
+        <div class="metric-value" style="color:var(--rose); font-size:2.4rem;">$8,800</div>
+        <div class="metric-label" style="font-weight:700;">Saved per Prevented ER</div>
+        <div class="t-caption" style="margin-top:2px;">1 prevented admission = 22,000 months of Bewo</div>
       </div>
       <div class="metric-card" style="border-color:rgba(16,185,129,0.2);">
         <div class="metric-value" style="color:var(--emerald); font-size:1.8rem;">87%</div>
@@ -1382,18 +1468,21 @@ body {
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
         <div class="card card-sm" style="border-top:3px solid var(--cyan);">
           <div style="font-size:0.7rem; color:var(--cyan); font-weight:700; margin-bottom:6px;">PHASE 1 &middot; 2026-27</div>
-          <div style="font-size:0.82rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">Singapore</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">3 polyclinics &middot; 20,000 patients &middot; HealthHub integration &middot; MERaLiON-ready voice</div>
+          <div style="font-size:0.82rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">Singapore Pilot</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">3 polyclinics &middot; 20K patients &middot; HealthHub integration &middot; IRB-approved RCT &middot; MERaLiON voice</div>
+          <div style="font-size:0.68rem; color:var(--cyan); margin-top:4px; font-weight:600;">Status: 32K lines built, validation complete</div>
         </div>
         <div class="card card-sm" style="border-top:3px solid var(--purple);">
           <div style="font-size:0.7rem; color:var(--purple); font-weight:700; margin-bottom:6px;">PHASE 2 &middot; 2028-29</div>
-          <div style="font-size:0.82rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">ASEAN</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Malaysia, Thailand, Indonesia &middot; SEA-LION 11 languages &middot; 50M+ patients</div>
+          <div style="font-size:0.82rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">ASEAN Scale</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Malaysia, Thailand, Indonesia &middot; SEA-LION 11 languages &middot; Same architecture, local data</div>
+          <div style="font-size:0.68rem; color:var(--purple); margin-top:4px; font-weight:600;">Requires: ASEAN regulatory mapping</div>
         </div>
         <div class="card card-sm" style="border-top:3px solid var(--emerald);">
           <div style="font-size:0.7rem; color:var(--emerald); font-weight:700; margin-bottom:6px;">PHASE 3 &middot; 2030+</div>
           <div style="font-size:0.82rem; color:var(--text-primary); font-weight:600; margin-bottom:4px;">Multi-Chronic</div>
           <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Hypertension, CKD, cardiovascular &middot; Same architecture, new biomarker sets</div>
+          <div style="font-size:0.68rem; color:var(--emerald); margin-top:4px; font-weight:600;">Feasible: HMM is condition-agnostic</div>
         </div>
       </div>
     </div>
