@@ -57,6 +57,10 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
 
             recognitionRef.current = recognition;
         }
+        return () => {
+            // Stop recognition on unmount to prevent stale callbacks
+            try { recognitionRef.current?.stop(); } catch { /* already stopped */ }
+        };
     }, []);
 
     const toggleListening = () => {

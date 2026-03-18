@@ -588,9 +588,9 @@ export default function NurseDashboard() {
                                                             {ix.drugs ? ix.drugs.join(' + ') : `${ix.drug1 || ix.drug_1 || '?'} + ${ix.drug2 || ix.drug_2 || '?'}`}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-slate-500">{ix.mechanism || ix.description || ix.effect}</p>
+                                                    <p className="text-xs text-slate-500">{String(ix.mechanism || ix.description || ix.effect || '')}</p>
                                                     {ix.recommendation && (
-                                                        <p className="text-xs text-blue-600 mt-1 font-medium">{ix.recommendation}</p>
+                                                        <p className="text-xs text-blue-600 mt-1 font-medium">{String(ix.recommendation)}</p>
                                                     )}
                                                 </div>
                                             ))}
@@ -704,7 +704,7 @@ export default function NurseDashboard() {
                                                     'bg-slate-50 border-slate-200 text-slate-700'
                                                 }`}>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="font-semibold text-xs">{alert.type || alert.alert_type || 'Alert'}</div>
+                                                        <div className="font-semibold text-xs">{typeof (alert.type || alert.alert_type) === 'object' ? JSON.stringify(alert.type || alert.alert_type) : String(alert.type || alert.alert_type || 'Alert')}</div>
                                                         {alert.category && (
                                                             <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
                                                                 alert.category === 'escalation' ? 'bg-rose-100 text-rose-600' :
@@ -717,7 +717,7 @@ export default function NurseDashboard() {
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="text-xs mt-0.5">{alert.reason || alert.message || alert.description}</div>
+                                                    <div className="text-xs mt-0.5">{typeof (alert.reason || alert.message || alert.description) === 'object' ? JSON.stringify(alert.reason || alert.message || alert.description) : String(alert.reason || alert.message || alert.description || '')}</div>
                                                 </div>
                                             ))}
                                         </div>

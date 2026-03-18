@@ -305,10 +305,10 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
     impactMetrics: any;
     onRefresh: () => void;
 }) {
-    const state = patientState?.current_state || null;
-    const risk = patientState?.risk_score ?? 0;
+    const state = typeof patientState?.current_state === 'string' ? patientState.current_state : null;
+    const risk = typeof patientState?.risk_score === 'number' ? patientState.risk_score : 0;
     const stateColor = state === 'CRISIS' ? 'rose' : state === 'WARNING' ? 'amber' : state ? 'emerald' : 'blue';
-    const hasData = !!patientState?.current_state;
+    const hasData = !!state;
 
     return (
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -344,8 +344,8 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                 />
                 <StateCard
                     label="48h Crisis Prob"
-                    value={patientState?.risk_48h != null ? `${(patientState.risk_48h * 100).toFixed(0)}%` : '\u2014'}
-                    color={patientState?.risk_48h > 0.5 ? 'rose' : hasData ? 'emerald' : 'blue'}
+                    value={typeof patientState?.risk_48h === 'number' ? `${(patientState.risk_48h * 100).toFixed(0)}%` : '\u2014'}
+                    color={typeof patientState?.risk_48h === 'number' && patientState.risk_48h > 0.5 ? 'rose' : hasData ? 'emerald' : 'blue'}
                     icon={<TrendingUp size={18} />}
                 />
                 <StateCard
@@ -433,7 +433,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                                     }`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="text-sm font-medium text-zinc-800">{p.patient_id}</div>
-                                        <div className="text-xs text-zinc-500">{p.state} | Urgency: {((p.urgency_score || 0) * 100).toFixed(0)}%</div>
+                                        <div className="text-xs text-zinc-500">{String(p.state || '')} | Urgency: {(typeof p.urgency_score === 'number' ? (p.urgency_score * 100).toFixed(0) : '0')}%</div>
                                     </div>
                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                         p.triage_category === 'IMMEDIATE' ? 'bg-rose-100 text-rose-700' :
@@ -466,13 +466,13 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                                             ix.severity === 'MAJOR' ? 'bg-orange-100 text-orange-700' :
                                             ix.severity === 'MODERATE' ? 'bg-amber-100 text-amber-700' : 'bg-zinc-100 text-zinc-600'
                                         }`}>
-                                            {ix.severity}
+                                            {String(ix.severity ?? '')}
                                         </span>
                                         <span className="text-xs font-medium text-zinc-800">
-                                            {ix.drugs ? ix.drugs.join(' + ') : `${ix.drug1 || ix.drug_1 || '?'} + ${ix.drug2 || ix.drug_2 || '?'}`}
+                                            {Array.isArray(ix.drugs) ? ix.drugs.map(String).join(' + ') : `${String(ix.drug1 || ix.drug_1 || '?')} + ${String(ix.drug2 || ix.drug_2 || '?')}`}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-zinc-500">{ix.mechanism || ix.description || ix.effect}</p>
+                                    <p className="text-xs text-zinc-500">{(() => { const v = ix.mechanism || ix.description || ix.effect || ''; return typeof v === 'object' ? JSON.stringify(v) : String(v); })()}</p>
                                 </div>
                             ))}
                         </div>
@@ -518,7 +518,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                         {Object.entries(patientState.biometrics).filter(([, v]) => v != null).map(([key, value]) => (
                             <div key={key} className="text-center p-3 bg-zinc-50 rounded-lg border border-zinc-100">
                                 <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</div>
-                                <div className="text-xl font-bold text-zinc-900">{typeof value === 'number' ? (value as number).toFixed(1) : String(value)}</div>
+                                <div className="text-xl font-bold text-zinc-900">{typeof value === 'number' ? (value as number).toFixed(1) : (value != null && typeof value === 'object' ? JSON.stringify(value) : String(value ?? ''))}</div>
                             </div>
                         ))}
                     </div>
@@ -558,9 +558,9 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                             {agentMemory.slice(0, 20).map((m: any, i: number) => (
                                 <div key={m.key ? `mem-${m.key}-${i}` : `mem-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-bold text-indigo-600">{m.memory_type || m.type}</span>
+                                        <span className="font-bold text-indigo-600">{String(m.memory_type || m.type || '')}</span>
                                         <span className="text-zinc-400">|</span>
-                                        <span className="text-zinc-600 font-medium">{m.key}</span>
+                                        <span className="text-zinc-600 font-medium">{String(m.key ?? '')}</span>
                                     </div>
                                     <div className="text-zinc-500 truncate">{typeof m.value_json === 'string' ? m.value_json : JSON.stringify(m.value_json || m.value)}</div>
                                 </div>
@@ -585,10 +585,10 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                                 <div className="flex-1 h-1.5 bg-zinc-200 rounded-full overflow-hidden">
                                                     <div
                                                         className="h-full bg-amber-500 rounded-full"
-                                                        style={{ width: `${(info?.effectiveness_pct || info?.effectiveness || 0)}%` }}
+                                                        style={{ width: `${typeof (info?.effectiveness_pct ?? info?.effectiveness) === 'number' ? (info?.effectiveness_pct ?? info?.effectiveness ?? 0) : 0}%` }}
                                                     />
                                                 </div>
-                                                <span>{(info?.effectiveness_pct || info?.effectiveness || 0).toFixed(0)}%</span>
+                                                <span>{(typeof (info?.effectiveness_pct ?? info?.effectiveness) === 'number' ? (info?.effectiveness_pct ?? info?.effectiveness ?? 0) : 0).toFixed(0)}%</span>
                                             </div>
                                         ))
                                     ) : (
@@ -608,7 +608,8 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {safetyLog.slice(0, 15).map((evt: any, i: number) => {
                                 const parsed = typeof evt.action_data === 'string' ? (() => { try { return JSON.parse(evt.action_data); } catch { return evt; } })() : (evt.action_data || evt);
-                                const verdict = parsed.verdict || evt.verdict || 'SAFE';
+                                const rawVerdict = parsed.verdict || evt.verdict || 'SAFE';
+                                const verdict = typeof rawVerdict === 'string' ? rawVerdict : String(rawVerdict);
                                 const flags = parsed.flags || evt.flags;
                                 return (
                                     <div key={`safety-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
@@ -633,8 +634,8 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {agentActions.slice(0, 15).map((a: any, i: number) => (
                                 <div key={`action-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs flex items-center gap-2">
-                                    <span className="font-medium text-blue-600 shrink-0">{a.action_type || a.tool_name || a.tool}</span>
-                                    <span className="text-zinc-500 truncate">{a.tool_result || a.reasoning || a.description || a.result || ''}</span>
+                                    <span className="font-medium text-blue-600 shrink-0">{String(a.action_type || a.tool_name || a.tool || '')}</span>
+                                    <span className="text-zinc-500 truncate">{(() => { const v = a.tool_result || a.reasoning || a.description || a.result || ''; return typeof v === 'object' ? JSON.stringify(v) : String(v); })()}</span>
                                 </div>
                             ))}
                         </div>
@@ -649,17 +650,29 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                         {engagement && (
                             <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
                                 <div className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">Engagement Score</div>
-                                <div className="text-2xl font-bold text-emerald-800">{engagement.score ?? engagement.engagement_score ?? 'N/A'}</div>
+                                <div className="text-2xl font-bold text-emerald-800">{typeof (engagement.score ?? engagement.engagement_score) === 'object' ? JSON.stringify(engagement.score ?? engagement.engagement_score) : String(engagement.score ?? engagement.engagement_score ?? 'N/A')}</div>
                             </div>
                         )}
                         {streaks && typeof streaks === 'object' && (
                             <div className="space-y-1">
-                                {Object.entries(streaks.streaks || streaks).map(([key, val]) => (
-                                    <div key={key} className="flex items-center justify-between text-xs p-2 bg-zinc-50 rounded">
-                                        <span className="text-zinc-600 capitalize">{key.replace(/_/g, ' ')}</span>
-                                        <span className="font-bold text-zinc-800">{String(val)}</span>
-                                    </div>
-                                ))}
+                                {Object.entries(streaks.streaks || streaks).map(([key, val]) => {
+                                    // val may be a number or an object like {current: 5, best: 10}
+                                    let displayVal: string;
+                                    if (val == null) {
+                                        displayVal = '0';
+                                    } else if (typeof val === 'object') {
+                                        const sv = val as { current?: number; best?: number };
+                                        displayVal = `${sv.current ?? 0} (best: ${sv.best ?? 0})`;
+                                    } else {
+                                        displayVal = String(val);
+                                    }
+                                    return (
+                                        <div key={key} className="flex items-center justify-between text-xs p-2 bg-zinc-50 rounded">
+                                            <span className="text-zinc-600 capitalize">{key.replace(/_/g, ' ')}</span>
+                                            <span className="font-bold text-zinc-800">{displayVal}</span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                         {!engagement && !streaks && <EmptyState text="No streak or engagement data yet." />}
@@ -678,7 +691,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                             <div key={`tm-row-${i}`} className="flex gap-3">
                                                 {['STABLE', 'WARNING', 'CRISIS'][i]}:
                                                 {row.map((v: number, j: number) => (
-                                                    <span key={`tm-${i}-${j}`} className={v > 0.5 ? 'text-emerald-600 font-bold' : 'text-zinc-500'}>{v.toFixed(3)}</span>
+                                                    <span key={`tm-${i}-${j}`} className={v > 0.5 ? 'text-emerald-600 font-bold' : 'text-zinc-500'}>{typeof v === 'number' ? v.toFixed(3) : String(v)}</span>
                                                 ))}
                                             </div>
                                         ))}
@@ -690,7 +703,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                     <div className="font-semibold text-zinc-700 mb-1">Initial Probabilities</div>
                                     <div className="font-mono text-[10px] bg-zinc-50 p-2 rounded">
                                         {Array.isArray(hmmParams.initial_probs) && hmmParams.initial_probs.map((v: number, i: number) => (
-                                            <span key={`ip-${i}`} className="mr-3">{['S', 'W', 'C'][i]}: {v.toFixed(3)}</span>
+                                            <span key={`ip-${i}`} className="mr-3">{['S', 'W', 'C'][i]}: {typeof v === 'number' ? v.toFixed(3) : String(v)}</span>
                                         ))}
                                     </div>
                                 </div>
@@ -709,15 +722,21 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                 <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Burden Score</div>
                                 <div className="flex items-center gap-3">
                                     <div className="text-3xl font-bold text-zinc-900">
-                                        {caregiverBurden.burden_score ?? caregiverBurden.score ?? 'N/A'}
+                                        {typeof (caregiverBurden.burden_score ?? caregiverBurden.score) === 'object' ? JSON.stringify(caregiverBurden.burden_score ?? caregiverBurden.score) : String(caregiverBurden.burden_score ?? caregiverBurden.score ?? 'N/A')}
                                     </div>
                                     <div className="text-xs text-zinc-500">/ 100</div>
-                                    <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                        (caregiverBurden.burden_score || 0) > 70 ? 'bg-rose-100 text-rose-700' :
-                                        (caregiverBurden.burden_score || 0) > 40 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-                                    }`}>
-                                        {(caregiverBurden.burden_score || 0) > 70 ? 'CRITICAL' : (caregiverBurden.burden_score || 0) > 40 ? 'MODERATE' : 'LOW'}
-                                    </div>
+                                    {(() => {
+                                        const rawScore = caregiverBurden.burden_score ?? caregiverBurden.score;
+                                        const numScore = typeof rawScore === 'number' ? rawScore : 0;
+                                        return (
+                                            <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                                numScore > 70 ? 'bg-rose-100 text-rose-700' :
+                                                numScore > 40 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                                            }`}>
+                                                {numScore > 70 ? 'CRITICAL' : numScore > 40 ? 'MODERATE' : 'LOW'}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
@@ -734,8 +753,8 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                 <div key={`proactive-${i}`} className="p-2 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                     <div className="flex items-center gap-2">
                                         <Zap size={10} className="text-cyan-600" />
-                                        <span className="font-medium text-zinc-700">{c.trigger_type || c.type}</span>
-                                        <span className="text-zinc-400">{c.reason || ''}</span>
+                                        <span className="font-medium text-zinc-700">{String(c.trigger_type || c.type || '')}</span>
+                                        <span className="text-zinc-400">{typeof c.reason === 'object' ? JSON.stringify(c.reason) : String(c.reason || '')}</span>
                                     </div>
                                 </div>
                             ))}
@@ -973,7 +992,9 @@ function ToolDemoTab() {
             const best = Object.entries(streakData).sort((a: any, b: any) => (b[1]?.current || 0) - (a[1]?.current || 0))[0];
             if (best) {
                 const [type, val]: any = best;
-                addLog({ type: 'result', tool: 'celebrate_streak', text: `${type}: ${val.current}-day streak! (Best: ${val.best} days)` });
+                const currentDays = typeof val === 'number' ? val : (val?.current ?? 0);
+                const bestDays = typeof val === 'number' ? val : (val?.best ?? 0);
+                addLog({ type: 'result', tool: 'celebrate_streak', text: `${type}: ${currentDays}-day streak! (Best: ${bestDays} days)` });
             } else {
                 addLog({ type: 'result', tool: 'celebrate_streak', text: 'No active streaks yet. Start logging to build streaks!' });
             }
@@ -1237,7 +1258,8 @@ function ToolDemoTab() {
 // ============================================================================
 function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
     const alerts = dashboard?.alerts || dashboard?.active_alerts || [];
-    const burdenScore = burden?.burden_score ?? burden?.score ?? null;
+    const rawBurdenScore = burden?.burden_score ?? burden?.score ?? null;
+    const burdenScore: number | null = typeof rawBurdenScore === 'number' ? rawBurdenScore : null;
     const burdenLevel = burdenScore != null
         ? (burdenScore > 70 ? 'CRITICAL' : burdenScore > 40 ? 'MODERATE' : 'LOW')
         : null;
@@ -1314,7 +1336,8 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                     {alerts.length > 0 ? (
                         <div className="space-y-3">
                             {alerts.slice(0, 8).map((alert: any, i: number) => {
-                                const sev = alert.severity || alert.priority || 'info';
+                                const rawSev = alert.severity || alert.priority || 'info';
+                                const sev = typeof rawSev === 'string' ? rawSev : String(rawSev);
                                 const sevLower = sev.toLowerCase();
                                 return (
                                     <div key={alert.id || `alert-${i}`} className="p-3 rounded-lg bg-zinc-50 border border-zinc-100 flex items-start gap-3">
@@ -1323,8 +1346,8 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                                             sevLower === 'warning' || sevLower === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
                                         }`} />
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium text-zinc-800">{alert.title || alert.message || alert.alert_type || 'Alert'}</div>
-                                            <div className="text-xs text-zinc-500 mt-0.5">{alert.description || alert.details || ''}</div>
+                                            <div className="text-sm font-medium text-zinc-800">{typeof (alert.title || alert.message || alert.alert_type) === 'object' ? JSON.stringify(alert.title || alert.message || alert.alert_type) : String(alert.title || alert.message || alert.alert_type || 'Alert')}</div>
+                                            <div className="text-xs text-zinc-500 mt-0.5">{typeof (alert.description || alert.details) === 'object' ? JSON.stringify(alert.description || alert.details) : String(alert.description || alert.details || '')}</div>
                                         </div>
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                                             sevLower === 'critical' || sevLower === 'high' ? 'bg-rose-100 text-rose-700' :
@@ -1405,7 +1428,7 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                                     {Object.entries(burden).filter(([k]) => !['burden_score', 'score', 'success', 'patient_id', 'caregiver_id'].includes(k)).map(([key, val]) => (
                                         <div key={key} className="flex items-center justify-between text-xs p-2 bg-zinc-50 rounded">
                                             <span className="text-zinc-600 capitalize">{key.replace(/_/g, ' ')}</span>
-                                            <span className="font-bold text-zinc-800">{String(val)}</span>
+                                            <span className="font-bold text-zinc-800">{val != null && typeof val === 'object' ? JSON.stringify(val) : String(val ?? '')}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -1463,7 +1486,7 @@ function StateCard({ label, value, color, icon }: { label: string; value: string
     return (
         <div className={`p-4 rounded-xl border border-t-[3px] shadow-sm transition-all duration-150 hover:-translate-y-[3px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${cls}`}>
             <div className="flex items-center gap-2 mb-2 opacity-70">{icon}<span className="text-xs font-medium">{label}</span></div>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className="text-2xl font-bold">{value != null && typeof value === 'object' ? JSON.stringify(value) : value}</div>
         </div>
     );
 }

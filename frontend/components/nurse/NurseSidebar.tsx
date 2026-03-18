@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Activity, Clock, AlertCircle, Settings, LayoutDashboard, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,11 +14,19 @@ interface SidebarItemProps {
 
 function SidebarItem({ icon, label, active, onClick, disabled }: SidebarItemProps) {
     const [showHint, setShowHint] = useState(false);
+    const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+        };
+    }, []);
 
     const handleClick = () => {
         if (disabled) {
             setShowHint(true);
-            setTimeout(() => setShowHint(false), 1500);
+            if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+            hintTimerRef.current = setTimeout(() => setShowHint(false), 1500);
             return;
         }
         onClick?.();

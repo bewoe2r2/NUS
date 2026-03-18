@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"manual" | "camera">("manual");
     const [analyzing, setAnalyzing] = useState(false);
+    const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Close on Escape key
     const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose]);
@@ -30,6 +31,10 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
     // Reset state when modal closes
     useEffect(() => {
         if (!isOpen) {
+            if (successTimerRef.current) {
+                clearTimeout(successTimerRef.current);
+                successTimerRef.current = null;
+            }
             setValue("");
             setLoading(false);
             setSuccess(false);
@@ -69,7 +74,7 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
         try {
             await api.logGlucose(parsed);
             setSuccess(true);
-            setTimeout(() => {
+            successTimerRef.current = setTimeout(() => {
                 setSuccess(false);
                 setLoading(false);
                 onClose();

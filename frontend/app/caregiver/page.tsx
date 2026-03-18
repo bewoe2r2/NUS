@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { api, type PatientState } from "@/lib/api";
 
@@ -194,7 +194,7 @@ function AlertFeed({
                         style={{ animationDelay: `${idx * 80}ms` }}
                     >
                         <div className="flex items-start justify-between gap-3">
-                            <p className="text-sm text-neutral-800 flex-1 leading-relaxed">{alert.message}</p>
+                            <p className="text-sm text-neutral-800 flex-1 leading-relaxed">{typeof alert.message === 'string' ? alert.message : JSON.stringify(alert.message)}</p>
                             <span className={`text-xs px-2.5 py-1 rounded-full font-semibold shrink-0 ${badge.classes}`}>
                                 {badge.label}
                             </span>
@@ -250,24 +250,24 @@ function WeeklySummaryCard({ report }: { report: WeeklyReport | null }) {
             <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-neutral-50 rounded-xl p-3">
                     <div className="text-2xl font-bold text-neutral-800">
-                        {report.adherence_pct != null ? `${report.adherence_pct}%` : "--"}
+                        {typeof report.adherence_pct === 'number' ? `${report.adherence_pct}%` : "--"}
                     </div>
                     <div className="text-xs text-neutral-500 mt-1">Adherence</div>
                 </div>
                 <div className="bg-neutral-50 rounded-xl p-3">
                     <div className="text-2xl font-bold text-neutral-800 capitalize">
-                        {report.glucose_trend || "--"}
+                        {typeof report.glucose_trend === 'string' ? report.glucose_trend : "--"}
                     </div>
                     <div className="text-xs text-neutral-500 mt-1">Glucose</div>
                 </div>
                 <div className="bg-neutral-50 rounded-xl p-3">
-                    <div className={`text-2xl font-bold ${gradeColor(report.grade || "")}`}>
-                        {report.grade || "--"}
+                    <div className={`text-2xl font-bold ${gradeColor(typeof report.grade === 'string' ? report.grade : "")}`}>
+                        {typeof report.grade === 'string' ? report.grade : "--"}
                     </div>
                     <div className="text-xs text-neutral-500 mt-1">Grade</div>
                 </div>
             </div>
-            {report.summary && (
+            {typeof report.summary === 'string' && report.summary && (
                 <p className="text-sm text-neutral-500 mt-4 leading-relaxed border-t border-neutral-100 pt-4">
                     {report.summary}
                 </p>
@@ -329,7 +329,10 @@ function BurdenCard({ burden }: { burden: BurdenData | null }) {
         );
     }
 
-    const level = burden.level || "low";
+    const level = typeof burden.level === 'string' ? burden.level : "low";
+    const safeScore = typeof burden.score === 'number' ? burden.score : null;
+    const safeMessage = typeof burden.message === 'string' ? burden.message : null;
+    const safeRecommendation = typeof burden.recommendation === 'string' ? burden.recommendation : null;
     const config: Record<string, { bg: string; bar: string; icon: string }> = {
         low: { bg: "bg-success-50 border-success-200", bar: "bg-success-solid", icon: "M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" },
         moderate: { bg: "bg-warning-50 border-warning-200", bar: "bg-warning-solid", icon: "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" },
@@ -350,23 +353,23 @@ function BurdenCard({ burden }: { burden: BurdenData | null }) {
                 <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-neutral-800">Your wellbeing</h3>
                     <p className="text-sm text-neutral-600 mt-1 leading-relaxed">
-                        {burden.message || burdenMessage(level)}
+                        {safeMessage || burdenMessage(level)}
                     </p>
-                    {burden.recommendation && (
-                        <p className="text-xs text-neutral-500 mt-2 leading-relaxed">{burden.recommendation}</p>
+                    {safeRecommendation && (
+                        <p className="text-xs text-neutral-500 mt-2 leading-relaxed">{safeRecommendation}</p>
                     )}
                 </div>
             </div>
-            {burden.score != null && (
+            {safeScore != null && (
                 <div className="mt-4 flex items-center gap-3">
                     <div className="flex-1 h-2.5 bg-white/60 rounded-full overflow-hidden">
                         <div
                             className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
-                            style={{ width: `${Math.min(burden.score * 100, 100)}%` }}
+                            style={{ width: `${Math.min(safeScore * 100, 100)}%` }}
                         />
                     </div>
                     <span className="text-xs font-medium text-neutral-500 tabular-nums w-8 text-right">
-                        {burden.score <= 0.33 ? "Low" : burden.score <= 0.66 ? "Mid" : "High"}
+                        {safeScore <= 0.33 ? "Low" : safeScore <= 0.66 ? "Mid" : "High"}
                     </span>
                 </div>
             )}
@@ -406,9 +409,9 @@ function QuickActions() {
 function Vitals({ biometrics }: { biometrics: PatientState["biometrics"] | null }) {
     if (!biometrics) return null;
     const items = [
-        { label: "Glucose", value: `${biometrics.glucose?.toFixed(1) ?? "--"}`, unit: "mmol/L", icon: "🩸" },
-        { label: "Heart rate", value: `${biometrics.hr ?? "--"}`, unit: "bpm", icon: "💓" },
-        { label: "Steps", value: `${biometrics.steps?.toLocaleString() ?? "--"}`, unit: "today", icon: "👟" },
+        { label: "Glucose", value: typeof biometrics.glucose === 'number' ? biometrics.glucose.toFixed(1) : "--", unit: "mmol/L", icon: "🩸" },
+        { label: "Heart rate", value: typeof biometrics.hr === 'number' ? String(biometrics.hr) : "--", unit: "bpm", icon: "💓" },
+        { label: "Steps", value: typeof biometrics.steps === 'number' ? biometrics.steps.toLocaleString() : "--", unit: "today", icon: "👟" },
     ];
     return (
         <div className="grid grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: "80ms" }}>
@@ -424,7 +427,19 @@ function Vitals({ biometrics }: { biometrics: PatientState["biometrics"] | null 
 }
 // --- Main Dashboard ---
 
-export default function CaregiverDashboard() {
+export default function CaregiverPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="w-10 h-10 border-3 border-accent-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <CaregiverDashboard />
+        </Suspense>
+    );
+}
+
+function CaregiverDashboard() {
     const searchParams = useSearchParams();
     const patientId = searchParams.get("patient") || DEFAULT_PATIENT_ID;
 
@@ -465,9 +480,17 @@ export default function CaregiverDashboard() {
     }, [patientId]);
 
     useEffect(() => {
-        fetchAll();
-        const interval = setInterval(fetchAll, REFRESH_INTERVAL_MS);
-        return () => clearInterval(interval);
+        let cancelled = false;
+        const safeFetch = async () => {
+            await fetchAll();
+            // State updates in fetchAll are safe — React ignores setState on unmounted components in React 18+
+        };
+        safeFetch();
+        const interval = setInterval(safeFetch, REFRESH_INTERVAL_MS);
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
     }, [fetchAll]);
 
     const handleRespond = async (alertId: string, action: AlertAction) => {

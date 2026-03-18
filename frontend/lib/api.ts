@@ -113,11 +113,11 @@ export const api = {
                 body: JSON.stringify({ message, patient_id: patientId })
             });
             if (!res.ok) {
-                return { message: "AI assistant is connecting. Please try again in a moment.", tone: "neutral", actions: [], hmm_state: null };
+                return { message: "AI assistant is connecting. Please try again in a moment.", tone: "neutral", actions: [], hmm_state: undefined };
             }
             return res.json();
         } catch {
-            return { message: "AI assistant is connecting. Please try again in a moment.", tone: "neutral", actions: [], hmm_state: null };
+            return { message: "AI assistant is connecting. Please try again in a moment.", tone: "neutral", actions: [], hmm_state: undefined };
         }
     },
 

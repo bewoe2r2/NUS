@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,13 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
+    const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const resetAndClose = useCallback(() => {
+        if (successTimerRef.current) {
+            clearTimeout(successTimerRef.current);
+            successTimerRef.current = null;
+        }
         setValue("");
         setLoading(false);
         setSuccess(false);
@@ -40,7 +45,7 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
         try {
             await api.logFood(value);
             setSuccess(true);
-            setTimeout(() => {
+            successTimerRef.current = setTimeout(() => {
                 resetAndClose();
             }, 1500);
         } catch (e) {
