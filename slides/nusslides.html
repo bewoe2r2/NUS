@@ -5,29 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bewo Health — NUS-Synapxe-IMDA AI Innovation Challenge 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   DESIGN SYSTEM — Series B Pitch Deck
+   DESIGN SYSTEM — Vercel/Linear/Stripe Dark
    ============================================================ */
 :root {
-  --bg: #FFFFFF;
-  --bg-alt: #F8FAFB;
-  --bg-accent: #F0FDFA;
+  --bg: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-card: rgba(255,255,255,0.03);
 
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --text-muted: #94A3B8;
+  --text-primary: #ededed;
+  --text-secondary: #a1a1a1;
+  --text-tertiary: #666666;
 
-  --accent: #0891B2;
-  --accent-light: #ECFEFF;
+  --accent: #06b6d4;
+  --accent-glow: rgba(6,182,212,0.15);
 
-  --red: #DC2626;
-  --amber: #D97706;
-  --green: #059669;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --border: rgba(255,255,255,0.06);
+
+  --font-sans: 'Geist', 'Inter', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
 }
 
 /* ============================================================
@@ -56,10 +58,11 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 80px 120px;
+  padding: 8vh 8vw;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s ease;
+  background: var(--bg);
 }
 
 .slide.active {
@@ -74,7 +77,7 @@ html, body {
   position: fixed;
   top: 0;
   left: 0;
-  height: 3px;
+  height: 2px;
   background: var(--accent);
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 100;
@@ -89,7 +92,7 @@ html, body {
   right: 40px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   z-index: 100;
   letter-spacing: 0.04em;
 }
@@ -102,7 +105,7 @@ html, body {
   bottom: 32px;
   left: 40px;
   font-size: 0.7rem;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   z-index: 100;
   letter-spacing: 0.02em;
 }
@@ -116,342 +119,161 @@ html, body {
   left: 40px;
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   z-index: 100;
   letter-spacing: -0.02em;
 }
 .logo-watermark span { color: var(--accent); }
 
 /* ============================================================
+   LAYOUT ARCHETYPES
+   ============================================================ */
+
+/* A) HERO STATEMENT */
+.layout-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+/* B) HERO NUMBER */
+.layout-hero-number {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+/* C) SPLIT */
+.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  height: 100%;
+}
+
+/* D) BENTO */
+.layout-bento {
+  display: grid;
+  gap: 1.5rem;
+  height: 100%;
+  align-content: center;
+}
+.layout-bento.cols-2 { grid-template-columns: 1fr 1fr; }
+.layout-bento.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.layout-bento.cols-2x2 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+}
+
+/* E) POINTS */
+.layout-points {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5rem;
+  height: 100%;
+}
+
+/* ============================================================
    TYPOGRAPHY
    ============================================================ */
-.label-tag {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-  margin-bottom: 24px;
-}
-.label-tag.accent { color: var(--accent); }
-
-.slide-title {
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-  color: var(--text-primary);
-  margin-bottom: 48px;
-  max-width: 900px;
-}
-
 .hero-number {
   font-family: var(--font-sans);
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  font-size: 10rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
   line-height: 1;
   color: var(--text-primary);
 }
 
+.slide-title {
+  font-size: 3.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+  max-width: 900px;
+}
+
+.slide-subtitle {
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
 .body-text {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 400;
   line-height: 1.6;
   color: var(--text-secondary);
   max-width: 680px;
 }
 
-.source-text {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* ============================================================
-   CONTENT CONTAINERS
-   ============================================================ */
-.content-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.content-left {
-  max-width: 900px;
-}
-
-.two-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  max-width: 1000px;
-  align-items: start;
-}
-
-.stat-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 36px;
-}
-
-.stat-row {
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-}
-
-.stat-row .number {
-  font-family: var(--font-mono);
-  font-size: 3rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.stat-row .desc {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* ============================================================
-   ARCHITECTURE DIAGRAM
-   ============================================================ */
-.arch-stack {
-  display: flex;
-  flex-direction: column;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.arch-row {
-  display: grid;
-  grid-template-columns: 56px 1fr 80px;
-  gap: 24px;
-  align-items: center;
-  padding: 24px 0;
-  border-bottom: 1px solid #E2E8F0;
-}
-.arch-row:last-child { border-bottom: none; }
-
-.arch-row .layer-id {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.arch-row .layer-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.arch-row .layer-desc {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.arch-row .layer-tag {
-  font-size: 0.7rem;
-  font-weight: 600;
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
-  text-align: right;
+  color: var(--text-tertiary);
+  margin-bottom: 2rem;
 }
+.label.accent { color: var(--accent); }
 
-/* ============================================================
-   COMPARISON TABLE
-   ============================================================ */
-.clean-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-.clean-table th {
-  text-align: left;
-  padding: 12px 16px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  border-bottom: 2px solid #E2E8F0;
-}
-.clean-table th.highlight { color: var(--accent); }
-.clean-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #F1F5F9;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-}
-.clean-table .check { color: var(--green); font-weight: 600; }
-.clean-table .cross { color: var(--text-muted); }
-.clean-table .warn { color: var(--amber); }
-
-/* ============================================================
-   ROLE LIST
-   ============================================================ */
-.role-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 800px;
-}
-
-.role-item {
-  display: grid;
-  grid-template-columns: 36px 160px 1fr;
-  gap: 16px;
-  align-items: center;
-}
-
-.role-item .role-letter {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--accent);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-light);
-  border-radius: 8px;
-}
-
-.role-item .role-name {
+.caption {
   font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.role-item .role-desc {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+  font-weight: 400;
+  color: var(--text-tertiary);
 }
 
 /* ============================================================
-   STATS GRID
+   SURFACE TREATMENTS
    ============================================================ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 56px 80px;
-  max-width: 900px;
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
 }
 
-.stat-block .value {
-  font-family: var(--font-mono);
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-.stat-block .value.accent { color: var(--accent); }
-.stat-block .value.green { color: var(--green); }
-.stat-block .value.amber { color: var(--amber); }
-
-.stat-block .stat-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-/* ============================================================
-   FEATURE LIST
-   ============================================================ */
-.feature-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.feature-list .feat-name {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.feature-list .feat-desc {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-/* ============================================================
-   SAFETY COLUMNS
-   ============================================================ */
-.safety-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 64px;
-  max-width: 900px;
-}
-
-.safety-col .col-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  margin-bottom: 20px;
-}
-
-.safety-col ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.safety-col li {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.glow-bg {
+  background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.08), transparent 70%);
 }
 
 /* ============================================================
    ANIMATIONS
    ============================================================ */
 .slide.active .anim {
-  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeIn 0.5s ease both;
 }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .d1 { animation-delay: 0.1s !important; }
-.d2 { animation-delay: 0.2s !important; }
-.d3 { animation-delay: 0.3s !important; }
-.d4 { animation-delay: 0.4s !important; }
-.d5 { animation-delay: 0.5s !important; }
-.d6 { animation-delay: 0.6s !important; }
-.d7 { animation-delay: 0.7s !important; }
+.d2 { animation-delay: 0.25s !important; }
+.d3 { animation-delay: 0.4s !important; }
+.d4 { animation-delay: 0.55s !important; }
+.d5 { animation-delay: 0.7s !important; }
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
-  .slide { padding: 40px 24px; }
-  .slide-title { font-size: 1.8rem; margin-bottom: 32px; }
-  .hero-number { font-size: 3rem !important; }
-  .two-panel { grid-template-columns: 1fr; gap: 32px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 32px 40px; }
-  .safety-cols { grid-template-columns: 1fr; gap: 32px; }
-  .stat-row .number { font-size: 2rem; }
-  .role-item { grid-template-columns: 36px 1fr; }
-  .role-item .role-desc { grid-column: 1 / -1; }
+  .slide { padding: 5vh 5vw; }
+  .slide-title { font-size: 2rem; }
+  .hero-number { font-size: 5rem !important; }
+  .layout-split { grid-template-columns: 1fr; gap: 2rem; }
+  .layout-bento.cols-3 { grid-template-columns: 1fr; }
+  .layout-bento.cols-2 { grid-template-columns: 1fr; }
   .nav-hint { display: none; }
 }
 
@@ -484,59 +306,58 @@ html, body {
 <div class="deck" id="deck">
 
 <!-- ============================================================
-     SLIDE 1: HOOK
+     SLIDE 1: HOOK — Layout B (Hero Number)
      ============================================================ -->
-<section class="slide active" data-slide="1" style="background: var(--bg);">
-  <div class="content-center" style="justify-content: center; height: 100%;">
-    <div class="anim d1" style="margin-bottom: 64px;">
-      <span class="hero-number" style="font-size: 7rem;">Every <span style="color: var(--accent);">6</span> minutes</span>
+<section class="slide active" data-slide="1">
+  <div class="layout-hero-number">
+    <div class="anim d1" style="display: flex; align-items: baseline; gap: 0.5rem;">
+      <span class="hero-number" style="font-size: 12rem; color: var(--accent);">6</span>
+      <span style="font-size: 3.5rem; font-weight: 600; letter-spacing: -0.03em; color: var(--text-primary);">minutes</span>
     </div>
-    <div class="anim d2 body-text" style="text-align: center;">
-      one preventable diabetic ER admission in Singapore.
+    <div class="anim d2 body-text" style="margin-top: 2rem; text-align: center;">
+      One preventable diabetic ER admission in Singapore.
     </div>
-    <div class="anim d3 source-text" style="position: absolute; bottom: 80px;">
+    <div class="anim d3 caption" style="position: absolute; bottom: 8vh;">
       MOH Singapore, Emergency Department Statistics 2024
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 2: THE PROBLEM
+     SLIDE 2: THE PROBLEM — Layout C (Split)
      ============================================================ -->
-<section class="slide" data-slide="2" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag">The Problem</div>
-    <div class="slide-title">Between visits, nobody is watching.</div>
-  </div>
-
-  <div class="two-panel">
-    <div class="stat-stack anim d2">
-      <div class="stat-row">
-        <span class="number" style="color: var(--red);">440K</span>
-        <span class="desc">diabetics in Singapore</span>
-      </div>
-      <div class="stat-row">
-        <span class="number" style="color: var(--amber);">3-6 mo</span>
-        <span class="desc">gaps between clinic visits</span>
-      </div>
-      <div class="stat-row">
-        <span class="number" style="color: var(--accent);">$8,800</span>
-        <span class="desc">per preventable ER visit</span>
+<section class="slide" data-slide="2">
+  <div class="anim d1 label">The Problem</div>
+  <div class="layout-split" style="height: auto;">
+    <div class="anim d2">
+      <div class="slide-title" style="margin-bottom: 3rem;">Between visits, nobody is watching.</div>
+      <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <div style="display: flex; align-items: baseline; gap: 1.25rem;">
+          <span style="font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700; color: var(--red); letter-spacing: -0.03em;">440K</span>
+          <span class="body-text" style="font-size: 1.4rem;">diabetics in Singapore</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 1.25rem;">
+          <span style="font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700; color: var(--amber); letter-spacing: -0.03em;">3-6 mo</span>
+          <span class="body-text" style="font-size: 1.4rem;">gaps between clinic visits</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 1.25rem;">
+          <span style="font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700; color: var(--accent); letter-spacing: -0.03em;">$8,800</span>
+          <span class="body-text" style="font-size: 1.4rem;">per preventable ER visit</span>
+        </div>
       </div>
     </div>
 
-    <div class="anim d3" style="padding-top: 8px;">
-      <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Mr. Tan Ah Kow</div>
-      <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px;">67, lives alone, Toa Payoh HDB</div>
-      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">
+    <div class="glass-card anim d3">
+      <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Mr. Tan Ah Kow</div>
+      <div style="font-size: 1.1rem; color: var(--text-tertiary); margin-bottom: 2rem;">67, lives alone, Toa Payoh HDB</div>
+      <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6;">
         <div>Type 2 Diabetes + Hypertension</div>
         <div>HbA1c <span style="color: var(--amber); font-weight: 600;">8.1%</span> (target: 7.0%)</div>
         <div>Speaks Singlish and Hokkien</div>
         <div style="color: var(--red);">Can barely use a phone</div>
         <div style="color: var(--red);">Misses meds 2-3x per week</div>
-        <div>Last visit: 4 months ago</div>
       </div>
-      <div style="margin-top: 24px; font-size: 0.92rem; color: var(--text-muted); line-height: 1.5;">
+      <div style="margin-top: 2rem; font-size: 1.1rem; color: var(--text-tertiary); line-height: 1.5;">
         He represents 440,000 Singaporeans.
       </div>
     </div>
@@ -544,149 +365,116 @@ html, body {
 </section>
 
 <!-- ============================================================
-     SLIDE 3: THE INSIGHT
+     SLIDE 3: THE INSIGHT — Layout A (Hero Statement)
      ============================================================ -->
-<section class="slide" data-slide="3" style="background: var(--bg-accent);">
-  <div class="content-center" style="justify-content: center; height: 100%;">
-    <div class="anim d1 label-tag accent">The Insight</div>
-    <div class="anim d2" style="font-size: 3.2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.3; max-width: 800px; text-align: center;">
+<section class="slide glow-bg" data-slide="3">
+  <div class="layout-hero">
+    <div class="anim d1 label accent">The Insight</div>
+    <div class="anim d2 slide-title" style="font-size: 4rem; font-weight: 700; text-align: center; max-width: 800px;">
       LLMs hallucinate.<br>
       <span style="color: var(--red);">In healthcare, hallucination kills.</span>
     </div>
-    <div class="anim d3 body-text" style="text-align: center; margin-top: 40px;">
+    <div class="anim d3 body-text" style="text-align: center; margin-top: 2rem;">
       You cannot wrap GPT around a chatbot and deploy it for clinical decisions.
     </div>
-    <div class="anim d4" style="display: flex; gap: 120px; margin-top: 64px;">
-      <div style="text-align: left; max-width: 260px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--red); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">The Problem</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">LLMs are black boxes.<br>Can't explain why.<br>Can't guarantee safety.</div>
+    <div class="anim d4" style="display: flex; gap: 6rem; margin-top: 4rem;">
+      <div style="max-width: 280px;">
+        <div class="label" style="color: var(--red); margin-bottom: 1rem;">The Problem</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.7;">LLMs are black boxes.<br>Can't explain why.<br>Can't guarantee safety.</div>
       </div>
-      <div style="text-align: left; max-width: 260px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Our Answer</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">The math decides.<br>The AI communicates.<br>Safety is deterministic.</div>
+      <div style="max-width: 280px;">
+        <div class="label" style="color: var(--accent); margin-bottom: 1rem;">Our Answer</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.7;">The math decides.<br>The AI communicates.<br>Safety is deterministic.</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 4: DIAMOND ARCHITECTURE
+     SLIDE 4: DIAMOND ARCHITECTURE — Layout E (Points)
      ============================================================ -->
-<section class="slide" data-slide="4" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag accent">System Design</div>
-    <div class="slide-title">The Diamond Architecture</div>
-  </div>
+<section class="slide" data-slide="4">
+  <div class="layout-points">
+    <div class="anim d1">
+      <div class="label accent">System Design</div>
+      <div class="slide-title">The Diamond Architecture</div>
+    </div>
 
-  <div class="arch-stack">
-    <div class="arch-row anim d2">
-      <div class="layer-id">L4</div>
-      <div>
-        <div class="layer-name">Cultural Intelligence</div>
-        <div class="layer-desc">SEA-LION v4 + MERaLiON &mdash; Singlish, Malay, Mandarin. Voice emotion recognition.</div>
+    <div style="display: flex; flex-direction: column; max-width: 900px; margin-top: 1rem;">
+      <div class="anim d2" style="display: grid; grid-template-columns: 56px 1fr 80px; gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border);">
+        <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent);">L4</div>
+        <div>
+          <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Cultural Intelligence</div>
+          <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">SEA-LION v4 + MERaLiON &mdash; Singlish, Malay, Mandarin. Voice emotion.</div>
+        </div>
+        <div style="font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); text-align: right;">IMDA</div>
       </div>
-      <div class="layer-tag">IMDA</div>
-    </div>
-    <div class="arch-row anim d3">
-      <div class="layer-id">L3</div>
-      <div>
-        <div class="layer-name">Agentic Reasoning</div>
-        <div class="layer-desc">Gemini 2.5 Flash + 18 tools + ReAct loop. Decides what to do and when.</div>
+      <div class="anim d2" style="display: grid; grid-template-columns: 56px 1fr 80px; gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border);">
+        <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent);">L3</div>
+        <div>
+          <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Agentic Reasoning</div>
+          <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Gemini 2.5 Flash + 18 tools + ReAct loop.</div>
+        </div>
+        <div style="font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); text-align: right;">NUS</div>
       </div>
-      <div class="layer-tag">NUS</div>
-    </div>
-    <div class="arch-row anim d4">
-      <div class="layer-id">L2</div>
-      <div>
-        <div class="layer-name">Statistical Inference Engine</div>
-        <div class="layer-desc">HMM Viterbi + Monte Carlo (2,000 sims) + Merlion ARIMA. 9 biomarkers. Explainable.</div>
+      <div class="anim d3" style="display: grid; grid-template-columns: 56px 1fr 80px; gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border);">
+        <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent);">L2</div>
+        <div>
+          <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Statistical Inference Engine</div>
+          <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">HMM Viterbi + Monte Carlo (2,000 sims) + Merlion ARIMA. Explainable.</div>
+        </div>
+        <div style="font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); text-align: right;">Core</div>
       </div>
-      <div class="layer-tag">Core</div>
-    </div>
-    <div class="arch-row anim d5">
-      <div class="layer-id">L1</div>
-      <div>
-        <div class="layer-name">Safety Foundation</div>
-        <div class="layer-desc">ADA 2024 guidelines hardcoded. Drug interactions. PII de-identification. <span style="color: var(--red); font-weight: 600;">Always overrides AI.</span></div>
+      <div class="anim d3" style="display: grid; grid-template-columns: 56px 1fr 80px; gap: 1.5rem; align-items: center; padding: 1.5rem 0;">
+        <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent);">L1</div>
+        <div>
+          <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Safety Foundation</div>
+          <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">ADA 2024 hardcoded. Drug interactions. PII de-id. <span style="color: var(--red); font-weight: 600;">Always overrides AI.</span></div>
+        </div>
+        <div style="font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); text-align: right;">Synapxe</div>
       </div>
-      <div class="layer-tag">Synapxe</div>
     </div>
-  </div>
 
-  <div class="anim d6" style="text-align: center; margin-top: 48px;">
-    <span style="font-size: 1.2rem; color: var(--text-secondary); letter-spacing: -0.01em;">
+    <div class="anim d4 body-text" style="text-align: center; margin: 0 auto;">
       The math <span style="color: var(--amber); font-weight: 600;">decides</span>. The AI <span style="color: var(--accent); font-weight: 600;">communicates</span>. Safety <span style="color: var(--red); font-weight: 600;">never bends</span>.
-    </span>
+    </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 5: WHY HMM
+     SLIDE 5: WHY HMM — Layout C (Split)
      ============================================================ -->
-<section class="slide" data-slide="5" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag">Core Innovation</div>
-    <div class="slide-title">Why HMM, not neural nets.</div>
+<section class="slide" data-slide="5">
+  <div class="anim d1">
+    <div class="label">Core Innovation</div>
+    <div class="slide-title" style="margin-bottom: 2.5rem;">Why HMM, not neural nets.</div>
   </div>
 
-  <div class="two-panel">
-    <div class="anim d2">
-      <table class="clean-table">
+  <div class="layout-split" style="height: auto; align-items: start;">
+    <div class="glass-card anim d2" style="padding: 2rem;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 1.1rem;">
         <thead>
           <tr>
-            <th style="width: 32%;">Dimension</th>
-            <th class="highlight">HMM (Ours)</th>
-            <th>LSTM</th>
-            <th>Raw LLM</th>
+            <th style="text-align: left; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); border-bottom: 1px solid var(--border);">Dimension</th>
+            <th style="text-align: left; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); border-bottom: 1px solid var(--border);">HMM</th>
+            <th style="text-align: left; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); border-bottom: 1px solid var(--border);">LSTM</th>
+            <th style="text-align: left; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); border-bottom: 1px solid var(--border);">LLM</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Explainability</td>
-            <td><span class="check">Full trace</span></td>
-            <td><span class="cross">Black box</span></td>
-            <td><span class="cross">"I think..."</span></td>
-          </tr>
-          <tr>
-            <td>Hallucination risk</td>
-            <td><span class="check">Impossible</span></td>
-            <td><span class="warn">Low</span></td>
-            <td><span class="cross">High</span></td>
-          </tr>
-          <tr>
-            <td>Runs on-device</td>
-            <td><span class="check">&lt;1ms</span></td>
-            <td><span class="cross">GPU needed</span></td>
-            <td><span class="cross">Cloud only</span></td>
-          </tr>
-          <tr>
-            <td>Cold-start data</td>
-            <td><span class="check">7 days</span></td>
-            <td><span class="cross">10,000+ samples</span></td>
-            <td><span class="cross">N/A</span></td>
-          </tr>
-          <tr>
-            <td>Audit trail</td>
-            <td><span class="check">Complete</span></td>
-            <td><span class="cross">None</span></td>
-            <td><span class="cross">None</span></td>
-          </tr>
-          <tr>
-            <td>Safety guarantee</td>
-            <td><span class="check">0 unsafe</span></td>
-            <td><span class="warn">No guarantee</span></td>
-            <td><span class="cross">Hallucination</span></td>
-          </tr>
+          <tr><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary);">Explainability</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--green); font-weight: 600;">Full trace</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary);">Black box</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary);">"I think..."</td></tr>
+          <tr><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary);">Hallucination</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--green); font-weight: 600;">Impossible</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--amber);">Low</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--red);">High</td></tr>
+          <tr><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary);">On-device</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--green); font-weight: 600;">&lt;1ms</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary);">GPU needed</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary);">Cloud only</td></tr>
+          <tr><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary);">Cold-start</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--green); font-weight: 600;">7 days</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary);">10K+ samples</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary);">N/A</td></tr>
+          <tr><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary);">Safety</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--green); font-weight: 600;">0 unsafe</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--amber);">No guarantee</td><td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--red);">Hallucination</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="anim d3" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-      <div class="hero-number" style="font-size: 5rem; color: var(--accent);">12.7ms</div>
-      <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 16px; line-height: 1.5;">
-        Inference time.<br>Real-time on a phone.
-      </div>
-      <div style="margin-top: 48px; font-size: 1rem; color: var(--text-secondary); line-height: 1.6; font-style: italic; max-width: 340px;">
+      <div class="hero-number" style="font-size: 10rem; color: var(--accent);">12.7</div>
+      <div style="font-size: 1.4rem; color: var(--text-secondary); margin-top: 0.5rem;">millisecond inference</div>
+      <div style="margin-top: 3rem; font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6; font-style: italic; max-width: 360px;">
         "Can you explain <span style="color: var(--text-primary); font-weight: 600; font-style: normal;">why</span> to a doctor, a patient, and a regulator?"
       </div>
     </div>
@@ -694,202 +482,201 @@ html, body {
 </section>
 
 <!-- ============================================================
-     SLIDE 6: PREDICTION ENGINE
+     SLIDE 6: PREDICTION ENGINE — Layout C (Split)
      ============================================================ -->
-<section class="slide" data-slide="6" style="background: var(--bg-alt);">
-  <div class="content-left anim d1">
-    <div class="label-tag">Prediction Engine</div>
-    <div class="slide-title">See the crisis before it happens.</div>
+<section class="slide" data-slide="6" style="background: var(--bg-elevated);">
+  <div class="anim d1">
+    <div class="label">Prediction Engine</div>
+    <div class="slide-title" style="margin-bottom: 2.5rem;">See the crisis before it happens.</div>
   </div>
 
-  <div class="two-panel">
-    <div style="display: flex; flex-direction: column; gap: 36px;">
+  <div class="layout-split" style="height: auto; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 2.5rem;">
       <div class="anim d2">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">Monte Carlo Simulation</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">
-          <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 700;">2,000</span> paths projected over a <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 700;">48-hour</span> horizon. Not a single prediction &mdash; a probability distribution of futures.
+        <div class="label" style="color: var(--amber); margin-bottom: 0.75rem;">Monte Carlo Simulation</div>
+        <div class="body-text">
+          <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 700;">2,000</span> paths over a <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 700;">48-hour</span> horizon. A probability distribution of futures.
         </div>
       </div>
       <div class="anim d3">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">Counterfactual Reasoning</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">
-          "What if you take your meds?" Risk drops <span style="font-family: var(--font-mono); color: var(--red); font-weight: 700;">35%</span> &rarr; <span style="font-family: var(--font-mono); color: var(--green); font-weight: 700;">12%</span>. Patients see what their actions change.
+        <div class="label" style="color: var(--accent); margin-bottom: 0.75rem;">Counterfactual Reasoning</div>
+        <div class="body-text">
+          "What if you take your meds?" Risk drops <span style="font-family: var(--font-mono); color: var(--red); font-weight: 700;">35%</span> &rarr; <span style="font-family: var(--font-mono); color: var(--green); font-weight: 700;">12%</span>.
         </div>
       </div>
       <div class="anim d4">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">Merlion Time Series</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">
-          ARIMA-based glucose velocity forecasting. 45-minute lookahead for hypo/hyperglycemia alerts.
+        <div class="label" style="color: var(--green); margin-bottom: 0.75rem;">Merlion Time Series</div>
+        <div class="body-text">
+          ARIMA glucose velocity forecasting. 45-minute hypo/hyperglycemia lookahead.
         </div>
       </div>
     </div>
 
     <div class="anim d3" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-      <div class="hero-number" style="font-size: 8rem; color: var(--accent);">48h</div>
-      <div style="font-size: 1.2rem; color: var(--text-secondary); margin-top: 20px; line-height: 1.5;">
-        Predicts crisis before symptoms.
+      <div class="hero-number" style="font-size: 12rem; color: var(--accent);">48</div>
+      <div style="font-size: 2rem; font-weight: 400; letter-spacing: -0.02em; color: var(--text-secondary); margin-top: 0.5rem;">
+        hours before symptoms
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 7: THE AGENT
+     SLIDE 7: THE AGENT — Layout E (Points)
      ============================================================ -->
-<section class="slide" data-slide="7" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag accent">Agentic AI</div>
-    <div class="slide-title">Not a chatbot. A background agent.</div>
-  </div>
+<section class="slide" data-slide="7">
+  <div class="layout-points">
+    <div class="anim d1">
+      <div class="label accent">Agentic AI</div>
+      <div class="slide-title">Not a chatbot. A background agent.</div>
+    </div>
 
-  <div class="role-list">
-    <div class="role-item anim d2">
-      <div class="role-letter">P</div>
-      <div class="role-name">Planning Agent</div>
-      <div class="role-desc">Orchestrates daily care plan</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 900px;">
+      <div class="glass-card anim d2" style="padding: 2rem;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Planning Agent</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary);">Orchestrates daily care plan</div>
+      </div>
+      <div class="glass-card anim d2" style="padding: 2rem;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Check-in Agent</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary);">Proactive outreach, mood sensing</div>
+      </div>
+      <div class="glass-card anim d3" style="padding: 2rem;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Caregiver Agent</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary);">Family alerts, burden management</div>
+      </div>
+      <div class="glass-card anim d3" style="padding: 2rem;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Clinician Agent</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary);">SBAR reports, drug interaction checks</div>
+      </div>
+      <div class="glass-card anim d4" style="padding: 2rem;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Behavior Coach</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary);">Nudges, challenges, streaks</div>
+      </div>
+      <div class="glass-card anim d4" style="padding: 2rem;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Cultural Agent</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary);">Singlish translation, local context</div>
+      </div>
     </div>
-    <div class="role-item anim d3">
-      <div class="role-letter" style="background: #D1FAE5; color: var(--green);">C</div>
-      <div class="role-name">Check-in Agent</div>
-      <div class="role-desc">Proactive outreach, mood sensing</div>
-    </div>
-    <div class="role-item anim d4">
-      <div class="role-letter" style="background: #FEF3C7; color: var(--amber);">F</div>
-      <div class="role-name">Caregiver Agent</div>
-      <div class="role-desc">Family alerts, burden management</div>
-    </div>
-    <div class="role-item anim d5">
-      <div class="role-letter" style="background: #FEE2E2; color: var(--red);">D</div>
-      <div class="role-name">Clinician Agent</div>
-      <div class="role-desc">SBAR reports, drug interaction checks</div>
-    </div>
-    <div class="role-item anim d6">
-      <div class="role-letter" style="background: #F1F5F9; color: var(--text-secondary);">B</div>
-      <div class="role-name">Behavior Coach</div>
-      <div class="role-desc">Nudges, challenges, streaks</div>
-    </div>
-    <div class="role-item anim d7">
-      <div class="role-letter" style="background: #D1FAE5; color: var(--green);">K</div>
-      <div class="role-name">Cultural Agent</div>
-      <div class="role-desc">Singlish translation, local context</div>
-    </div>
-  </div>
 
-  <div class="anim d7" style="margin-top: 48px; font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
-    <span style="color: var(--accent); font-weight: 700;">18 tools.</span> ReAct reasoning. Cross-session memory. Reaches out <span style="color: var(--text-primary); font-weight: 600;">without being asked</span>.
+    <div class="anim d5 body-text">
+      <span style="color: var(--accent); font-weight: 700;">18 tools.</span> ReAct reasoning. Cross-session memory. Reaches out <span style="color: var(--text-primary); font-weight: 600;">without being asked</span>.
+    </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 8: VALIDATION
+     SLIDE 8: VALIDATION — Layout B (Hero Number)
      ============================================================ -->
-<section class="slide" data-slide="8" style="background: var(--bg-accent);">
-  <div class="content-center" style="justify-content: center; height: 100%;">
-    <div class="anim d1 label-tag accent">Validation</div>
-
-    <div class="anim d2 hero-number" style="font-size: 10rem; color: var(--green);">0</div>
-    <div class="anim d3" style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-top: 8px;">
+<section class="slide glow-bg" data-slide="8">
+  <div class="layout-hero-number">
+    <div class="anim d1 label accent">Validation</div>
+    <div class="anim d2 hero-number" style="font-size: 12rem; color: var(--green);">0</div>
+    <div class="anim d3 slide-subtitle" style="margin-top: 1rem; color: var(--text-primary); font-weight: 600;">
       unsafe misclassifications
     </div>
-    <div class="anim d4" style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 32px; max-width: 600px; line-height: 1.7; text-align: center;">
+    <div class="anim d4 body-text" style="margin-top: 2rem; text-align: center;">
       No patient in danger was ever told they were safe.<br>
       10,000+ patients. 32 clinical archetypes. 230 tests.
     </div>
 
-    <div class="anim d5" style="display: flex; gap: 80px; margin-top: 56px;">
+    <div class="anim d5" style="display: flex; gap: 5rem; margin-top: 4rem;">
       <div style="text-align: center;">
-        <div style="font-family: var(--font-mono); font-size: 2.8rem; font-weight: 800; color: var(--accent);">99.3%</div>
-        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Standard accuracy</div>
+        <div style="font-family: var(--font-mono); font-size: 3rem; font-weight: 700; color: var(--accent); letter-spacing: -0.03em;">99.3%</div>
+        <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 0.25rem;">Standard accuracy</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-family: var(--font-mono); font-size: 2.8rem; font-weight: 800; color: var(--accent);">100%</div>
-        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Crisis recall</div>
+        <div style="font-family: var(--font-mono); font-size: 3rem; font-weight: 700; color: var(--accent); letter-spacing: -0.03em;">100%</div>
+        <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 0.25rem;">Crisis recall</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-family: var(--font-mono); font-size: 2.8rem; font-weight: 800; color: var(--amber);">82.1%</div>
-        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Hardened suite accuracy</div>
+        <div style="font-family: var(--font-mono); font-size: 3rem; font-weight: 700; color: var(--amber); letter-spacing: -0.03em;">82.1%</div>
+        <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 0.25rem;">Hardened suite</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 9: NATIONAL AI MODELS
+     SLIDE 9: NATIONAL AI MODELS — Layout C (Split)
      ============================================================ -->
-<section class="slide" data-slide="9" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag accent">National AI Models</div>
-    <div class="slide-title">Built on Singapore's own AI.</div>
+<section class="slide" data-slide="9">
+  <div class="anim d1">
+    <div class="label accent">National AI Models</div>
+    <div class="slide-title" style="margin-bottom: 2.5rem;">Built on Singapore's own AI.</div>
   </div>
 
-  <div class="two-panel">
-    <div>
-      <div class="anim d2" style="margin-bottom: 40px;">
-        <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">SEA-LION v4</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">AI Singapore &middot; 27B parameters</div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Before</div>
-        <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; padding: 16px 0; border-bottom: 1px solid #E2E8F0;">
+  <div class="layout-split" style="height: auto; align-items: start;">
+    <div class="anim d2">
+      <div style="font-size: 1.8rem; font-weight: 600; color: var(--text-primary);">SEA-LION v4</div>
+      <div style="font-size: 1.1rem; color: var(--text-tertiary); margin-bottom: 2rem;">AI Singapore &middot; 27B parameters</div>
+
+      <div class="label" style="margin-bottom: 0.75rem;">Before</div>
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="font-family: var(--font-mono); font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6;">
           "Your blood glucose level of 15.2 mmol/L is significantly elevated..."
         </div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 20px; margin-bottom: 8px;">After</div>
-        <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+      </div>
+
+      <div class="label" style="color: var(--green); margin-bottom: 0.75rem;">After</div>
+      <div class="glass-card" style="padding: 1.5rem;">
+        <div style="font-family: var(--font-mono); font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6;">
           "Uncle, your sugar a bit high lah. After makan, better take your medicine first, ok?"
         </div>
       </div>
     </div>
 
     <div>
-      <div class="anim d3" style="margin-bottom: 48px;">
-        <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">MERaLiON</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">I2R &middot; Paralinguistic Analysis</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">
+      <div class="anim d3">
+        <div style="font-size: 1.8rem; font-weight: 600; color: var(--text-primary);">MERaLiON</div>
+        <div style="font-size: 1.1rem; color: var(--text-tertiary); margin-bottom: 2rem;">I2R &middot; Paralinguistic Analysis</div>
+        <div class="body-text">
           Speech emotion recognition from voice. Detects distress, fatigue, and confusion &mdash; even when their words say "I'm fine."
         </div>
       </div>
 
-      <div class="anim d4" style="text-align: center; padding-top: 32px; border-top: 1px solid #E2E8F0;">
-        <div class="hero-number" style="font-size: 5rem; color: var(--accent);">2</div>
-        <div style="font-size: 1rem; color: var(--text-secondary); margin-top: 8px;">national LLMs integrated</div>
+      <div class="anim d4" style="text-align: center; margin-top: 4rem;">
+        <div class="hero-number" style="font-size: 10rem; color: var(--accent);">2</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); margin-top: 0.5rem;">national LLMs integrated</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 10: FOR THE PATIENT
+     SLIDE 10: FOR THE PATIENT — Layout C (Split)
      ============================================================ -->
-<section class="slide" data-slide="10" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag accent">For the Patient</div>
-    <div class="slide-title">Zero effort. The system does the work.</div>
+<section class="slide" data-slide="10">
+  <div class="anim d1">
+    <div class="label accent">For the Patient</div>
+    <div class="slide-title" style="margin-bottom: 2.5rem;">Zero effort. The system does the work.</div>
   </div>
 
-  <div class="two-panel">
-    <div class="feature-list">
+  <div class="layout-split" style="height: auto; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 2.5rem;">
       <div class="anim d2">
-        <div class="feat-name">Singlish Chat</div>
-        <div class="feat-desc">Talks like a friend, not a doctor. SEA-LION translates clinical language into natural Singlish.</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Singlish Chat</div>
+        <div class="body-text">Talks like a friend, not a doctor. SEA-LION translates clinical language.</div>
       </div>
       <div class="anim d3">
-        <div class="feat-name">Voice Check-ins</div>
-        <div class="feat-desc">MERaLiON detects emotional state from tone. No typing required.</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Voice Check-ins</div>
+        <div class="body-text">MERaLiON detects emotional state from tone. No typing required.</div>
+      </div>
+      <div class="anim d3">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Glucose OCR</div>
+        <div class="body-text">Point camera at meter. Reading captured automatically.</div>
       </div>
       <div class="anim d4">
-        <div class="feat-name">Glucose OCR</div>
-        <div class="feat-desc">Point camera at meter. Reading captured automatically.</div>
-      </div>
-      <div class="anim d5">
-        <div class="feat-name">Loss-aversion Vouchers</div>
-        <div class="feat-desc">"You'll lose your $5 FairPrice voucher." Losses motivate 2x more than gains. Kahneman's Prospect Theory in action.</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Loss-aversion Vouchers</div>
+        <div class="body-text">Losses motivate 2x more than gains. Kahneman's Prospect Theory in action.</div>
       </div>
     </div>
 
     <div class="anim d4" style="display: flex; align-items: center; justify-content: center;">
-      <div style="max-width: 360px;">
-        <div style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; margin-bottom: 16px;">
+      <div style="max-width: 400px;">
+        <div style="font-size: 2rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; letter-spacing: -0.02em; margin-bottom: 1.5rem;">
           Works for Mr. Tan who can barely use a phone.
         </div>
-        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7;">
+        <div class="body-text">
           Voice-first. Proactive outreach. The patient never has to initiate.
         </div>
       </div>
@@ -898,76 +685,75 @@ html, body {
 </section>
 
 <!-- ============================================================
-     SLIDE 11: FOR THE CAREGIVER
+     SLIDE 11: FOR THE CAREGIVER — Layout A (Hero Statement)
      ============================================================ -->
-<section class="slide" data-slide="11" style="background: var(--bg);">
-  <div class="content-center" style="justify-content: center; height: 100%;">
-    <div class="anim d1 label-tag accent">For the Caregiver</div>
+<section class="slide" data-slide="11">
+  <div class="layout-hero">
+    <div class="anim d1 label accent">For the Caregiver</div>
 
-    <div class="anim d2" style="font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 48px;">
+    <div class="anim d2 slide-title" style="font-size: 4.5rem; font-weight: 700; text-align: center; margin-bottom: 3rem;">
       "Your father is safe."
     </div>
 
-    <div style="display: flex; gap: 64px; max-width: 800px;">
-      <div class="feature-list anim d3" style="flex: 1;">
-        <div>
-          <div class="feat-name">One-glance Dashboard</div>
-          <div class="feat-desc">Green / yellow / red. Is my parent safe? Answered in under one second.</div>
-        </div>
-        <div>
-          <div class="feat-name">One-tap Alert Response</div>
-          <div class="feat-desc">Acknowledge, call, or escalate. No app-switching.</div>
-        </div>
+    <div style="display: flex; gap: 1.5rem; max-width: 900px; width: 100%;">
+      <div class="glass-card anim d3" style="flex: 1;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">One-glance Dashboard</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6;">Green / yellow / red. Answered in under one second.</div>
       </div>
-      <div class="feature-list anim d4" style="flex: 1;">
-        <div>
-          <div class="feat-name">3-Tier Escalation</div>
-          <div class="feat-desc"><span style="color: var(--green);">Info</span> &rarr; push. <span style="color: var(--amber);">Warning</span> &rarr; SMS. <span style="color: var(--red);">Critical</span> &rarr; phone call.</div>
-        </div>
-        <div>
-          <div class="feat-name">Burden Scoring</div>
-          <div class="feat-desc">Detects caregiver fatigue. Auto-switches to digest mode &mdash; fewer, summarised updates.</div>
-        </div>
+      <div class="glass-card anim d3" style="flex: 1;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">3-Tier Escalation</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6;"><span style="color: var(--green);">Info</span> &rarr; push. <span style="color: var(--amber);">Warning</span> &rarr; SMS. <span style="color: var(--red);">Critical</span> &rarr; call.</div>
       </div>
     </div>
 
-    <div class="anim d5" style="margin-top: 48px; font-size: 0.95rem; color: var(--text-muted); max-width: 560px; text-align: center; line-height: 1.6;">
+    <div style="display: flex; gap: 1.5rem; max-width: 900px; width: 100%; margin-top: 1.5rem;">
+      <div class="glass-card anim d4" style="flex: 1;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">One-tap Response</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6;">Acknowledge, call, or escalate. No app-switching.</div>
+      </div>
+      <div class="glass-card anim d4" style="flex: 1;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Burden Scoring</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6;">Detects caregiver fatigue. Auto-switches to digest mode.</div>
+      </div>
+    </div>
+
+    <div class="anim d5 caption" style="margin-top: 2.5rem; max-width: 560px; text-align: center; line-height: 1.6;">
       Designed for a working daughter checking her phone during lunch.
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 12: FOR THE NURSE
+     SLIDE 12: FOR THE NURSE — Layout C (Split)
      ============================================================ -->
-<section class="slide" data-slide="12" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag">For the Nurse</div>
-    <div class="slide-title">The system surfaces. The human decides.</div>
+<section class="slide" data-slide="12">
+  <div class="anim d1">
+    <div class="label">For the Nurse</div>
+    <div class="slide-title" style="margin-bottom: 2.5rem;">The system surfaces. The human decides.</div>
   </div>
 
-  <div class="two-panel">
-    <div class="feature-list">
+  <div class="layout-split" style="height: auto; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 2.5rem;">
       <div class="anim d2">
-        <div class="feat-name">Auto-SBAR Reports</div>
-        <div class="feat-desc">Generated in <span style="font-family: var(--font-mono); color: var(--accent); font-weight: 700;">3 seconds</span>. Manual SBAR takes 15 minutes.</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Auto-SBAR Reports</div>
+        <div class="body-text">Generated in <span style="font-family: var(--font-mono); color: var(--accent); font-weight: 700;">3 seconds</span>. Manual takes 15 minutes.</div>
       </div>
       <div class="anim d3">
-        <div class="feat-name">Urgency-ranked Triage</div>
-        <div class="feat-desc">Patients sorted by risk. Highest urgency surfaces first.</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Urgency-ranked Triage</div>
+        <div class="body-text">Patients sorted by risk. Highest urgency surfaces first.</div>
       </div>
       <div class="anim d4">
-        <div class="feat-name">Drug Interaction Engine</div>
-        <div class="feat-desc"><span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">16</span> interaction pairs, <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">39</span> drug classes. Checked before every medication suggestion.</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Drug Interaction Engine</div>
+        <div class="body-text"><span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">16</span> interaction pairs, <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">39</span> drug classes. Checked before every suggestion.</div>
       </div>
     </div>
 
     <div class="anim d3" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-      <div class="hero-number" style="font-size: 6rem; color: var(--accent);">1:100</div>
-      <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 16px; line-height: 1.5;">
+      <div class="hero-number" style="font-size: 10rem; color: var(--accent);">1:100</div>
+      <div style="font-size: 1.4rem; color: var(--text-secondary); margin-top: 1rem;">
         nurse-to-patient ratio
       </div>
-      <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 6px;">
+      <div style="font-size: 1.1rem; color: var(--text-tertiary); margin-top: 0.5rem;">
         from 1:20 today
       </div>
     </div>
@@ -975,110 +761,108 @@ html, body {
 </section>
 
 <!-- ============================================================
-     SLIDE 13: SAFETY & GOVERNANCE
+     SLIDE 13: SAFETY & GOVERNANCE — Layout D (Bento)
      ============================================================ -->
-<section class="slide" data-slide="13" style="background: var(--bg-alt);">
-  <div class="content-left anim d1">
-    <div class="label-tag">Safety &amp; Governance</div>
+<section class="slide" data-slide="13" style="background: var(--bg-elevated);">
+  <div class="anim d1" style="margin-bottom: 2.5rem;">
+    <div class="label">Safety &amp; Governance</div>
     <div class="slide-title">Safety is never probabilistic.</div>
   </div>
 
-  <div class="safety-cols">
-    <div class="safety-col anim d2">
-      <div class="col-title" style="color: var(--red);">Data Protection</div>
-      <ul>
-        <li>PDPA compliant</li>
-        <li>Data never leaves Singapore</li>
-        <li>PII de-identified before every LLM call</li>
-        <li>Input sanitization strips prompt injection</li>
-      </ul>
+  <div class="layout-bento cols-3" style="height: auto; align-content: start;">
+    <div class="glass-card anim d2">
+      <div class="label" style="color: var(--red); margin-bottom: 1.25rem;">Data Protection</div>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">PDPA compliant</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Data never leaves Singapore</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">PII de-identified before every LLM call</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Prompt injection sanitization</div>
+      </div>
     </div>
-    <div class="safety-col anim d3">
-      <div class="col-title" style="color: var(--amber);">Clinical Safety</div>
-      <ul>
-        <li>6-dimension safety classifier</li>
-        <li>Drug interaction engine</li>
-        <li>ADA 2024 guidelines hardcoded</li>
-        <li>Fail-closed: crash = safe fallback</li>
-      </ul>
+    <div class="glass-card anim d3">
+      <div class="label" style="color: var(--amber); margin-bottom: 1.25rem;">Clinical Safety</div>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">6-dimension safety classifier</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Drug interaction engine</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">ADA 2024 guidelines hardcoded</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Fail-closed: crash = safe fallback</div>
+      </div>
     </div>
-    <div class="safety-col anim d4">
-      <div class="col-title">Audit &amp; Compliance</div>
-      <ul>
-        <li>Full decision audit trail</li>
-        <li>Every HMM state transition logged</li>
-        <li>Deterministic rules override AI</li>
-        <li>Constant-time API key comparison</li>
-      </ul>
+    <div class="glass-card anim d4">
+      <div class="label" style="margin-bottom: 1.25rem;">Audit &amp; Compliance</div>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Full decision audit trail</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Every HMM state transition logged</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Deterministic rules override AI</div>
+        <div style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.5;">Constant-time API key comparison</div>
+      </div>
     </div>
   </div>
 
-  <div class="anim d5" style="margin-top: 56px; max-width: 700px;">
-    <div style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6;">
-      "Take double insulin" is <span style="color: var(--red); font-weight: 700;">impossible to generate</span>. Safety rules are deterministic. They fire before the AI ever speaks.
-    </div>
+  <div class="anim d5 body-text" style="margin-top: 2.5rem;">
+    "Take double insulin" is <span style="color: var(--red); font-weight: 700;">impossible to generate</span>. Safety rules are deterministic. They fire before the AI ever speaks.
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 14: THE NUMBERS
+     SLIDE 14: THE NUMBERS — Layout D (Bento)
      ============================================================ -->
-<section class="slide" data-slide="14" style="background: var(--bg);">
-  <div class="content-left anim d1">
-    <div class="label-tag accent">The Numbers</div>
+<section class="slide" data-slide="14">
+  <div class="anim d1" style="margin-bottom: 2.5rem;">
+    <div class="label accent">The Numbers</div>
     <div class="slide-title">Built to deploy, not to demo.</div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-block anim d2">
-      <div class="value accent">$0.40</div>
-      <div class="stat-label">per patient / month<br>operating cost</div>
+  <div class="layout-bento cols-3" style="height: auto; align-content: start;">
+    <div class="glass-card anim d2" style="text-align: center;">
+      <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--accent); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.75rem;">$0.40</div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary);">per patient / month</div>
     </div>
-    <div class="stat-block anim d3">
-      <div class="value green">$8,800</div>
-      <div class="stat-label">saved per prevented<br>ER admission</div>
+    <div class="glass-card anim d2" style="text-align: center;">
+      <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--green); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.75rem;">$8,800</div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary);">saved per prevented ER visit</div>
     </div>
-    <div class="stat-block anim d4">
-      <div class="value amber">22,000</div>
-      <div class="stat-label">months of Bewo funded<br>by 1 prevented admission</div>
+    <div class="glass-card anim d2" style="text-align: center;">
+      <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--amber); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.75rem;">22,000</div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary);">months funded by 1 ER save</div>
     </div>
-    <div class="stat-block anim d5">
-      <div class="value">87%</div>
-      <div class="stat-label">gross margin<br>at $3/month B2G</div>
+    <div class="glass-card anim d3" style="text-align: center;">
+      <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.75rem;">87%</div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary);">gross margin at $3/mo B2G</div>
     </div>
-    <div class="stat-block anim d6">
-      <div class="value">186ms</div>
-      <div class="stat-label">core inference<br>runs on a phone</div>
+    <div class="glass-card anim d3" style="text-align: center;">
+      <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.75rem;">186ms</div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary);">core inference on a phone</div>
     </div>
-    <div class="stat-block anim d7">
-      <div class="value">32,400</div>
-      <div class="stat-label">lines of<br>production code</div>
+    <div class="glass-card anim d3" style="text-align: center;">
+      <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.75rem;">32,400</div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary);">lines of production code</div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 15: CLOSE
+     SLIDE 15: CLOSE — Layout A (Hero Statement)
      ============================================================ -->
-<section class="slide" data-slide="15" style="background: var(--bg);">
-  <div class="content-center" style="justify-content: center; height: 100%;">
-    <div class="anim d1" style="font-size: 2.8rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.4; max-width: 780px; text-align: center;">
+<section class="slide glow-bg" data-slide="15">
+  <div class="layout-hero">
+    <div class="anim d1 slide-title" style="font-size: 4rem; font-weight: 700; text-align: center; max-width: 800px; line-height: 1.3;">
       Bewo doesn't wait for crisis.<br>
-      It <span style="color: var(--accent);">predicts</span>. It <span style="color: var(--green);">prevents</span>. It <span style="font-weight: 900;">protects</span>.
+      It <span style="color: var(--accent);">predicts</span>. It <span style="color: var(--green);">prevents</span>. It <span style="font-weight: 800;">protects</span>.
     </div>
 
-    <div class="anim d2" style="margin-top: 40px; font-size: 1.05rem; color: var(--text-muted); line-height: 1.7; max-width: 420px; text-align: center;">
+    <div class="anim d2 body-text" style="margin-top: 2.5rem; text-align: center;">
       From diabetes to all chronic disease.<br>
       From Singapore to ASEAN.
     </div>
 
-    <div class="anim d3" style="margin-top: 72px;">
-      <div style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em;">
+    <div class="anim d3" style="margin-top: 5rem;">
+      <div style="font-size: 3rem; font-weight: 700; letter-spacing: -0.03em;">
         <span style="color: var(--accent);">B</span>ewo Health
       </div>
     </div>
 
-    <div class="anim d4" style="margin-top: 20px; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.06em;">
+    <div class="anim d4 caption" style="margin-top: 1.5rem; letter-spacing: 0.06em;">
       NUS-Synapxe-IMDA AI Innovation Challenge 2026
     </div>
   </div>
