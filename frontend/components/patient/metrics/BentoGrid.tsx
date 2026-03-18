@@ -16,20 +16,22 @@ interface Biometrics {
 }
 
 interface BentoGridProps {
-    biometrics: Biometrics;
+    biometrics?: Biometrics | null;
     className?: string;
 }
 
 export function BentoGrid({ biometrics, className }: BentoGridProps) {
-    const glucose = biometrics?.glucose ?? 0;
-    const steps = biometrics?.steps ?? 0;
-    const hr = biometrics?.hr ?? 0;
+    const glucose = biometrics?.glucose;
+    const steps = biometrics?.steps;
+    const hr = biometrics?.hr;
+    const hasData = biometrics != null;
 
     // Logic for colors — detect hypo (<4.0), normal (4.0-7.8), elevated (>7.8)
-    const isHypo = glucose < 4.0;
-    const isElevated = glucose > 7.8;
-    const glucoseColor = isHypo ? "text-error-text" : isElevated ? "text-warning-text" : "text-success-text";
-    const glucoseBg = isHypo ? "bg-error-bg" : isElevated ? "bg-warning-bg" : "bg-success-bg";
+    const glucoseVal = glucose ?? 0;
+    const isHypo = hasData && glucoseVal < 4.0;
+    const isElevated = hasData && glucoseVal > 7.8;
+    const glucoseColor = !hasData ? "text-neutral-400" : isHypo ? "text-error-text" : isElevated ? "text-warning-text" : "text-success-text";
+    const glucoseBg = !hasData ? "bg-neutral-100" : isHypo ? "bg-error-bg" : isElevated ? "bg-warning-bg" : "bg-success-bg";
 
     return (
         <motion.div
@@ -47,13 +49,13 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
                             <span>Avg. Glucose</span>
                         </div>
                         <span className={cn("px-3 py-1 rounded-full text-sm font-bold", glucoseBg, glucoseColor)}>
-                            {isHypo ? "LOW" : isElevated ? "ELEVATED" : "NORMAL"}
+                            {!hasData ? "\u2014" : isHypo ? "LOW" : isElevated ? "ELEVATED" : "NORMAL"}
                         </span>
                     </div>
 
                     <div className="mt-6 flex items-baseline gap-2 z-10">
                         <span className={cn("text-5xl font-bold tracking-tight", glucoseColor)}>
-                            {glucose.toFixed(1)}
+                            {hasData ? glucoseVal.toFixed(1) : "\u2014"}
                         </span>
                         <span className="text-neutral-400 font-medium">mmol/L</span>
                     </div>
@@ -63,7 +65,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
                         <motion.div
                             className={cn("h-full", isHypo ? "bg-error-500" : isElevated ? "bg-warning-500" : "bg-success-500")}
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.min((glucose / 15) * 100, 100)}%` }}
+                            animate={{ width: `${Math.min((glucoseVal / 15) * 100, 100)}%` }}
                             transition={{ duration: 1, delay: 0.5 }}
                         />
                     </div>
@@ -79,7 +81,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
                         <Footprints size={16} /> Activity
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-neutral-900">{steps.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-neutral-900">{hasData ? (steps ?? 0).toLocaleString() : "\u2014"}</div>
                         <div className="text-sm text-neutral-400 mt-1">steps today</div>
                     </div>
                 </Card>
@@ -92,7 +94,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
                         <Heart size={16} /> Heart Rate
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-neutral-900">{hr}</div>
+                        <div className="text-2xl font-bold text-neutral-900">{hasData ? (hr ?? 0) : "\u2014"}</div>
                         <div className="text-sm text-neutral-400 mt-1">bpm (resting)</div>
                     </div>
                 </Card>

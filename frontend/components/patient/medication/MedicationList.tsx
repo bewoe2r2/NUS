@@ -66,17 +66,21 @@ export function MedicationList() {
         });
         if (targetName) {
             try {
-                await api.logMedication(targetName, newTaken);
+                const result = await api.logMedication(targetName, newTaken);
+                if (!result.success) {
+                    // Revert on failure
+                    setMeds(prev => prev.map(m => m.name === targetName ? { ...m, taken: !newTaken } : m));
+                }
             } catch (err) {
                 console.error(err);
-                // Revert on failure
-                setMeds(prev => prev.map(m => m.id === id ? { ...m, taken: !newTaken } : m));
+                // Revert on unexpected error
+                setMeds(prev => prev.map(m => m.name === targetName ? { ...m, taken: !newTaken } : m));
             }
         }
     };
 
     const getCategory = (timeStr: string) => {
-        const hour = parseInt(timeStr.split(':')[0]);
+        const hour = parseInt(timeStr?.split(':')[0]) || 0;
         if (hour < 12) return 'morning';
         if (hour < 17) return 'afternoon';
         return 'evening';

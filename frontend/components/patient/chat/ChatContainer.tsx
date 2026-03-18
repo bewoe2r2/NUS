@@ -2,9 +2,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-
-let _msgCounter = 0;
-const nextId = () => `msg-${Date.now()}-${++_msgCounter}`;
 import { MessageBubble, ChatMessage } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
 import { api } from "@/lib/api";
@@ -16,6 +13,8 @@ export function ChatContainer() {
     const [messages, setMessages] = useState<ChatMessage[]>([]); // Start empty, wait for interaction
     const [isTyping, setIsTyping] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const msgCounterRef = useRef(0);
+    const nextId = () => `msg-${Date.now()}-${++msgCounterRef.current}`;
 
     // Auto-scroll logic
     const scrollToBottom = () => {
@@ -62,10 +61,14 @@ export function ChatContainer() {
 
         try {
             // REAL API CALL
-            const res = await api.chatWithAgent(text);
+            const res = await api.chatWithAgent(text, 'P001');
 
             if (!res || typeof res.message !== "string") {
                 throw new Error("Invalid response from server");
+            }
+
+            if (res.message.includes("connecting") && res.tone === "neutral") {
+                throw new Error("Backend unavailable");
             }
 
             const aiMsg: ChatMessage = {

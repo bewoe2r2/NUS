@@ -81,9 +81,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen pb-24 relative bg-neutral-50">
+    <main className="min-h-screen pb-24 relative bg-neutral-50 overflow-hidden">
       {/* 1. GLASS HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass-header px-6 py-4 flex justify-between items-center transition-all duration-300">
+      <header className="absolute top-0 left-0 right-0 z-50 glass-header px-6 py-4 flex justify-between items-center transition-all duration-300">
         <div className="font-semibold text-lg tracking-tight select-none">
           Bewo <span className="text-accent-500">Health</span>
         </div>
@@ -93,7 +93,7 @@ export default function Home() {
       </header>
 
       {/* 1b. EMERGENCY BAR — amber for WARNING, red for CRISIS, hidden for STABLE */}
-      <div className="fixed top-[60px] left-0 right-0 z-40">
+      <div className="absolute top-[60px] left-0 right-0 z-40">
         <EmergencyBar state={data.current_state} />
       </div>
 
@@ -139,7 +139,7 @@ export default function Home() {
         </section>
 
         {/* MEDICATION */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms] fill-mode-backwards">
+        <section id="patient-meds" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Schedule</h2>
           <MedicationList />
         </section>

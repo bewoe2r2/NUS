@@ -15,7 +15,7 @@ import { describe, it, expect } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Reconstructed step metadata from the source of truth
-// (GuidedWalkthrough.tsx lines 87-394, phases lines 439-449)
+// (GuidedWalkthrough.tsx steps array lines 152-560, phases lines 740-749)
 //
 // If someone adds/removes a step, these tests will catch the mismatch.
 // ---------------------------------------------------------------------------
@@ -34,67 +34,70 @@ interface StepSpec {
 }
 
 const EXPECTED_STEPS: StepSpec[] = [
-  // Phase 1: INTRODUCTION
-  { id: "welcome", phase: "INTRODUCTION", title: "Welcome to Bewo", subtitle: "AI-Powered Chronic Disease Management for Singapore", hasBody: true, hasInsight: true, hasIcon: true },
-  { id: "layout_overview", phase: "INTRODUCTION", title: "Your Control Panel", subtitle: "The Judge Console — you control everything from here", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  // ACT 1: SETUP (Steps 0-5) — Meet the characters
+  { id: "welcome", phase: "WELCOME", title: "Welcome to Bewo", subtitle: "What if AI could prevent a hospital visit — before the patient even feels sick?", hasBody: true, hasInsight: true, hasIcon: true },
+  { id: "meet_mr_tan", phase: "MEET MR. TAN", title: "Meet Mr. Tan Ah Kow", subtitle: "67 years old. Type 2 Diabetes + Hypertension. Lives alone in Toa Payoh. Daughter Mei Ling is his caregiver.", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
+  { id: "patient_actions", phase: "MEET MR. TAN", title: "Everything Mr. Tan Can Do", subtitle: "Log glucose, track food, check in by voice, manage medications — all from his phone", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
+  { id: "ai_companion", phase: "MEET MR. TAN", title: "Chat With the AI Companion", subtitle: "A caring companion that speaks Mr. Tan's language", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
+  { id: "sealion_cultural", phase: "CULTURAL INTELLIGENCE", title: "Watch SEA-LION Translate to Singlish", subtitle: "Same medical truth, completely different trust level", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Translate with SEA-LION", tab: "patient" },
+  { id: "nurse_intro", phase: "NURSE DASHBOARD", title: "Meet Nurse Sarah Chen", subtitle: "She manages 600+ patients. Bewo tells her exactly who needs help today.", hasBody: true, hasInsight: true, hasIcon: true, tab: "nurse" },
 
-  // Phase 2: CRISIS SCENARIO
-  { id: "inject_crisis", phase: "CRISIS SCENARIO", title: "Triggering a Crisis", subtitle: "Injecting 14 days of deteriorating patient data", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Inject Warning → Crisis Scenario", tab: "overview" },
-  { id: "overview_state_cards", phase: "CRISIS SCENARIO", title: "State Cards — The System's Verdict", subtitle: "Four metrics that tell the whole story at a glance", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
-  { id: "overview_sbar", phase: "CRISIS SCENARIO", title: "Auto-Generated SBAR Report", subtitle: "Clinical handoff summary — zero nurse effort", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
-  { id: "overview_triage_drugs", phase: "CRISIS SCENARIO", title: "Triage & Drug Safety", subtitle: "Multi-patient urgency ranking + medication interaction checks", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  // ACT 2: DAYS 1-5 — Everything is fine (Steps 6-10)
+  { id: "inject_stable", phase: "DAYS 1–5: STABLE", title: "Inject 5 Healthy Days", subtitle: "Medications on time, daily walks, normal glucose", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Inject Days 1–5 (Stable Phase)", tab: "overview" },
+  { id: "stable_analysis", phase: "DAYS 1–5: STABLE", title: "All Green — Mr. Tan Is Safe", subtitle: "All 9 health signals align — low risk, healthy trajectory", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  { id: "stable_gemini", phase: "DAYS 1–5: STABLE", title: "Quiet AI Running in the Background", subtitle: "Proactive care, not reactive — even when everything is fine", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  { id: "data_architecture", phase: "DAYS 1–5: STABLE", title: "9 Features, 10 Sources, Zero PII Leaks", subtitle: "Every signal is clinically validated. Every byte is privacy-classified.", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  { id: "live_pipeline_demo", phase: "DAYS 1–5: STABLE", title: "Send a Live Message Through the Pipeline", subtitle: "Watch a real message flow through all 5 Diamond layers", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Send Live Message Through Pipeline", tab: "patient" },
 
-  // Phase 3: NURSE DASHBOARD
-  { id: "nurse_intro", phase: "NURSE DASHBOARD", title: "The Nurse's Perspective", subtitle: "What Sarah Chen, RN sees at the start of her shift", hasBody: true, hasInsight: true, hasIcon: true, tab: "nurse" },
-  { id: "nurse_timeline", phase: "NURSE DASHBOARD", title: "14-Day Timeline & HMM Analysis", subtitle: "Click any day to see exactly why the HMM made its decision", hasBody: true, hasInsight: true, hasIcon: true, tab: "nurse" },
-  { id: "nurse_hmm_intelligence", phase: "NURSE DASHBOARD", title: "HMM Intelligence Center", subtitle: "State distribution, transition dynamics, Monte Carlo forecast", hasBody: true, hasInsight: true, hasIcon: true, tab: "nurse" },
+  // ACT 3: DAYS 6-10 — Something shifts (Steps 11-15)
+  { id: "crisis_narrative", phase: "DAYS 6–10: WARNING", title: "Watch the HMM Detect the Pattern", subtitle: "Mr. Tan's daughter is travelling. He's eating out more. Skipping walks.", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Inject Days 6–10 (Warning Phase)", tab: "overview" },
+  { id: "warning_detected", phase: "DAYS 6–10: WARNING", title: "Caught 48 Hours Before Symptoms", subtitle: "Mr. Tan feels fine. The system already detected danger.", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  { id: "warning_gemini_acts", phase: "DAYS 6–10: WARNING", title: "6 Interventions Fire Automatically", subtitle: "No nurse clicked anything — the AI shifted to active intervention", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  { id: "caregiver_alert", phase: "DAYS 6–10: WARNING", title: "Caregiver Gets a One-Tap Alert", subtitle: "Mei Ling sees exactly what she needs — no medical jargon, no guessing", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Load Caregiver Dashboard", tab: "caregiver" },
+  { id: "warning_stakeholders", phase: "DAYS 6–10: WARNING", title: "Same Event, Three Different Views", subtitle: "Click each tab — Patient, Nurse, Caregiver — to compare", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
 
-  // Phase 4: PATIENT EXPERIENCE (note: source has 4 steps in this phase)
-  { id: "patient_intro", phase: "PATIENT EXPERIENCE", title: "What Mr. Tan Sees", subtitle: "A caring companion, not a clinical dashboard", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
-  { id: "patient_voucher", phase: "PATIENT EXPERIENCE", title: "Voucher Gamification", subtitle: "Loss-aversion psychology — patients work to keep what they have", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
-  { id: "patient_chat", phase: "PATIENT EXPERIENCE", title: "AI Care Assistant", subtitle: "Singlish-aware, mood-detecting, tool-executing companion", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
-  { id: "patient_actions", phase: "PATIENT EXPERIENCE", title: "Patient Actions", subtitle: "Glucose logging, food tracking, voice check-ins", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
+  // ACT 4: DAYS 11-14 — Full crisis (Steps 16-19)
+  { id: "inject_crisis", phase: "DAYS 11–14: CRISIS", title: "The Crisis Point — ER Without Bewo", subtitle: "Without early detection, the next stop is $8,800 hospitalization", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Inject Days 11–14 (Crisis Phase)", tab: "overview" },
+  { id: "crisis_detected", phase: "DAYS 11–14: CRISIS", title: "Full Escalation in Seconds", subtitle: "Nurse alerted, doctor flagged, caregiver notified, appointment booked — all automatic", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  { id: "crisis_safety_net", phase: "DAYS 11–14: CRISIS", title: "The Safety Net Activates", subtitle: "Five behavioral science frameworks + blind booking + emergency UI — all fire simultaneously", hasBody: true, hasInsight: true, hasIcon: true, tab: "patient" },
+  { id: "crisis_nurse_view", phase: "DAYS 11–14: CRISIS", title: "See the Full 14-Day Evidence Trail", subtitle: "Every state transition is explainable, auditable, and defensible", hasBody: true, hasInsight: true, hasIcon: true, tab: "nurse" },
 
-  // Phase 5: RECOVERY DEMO
-  { id: "inject_recovery", phase: "RECOVERY DEMO", title: "Now Watch Recovery", subtitle: "Bewo detects crisis, intervenes autonomously, patient recovers", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Inject Recovery Scenario", tab: "overview" },
-  { id: "recovery_confirmed", phase: "RECOVERY DEMO", title: "Crisis Prevented", subtitle: "STABLE state restored — the patient stays home, not the ER", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
-  { id: "recovery_views", phase: "RECOVERY DEMO", title: "Three Stakeholders, One Event", subtitle: "Same recovery — 3 completely different experiences", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
+  // ACT 5: RECOVERY (Steps 20-21)
+  { id: "inject_recovery", phase: "RECOVERY", title: "Watch Mr. Tan Recover", subtitle: "No ER visit. No hospitalization. He stays home.", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Inject Recovery Scenario (14 days)", tab: "overview" },
+  { id: "crisis_averted", phase: "RECOVERY", title: "Crisis Averted: $8,800 Saved", subtitle: "Mr. Tan stays home. Not in the ER.", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
 
-  // Phase 6: AGENTIC AI
-  { id: "tool_demo_intro", phase: "AGENTIC AI", title: "18 Agentic AI Tools", subtitle: "Every tool fires against a real API endpoint", hasBody: true, hasInsight: true, hasIcon: true, tab: "tooldemo" },
-  { id: "tool_demo_pipeline", phase: "AGENTIC AI", title: "The 5-Phase Pipeline", subtitle: "Safety first, clinical second, engagement third", hasBody: true, hasInsight: true, hasIcon: true, tab: "tooldemo" },
+  // ACT 6: DEEP DIVE (Steps 22-25)
+  { id: "tool_demo", phase: "DEEP DIVE", title: "Try All 18 Agent Tools Live", subtitle: "Each tool fires a real API call — try individually or run all 18", hasBody: true, hasInsight: true, hasIcon: true, tab: "tooldemo" },
+  { id: "intelligence", phase: "DEEP DIVE", title: "See How the AI Learns Mr. Tan", subtitle: "Memory, tool effectiveness, burden scoring, proactive triggers", hasBody: true, hasInsight: true, hasIcon: true, tab: "intelligence" },
+  { id: "personalization_engine", phase: "DEEP DIVE", title: "4 Memory Types + Per-Patient HMM", subtitle: "The AI genuinely knows Mr. Tan — not a generic diabetes model", hasBody: true, hasInsight: true, hasIcon: true, tab: "intelligence" },
+  { id: "tech-metrics", phase: "DEEP DIVE", title: "The Numbers That Prove It Works", subtitle: "Validated metrics, not projections", hasBody: true, hasInsight: true, hasIcon: true, hasAction: true, actionLabel: "Load Live Metrics", tab: "intelligence" },
 
-  // Phase 7: UNDER THE HOOD
-  { id: "intelligence_intro", phase: "UNDER THE HOOD", title: "The Learning Engine", subtitle: "This is what makes Bewo truly agentic — it learns and remembers", hasBody: true, hasInsight: true, hasIcon: true, tab: "intelligence" },
-  { id: "intelligence_details", phase: "UNDER THE HOOD", title: "Proactive Care & Caregiver Support", subtitle: "The agent reaches out first — it doesn't wait to be asked", hasBody: true, hasInsight: true, hasIcon: true, tab: "intelligence" },
-
-  // Phase 8: EXPLORE
-  { id: "other_scenarios", phase: "EXPLORE", title: "Try Other Scenarios", subtitle: "7 scenarios — each shows a different clinical trajectory", hasBody: true, hasInsight: true, hasIcon: true, tab: "overview" },
-
-  // Phase 9: SUMMARY
-  { id: "closing", phase: "SUMMARY", title: "Before Crisis. Not After.", subtitle: "A working system. Not a prototype. Not a pitch deck.", hasBody: true, hasInsight: true, hasIcon: true },
+  // CLOSING (Step 26)
+  { id: "closing", phase: "SUMMARY", title: "Before Crisis. Not After.", subtitle: "A working system. Not a prototype.", hasBody: true, hasInsight: true, hasIcon: true },
 ];
 
 // Phase groupings from the source (GuidedWalkthrough.tsx phases array)
 const EXPECTED_PHASES = [
-  { name: "Intro", steps: [0, 1] },
-  { name: "Crisis", steps: [2, 3, 4, 5] },
-  { name: "Nurse", steps: [6, 7, 8] },
-  { name: "Patient", steps: [9, 10, 11, 12] },
-  { name: "Recovery", steps: [13, 14, 15] },
-  { name: "Tools", steps: [16, 17] },
-  { name: "AI", steps: [18, 19] },
-  { name: "Explore", steps: [20] },
-  { name: "Close", steps: [21] },
+  { name: "Welcome", steps: [0], color: "bg-blue-500" },
+  { name: "Characters", steps: [1, 2, 3, 4, 5], color: "bg-emerald-500" },
+  { name: "Stable", steps: [6, 7, 8, 9, 10], color: "bg-green-500" },
+  { name: "Warning", steps: [11, 12, 13, 14, 15], color: "bg-amber-500" },
+  { name: "Crisis", steps: [16, 17, 18, 19], color: "bg-rose-500" },
+  { name: "Recovery", steps: [20, 21], color: "bg-teal-500" },
+  { name: "Deep Dive", steps: [22, 23, 24, 25], color: "bg-purple-500" },
+  { name: "Close", steps: [26], color: "bg-zinc-700" },
 ];
+
+// Valid tab IDs from the TabId type in GuidedWalkthrough.tsx
+const VALID_TABS = new Set(["overview", "patient", "nurse", "caregiver", "intelligence", "tooldemo"]);
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 describe("walkthrough step definitions", () => {
-  it("has exactly 22 steps", () => {
-    expect(EXPECTED_STEPS).toHaveLength(22);
+  it("has exactly 27 steps (indices 0-26)", () => {
+    expect(EXPECTED_STEPS).toHaveLength(27);
   });
 
   it("every step has a unique id", () => {
@@ -115,31 +118,68 @@ describe("walkthrough step definitions", () => {
     }
   });
 
-  it("action steps have an actionLabel", () => {
+  it("has exactly 8 action steps", () => {
     const actionSteps = EXPECTED_STEPS.filter((s) => s.hasAction);
-    expect(actionSteps.length).toBe(2); // inject_crisis and inject_recovery
+    expect(actionSteps.length).toBe(8);
+  });
 
+  it("action steps have correct IDs", () => {
+    const actionIds = EXPECTED_STEPS.filter((s) => s.hasAction).map((s) => s.id);
+    expect(actionIds).toEqual([
+      "sealion_cultural",
+      "inject_stable",
+      "live_pipeline_demo",
+      "crisis_narrative",
+      "caregiver_alert",
+      "inject_crisis",
+      "inject_recovery",
+      "tech-metrics",
+    ]);
+  });
+
+  it("action steps have correct labels", () => {
+    const actionLabels = EXPECTED_STEPS.filter((s) => s.hasAction).map((s) => s.actionLabel);
+    expect(actionLabels).toEqual([
+      "Translate with SEA-LION",
+      "Inject Days 1–5 (Stable Phase)",
+      "Send Live Message Through Pipeline",
+      "Inject Days 6–10 (Warning Phase)",
+      "Load Caregiver Dashboard",
+      "Inject Days 11–14 (Crisis Phase)",
+      "Inject Recovery Scenario (14 days)",
+      "Load Live Metrics",
+    ]);
+  });
+
+  it("action steps are at correct indices (3, 5, 8, 9, 12, 14, 17, 21)", () => {
+    const actionIndices = EXPECTED_STEPS
+      .map((s, i) => (s.hasAction ? i : -1))
+      .filter((i) => i !== -1);
+    expect(actionIndices).toEqual([3, 5, 8, 9, 12, 14, 17, 21]);
+  });
+
+  it("every action step has a non-empty actionLabel", () => {
+    const actionSteps = EXPECTED_STEPS.filter((s) => s.hasAction);
     for (const step of actionSteps) {
       expect(step.actionLabel).toBeTruthy();
       expect(typeof step.actionLabel).toBe("string");
       expect(step.actionLabel!.length).toBeGreaterThan(0);
     }
   });
-
-  it("action steps are inject_crisis and inject_recovery", () => {
-    const actionIds = EXPECTED_STEPS.filter((s) => s.hasAction).map((s) => s.id);
-    expect(actionIds).toEqual(["inject_crisis", "inject_recovery"]);
-  });
 });
 
 describe("phase groupings", () => {
-  it("phase groupings cover all 22 steps exactly once", () => {
-    const allStepIndices = EXPECTED_PHASES.flatMap((p) => p.steps);
-    expect(allStepIndices).toHaveLength(22);
+  it("has exactly 8 phases", () => {
+    expect(EXPECTED_PHASES).toHaveLength(8);
+  });
 
-    // Should be [0, 1, 2, ..., 21] in order
+  it("phase groupings cover all 27 steps exactly once", () => {
+    const allStepIndices = EXPECTED_PHASES.flatMap((p) => p.steps);
+    expect(allStepIndices).toHaveLength(27);
+
+    // Should be [0, 1, 2, ..., 26] in order
     const sorted = [...allStepIndices].sort((a, b) => a - b);
-    expect(sorted).toEqual(Array.from({ length: 22 }, (_, i) => i));
+    expect(sorted).toEqual(Array.from({ length: 27 }, (_, i) => i));
   });
 
   it("phase indices are contiguous (no gaps or overlaps)", () => {
@@ -149,18 +189,98 @@ describe("phase groupings", () => {
     for (const idx of allStepIndices) {
       counts.set(idx, (counts.get(idx) || 0) + 1);
     }
-    for (const [idx, count] of counts) {
+    for (const [, count] of counts) {
       expect(count).toBe(1);
     }
-  });
 
-  it("has 9 phases", () => {
-    expect(EXPECTED_PHASES).toHaveLength(9);
+    // Within each phase, indices should be contiguous
+    for (const phase of EXPECTED_PHASES) {
+      const sorted = [...phase.steps].sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i++) {
+        expect(sorted[i]).toBe(sorted[i - 1] + 1);
+      }
+    }
   });
 
   it("phase names match expected", () => {
     const names = EXPECTED_PHASES.map((p) => p.name);
-    expect(names).toEqual(["Intro", "Crisis", "Nurse", "Patient", "Recovery", "Tools", "AI", "Explore", "Close"]);
+    expect(names).toEqual([
+      "Welcome",
+      "Characters",
+      "Stable",
+      "Warning",
+      "Crisis",
+      "Recovery",
+      "Deep Dive",
+      "Close",
+    ]);
+  });
+
+  it("phase colors match expected", () => {
+    const colors = EXPECTED_PHASES.map((p) => p.color);
+    expect(colors).toEqual([
+      "bg-blue-500",
+      "bg-emerald-500",
+      "bg-green-500",
+      "bg-amber-500",
+      "bg-rose-500",
+      "bg-teal-500",
+      "bg-purple-500",
+      "bg-zinc-700",
+    ]);
+  });
+});
+
+describe("tab assignments", () => {
+  it("steps that navigate to tabs have valid tab values", () => {
+    const stepsWithTabs = EXPECTED_STEPS.filter((s) => s.tab);
+    expect(stepsWithTabs.length).toBeGreaterThan(0);
+
+    for (const step of stepsWithTabs) {
+      expect(VALID_TABS.has(step.tab!)).toBe(true);
+    }
+  });
+
+  it("valid tabs include caregiver", () => {
+    expect(VALID_TABS.has("caregiver")).toBe(true);
+    const caregiverSteps = EXPECTED_STEPS.filter((s) => s.tab === "caregiver");
+    expect(caregiverSteps.length).toBeGreaterThanOrEqual(1);
+    expect(caregiverSteps[0].id).toBe("caregiver_alert");
+  });
+
+  it("NURSE DASHBOARD step points to nurse tab", () => {
+    const nurseSteps = EXPECTED_STEPS.filter((s) => s.phase === "NURSE DASHBOARD");
+    expect(nurseSteps.length).toBe(1);
+    expect(nurseSteps[0].tab).toBe("nurse");
+  });
+
+  it("DAYS 6–10: WARNING phase includes a caregiver tab step", () => {
+    const warningSteps = EXPECTED_STEPS.filter((s) => s.phase === "DAYS 6–10: WARNING");
+    const caregiverStep = warningSteps.find((s) => s.tab === "caregiver");
+    expect(caregiverStep).toBeDefined();
+    expect(caregiverStep!.id).toBe("caregiver_alert");
+  });
+
+  it("DAYS 11–14: CRISIS phase includes a nurse tab step", () => {
+    const crisisSteps = EXPECTED_STEPS.filter((s) => s.phase === "DAYS 11–14: CRISIS");
+    const nurseStep = crisisSteps.find((s) => s.tab === "nurse");
+    expect(nurseStep).toBeDefined();
+    expect(nurseStep!.id).toBe("crisis_nurse_view");
+  });
+
+  it("DEEP DIVE phase includes tooldemo and intelligence tabs", () => {
+    const deepDiveSteps = EXPECTED_STEPS.filter((s) => s.phase === "DEEP DIVE");
+    const tabs = new Set(deepDiveSteps.map((s) => s.tab));
+    expect(tabs.has("tooldemo")).toBe(true);
+    expect(tabs.has("intelligence")).toBe(true);
+  });
+
+  it("welcome step has no tab", () => {
+    expect(EXPECTED_STEPS[0].tab).toBeUndefined();
+  });
+
+  it("closing step has no tab", () => {
+    expect(EXPECTED_STEPS[26].tab).toBeUndefined();
   });
 });
 
@@ -172,70 +292,73 @@ describe("walkthrough step content quality", () => {
     }
   });
 
-  it("steps that navigate to tabs have valid tab values", () => {
-    const validTabs = new Set(["overview", "patient", "nurse", "intelligence", "tooldemo"]);
-    const stepsWithTabs = EXPECTED_STEPS.filter((s) => s.tab);
-    expect(stepsWithTabs.length).toBeGreaterThan(0);
-
-    for (const step of stepsWithTabs) {
-      expect(validTabs.has(step.tab!)).toBe(true);
-    }
-  });
-
-  it("INTRODUCTION steps include a step without a tab (welcome has no tab)", () => {
-    const introSteps = EXPECTED_STEPS.filter((s) => s.phase === "INTRODUCTION");
-    const withoutTab = introSteps.filter((s) => !s.tab);
-    expect(withoutTab.length).toBeGreaterThanOrEqual(1);
-    expect(withoutTab[0].id).toBe("welcome");
-  });
-
-  it("NURSE DASHBOARD steps all point to nurse tab", () => {
-    const nurseSteps = EXPECTED_STEPS.filter((s) => s.phase === "NURSE DASHBOARD");
-    expect(nurseSteps.length).toBe(3);
-    for (const step of nurseSteps) {
-      expect(step.tab).toBe("nurse");
-    }
-  });
-
-  it("PATIENT EXPERIENCE steps all point to patient tab", () => {
-    const patientSteps = EXPECTED_STEPS.filter((s) => s.phase === "PATIENT EXPERIENCE");
-    expect(patientSteps.length).toBe(4);
-    for (const step of patientSteps) {
-      expect(step.tab).toBe("patient");
-    }
-  });
-
-  it("AGENTIC AI steps all point to tooldemo tab", () => {
-    const toolSteps = EXPECTED_STEPS.filter((s) => s.phase === "AGENTIC AI");
-    expect(toolSteps.length).toBe(2);
-    for (const step of toolSteps) {
-      expect(step.tab).toBe("tooldemo");
-    }
-  });
-
   it("first step is welcome, last step is closing", () => {
     expect(EXPECTED_STEPS[0].id).toBe("welcome");
     expect(EXPECTED_STEPS[EXPECTED_STEPS.length - 1].id).toBe("closing");
   });
+
+  it("first step phase is WELCOME", () => {
+    expect(EXPECTED_STEPS[0].phase).toBe("WELCOME");
+  });
+
+  it("last step phase is SUMMARY", () => {
+    expect(EXPECTED_STEPS[EXPECTED_STEPS.length - 1].phase).toBe("SUMMARY");
+  });
 });
 
-describe("phase ordering matches the narrative flow", () => {
-  it("INTRODUCTION comes before CRISIS SCENARIO", () => {
-    const introIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "INTRODUCTION");
-    const crisisIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "CRISIS SCENARIO");
-    expect(introIdx).toBeLessThan(crisisIdx);
+describe("narrative ordering", () => {
+  it("WELCOME comes before MEET MR. TAN", () => {
+    const welcomeIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "WELCOME");
+    const meetIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "MEET MR. TAN");
+    expect(welcomeIdx).toBeLessThan(meetIdx);
   });
 
-  it("CRISIS SCENARIO comes before NURSE DASHBOARD", () => {
-    const crisisIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "CRISIS SCENARIO");
+  it("MEET MR. TAN comes before CULTURAL INTELLIGENCE", () => {
+    const meetIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "MEET MR. TAN");
+    const culturalIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "CULTURAL INTELLIGENCE");
+    expect(meetIdx).toBeLessThan(culturalIdx);
+  });
+
+  it("CULTURAL INTELLIGENCE comes before NURSE DASHBOARD", () => {
+    const culturalIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "CULTURAL INTELLIGENCE");
     const nurseIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "NURSE DASHBOARD");
-    expect(crisisIdx).toBeLessThan(nurseIdx);
+    expect(culturalIdx).toBeLessThan(nurseIdx);
   });
 
-  it("RECOVERY DEMO comes before AGENTIC AI", () => {
-    const recoveryIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "RECOVERY DEMO");
-    const agenticIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "AGENTIC AI");
-    expect(recoveryIdx).toBeLessThan(agenticIdx);
+  it("NURSE DASHBOARD comes before DAYS 1–5: STABLE", () => {
+    const nurseIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "NURSE DASHBOARD");
+    const stableIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DAYS 1–5: STABLE");
+    expect(nurseIdx).toBeLessThan(stableIdx);
+  });
+
+  it("DAYS 1–5: STABLE comes before DAYS 6–10: WARNING", () => {
+    const stableIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DAYS 1–5: STABLE");
+    const warningIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DAYS 6–10: WARNING");
+    expect(stableIdx).toBeLessThan(warningIdx);
+  });
+
+  it("DAYS 6–10: WARNING comes before DAYS 11–14: CRISIS", () => {
+    const warningIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DAYS 6–10: WARNING");
+    const crisisIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DAYS 11–14: CRISIS");
+    expect(warningIdx).toBeLessThan(crisisIdx);
+  });
+
+  it("DAYS 11–14: CRISIS comes before RECOVERY", () => {
+    const crisisIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DAYS 11–14: CRISIS");
+    const recoveryIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "RECOVERY");
+    expect(crisisIdx).toBeLessThan(recoveryIdx);
+  });
+
+  it("RECOVERY comes before DEEP DIVE", () => {
+    const recoveryIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "RECOVERY");
+    const deepDiveIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DEEP DIVE");
+    expect(recoveryIdx).toBeLessThan(deepDiveIdx);
+  });
+
+  it("DEEP DIVE comes before SUMMARY", () => {
+    const deepDiveIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "DEEP DIVE");
+    const summaryIdx = EXPECTED_STEPS.findIndex((s) => s.phase === "SUMMARY");
+    expect(deepDiveIdx).toBeLessThan(summaryIdx);
   });
 
   it("SUMMARY is always the last phase", () => {

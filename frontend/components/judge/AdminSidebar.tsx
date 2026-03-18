@@ -121,7 +121,7 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
     };
 
     return (
-        <aside className={`${collapsed ? 'w-14' : 'w-80'} transition-all duration-300 bg-gradient-to-b from-zinc-900 to-zinc-950 border-r border-zinc-800 h-screen fixed left-0 top-0 flex flex-col font-sans z-50 text-zinc-200 overflow-visible`}>
+        <aside data-sidebar className={`${collapsed ? 'w-14' : 'w-80'} transition-all duration-300 bg-gradient-to-b from-zinc-900 to-zinc-950 border-r border-zinc-800 h-screen fixed left-0 top-0 flex flex-col font-sans z-50 text-zinc-200 overflow-visible`}>
             {/* COLLAPSE TOGGLE */}
             <button
                 onClick={() => { setCollapsed(c => { const next = !c; onCollapsedChange?.(next); return next; }); }}
@@ -158,78 +158,74 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
                 )}
 
                 {/* SCENARIO SELECTOR */}
-                {!collapsed && (
-                    <div id="scenario-list" className="mb-4 py-3.5 px-5 -mx-5 border-b border-zinc-800">
-                        <h2 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[1.5px] mb-2.5">Scenario Selector</h2>
-                        <div className="flex flex-col gap-[3px]">
-                            {scenarios.map((s) => {
-                                const isActive = selectedScenario === s.id;
-                                const dotColor = ['stable_perfect', 'stable_noisy', 'recovery'].includes(s.id)
-                                    ? 'bg-emerald-500'
-                                    : ['gradual_decline', 'warning_recovery'].includes(s.id)
-                                    ? 'bg-amber-500'
-                                    : 'bg-rose-500';
-                                return (
-                                    <button
-                                        key={s.id}
-                                        data-scenario={s.id}
-                                        onClick={() => setSelectedScenario(s.id)}
-                                        disabled={loading}
-                                        className={`w-full text-left py-[7px] px-2.5 rounded-md flex items-center gap-2.5 transition-all duration-150 font-mono text-xs border
-                                            ${isActive
-                                                ? 'bg-blue-500/[0.12] text-blue-400 border-blue-500/25'
-                                                : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-800'}`}
-                                    >
-                                        <span className={`w-[7px] h-[7px] rounded-full shrink-0 ${dotColor}`}></span>
-                                        {s.label}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                <div id="scenario-list" className={`mb-4 py-3.5 px-5 -mx-5 border-b border-zinc-800 ${collapsed ? 'hidden' : ''}`}>
+                    <h2 className="text-[11px] font-bold text-zinc-500 uppercase tracking-[1.5px] mb-2.5">Scenario Selector</h2>
+                    <div className="flex flex-col gap-[3px]">
+                        {scenarios.map((s) => {
+                            const isActive = selectedScenario === s.id;
+                            const dotColor = ['stable_perfect', 'stable_noisy', 'recovery'].includes(s.id)
+                                ? 'bg-emerald-500'
+                                : ['gradual_decline', 'warning_recovery'].includes(s.id)
+                                ? 'bg-amber-500'
+                                : 'bg-rose-500';
+                            return (
+                                <button
+                                    key={s.id}
+                                    data-scenario={s.id}
+                                    onClick={() => setSelectedScenario(s.id)}
+                                    disabled={loading}
+                                    className={`w-full text-left py-[7px] px-2.5 rounded-md flex items-center gap-2.5 transition-all duration-150 font-mono text-xs border
+                                        ${isActive
+                                            ? 'bg-blue-500/[0.12] text-blue-400 border-blue-500/25'
+                                            : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-800'}`}
+                                >
+                                    <span className={`w-[7px] h-[7px] rounded-full shrink-0 ${dotColor}`}></span>
+                                    {s.label}
+                                </button>
+                            );
+                        })}
                     </div>
-                )}
+                </div>
 
                 {/* ACTIONS */}
-                {!collapsed && (
-                    <div className="py-3.5 px-5 -mx-5 border-b border-zinc-800 flex flex-col gap-2">
-                        <button
-                            id="btn-run-sim"
-                            onClick={handleInject}
-                            disabled={loading}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-2.5 text-[13px] font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait"
-                        >
-                            {loading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} className="fill-current" />}
-                            {loading ? 'Running Pipeline...' : 'Run Full Simulation'}
-                        </button>
+                <div className={`py-3.5 px-5 -mx-5 border-b border-zinc-800 flex flex-col gap-2 ${collapsed ? 'hidden' : ''}`}>
+                    <button
+                        id="btn-run-sim"
+                        onClick={handleInject}
+                        disabled={loading}
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-2.5 text-[13px] font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait"
+                    >
+                        {loading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} className="fill-current" />}
+                        {loading ? 'Running Pipeline...' : 'Run Full Simulation'}
+                    </button>
 
-                        <button
-                            onClick={handleReset}
-                            disabled={loading}
-                            className="w-full bg-transparent border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-zinc-300 rounded-lg py-2 text-xs font-medium flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
-                        >
-                            <RotateCcw size={14} />
-                            Reset Database
-                        </button>
-                    </div>
-                )}
+                    <button
+                        onClick={handleReset}
+                        disabled={loading}
+                        className="w-full bg-transparent border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-zinc-300 rounded-lg py-2 text-xs font-medium flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+                    >
+                        <RotateCcw size={14} />
+                        Reset Database
+                    </button>
+                </div>
             </div>
 
             {/* CONSOLE LOG */}
             <div className={`flex-1 flex flex-col min-h-0 ${collapsed ? 'px-1.5 py-2.5' : 'px-4 py-2.5'}`}>
                 {!collapsed && (
-                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-[1.5px] mb-2 flex items-center gap-2">
+                    <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[1.5px] mb-2 flex items-center gap-2">
                         <Terminal size={12} />
                         Console Output
                     </div>
                 )}
-                <div id="sidebar-console" className={`flex-1 bg-zinc-950 border border-zinc-800 rounded-lg overflow-y-auto font-mono leading-[1.7] shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)] min-h-0 ${collapsed ? 'p-1.5 text-[9px]' : 'p-2.5 text-[11px]'}`}>
+                <div id="sidebar-console" className={`flex-1 bg-zinc-950 border border-zinc-800 rounded-lg overflow-y-auto overflow-x-hidden font-mono leading-[1.7] shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)] min-h-0 ${collapsed ? 'p-1.5 text-[9px]' : 'p-2.5 text-[11px]'}`}>
                     {logs.length === 0 && (
                         <div className="text-zinc-600 italic whitespace-nowrap">
                             {collapsed ? '...' : '[--:--:--] Ready for input...'}
                         </div>
                     )}
                     {logs.map((log) => (
-                        <div key={log.id} className="whitespace-nowrap">
+                        <div key={log.id} className="whitespace-pre-wrap break-all">
                             <span className="text-zinc-600 select-none">[{log.timestamp}]</span>{' '}
                             <span className={`
                                 ${log.type === 'error' ? 'text-rose-500 font-bold' : ''}
@@ -243,7 +239,7 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
                             </span>
                         </div>
                     ))}
-                    <div ref={logEndRef} />
+                    <div ref={logEndRef} data-log-end="true" aria-hidden="true">{' '}</div>
                 </div>
             </div>
         </aside>

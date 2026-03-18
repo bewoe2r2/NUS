@@ -30,22 +30,24 @@ const stateConfig: Record<HealthState, { bg: string; ring: string; icon: React.R
 };
 
 function formatDate(dateStr: string): { day: string; month: string } {
-    const date = new Date(dateStr);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return {
-        day: date.getDate().toString().padStart(2, '0'),
-        month: date.toLocaleString('default', { month: 'short' }),
+        day: String(day).padStart(2, '0'),
+        month: months[month - 1] || '',
     };
 }
 
 export function TimelineStrip({ days, selectedDate, onSelectDate }: TimelineStripProps) {
     return (
-        <div className="w-full overflow-x-auto pb-2 no-scrollbar">
+        <div className="w-full overflow-x-auto pb-3 no-scrollbar">
             <div className="flex gap-2 min-w-max px-1">
                 {days.map((day, index) => {
                     const config = stateConfig[day.state] ?? stateConfig.STABLE;
                     const isSelected = selectedDate === day.date;
                     const { day: dayNum, month } = formatDate(day.date);
-                    const isToday = index === days.length - 1;
+                    const today = new Date().toISOString().split('T')[0];
+                    const isToday = day.date === today;
 
                     return (
                         <motion.button
@@ -76,7 +78,7 @@ export function TimelineStrip({ days, selectedDate, onSelectDate }: TimelineStri
 
                             {/* Confidence */}
                             <span className="text-[10px] font-mono font-medium text-white/80 mt-1">
-                                {(day.confidence * 100).toFixed(0)}%
+                                {((day.confidence ?? 0) * 100).toFixed(0)}%
                             </span>
 
                             {/* Today indicator */}

@@ -360,7 +360,7 @@ export function generateGaussianCurve(
     const std = Math.sqrt(safeVariance);
     const minX = mean - 3.5 * std;
     const maxX = mean + 3.5 * std;
-    const step = (maxX - minX) / safeNumPoints;
+    const step = safeNumPoints > 1 ? (maxX - minX) / (safeNumPoints - 1) : 0;
 
     return Array.from({ length: safeNumPoints }, (_, i) => {
         const x = minX + i * step;
@@ -371,10 +371,118 @@ export function generateGaussianCurve(
 }
 
 // ============================================================================
+// SEEDED RANDOM (for deterministic module-level constants)
+// ============================================================================
+
+function seededRandom(seed: number) {
+    return () => {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+    };
+}
+
+const rand = seededRandom(42);
+
+function seededRandomInRange(min: number, max: number): number {
+    return rand() * (max - min) + min;
+}
+
+function generateSeededGlucoseReadings(state: HealthState): number[] {
+    const base = state === 'STABLE' ? 6.5 : state === 'WARNING' ? 9.0 : 14.0;
+    const variance = state === 'STABLE' ? 1.0 : state === 'WARNING' ? 2.0 : 4.0;
+    return Array.from({ length: 6 }, () =>
+        Math.max(3.5, base + (rand() - 0.5) * variance * 2)
+    );
+}
+
+function generateSeededDayData(date: Date, stateOverride?: HealthState): DayData {
+    const dayOfWeek = date.getDay();
+    const dayOfMonth = date.getDate();
+
+    let state: HealthState;
+    if (stateOverride) {
+        state = stateOverride;
+    } else if (dayOfMonth === 10 || dayOfMonth === 11) {
+        state = 'CRISIS';
+    } else if (dayOfMonth % 7 === 0 || dayOfWeek === 0) {
+        state = 'WARNING';
+    } else {
+        state = 'STABLE';
+    }
+
+    const glucoseReadings = generateSeededGlucoseReadings(state);
+    const glucoseAvg = glucoseReadings.reduce((a, b) => a + b, 0) / glucoseReadings.length;
+
+    return {
+        date: date.toISOString().split('T')[0],
+        state,
+        confidence: state === 'STABLE' ? seededRandomInRange(0.85, 0.95) :
+            state === 'WARNING' ? seededRandomInRange(0.70, 0.85) :
+                seededRandomInRange(0.80, 0.92),
+        glucose: {
+            avg: glucoseAvg,
+            variability: state === 'STABLE' ? seededRandomInRange(12, 20) :
+                state === 'WARNING' ? seededRandomInRange(25, 35) :
+                    seededRandomInRange(40, 55),
+            readings: glucoseReadings,
+        },
+        steps: state === 'STABLE' ? Math.round(seededRandomInRange(6000, 10000)) :
+            state === 'WARNING' ? Math.round(seededRandomInRange(3000, 5000)) :
+                Math.round(seededRandomInRange(500, 2000)),
+        sleep: state === 'STABLE' ? seededRandomInRange(7, 8.5) :
+            state === 'WARNING' ? seededRandomInRange(5, 6.5) :
+                seededRandomInRange(3.5, 5),
+        hrv: state === 'STABLE' ? seededRandomInRange(38, 55) :
+            state === 'WARNING' ? seededRandomInRange(22, 35) :
+                seededRandomInRange(10, 20),
+        restingHR: state === 'STABLE' ? Math.round(seededRandomInRange(58, 72)) :
+            state === 'WARNING' ? Math.round(seededRandomInRange(72, 85)) :
+                Math.round(seededRandomInRange(88, 105)),
+        medsAdherence: state === 'STABLE' ? seededRandomInRange(0.9, 1.0) :
+            state === 'WARNING' ? seededRandomInRange(0.6, 0.8) :
+                seededRandomInRange(0.2, 0.5),
+        carbsIntake: state === 'STABLE' ? Math.round(seededRandomInRange(120, 180)) :
+            state === 'WARNING' ? Math.round(seededRandomInRange(200, 260)) :
+                Math.round(seededRandomInRange(280, 350)),
+        socialEngagement: state === 'STABLE' ? seededRandomInRange(6, 9) :
+            state === 'WARNING' ? seededRandomInRange(3, 5) :
+                seededRandomInRange(1, 3),
+        alerts: state === 'CRISIS' ? ['High glucose detected', 'Missed medication'] :
+            state === 'WARNING' ? ['Low activity today'] : [],
+    };
+}
+
+function generateSeeded14DayHistory(): DayData[] {
+    const days: DayData[] = [];
+    const today = new Date();
+
+    for (let i = 13; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        days.push(generateSeededDayData(date));
+    }
+
+    return days;
+}
+
+function generateSeededSurvivalCurve(currentState: HealthState): SurvivalPoint[] {
+    const baseRisk = currentState === 'STABLE' ? 0.05 :
+        currentState === 'WARNING' ? 0.25 : 0.60;
+
+    return Array.from({ length: 12 }, (_, i) => {
+        const crisisProb = Math.min(0.95, baseRisk + (i * 0.03) + rand() * 0.05);
+        return {
+            hours: i * 4,
+            survival_prob: 1 - crisisProb,
+        };
+    });
+}
+
+// ============================================================================
 // PRE-GENERATED STATIC DATA (for consistent rendering)
 // ============================================================================
 
-export const MOCK_14_DAY_HISTORY = generate14DayHistory();
+export const MOCK_14_DAY_HISTORY = generateSeeded14DayHistory();
 export const MOCK_TODAY = MOCK_14_DAY_HISTORY[MOCK_14_DAY_HISTORY.length - 1];
-export const MOCK_SURVIVAL_CURVE = generateSurvivalCurve(MOCK_TODAY.state);
+export const MOCK_SURVIVAL_CURVE = generateSeededSurvivalCurve(MOCK_TODAY.state);
 export const MOCK_TRANSITION_MATRIX = generateTransitionMatrix(MOCK_TODAY.state);

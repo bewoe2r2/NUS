@@ -19,7 +19,7 @@ export default function Error({
         <h2 className="text-xl font-semibold text-neutral-900">
           Judge Dashboard Error
         </h2>
-        <p className="text-neutral-600 text-sm">{error.message}</p>
+        <p className="text-neutral-600 text-sm">An unexpected error occurred. Please try again.</p>
         <button
           onClick={reset}
           className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm hover:bg-neutral-800 transition-colors"

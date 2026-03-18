@@ -1,7 +1,7 @@
 
 import { Variants } from "framer-motion";
 
-const EASE_ELITE = [0.33, 1, 0.68, 1] as const;
+const EASE_ELITE: [number, number, number, number] = [0.33, 1, 0.68, 1];
 
 export const fadeInUp: Variants = {
     initial: {

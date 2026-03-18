@@ -89,6 +89,7 @@ function formatTime(ts: string): string {
         const d = new Date(ts);
         const now = new Date();
         const diffMs = now.getTime() - d.getTime();
+        if (diffMs < 0) return "Just now";
         const diffMins = Math.floor(diffMs / 60000);
         if (diffMins < 1) return "Just now";
         if (diffMins < 60) return `${diffMins}m ago`;
@@ -231,14 +232,20 @@ function AlertFeed({
         </div>
     );
 }
-function WeeklySummaryCard({ report }: { report: WeeklyReport | null }) {
+function WeeklySummaryCard({ report, isLoading = true }: { report: WeeklyReport | null; isLoading?: boolean }) {
     if (!report) {
         return (
             <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card">
                 <h3 className="text-base font-semibold text-neutral-800 mb-2">This Week</h3>
                 <div className="flex items-center gap-2 text-sm text-neutral-400">
-                    <div className="w-4 h-4 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
-                    Loading weekly summary...
+                    {isLoading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
+                            Loading weekly summary...
+                        </>
+                    ) : (
+                        <span>No data available</span>
+                    )}
                 </div>
             </div>
         );
@@ -316,14 +323,20 @@ function StreakDisplay({ streakData }: { streakData: StreakData | null }) {
         </div>
     );
 }
-function BurdenCard({ burden }: { burden: BurdenData | null }) {
+function BurdenCard({ burden, isLoading = true }: { burden: BurdenData | null; isLoading?: boolean }) {
     if (!burden) {
         return (
             <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card">
                 <h3 className="text-base font-semibold text-neutral-800 mb-2">Your wellbeing</h3>
                 <div className="flex items-center gap-2 text-sm text-neutral-400">
-                    <div className="w-4 h-4 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
-                    Checking in...
+                    {isLoading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
+                            Checking in...
+                        </>
+                    ) : (
+                        <span>No data available</span>
+                    )}
                 </div>
             </div>
         );
@@ -451,6 +464,7 @@ function CaregiverDashboard() {
     const [burden, setBurden] = useState<BurdenData | null>(null);
     const [respondingId, setRespondingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState(false);
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
     const fetchAll = useCallback(async () => {
@@ -468,12 +482,14 @@ function CaregiverDashboard() {
             setStreakData(streakRes);
             setWeeklyReport(weeklyRes);
             setBurden(burdenRes);
+            setFetchError(false);
 
             const rawAlerts: Alert[] = dashRes?.alerts || dashRes?.recent_alerts || [];
             setAlerts(rawAlerts);
             setLastRefresh(new Date());
         } catch (err) {
             console.error("Caregiver dashboard fetch failed:", err);
+            setFetchError(true);
         } finally {
             setLoading(false);
         }
@@ -542,6 +558,16 @@ function CaregiverDashboard() {
                 </button>
             </div>
 
+            {/* Fetch error banner */}
+            {fetchError && (
+                <div className="bg-warning-50 border border-warning-200 rounded-2xl px-4 py-3 flex items-center gap-3 animate-in fade-in">
+                    <svg className="w-5 h-5 text-warning-600 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    <p className="text-sm font-medium text-warning-700">Unable to connect to server. Data may be stale.</p>
+                </div>
+            )}
+
             {/* Patient status — the hero element */}
             <StatusHeader state={currentState} riskScore={riskScore} lastUpdated={lastUpdated} />
 
@@ -562,10 +588,10 @@ function CaregiverDashboard() {
             </section>
 
             {/* Caregiver wellbeing */}
-            <BurdenCard burden={burden} />
+            <BurdenCard burden={burden} isLoading={loading} />
 
             {/* Weekly summary */}
-            <WeeklySummaryCard report={weeklyReport} />
+            <WeeklySummaryCard report={weeklyReport} isLoading={loading} />
 
             {/* Streaks */}
             <StreakDisplay streakData={streakData} />

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Activity, AlertTriangle } from "lucide-react";
@@ -15,6 +16,8 @@ interface HMMSurvivalChartProps {
 }
 
 export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
+    const gradientId = React.useId();
+
     if (!data || data.length === 0) {
         return (
             <Card className="h-full bg-white border-slate-200 shadow-sm">
@@ -68,7 +71,7 @@ export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
-                            <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.6} />
                                 <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.05} />
                             </linearGradient>
@@ -104,7 +107,9 @@ export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
                             stroke="#f43f5e"
                             strokeWidth={2}
                             fillOpacity={1}
-                            fill="url(#colorRisk)"
+                            fill={`url(#${gradientId})`}
+                            animationDuration={1200}
+                            animationEasing="ease-out"
                         />
                     </AreaChart>
                 </ResponsiveContainer>

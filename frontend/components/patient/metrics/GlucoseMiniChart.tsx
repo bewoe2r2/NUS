@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, type HistoryPoint } from "@/lib/api";
-import { LineChart, Line, ResponsiveContainer, ReferenceLine } from "recharts";
+import { LineChart, Line, YAxis, ResponsiveContainer, ReferenceLine } from "recharts";
 
 export function GlucoseMiniChart() {
     const [points, setPoints] = useState<{ value: number }[]>([]);
@@ -12,7 +12,7 @@ export function GlucoseMiniChart() {
             try {
                 const data = await api.getPatientHistory("P001");
                 if (data?.history?.length) {
-                    const recent = data.history.slice(-7).map((p: HistoryPoint) => ({
+                    const recent = data.history.slice(-7).filter((p: HistoryPoint) => p.glucose != null).map((p: HistoryPoint) => ({
                         value: p.glucose,
                     }));
                     setPoints(recent);
@@ -39,6 +39,7 @@ export function GlucoseMiniChart() {
             <div className="text-xs text-neutral-500 font-medium mb-1">7-day trend</div>
             <ResponsiveContainer width="100%" height={32}>
                 <LineChart data={points}>
+                    <YAxis domain={[2, 15]} hide />
                     <ReferenceLine y={7.8} stroke="#e5e7eb" strokeDasharray="2 2" />
                     <Line
                         type="monotone"
@@ -48,6 +49,7 @@ export function GlucoseMiniChart() {
                         dot={false}
                         isAnimationActive={true}
                         animationDuration={800}
+                        animationEasing="ease-out"
                     />
                 </LineChart>
             </ResponsiveContainer>

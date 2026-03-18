@@ -44,7 +44,8 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
         setLoading(true);
         setError("");
         try {
-            await api.logFood(value);
+            const result = await api.logFood(value, undefined, undefined);
+            if (!result.success) throw new Error("Failed to log food");
             setSuccess(true);
             successTimerRef.current = setTimeout(() => {
                 resetAndClose();
@@ -65,7 +66,7 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={resetAndClose}
-                        className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50"
+                        className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm z-50"
                     />
 
                     <motion.div
@@ -73,11 +74,11 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl max-w-md mx-auto"
+                        className="absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl max-w-md mx-auto"
                     >
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-neutral-900">Log Meal</h3>
-                            <button onClick={resetAndClose} className="p-2 bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200">
+                            <button onClick={resetAndClose} aria-label="Close" className="p-2 min-h-[44px] min-w-[44px] bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200">
                                 <X size={20} />
                             </button>
                         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Target, Loader2 } from "lucide-react";
+import { Target } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Challenge {
@@ -16,33 +16,31 @@ interface Challenge {
     reward?: unknown;
 }
 
+const FALLBACK_CHALLENGE: Challenge = {
+    challenge: "Log your glucose before lunch",
+    type: "glucose_logging",
+    progress: 1,
+    target: 3,
+};
+
 export function DailyChallengeCard() {
-    const [challenge, setChallenge] = useState<Challenge | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [challenge, setChallenge] = useState<Challenge>(FALLBACK_CHALLENGE);
 
     useEffect(() => {
         async function fetchChallenge() {
             try {
                 const data = await api.getDailyChallenge("P001");
-                if (data) setChallenge(data);
+                if (data && typeof data === "object" && (data.challenge || data.goal)) {
+                    setChallenge(data);
+                }
+                // If API returns null/empty, keep fallback — never show spinner or empty
             } catch (e) {
                 console.error("Daily challenge fetch failed", e);
-            } finally {
-                setLoading(false);
+                // Keep fallback data
             }
         }
         fetchChallenge();
     }, []);
-
-    if (loading) {
-        return (
-            <div className="w-full bg-white rounded-3xl border border-neutral-100 p-6 flex items-center justify-center h-20 shadow-card">
-                <Loader2 className="animate-spin text-neutral-300" size={20} />
-            </div>
-        );
-    }
-
-    if (!challenge) return null;
 
     const progress = challenge.progress ?? 0;
     const target = challenge.target ?? 100;

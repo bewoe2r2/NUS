@@ -17,6 +17,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<{ sentiment: number; urgency: string; response?: string } | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [manualInput, setManualInput] = useState('');
 
     // Close on Escape key — only listen when modal is open
     const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose]);
@@ -34,6 +35,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
             setIsListening(false);
             setAnalyzing(false);
             setErrorMsg(null);
+            setManualInput('');
         }
     }, [isOpen]);
 
@@ -53,6 +55,10 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
             };
 
             recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognition.onerror = () => {
                 setIsListening(false);
             };
 
@@ -85,7 +91,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
     const handleAnalyze = async () => {
         setAnalyzing(true);
         try {
-            const checkinResult = await api.voiceCheckin(transcript);
+            const checkinResult = await api.voiceCheckin(manualInput || transcript);
 
             setResult({
                 sentiment: checkinResult.sentiment_score,
@@ -133,14 +139,14 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-50"
+                        className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm z-50"
                     />
 
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-2xl z-50"
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-2xl z-50"
                     >
                         <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-neutral-100 rounded-full text-neutral-500">
                             <X size={20} />
@@ -173,11 +179,21 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
                                         </div>
                                     )}
 
+                                    {!recognitionRef.current && (
+                                        <textarea
+                                            value={manualInput}
+                                            onChange={e => setManualInput(e.target.value)}
+                                            placeholder="Type your check-in here..."
+                                            className="w-full p-3 rounded-lg border border-neutral-200 text-base focus:ring-2 focus:ring-accent-500 outline-none resize-none"
+                                            rows={3}
+                                        />
+                                    )}
+
                                     <p className="text-neutral-500 text-sm min-h-[60px] mb-6 px-4">
-                                        {transcript || "Tap the mic and tell me how you are feeling today."}
+                                        {transcript || (recognitionRef.current ? "Tap the mic and tell me how you are feeling today." : "Type how you are feeling above.")}
                                     </p>
 
-                                    {transcript && !isListening && (
+                                    {(transcript || manualInput) && !isListening && (
                                         <Button
                                             onClick={handleAnalyze}
                                             className="w-full bg-neutral-900 text-white rounded-full h-12"

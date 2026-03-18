@@ -22,7 +22,21 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
     const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Close on Escape key — only listen when modal is open
-    const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose]);
+    const resetAndClose = useCallback(() => {
+        if (successTimerRef.current) {
+            clearTimeout(successTimerRef.current);
+            successTimerRef.current = null;
+        }
+        setValue("");
+        setLoading(false);
+        setSuccess(false);
+        setError(null);
+        setActiveTab("manual");
+        setAnalyzing(false);
+        onClose();
+    }, [onClose]);
+
+    const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') resetAndClose(); }, [resetAndClose]);
     useEffect(() => {
         if (!isOpen) return;
         window.addEventListener('keydown', handleEscape);
@@ -73,7 +87,8 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
         }
         setLoading(true);
         try {
-            await api.logGlucose(parsed);
+            const result = await api.logGlucose(parsed);
+            if (!result.success) throw new Error("Failed to save reading");
             setSuccess(true);
             successTimerRef.current = setTimeout(() => {
                 setSuccess(false);
@@ -96,8 +111,8 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50"
+                        onClick={resetAndClose}
+                        className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm z-50"
                     />
 
                     {/* SHEET */}
@@ -106,12 +121,12 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl max-w-md mx-auto"
+                        className="absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl max-w-md mx-auto"
                     >
                         {/* HEAD */}
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-neutral-900">Log Glucose</h3>
-                            <button onClick={onClose} className="p-2 bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200">
+                            <button onClick={resetAndClose} aria-label="Close" className="p-2 min-h-[44px] min-w-[44px] bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200">
                                 <X size={20} />
                             </button>
                         </div>
@@ -142,6 +157,7 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
                                             step="0.1"
                                             value={value}
                                             onChange={(e) => setValue(e.target.value)}
+                                            onKeyDown={(e) => { if (['e','E','+','-'].includes(e.key)) e.preventDefault(); }}
                                             className="text-5xl font-bold text-center w-36 bg-transparent border-b-2 border-accent-200 focus:border-accent-500 outline-none py-2 text-neutral-900"
                                         />
                                         <span className="text-xl text-neutral-400 font-medium mt-4">mmol/L</span>
@@ -159,7 +175,7 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
 
                                     <Button
                                         onClick={handleSubmit}
-                                        disabled={loading || success}
+                                        disabled={loading || success || !value.trim()}
                                         className={success ? "bg-success-500 hover:bg-success-600" : "bg-accent-500 hover:bg-accent-600"}
                                     >
                                         {loading ? (

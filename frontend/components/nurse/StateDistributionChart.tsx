@@ -34,6 +34,8 @@ export function StateDistributionChart({ data }: Props) {
                         startAngle={90}
                         endAngle={-270}
                         stroke="none"
+                        animationDuration={1000}
+                        animationEasing="ease-out"
                     >
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.fill} />

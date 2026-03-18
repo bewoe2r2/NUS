@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { AdminSidebar } from '@/components/judge/AdminSidebar';
 import { GuidedWalkthrough } from '@/components/judge/GuidedWalkthrough';
 import { api } from '@/lib/api';
@@ -56,7 +57,9 @@ interface TriagePatient {
 export default function JudgePage() {
     const [activeTab, setActiveTab] = useState<'overview' | 'patient' | 'nurse' | 'caregiver' | 'intelligence' | 'tooldemo'>('overview');
     const [refreshKey, setRefreshKey] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [loadingOverview, setLoadingOverview] = useState(false);
+    const [loadingIntelligence, setLoadingIntelligence] = useState(false);
+    const [loadingCaregiver, setLoadingCaregiver] = useState(false);
     const [showWalkthrough, setShowWalkthrough] = useState(true); // Auto-launch for judges
     const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
     const [walkthroughResumeStep, setWalkthroughResumeStep] = useState<number | undefined>(undefined);
@@ -87,7 +90,7 @@ export default function JudgePage() {
     const [caregiverBurdenData, setCaregiverBurdenData] = useState<any>(null);
 
     const fetchCaregiverData = useCallback(async () => {
-        setLoading(true);
+        setLoadingCaregiver(true);
         try {
             const [dashboard, burden] = await Promise.all([
                 api.getCaregiverDashboard("P001").catch(() => null),
@@ -98,12 +101,12 @@ export default function JudgePage() {
         } catch (e) {
             console.error(e);
         } finally {
-            setLoading(false);
+            setLoadingCaregiver(false);
         }
     }, []);
 
     const fetchOverviewData = useCallback(async () => {
-        setLoading(true);
+        setLoadingOverview(true);
         try {
             const [state, triageRes, drugs, summary, impact] = await Promise.all([
                 api.getPatientState("P001").catch(() => null),
@@ -120,12 +123,12 @@ export default function JudgePage() {
         } catch (e) {
             console.error(e);
         } finally {
-            setLoading(false);
+            setLoadingOverview(false);
         }
     }, []);
 
     const fetchIntelligenceData = useCallback(async () => {
-        setLoading(true);
+        setLoadingIntelligence(true);
         try {
             const [mem, tools, safety, actions, str, eng, hmm, cg, proactive, cf] = await Promise.all([
                 api.getAgentMemory("P001").catch(() => []),
@@ -152,7 +155,7 @@ export default function JudgePage() {
         } catch (e) {
             console.error(e);
         } finally {
-            setLoading(false);
+            setLoadingIntelligence(false);
         }
     }, []);
 
@@ -210,7 +213,7 @@ export default function JudgePage() {
                         })}
                     </div>
                     <div className="flex items-center gap-3">
-                        {loading && <Loader2 size={14} className="animate-spin text-zinc-400" />}
+                        {(loadingOverview || loadingIntelligence || loadingCaregiver) && <Loader2 size={14} className="animate-spin text-zinc-400" />}
                         {walkthroughCompleted && lastWalkthroughStepRef.current > 0 && (
                             <button
                                 onClick={() => { setWalkthroughResumeStep(lastWalkthroughStepRef.current); setShowWalkthrough(true); }}
@@ -227,7 +230,7 @@ export default function JudgePage() {
                             <Play size={12} className="fill-current" />
                             {walkthroughCompleted ? 'Restart Demo' : 'Guided Demo'}
                         </button>
-                        <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
+                        <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[11px] font-bold tracking-widest">
                             JUDGE MODE
                         </span>
                     </div>
@@ -235,7 +238,7 @@ export default function JudgePage() {
 
                 {/* CONTENT */}
                 <div className="flex-1 overflow-y-auto">
-                    {activeTab === 'overview' && (
+                    <div className={`h-full ${activeTab === 'overview' ? '' : 'hidden'}`}>
                         <OverviewTab
                             patientState={patientState}
                             triage={triage}
@@ -244,26 +247,22 @@ export default function JudgePage() {
                             impactMetrics={impactMetrics}
                             onRefresh={fetchOverviewData}
                         />
-                    )}
-                    {activeTab === 'patient' && (
-                        <div className="h-full flex justify-center items-start bg-slate-900 p-4 overflow-auto">
-                            <div className="w-[430px] min-h-[700px] rounded-3xl overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,0.4)]">
-                                <PatientView />
-                            </div>
+                    </div>
+                    <div className={`h-full flex justify-center items-start bg-slate-900 pt-6 pb-6 px-6 overflow-auto ${activeTab === 'patient' ? '' : 'hidden'}`}>
+                        <div className="w-[390px] h-[760px] rounded-[40px] overflow-y-auto overflow-x-hidden relative bg-neutral-50 border border-slate-600/50 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.5)]">
+                            <PatientView />
                         </div>
-                    )}
-                    {activeTab === 'nurse' && (
-                        <div className="h-full overflow-auto">
-                            <NurseDashboard />
-                        </div>
-                    )}
-                    {activeTab === 'caregiver' && (
+                    </div>
+                    <div className={`h-full overflow-auto ${activeTab === 'nurse' ? '' : 'hidden'}`}>
+                        <NurseDashboard />
+                    </div>
+                    <div className={`h-full ${activeTab === 'caregiver' ? '' : 'hidden'}`}>
                         <CaregiverTab
                             dashboard={caregiverDashboard}
                             burden={caregiverBurdenData}
                         />
-                    )}
-                    {activeTab === 'intelligence' && (
+                    </div>
+                    <div className={`h-full ${activeTab === 'intelligence' ? '' : 'hidden'}`}>
                         <IntelligenceTab
                             agentMemory={agentMemory}
                             toolEffectiveness={toolEffectiveness}
@@ -276,8 +275,10 @@ export default function JudgePage() {
                             proactiveHistory={proactiveHistory}
                             counterfactual={counterfactual}
                         />
-                    )}
-                    {activeTab === 'tooldemo' && <ToolDemoTab />}
+                    </div>
+                    <div className={`h-full ${activeTab === 'tooldemo' ? '' : 'hidden'}`}>
+                        <ToolDemoTab />
+                    </div>
                 </div>
             </div>
 
@@ -351,7 +352,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                 <StateCard
                     label="Drug Interactions"
                     value={drugInteractions?.interactions_found ?? 0}
-                    color={drugInteractions?.has_contraindicated ? 'rose' : drugInteractions?.has_major ? 'amber' : 'emerald'}
+                    color={drugInteractions == null ? 'blue' : drugInteractions.has_contraindicated ? 'rose' : drugInteractions.has_major ? 'amber' : 'emerald'}
                     icon={<Pill size={18} />}
                 />
             </div>
@@ -410,7 +411,13 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                     })()}
                 </>
               ) : (
-                <p className="text-sm text-zinc-400 italic py-4 text-center">Run a simulation to generate SBAR report</p>
+                <div className="space-y-3 py-2">
+                    <div className="h-4 bg-zinc-100 rounded animate-pulse w-3/4" />
+                    <div className="h-4 bg-zinc-100 rounded animate-pulse w-full" />
+                    <div className="h-4 bg-zinc-100 rounded animate-pulse w-2/3" />
+                    <div className="h-4 bg-zinc-100 rounded animate-pulse w-5/6" />
+                    <p className="text-xs text-zinc-400 text-center mt-3">Run a simulation to generate SBAR report</p>
+                </div>
               )}
             </div>
 
@@ -435,7 +442,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                                         <div className="text-sm font-medium text-zinc-800">{p.patient_id}</div>
                                         <div className="text-xs text-zinc-500">{String(p.state || '')} | Urgency: {(typeof p.urgency_score === 'number' ? (p.urgency_score * 100).toFixed(0) : '0')}%</div>
                                     </div>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                                         p.triage_category === 'IMMEDIATE' ? 'bg-rose-100 text-rose-700' :
                                         p.triage_category === 'SOON' ? 'bg-amber-100 text-amber-700' :
                                         p.triage_category === 'MONITOR' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
@@ -446,7 +453,25 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                             ))}
                         </div>
                     ) : (
-                        <p className="text-sm text-zinc-400 italic">Run a simulation to see triage results</p>
+                        <div className="space-y-3 py-2">
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                                <div className="w-2 h-2 rounded-full bg-zinc-200 animate-pulse shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-3.5 bg-zinc-200 rounded animate-pulse w-20" />
+                                    <div className="h-3 bg-zinc-100 rounded animate-pulse w-32" />
+                                </div>
+                                <div className="h-5 w-16 bg-zinc-200 rounded-full animate-pulse" />
+                            </div>
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                                <div className="w-2 h-2 rounded-full bg-zinc-200 animate-pulse shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-3.5 bg-zinc-200 rounded animate-pulse w-16" />
+                                    <div className="h-3 bg-zinc-100 rounded animate-pulse w-28" />
+                                </div>
+                                <div className="h-5 w-16 bg-zinc-200 rounded-full animate-pulse" />
+                            </div>
+                            <p className="text-xs text-zinc-400 text-center mt-2">Run a simulation to see triage results</p>
+                        </div>
                     )}
                 </div>
 
@@ -461,7 +486,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                             {drugInteractions.interactions.map((ix: any, i: number) => (
                                 <div key={`drug-ix-${i}`} className="p-3 rounded-lg border border-zinc-100 bg-zinc-50">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                                             ix.severity === 'CONTRAINDICATED' ? 'bg-rose-100 text-rose-700' :
                                             ix.severity === 'MAJOR' ? 'bg-orange-100 text-orange-700' :
                                             ix.severity === 'MODERATE' ? 'bg-amber-100 text-amber-700' : 'bg-zinc-100 text-zinc-600'
@@ -477,7 +502,23 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                             ))}
                         </div>
                     ) : (
-                        <p className="text-sm text-zinc-400 italic">No interactions found or run simulation first</p>
+                        <div className="space-y-3 py-2">
+                            <div className="p-3 rounded-lg border border-zinc-100 bg-zinc-50">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="h-5 w-24 bg-zinc-200 rounded-full animate-pulse" />
+                                    <div className="h-3.5 w-28 bg-zinc-200 rounded animate-pulse" />
+                                </div>
+                                <div className="h-3 bg-zinc-100 rounded animate-pulse w-3/4 mt-2" />
+                            </div>
+                            <div className="p-3 rounded-lg border border-zinc-100 bg-zinc-50">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="h-5 w-20 bg-zinc-200 rounded-full animate-pulse" />
+                                    <div className="h-3.5 w-32 bg-zinc-200 rounded animate-pulse" />
+                                </div>
+                                <div className="h-3 bg-zinc-100 rounded animate-pulse w-2/3 mt-2" />
+                            </div>
+                            <p className="text-xs text-zinc-400 text-center mt-2">No interactions found or run simulation first</p>
+                        </div>
                     )}
                 </div>
             </div>
@@ -494,7 +535,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                             if (typeof value === 'object') return null;
                             return (
                                 <div key={key} className="p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                                    <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                                    <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
                                         {key.replace(/_/g, ' ')}
                                     </div>
                                     <div className="text-lg font-bold text-zinc-900">
@@ -517,7 +558,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                         {Object.entries(patientState.biometrics).filter(([, v]) => v != null).map(([key, value]) => (
                             <div key={key} className="text-center p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</div>
+                                <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</div>
                                 <div className="text-xl font-bold text-zinc-900">{typeof value === 'number' ? (value as number).toFixed(1) : (value != null && typeof value === 'object' ? JSON.stringify(value) : String(value ?? ''))}</div>
                             </div>
                         ))}
@@ -578,9 +619,9 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                             {Object.entries(toolEffectiveness).map(([tool, data]: [string, any]) => (
                                 <div key={tool} className="p-2 bg-zinc-50 rounded border border-zinc-100">
                                     <div className="text-xs font-medium text-zinc-800 mb-1">{tool}</div>
-                                    {typeof data === 'object' ? (
+                                    {data != null && typeof data === 'object' ? (
                                         Object.entries(data).map(([state, info]: [string, any]) => (
-                                            <div key={state} className="flex items-center gap-2 text-[10px] text-zinc-500">
+                                            <div key={state} className="flex items-center gap-2 text-[11px] text-zinc-500">
                                                 <span className="font-medium">{state}:</span>
                                                 <div className="flex-1 h-1.5 bg-zinc-200 rounded-full overflow-hidden">
                                                     <div
@@ -592,7 +633,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                             </div>
                                         ))
                                     ) : (
-                                        <span className="text-[10px] text-zinc-500">{String(data)}</span>
+                                        <span className="text-[11px] text-zinc-500">{String(data)}</span>
                                     )}
                                 </div>
                             ))}
@@ -649,7 +690,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                     <div className="space-y-3">
                         {engagement && (
                             <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                                <div className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">Engagement Score</div>
+                                <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">Engagement Score</div>
                                 <div className="text-2xl font-bold text-emerald-800">{typeof (engagement.score ?? engagement.engagement_score) === 'object' ? JSON.stringify(engagement.score ?? engagement.engagement_score) : String(engagement.score ?? engagement.engagement_score ?? 'N/A')}</div>
                             </div>
                         )}
@@ -689,7 +730,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                     <div className="font-mono text-[10px] bg-zinc-50 p-2 rounded">
                                         {Array.isArray(hmmParams.transition_matrix) && hmmParams.transition_matrix.map((row: number[], i: number) => (
                                             <div key={`tm-row-${i}`} className="flex gap-3">
-                                                {['STABLE', 'WARNING', 'CRISIS'][i]}:
+                                                {(['STABLE', 'WARNING', 'CRISIS'][i] ?? `State ${i}`)}:
                                                 {row.map((v: number, j: number) => (
                                                     <span key={`tm-${i}-${j}`} className={v > 0.5 ? 'text-emerald-600 font-bold' : 'text-zinc-500'}>{typeof v === 'number' ? v.toFixed(3) : String(v)}</span>
                                                 ))}
@@ -719,7 +760,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                     {caregiverBurden ? (
                         <div className="space-y-3">
                             <div className="p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Burden Score</div>
+                                <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Burden Score</div>
                                 <div className="flex items-center gap-3">
                                     <div className="text-3xl font-bold text-zinc-900">
                                         {typeof (caregiverBurden.burden_score ?? caregiverBurden.score) === 'object' ? JSON.stringify(caregiverBurden.burden_score ?? caregiverBurden.score) : String(caregiverBurden.burden_score ?? caregiverBurden.score ?? 'N/A')}
@@ -729,7 +770,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                                         const rawScore = caregiverBurden.burden_score ?? caregiverBurden.score;
                                         const numScore = typeof rawScore === 'number' ? rawScore : 0;
                                         return (
-                                            <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                            <div className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                                                 numScore > 70 ? 'bg-rose-100 text-rose-700' :
                                                 numScore > 40 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                                             }`}>
@@ -877,11 +918,13 @@ function ToolDemoTab() {
         logIdRef.current += 1;
         const id = logIdRef.current;
         setLogs(old => [...old, { ...entry, id, timestamp: now() }]);
-        // Auto-scroll terminal to bottom
+    };
+
+    useEffect(() => {
         requestAnimationFrame(() => {
             logContainerRef.current?.scrollTo({ top: logContainerRef.current.scrollHeight, behavior: 'smooth' });
         });
-    };
+    }, [logs]);
 
     const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -890,6 +933,7 @@ function ToolDemoTab() {
         await delay(300);
         try {
             const result = await api.getDrugInteractions('P001');
+            if (!result) { addLog({ type: 'error', text: 'No response from drug interaction check' }); return; }
             addLog({ type: 'result', tool: 'check_drug_interactions', text: `Found ${result.interactions_found} interactions. Contraindicated: ${result.has_contraindicated ? 'YES' : 'No'}. Major: ${result.has_major ? 'YES' : 'No'}.` });
             if (result.interactions?.length > 0) {
                 for (const ix of result.interactions.slice(0, 3)) {
@@ -998,7 +1042,9 @@ function ToolDemoTab() {
             } else {
                 addLog({ type: 'result', tool: 'celebrate_streak', text: 'No active streaks yet. Start logging to build streaks!' });
             }
-            addLog({ type: 'info', text: `  Voucher balance: $${voucher.current_value?.toFixed(2)} / $${voucher.max_value?.toFixed(2)}` });
+            const cv = typeof voucher?.current_value === 'number' ? voucher.current_value.toFixed(2) : '0.00';
+            const mv = typeof voucher?.max_value === 'number' ? voucher.max_value.toFixed(2) : '0.00';
+            addLog({ type: 'info', text: `  Voucher balance: $${cv} / $${mv}` });
         } catch {
             addLog({ type: 'result', tool: 'celebrate_streak', text: 'Streak data unavailable — backend not running' });
         }
@@ -1024,6 +1070,8 @@ function ToolDemoTab() {
     };
 
     const runAllTools = async () => {
+        let successCount = 0;
+        const totalCount = 18;
         const pipelineStart = performance.now();
         addLog({ type: 'system', text: '=== FULL 18-TOOL PIPELINE DEMONSTRATION ===' });
         addLog({ type: 'system', text: 'Patient: P001 (Mr. Tan Ah Kow, 67M, T2DM + HTN + HLD)' });
@@ -1033,33 +1081,33 @@ function ToolDemoTab() {
 
         // 1. Drug check
         addLog({ type: 'system', text: '--- Phase 1: Safety Pre-Check ---' });
-        await runDrugCheck();
+        await runDrugCheck(); successCount++;
         await delay(200);
-        await runSafetyCheck();
+        await runSafetyCheck(); successCount++;
         await delay(200);
 
         // 2. Clinical
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 2: Clinical Intelligence ---' });
-        await runClinicianSummary();
+        await runClinicianSummary(); successCount++;
         await delay(200);
-        await runNurseTriage();
+        await runNurseTriage(); successCount++;
         await delay(200);
 
         // 3. Patient engagement
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 3: Patient Engagement ---' });
-        await runFoodRecommendation();
+        await runFoodRecommendation(); successCount++;
         await delay(200);
-        await runStreakCelebrate();
+        await runStreakCelebrate(); successCount++;
         await delay(200);
 
         // 4. Proactive
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 4: Proactive & Communication ---' });
-        await runBookAppointment();
+        await runBookAppointment(); successCount++;
         await delay(200);
-        await runCaregiverAlert();
+        await runCaregiverAlert(); successCount++;
         await delay(200);
 
         // Additional tools (simulated)
@@ -1106,7 +1154,7 @@ function ToolDemoTab() {
             }},
             { tool: 'adjust_nudge_schedule', call: 'getEngagement("P001")', fn: async () => {
                 const eng = await api.getEngagement('P001').catch(() => ({ score: 0 }));
-                return `Engagement score: ${eng.score}/100. Nudge timing auto-optimized based on compliance patterns.`;
+                return `Engagement score: ${eng.score ?? eng.engagement_score ?? 0}/100. Nudge timing auto-optimized based on compliance patterns.`;
             }},
         ];
 
@@ -1116,6 +1164,7 @@ function ToolDemoTab() {
             try {
                 const result = await t.fn();
                 addLog({ type: 'result', tool: t.tool, text: result });
+                successCount++;
             } catch {
                 addLog({ type: 'error', text: `${t.tool}: Backend unavailable` });
             }
@@ -1125,7 +1174,7 @@ function ToolDemoTab() {
         const pipelineEnd = performance.now();
         const elapsed = ((pipelineEnd - pipelineStart) / 1000).toFixed(1);
         addLog({ type: 'system', text: '' });
-        addLog({ type: 'system', text: '=== PIPELINE COMPLETE: 18/18 tools executed successfully ===' });
+        addLog({ type: 'system', text: `=== PIPELINE COMPLETE: ${successCount}/${totalCount} tools executed successfully ===` });
         addLog({ type: 'system', text: `Total execution time: ${elapsed}s | Safety checks: PASSED | Drug interactions: CHECKED` });
     };
 
@@ -1349,7 +1398,7 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                                             <div className="text-sm font-medium text-zinc-800">{typeof (alert.title || alert.message || alert.alert_type) === 'object' ? JSON.stringify(alert.title || alert.message || alert.alert_type) : String(alert.title || alert.message || alert.alert_type || 'Alert')}</div>
                                             <div className="text-xs text-zinc-500 mt-0.5">{typeof (alert.description || alert.details) === 'object' ? JSON.stringify(alert.description || alert.details) : String(alert.description || alert.details || '')}</div>
                                         </div>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                                             sevLower === 'critical' || sevLower === 'high' ? 'bg-rose-100 text-rose-700' :
                                             sevLower === 'warning' || sevLower === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                                         }`}>
@@ -1382,7 +1431,7 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                                         tier.color === 'amber' ? 'text-amber-600' : 'text-rose-600'
                                     }`}>{tier.icon}</span>
                                     <span className="text-sm font-bold text-zinc-800">{tier.tier} Tier</span>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto ${
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ml-auto ${
                                         tier.color === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
                                         tier.color === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
                                     }`}>{tier.channel}</span>
@@ -1407,7 +1456,7 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                             <div className="flex items-center gap-4">
                                 <div className="text-4xl font-bold text-zinc-900">{burdenScore}</div>
                                 <div className="text-sm text-zinc-500">/ 100</div>
-                                <div className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                                <div className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
                                     burdenScore > 70 ? 'bg-rose-100 text-rose-700' :
                                     burdenScore > 40 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                                 }`}>
@@ -1447,19 +1496,19 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                     </div>
                     <div className="space-y-3">
                         <div className="p-3 bg-teal-50 rounded-lg border border-teal-100">
-                            <div className="text-[10px] font-bold text-teal-700 uppercase tracking-wider mb-1">Auto-Digest Mode</div>
+                            <div className="text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-1">Auto-Digest Mode</div>
                             <div className="text-xs text-zinc-600 leading-relaxed">
                                 When burden exceeds 70, non-urgent alerts batch into a single evening summary. Prevents alert fatigue while keeping caregivers informed.
                             </div>
                         </div>
                         <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                            <div className="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-1">One-Tap Responses</div>
+                            <div className="text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-1">One-Tap Responses</div>
                             <div className="text-xs text-zinc-600 leading-relaxed">
                                 Caregivers respond with pre-built actions: &quot;I&apos;ll check in&quot;, &quot;Call me&quot;, &quot;Noted&quot;. Minimal friction, maximum engagement.
                             </div>
                         </div>
                         <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
-                            <div className="text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1">Adaptive Frequency</div>
+                            <div className="text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-1">Adaptive Frequency</div>
                             <div className="text-xs text-zinc-600 leading-relaxed">
                                 Alert frequency adapts to response patterns. Engaged caregivers get richer updates; overwhelmed ones get essentials only.
                             </div>
@@ -1481,13 +1530,49 @@ function StateCard({ label, value, color, icon }: { label: string; value: string
         rose: 'bg-rose-50 border-rose-200 text-rose-700 border-t-rose-500',
         blue: 'bg-blue-50 border-blue-200 text-blue-700 border-t-blue-500',
     };
+    const pulseColorMap: Record<string, string> = {
+        emerald: 'ring-emerald-400',
+        amber: 'ring-amber-400',
+        rose: 'ring-rose-400',
+        blue: 'ring-blue-400',
+    };
     const cls = colorMap[color] || colorMap.emerald;
+    const pulseRing = pulseColorMap[color] || pulseColorMap.emerald;
+
+    const prevColorRef = useRef(color);
+    const [pulse, setPulse] = useState(false);
+
+    useEffect(() => {
+        if (prevColorRef.current !== color) {
+            prevColorRef.current = color;
+            setPulse(true);
+            const t = setTimeout(() => setPulse(false), 700);
+            return () => clearTimeout(t);
+        }
+    }, [color]);
+
+    const displayValue = value != null && typeof value === 'object'
+        ? String((value as any).score ?? (value as any).value ?? (value as any).label ?? JSON.stringify(value))
+        : value;
 
     return (
-        <div className={`p-4 rounded-xl border border-t-[3px] shadow-sm transition-all duration-150 hover:-translate-y-[3px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${cls}`}>
+        <motion.div
+            layout
+            className={`p-4 rounded-xl border border-t-[3px] shadow-sm transition-all duration-150 hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${cls} ${pulse ? `ring-2 ${pulseRing} ring-offset-2` : ''}`}
+            animate={pulse ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+        >
             <div className="flex items-center gap-2 mb-2 opacity-70">{icon}<span className="text-xs font-medium">{label}</span></div>
-            <div className="text-2xl font-bold">{value != null && typeof value === 'object' ? JSON.stringify(value) : value}</div>
-        </div>
+            <motion.div
+                key={String(displayValue)}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="text-2xl font-bold"
+            >
+                {displayValue}
+            </motion.div>
+        </motion.div>
     );
 }
 

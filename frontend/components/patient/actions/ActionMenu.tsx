@@ -39,7 +39,7 @@ export function ActionMenu({ onLogGlucose, onLogFood, onVoiceCheckIn }: ActionMe
     ];
 
     return (
-        <div className="fixed bottom-24 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
+        <div className="absolute bottom-24 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
 
             {/* MENU ITEMS */}
             <AnimatePresence>
@@ -92,7 +92,7 @@ export function ActionMenu({ onLogGlucose, onLogFood, onVoiceCheckIn }: ActionMe
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setIsOpen(false)}
-                        className="fixed inset-0 bg-white/60 backdrop-blur-sm z-30 pointer-events-auto"
+                        className="absolute inset-0 bg-white/60 backdrop-blur-sm z-30 pointer-events-auto"
                     />
                 )}
             </AnimatePresence>

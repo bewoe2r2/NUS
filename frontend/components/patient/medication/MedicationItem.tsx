@@ -17,6 +17,7 @@ interface MedicationItemProps {
 }
 
 export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: MedicationItemProps) {
+    const [isDragging, setIsDragging] = useState(false);
     const x = useMotionValue(0);
 
     // Transform x drag value to background opacity/color — clamp to [0,1] for left-swipe safety

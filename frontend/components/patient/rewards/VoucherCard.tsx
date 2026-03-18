@@ -14,9 +14,16 @@ interface VoucherState {
     streak_days: number;
 }
 
+const FALLBACK_VOUCHER: VoucherState = {
+    current_value: 5.00,
+    max_value: 5.00,
+    days_until_redemption: 3,
+    can_redeem: false,
+    streak_days: 5,
+};
+
 export function VoucherCard() {
-    const [voucher, setVoucher] = useState<VoucherState | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [voucher, setVoucher] = useState<VoucherState>(FALLBACK_VOUCHER);
     const [showQR, setShowQR] = useState(false);
     const [qrCode, setQrCode] = useState<string | null>(null);
 
@@ -24,11 +31,13 @@ export function VoucherCard() {
         async function fetchVoucher() {
             try {
                 const data = await api.getVoucher("P001");
-                setVoucher(data);
+                if (data && typeof data === "object" && data.current_value != null) {
+                    setVoucher(data);
+                }
+                // If API returns null/fallback, keep initial fallback — never show skeleton
             } catch (e) {
                 console.error("Voucher fetch failed", e);
-            } finally {
-                setLoading(false);
+                // Keep fallback data
             }
         }
         fetchVoucher();
@@ -38,21 +47,16 @@ export function VoucherCard() {
         if (!voucher?.can_redeem) return;
         try {
             const res = await api.getVoucherQR("P001");
+            if (!res.qr_code) {
+                setShowQR(false);
+                return;
+            }
             setQrCode(res.qr_code);
             setShowQR(true);
         } catch (e) {
             console.error("QR Gen failed", e);
         }
     };
-
-    if (loading) return (
-        <div className="w-full bg-white rounded-3xl shadow-card border border-neutral-100 p-6 animate-pulse">
-            <div className="h-4 bg-neutral-100 rounded-lg w-24 mb-3"></div>
-            <div className="h-10 bg-neutral-100 rounded-lg w-20 mb-2"></div>
-            <div className="h-4 bg-neutral-100 rounded-lg w-32"></div>
-        </div>
-    );
-    if (!voucher) return null;
 
     // Color Logic for Loss Aversion
     const value = voucher.current_value;
@@ -99,7 +103,7 @@ export function VoucherCard() {
 
                 <div className="flex flex-col items-end gap-3 z-10">
                     <div className="px-3 py-1.5 bg-neutral-100 rounded-full text-sm font-semibold text-neutral-600 border border-neutral-200">
-                        🔥 {voucher.streak_days} Day Streak
+                        {"\uD83D\uDD25"} {voucher.streak_days} Day Streak
                     </div>
 
                     <button
@@ -130,13 +134,13 @@ export function VoucherCard() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowQR(false)}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[999]"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm z-[999]"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-xl z-[1000]"
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-xl z-[1000]"
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <div>

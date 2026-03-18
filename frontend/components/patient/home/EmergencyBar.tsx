@@ -13,6 +13,8 @@ export function EmergencyBar({ state }: EmergencyBarProps) {
 
   return (
     <div
+      role="alert"
+      aria-live="assertive"
       className={`w-full px-6 py-3 text-base font-medium flex items-center justify-between gap-3 ${
         isWarning
           ? "bg-warning-bg text-warning-700 border-b border-warning-200"

@@ -115,10 +115,13 @@ export default function NurseDashboard() {
                 else if (d.state === 'CRISIS') counts.crisis++;
             });
             const total = analysisHistory.length;
+            const stablePct = Math.round((counts.stable / total) * 100);
+            const warningPct = Math.round((counts.warning / total) * 100);
+            const crisisPct = 100 - stablePct - warningPct;
             return [
-                { name: 'Stable', value: Math.round((counts.stable / total) * 100), fill: '#10b981' },
-                { name: 'Warning', value: Math.round((counts.warning / total) * 100), fill: '#f59e0b' },
-                { name: 'Crisis', value: Math.round((counts.crisis / total) * 100), fill: '#f43f5e' },
+                { name: 'Stable', value: stablePct, fill: '#10b981' },
+                { name: 'Warning', value: warningPct, fill: '#f59e0b' },
+                { name: 'Crisis', value: crisisPct, fill: '#f43f5e' },
             ];
         }
         // Fallback when no history
@@ -220,26 +223,28 @@ export default function NurseDashboard() {
                     >
 
                         {/* === SECTION 1: 14-Day Timeline === */}
-                        {timelineDays.length > 0 && (
-                            <motion.div
-                                id="nurse-timeline"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
+                        <motion.div
+                            id="nurse-timeline"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            <ClinicalCard
+                                icon={<Calendar size={18} />}
+                                title="14-Day Health Timeline"
+                                subtitle="Click a day to view detailed HMM analysis"
                             >
-                                <ClinicalCard
-                                    icon={<Calendar size={18} />}
-                                    title="14-Day Health Timeline"
-                                    subtitle="Click a day to view detailed HMM analysis"
-                                >
+                                {timelineDays.length > 0 ? (
                                     <TimelineStrip
                                         days={timelineDays}
                                         selectedDate={selectedDate}
                                         onSelectDate={setSelectedDate}
                                     />
-                                </ClinicalCard>
-                            </motion.div>
-                        )}
+                                ) : (
+                                    <p className="text-sm text-slate-400 text-center py-6">Run HMM analysis to populate the timeline.</p>
+                                )}
+                            </ClinicalCard>
+                        </motion.div>
 
                         {/* === SECTION 2: Selected Day Detail (if any) === */}
                         {selectedDate && selectedDetail && (
@@ -252,11 +257,13 @@ export default function NurseDashboard() {
                                 <div className="flex items-start justify-between mb-6">
                                     <div>
                                         <h2 className="text-2xl font-bold text-slate-800">
-                                            {new Date(selectedDate).toLocaleDateString('en-US', {
-                                                weekday: 'long',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}
+                                            {(() => {
+                                                const [y, m, d] = selectedDate.split('-').map(Number);
+                                                const weekdays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                                                const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                                                const dt = new Date(y, m - 1, d);
+                                                return `${weekdays[dt.getDay()]}, ${months[m - 1]} ${d}`;
+                                            })()}
                                         </h2>
                                         <p className={`text-sm font-medium mt-1 ${selectedDetail.selected_state === 'CRISIS' ? 'text-rose-600' :
                                             selectedDetail.selected_state === 'WARNING' ? 'text-amber-600' :
@@ -281,7 +288,7 @@ export default function NurseDashboard() {
                                 </p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {selectedDetail.gaussian_plots.map((plot) => (
+                                    {(selectedDetail.gaussian_plots || []).map((plot) => (
                                         <div key={plot.feature} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-xs font-semibold text-slate-600 capitalize">
@@ -307,10 +314,12 @@ export default function NurseDashboard() {
                                                                 const minX = Math.min(...curve.points.map(p => p.x));
                                                                 const maxX = Math.max(...curve.points.map(p => p.x));
                                                                 const maxY = Math.max(...curve.points.map(p => p.y));
+                                                                const rangeX = (maxX - minX) || 1;
+                                                                const rangeY = maxY || 1;
 
                                                                 const path = curve.points.map((p, i) => {
-                                                                    const x = ((p.x - minX) / (maxX - minX)) * 100;
-                                                                    const y = 60 - (p.y / maxY) * 55;
+                                                                    const x = ((p.x - minX) / rangeX) * 100;
+                                                                    const y = 60 - (p.y / rangeY) * 55;
                                                                     return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
                                                                 }).join(' ');
 
@@ -326,25 +335,25 @@ export default function NurseDashboard() {
                                                                 );
                                                             })}
                                                             {/* Observed value line */}
-                                                            {plot.observed_value !== null && plot.curves[0]?.points.length > 0 && (
-                                                                <line
-                                                                    x1={(() => {
-                                                                        const minX = Math.min(...plot.curves[0].points.map(p => p.x));
-                                                                        const maxX = Math.max(...plot.curves[0].points.map(p => p.x));
-                                                                        return ((plot.observed_value! - minX) / (maxX - minX)) * 100;
-                                                                    })()}
-                                                                    y1="0"
-                                                                    x2={(() => {
-                                                                        const minX = Math.min(...plot.curves[0].points.map(p => p.x));
-                                                                        const maxX = Math.max(...plot.curves[0].points.map(p => p.x));
-                                                                        return ((plot.observed_value! - minX) / (maxX - minX)) * 100;
-                                                                    })()}
-                                                                    y2="60"
-                                                                    stroke="#1e293b"
-                                                                    strokeWidth="1"
-                                                                    strokeDasharray="2 2"
-                                                                />
-                                                            )}
+                                                            {plot.observed_value !== null && plot.curves.length > 0 && (() => {
+                                                                const allPoints = plot.curves.flatMap(c => c.points);
+                                                                if (allPoints.length === 0) return null;
+                                                                const globalMinX = Math.min(...allPoints.map(p => p.x));
+                                                                const globalMaxX = Math.max(...allPoints.map(p => p.x));
+                                                                const globalRangeX = (globalMaxX - globalMinX) || 1;
+                                                                const xPos = ((plot.observed_value! - globalMinX) / globalRangeX) * 100;
+                                                                return (
+                                                                    <line
+                                                                        x1={xPos}
+                                                                        y1="0"
+                                                                        x2={xPos}
+                                                                        y2="60"
+                                                                        stroke="#1e293b"
+                                                                        strokeWidth="1"
+                                                                        strokeDasharray="2 2"
+                                                                    />
+                                                                );
+                                                            })()}
                                                         </svg>
                                                     </div>
                                                 ) : 'No data'}
@@ -366,10 +375,12 @@ export default function NurseDashboard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {selectedDetail.evidence.map((e, idx) => (
+                                            {(selectedDetail.evidence || []).map((e, idx) => {
+                                                const pct = e.weight > 1 ? e.weight : e.weight * 100;
+                                                return (
                                                 <tr key={e.feature} className={`border-b border-slate-100 ${idx % 2 === 1 ? 'bg-slate-50/50' : ''}`}>
                                                     <td className="py-2.5 px-3 capitalize text-slate-700 font-medium">{e.feature.replace(/_/g, ' ')}</td>
-                                                    <td className="py-2.5 px-3 text-center font-mono text-slate-600">{(e.weight * 100).toFixed(0)}%</td>
+                                                    <td className="py-2.5 px-3 text-center font-mono text-slate-600">{pct.toFixed(0)}%</td>
                                                     <td className="py-2.5 px-3 text-right font-mono text-slate-800">{e.value}</td>
                                                     <td className="py-2.5 px-3 text-center">
                                                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${e.contribution === 'Critical' ? 'bg-rose-100 text-rose-700' :
@@ -380,7 +391,8 @@ export default function NurseDashboard() {
                                                         </span>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
@@ -402,10 +414,11 @@ export default function NurseDashboard() {
                                                 </thead>
                                                 <tbody>
                                                     {selectedDetail.heatmap.map((row) => {
+                                                        const logProbs = (row.log_probs || []).slice(0, 3);
                                                         // Color intensity based on log prob (closer to 0 = better)
                                                         const getColor = (logProb: number, idx: number) => {
                                                             // Find max (best) log prob in row
-                                                            const maxLogProb = Math.max(...row.log_probs);
+                                                            const maxLogProb = Math.max(...logProbs);
                                                             const isMax = logProb === maxLogProb;
                                                             const stateColors = ['#10b981', '#f59e0b', '#f43f5e'];
                                                             const opacity = isMax ? 1 : 0.3;
@@ -414,7 +427,7 @@ export default function NurseDashboard() {
                                                         return (
                                                             <tr key={row.feature} className="border-b border-slate-100">
                                                                 <td className="py-2 px-3 capitalize font-medium">{row.feature.replace(/_/g, ' ')}</td>
-                                                                {row.log_probs.map((lp, idx) => (
+                                                                {logProbs.map((lp, idx) => (
                                                                     <td key={idx} className="py-2 px-3 text-center">
                                                                         <span
                                                                             className="px-3 py-1 rounded text-white text-xs font-mono"
@@ -577,7 +590,7 @@ export default function NurseDashboard() {
                                             {drugInteractions.interactions.map((ix: any, i: number) => (
                                                 <div key={`ix-${ix.severity}-${ix.drugs?.[0]}-${ix.drugs?.[1]}-${i}`} className="p-3 rounded-lg border border-slate-100 bg-slate-50 transition-transform duration-150 hover:translate-x-[2px]">
                                                     <div className="flex items-center gap-2 mb-1.5">
-                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                                                             ix.severity === 'CONTRAINDICATED' ? 'bg-rose-100 text-rose-700' :
                                                             ix.severity === 'MAJOR' ? 'bg-orange-100 text-orange-700' :
                                                             ix.severity === 'MODERATE' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
@@ -645,7 +658,7 @@ export default function NurseDashboard() {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center justify-between mb-1">
                                                             <div className="text-sm font-semibold text-slate-800">{p.patient_id}</div>
-                                                            <span className="text-[10px] text-slate-500 font-mono">{urgencyPct}%</span>
+                                                            <span className="text-[11px] text-slate-500 font-mono">{urgencyPct}%</span>
                                                         </div>
                                                         {/* Urgency bar */}
                                                         <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-1.5">
@@ -663,7 +676,7 @@ export default function NurseDashboard() {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 tracking-wide ${
+                                                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 tracking-wide ${
                                                         p.triage_category === 'IMMEDIATE' ? 'bg-rose-500 text-white' :
                                                         p.triage_category === 'SOON' ? 'bg-amber-400 text-amber-900' :
                                                         p.triage_category === 'MONITOR' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
@@ -706,7 +719,7 @@ export default function NurseDashboard() {
                                                     <div className="flex items-center gap-2">
                                                         <div className="font-semibold text-xs">{typeof (alert.type || alert.alert_type) === 'object' ? JSON.stringify(alert.type || alert.alert_type) : String(alert.type || alert.alert_type || 'Alert')}</div>
                                                         {alert.category && (
-                                                            <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+                                                            <span className={`text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
                                                                 alert.category === 'escalation' ? 'bg-rose-100 text-rose-600' :
                                                                 alert.category === 'family' ? 'bg-purple-100 text-purple-600' :
                                                                 alert.category === 'medication_video' ? 'bg-blue-100 text-blue-600' :

@@ -23,10 +23,12 @@ type TrendPoint = {
 
 export function BiometricTrendChart({ patientId = "P001" }: { patientId?: string }) {
     const [data, setData] = useState<TrendPoint[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function load() {
             try {
+                setLoading(true);
                 const res = await api.getPatientHistory(patientId);
                 if (res.history && res.history.length > 0) {
                     setData(
@@ -36,15 +38,27 @@ export function BiometricTrendChart({ patientId = "P001" }: { patientId?: string
                             steps: p.steps || 0,
                         }))
                     );
-                    return;
+                } else {
+                    setData([]);
                 }
             } catch {
-                // Fall through to empty state
+                setData([]);
+            } finally {
+                setLoading(false);
             }
-            setData([]);
         }
         load();
     }, [patientId]);
+
+    if (loading) {
+        return (
+            <div className="h-[250px] w-full flex flex-col items-center justify-center gap-2 animate-pulse">
+                <div className="w-3/4 h-4 bg-slate-200 rounded" />
+                <div className="w-1/2 h-3 bg-slate-100 rounded" />
+                <div className="w-full h-[180px] bg-slate-50 rounded-lg mt-2" />
+            </div>
+        );
+    }
 
     if (data.length === 0) {
         return (
@@ -62,7 +76,7 @@ export function BiometricTrendChart({ patientId = "P001" }: { patientId?: string
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis
                         dataKey="time"
-                        fontSize={10}
+                        fontSize={11}
                         tickLine={false}
                         axisLine={false}
                         interval={3}
@@ -72,20 +86,20 @@ export function BiometricTrendChart({ patientId = "P001" }: { patientId?: string
                         yAxisId="left"
                         orientation="left"
                         stroke="#ef4444"
-                        fontSize={10}
+                        fontSize={12}
                         tickLine={false}
                         axisLine={false}
-                        label={{ value: 'Glucose (mmol/L)', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#ef4444' }}
-                        domain={[0, 15]}
+                        label={{ value: 'Glucose (mmol/L)', angle: -90, position: 'insideLeft', fontSize: 12, fill: '#ef4444' }}
+                        domain={[0, (dataMax: number) => Math.max(15, Math.ceil(dataMax * 1.1))]}
                     />
                     <YAxis
                         yAxisId="right"
                         orientation="right"
                         stroke="#3b82f6"
-                        fontSize={10}
+                        fontSize={12}
                         tickLine={false}
                         axisLine={false}
-                        label={{ value: 'Steps', angle: 90, position: 'insideRight', fontSize: 10, fill: '#3b82f6' }}
+                        label={{ value: 'Steps', angle: 90, position: 'insideRight', fontSize: 12, fill: '#3b82f6' }}
                     />
                     <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
@@ -93,7 +107,7 @@ export function BiometricTrendChart({ patientId = "P001" }: { patientId?: string
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                     <Bar yAxisId="right" dataKey="steps" fill="#3b82f6" fillOpacity={0.2} name="Steps (Count)" barSize={20} radius={[4, 4, 0, 0]} />
-                    <Line yAxisId="left" type="monotone" dataKey="glucose" stroke="#ef4444" strokeWidth={2} dot={false} name="Glucose (mmol/L)" />
+                    <Line yAxisId="left" type="monotone" dataKey="glucose" stroke="#ef4444" strokeWidth={2} dot={false} name="Glucose (mmol/L)" animationDuration={1200} animationEasing="ease-out" />
                 </ComposedChart>
             </ResponsiveContainer>
         </div>

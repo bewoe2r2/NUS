@@ -26,7 +26,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
 
     const handleSend = () => {
         if (!input.trim() || isLoading) return;
-        onSend(input);
+        onSend(input.trim());
         setInput("");
         if (textareaRef.current) textareaRef.current.style.height = "auto";
     };
