@@ -113,11 +113,11 @@ export const api = {
                 body: JSON.stringify({ message, patient_id: patientId })
             });
             if (!res.ok) {
-                return { message: "Your health looking stable lah. Keep it up! Remember to stay active today.", tone: "caring", actions: [], hmm_state: "STABLE" };
+                return { message: "AI assistant is connecting. Please try again in a moment.", tone: "neutral", actions: [], hmm_state: null };
             }
             return res.json();
         } catch {
-            return { message: "Your health looking stable lah. Keep it up! Remember to stay active today.", tone: "caring", actions: [], hmm_state: "STABLE" };
+            return { message: "AI assistant is connecting. Please try again in a moment.", tone: "neutral", actions: [], hmm_state: null };
         }
     },
 
@@ -392,10 +392,10 @@ export const api = {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transcript, patient_id: patientId })
             });
-            if (!res.ok) return { sentiment_score: 0.7, urgency: "low", health_keywords: [], ai_response: "Take care and stay healthy lah!" };
+            if (!res.ok) return { sentiment_score: 0, urgency: "unknown", health_keywords: [], ai_response: "Voice check-in unavailable right now. Try again shortly." };
             return res.json();
         } catch {
-            return { sentiment_score: 0.7, urgency: "low", health_keywords: [], ai_response: "Take care and stay healthy lah!" };
+            return { sentiment_score: 0, urgency: "unknown", health_keywords: [], ai_response: "Voice check-in unavailable right now. Try again shortly." };
         }
     },
 
