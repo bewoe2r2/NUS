@@ -101,6 +101,7 @@ body {
 .d6 { transition-delay: 0.30s; }
 .d7 { transition-delay: 0.35s; }
 .d8 { transition-delay: 0.40s; }
+.d9 { transition-delay: 0.45s; }
 
 /* ============================================================
    PROGRESS BAR & NAV
@@ -398,6 +399,33 @@ body {
 }
 
 /* ============================================================
+   INSIGHT CARD — punchy one-liner callouts
+   ============================================================ */
+.insight {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.insight .insight-icon {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.68rem;
+}
+.insight-cyan .insight-icon { color: var(--cyan); }
+.insight-rose .insight-icon { color: var(--rose); }
+.insight-amber .insight-icon { color: var(--amber); }
+.insight-emerald .insight-icon { color: var(--emerald); }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 1200px) {
@@ -543,6 +571,9 @@ body {
       <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">The math decides.<br>The AI communicates.<br>Safety is deterministic.</div>
     </div>
   </div>
+  <div class="anim d5" style="margin-top: 28px;">
+    <div class="insight insight-rose" style="max-width: 620px; margin: 0 auto;"><span class="insight-icon">!</span> Fail-closed safety: if our safety filter crashes, the patient sees a safe fallback &mdash; never an unvetted AI response</div>
+  </div>
 </section>
 
 <!-- ============================================================
@@ -592,9 +623,13 @@ body {
       <div class="layer-content">
         <div class="layer-title">Safety Foundation</div>
         <div class="layer-desc">ADA 2024 guidelines hardcoded. Drug interactions. PII de-identification. <strong style="color: var(--rose);">Always overrides AI.</strong></div>
+        <div class="insight insight-rose" style="margin-top: 6px; border: none; padding: 4px 0; background: none;"><span class="insight-icon">&gt;</span> Hard-coded ADA 2024 thresholds &mdash; glucose &lt;3.0 mmol/L forces CRISIS regardless of model output</div>
       </div>
       <div class="layer-badge">Synapxe</div>
     </div>
+
+    <!-- L2 insight -->
+    <div class="insight insight-amber anim d6" style="max-width: 860px; margin: 6px auto 0;"><span class="insight-icon">&gt;</span> Dawn Phenomenon: glucose expectations auto-adjust between 04:00&ndash;08:00 to prevent false alarms</div>
   </div>
 
   <div class="anim d6" style="text-align: center; margin-top: 28px;">
@@ -677,6 +712,8 @@ body {
           "Can you explain <span style="color: var(--text-primary); font-weight: 600;">why</span> to a doctor, a patient, and a regulator?"
         </div>
       </div>
+      <div class="insight insight-cyan" style="margin-top: 14px; max-width: 360px;"><span class="insight-icon">&gt;</span> Zero external ML dependencies &mdash; runs on sqlite + numpy only</div>
+      <div class="insight insight-amber" style="max-width: 360px;"><span class="insight-icon">&gt;</span> If our math is wrong, the server won't start &mdash; transition matrices validated at import time</div>
     </div>
   </div>
 </section>
@@ -719,6 +756,8 @@ body {
       <div style="font-size: 1.15rem; color: var(--text-secondary); margin-top: 16px; font-weight: 400; line-height: 1.5;">
         Predicts crisis before symptoms.
       </div>
+      <div class="insight insight-rose" style="margin-top: 18px; max-width: 380px;"><span class="insight-icon">!</span> Combined-risk: glucose 12 + HR 100 + 800 steps isn't three warnings &mdash; it's one crisis (possible DKA)</div>
+      <div class="insight insight-amber" style="max-width: 380px;"><span class="insight-icon">&gt;</span> Confidence-adjusted: when sensors are offline, Bewo says "I need more data" &mdash; not "you're probably fine"</div>
     </div>
   </div>
 </section>
@@ -772,6 +811,8 @@ body {
           <span style="color: var(--cyan); font-weight: 700;">18 tools.</span> ReAct reasoning. Cross-session memory. Reaches out <span style="color: var(--text-primary); font-weight: 600;">without being asked</span>.
         </div>
       </div>
+      <div class="insight insight-amber" style="margin-top: 14px; max-width: 360px;"><span class="insight-icon">&gt;</span> Tool effectiveness decay: 14-day half-life learning what actually works for THIS patient</div>
+      <div class="insight insight-cyan" style="max-width: 360px;"><span class="insight-icon">&gt;</span> Cross-session memory: remembers you mentioned dizziness last Tuesday and follows up</div>
     </div>
   </div>
 </section>
@@ -828,6 +869,7 @@ body {
       <div style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 10px; max-width: 320px; line-height: 1.55;">
         No patient in danger was ever told they were safe. 10,000+ patients. 32 clinical archetypes. 230 tests. 76 validation gates.
       </div>
+      <div class="insight insight-emerald" style="margin-top: 14px; max-width: 320px;"><span class="insight-icon">&gt;</span> Clinical literature cited on every threshold &mdash; not "we picked 10" but "ADA Standards 2024 says 10"</div>
     </div>
   </div>
 </section>
@@ -857,6 +899,7 @@ body {
       <div style="padding: 12px 16px; background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.10); border-radius: 8px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5;">
         "Uncle, your sugar a bit high lah. After makan, better take your medicine first, ok?"
       </div>
+      <div class="insight insight-emerald" style="margin-top: 10px;"><span class="insight-icon">&gt;</span> Semiotic translation &mdash; "HbA1c 7.2" becomes "Uncle, your sweets number a bit high lah"</div>
     </div>
 
     <!-- MERaLiON + Hero -->
@@ -869,6 +912,7 @@ body {
         <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
           Speech emotion recognition from voice. Detects distress, fatigue, and confusion &mdash; even when their words say "I'm fine."
         </div>
+        <div class="insight insight-cyan" style="margin-top: 10px;"><span class="insight-icon">&gt;</span> 7 emotion classes from voice &mdash; detects fatigue others miss</div>
       </div>
 
       <!-- Hero stat -->
@@ -912,6 +956,10 @@ body {
       <div class="feat-card anim d5">
         <div class="feat-title">Loss-aversion Vouchers</div>
         <div class="feat-desc">Prospect Theory. "You'll lose your $5 FairPrice voucher." Losses motivate 2x more than gains.</div>
+        <div class="insight insight-amber" style="margin-top: 6px; border: none; padding: 4px 0; background: none;"><span class="insight-icon">$</span> $5/week that you LOSE for missing pills &mdash; Kahneman proved losses hurt 2x more than gains</div>
+      </div>
+      <div class="feat-card anim d6">
+        <div class="insight insight-cyan" style="border: none; padding: 0; background: none;"><span class="insight-icon">&gt;</span> Nudge timing learned from YOUR response patterns, not arbitrary schedules</div>
       </div>
     </div>
 
@@ -959,6 +1007,12 @@ body {
         <div class="feat-title">Burden Scoring</div>
         <div class="feat-desc">Detects caregiver fatigue. Auto-switches to digest mode &mdash; fewer, summarised updates.</div>
       </div>
+      <div class="feat-card anim d6">
+        <div class="insight insight-amber" style="border: none; padding: 0; background: none;"><span class="insight-icon">&gt;</span> Alert rate limits: 10 info/hr, 5 warning/hr &mdash; but CRITICAL alerts are never throttled</div>
+      </div>
+      <div class="feat-card anim d7">
+        <div class="insight insight-emerald" style="border: none; padding: 0; background: none;"><span class="insight-icon">&gt;</span> Cultural SBAR: nurse gets clinical report, daughter gets "Papa sugar a bit high today lah"</div>
+      </div>
     </div>
 
     <!-- Right: context -->
@@ -1000,6 +1054,10 @@ body {
         <div class="feat-desc">
           <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">16</span> interaction pairs, <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">39</span> drug classes. Flags conflicts before they reach the patient.
         </div>
+        <div class="insight insight-rose" style="margin-top: 6px; border: none; padding: 4px 0; background: none;"><span class="insight-icon">&gt;</span> Checked before every medication suggestion &mdash; not after</div>
+      </div>
+      <div class="feat-card anim d5" style="border-left: 3px solid var(--emerald); border-top: none; border-right: none; border-bottom: none;">
+        <div class="insight insight-emerald" style="border: none; padding: 0; background: none;"><span class="insight-icon">&gt;</span> SBAR reports include counterfactual recommendations: "Metformin escalation reduces 48h risk by 31%"</div>
       </div>
     </div>
 
@@ -1032,6 +1090,7 @@ body {
         <div>PDPA compliant</div>
         <div>Data never leaves Singapore</div>
         <div>PII de-identified before every LLM call</div>
+        <div class="insight insight-rose" style="margin-top: 4px;"><span class="insight-icon">&gt;</span> Input sanitization strips prompt injection patterns before any LLM call</div>
       </div>
     </div>
 
@@ -1050,6 +1109,7 @@ body {
         <div>Full decision audit trail</div>
         <div>Every HMM state transition logged</div>
         <div>Deterministic rules override AI</div>
+        <div class="insight insight-cyan" style="margin-top: 4px;"><span class="insight-icon">&gt;</span> Constant-time API key comparison &mdash; prevents timing-based side-channel attacks</div>
       </div>
     </div>
   </div>
@@ -1096,6 +1156,11 @@ body {
       <div class="metric-value" style="font-size: 3.5rem; color: var(--text-primary);">32,400</div>
       <div class="metric-label">lines of<br>production code</div>
     </div>
+  </div>
+
+  <div style="display: flex; gap: 16px; margin-top: 16px; justify-content: center;">
+    <div class="insight insight-cyan anim d8" style="max-width: 420px;"><span class="insight-icon">&gt;</span> 11,000+ lines of core backend code &mdash; every edge case handled</div>
+    <div class="insight insight-amber anim d8" style="max-width: 420px;"><span class="insight-icon">&gt;</span> 4 AI models orchestrated: HMM &rarr; Merlion &rarr; Gemini &rarr; SEA-LION</div>
   </div>
 </section>
 
