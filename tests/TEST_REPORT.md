@@ -1,8 +1,8 @@
 # Bewo Healthcare -- Test Analysis Report
 
 **Generated:** 2026-03-17
-**Total Test Files:** 11 (8 in `tests/`, 2 in `validation/`, 1 test matrix)
-**Total Lines of Test Code:** 8,772
+**Total Test Files:** 13 (10 in `tests/`, 2 in `validation/`, 1 test matrix)
+**Total Lines of Test Code:** 8,236
 **Total Assertions:** 319+
 **Pass/Fail Gates:** 76 (38 per validation round)
 
@@ -26,10 +26,12 @@ The Bewo Healthcare project contains a multi-layered test suite spanning unit te
 |------|------:|----------:|---------------|---------|
 | `tests/test_exhaustive.py` | 1,322 | ~114 | Every function, every branch, every numerical edge case across HMM engine, safety monitor, Merlion, drug interactions, Baum-Welch, calibration, demo scenarios, database schema, Gaussian plots, emission log prob, numerical stability | High -- covers 17 sections with edge cases and adversarial inputs |
 | `tests/test_full_pipeline.py` | 669 | ~49 | End-to-end pipeline: HMM core, Monte Carlo, Baum-Welch, drug interactions, mass simulation (100 patients x 5 scenarios), demo scenarios, validation suite, database, Merlion, safety monitor, Gaussian plots | High -- 11 integrated test groups |
-| `tests/test_api_live.py` | 780 | ~67 | Live server startup, health check, auth rejection, patient state/history, glucose logging (mmol/L + mg/dL conversion), medications, vouchers, voice check-in, reminders, nurse triage, drug interactions, HMM training, admin/demo endpoints, agent endpoints (15 routes), caregiver, clinician, impact metrics, counterfactual, proactive scan, chat (Gemini), full demo workflow, error handling | High -- starts real server, tests 60+ endpoints |
+| `tests/test_api_live.py` | 746 | ~67 | Live server startup, health check, auth rejection, patient state/history, glucose logging (mmol/L + mg/dL conversion), medications, vouchers, voice check-in, reminders, nurse triage, drug interactions, HMM training, admin/demo endpoints, agent endpoints (15 routes), caregiver, clinician, impact metrics, counterfactual, proactive scan, chat (Gemini), full demo workflow, error handling | High -- starts real server, tests 60+ endpoints |
 | `tests/test_counterfactual_engine.py` | 140 | 6 | Counterfactual engine: happy path medication, futile intervention (crisis stickiness), already-perfect floor, adversarial carb binge, non-orthogonal conflict (meds vs tachycardia), sparse data (uniform prior) | High -- adversarial and edge cases |
 | `tests/test_personalized_baselines.py` | 621 | 33 | Personalized baseline calibration: mean shifting (low/high glucose, athletic HR), all 9 features, insufficient data fallback, empty list, all-crisis data, mixed states, high variability, None handling, out-of-bounds clamping, regression (HMM still works after personalization), mathematical correctness (weighted average, std dev, state relationships), integration (DB storage, personalized inference) | High -- TDD-first with 6 test classes |
-| `tests/test_proactive_oracle.py` | 59 | 8 | Proactive risk calculation: basics, monotonicity with horizon, warning > stable ordering, crisis = 100%, integration with inference output | Medium -- focused scope |
+| `tests/test_proactive_oracle.py` | 721 | 8 | Proactive risk calculation: basics, monotonicity with horizon, warning > stable ordering, crisis = 100%, integration with inference output | Medium -- focused scope |
+| `tests/test_metrics_system.py` | 536 | ~55 | Technical metrics system tests: task success rate, trajectory tracking, latency, cost efficiency, grounding accuracy, safety scoring, dashboard aggregation | High -- covers all 8 competition metrics |
+| `tests/test_validation_runner.py` | 281 | 14 | Validation gate runner: accuracy, AUC, safety, archetype, runtime gates as pytest assertions | High -- enforces hard pass/fail thresholds |
 | `tests/generate_test_matrix.py` | 93 | N/A | Generates 288 orthogonal test scenarios via Cartesian product of 6 clinical dimensions (glucose state x trend x meds adherence x sleep x stress x activity) | Generator -- produces `test_matrix.json` |
 | `tests/run_exhaustive_validation.py` | 126 | 288 | Runs all 288 scenarios through HMM Monte Carlo (500 sims each = 144,000 total), validates logical monotonicity (crisis states, medication impact), generates coverage report | High -- combinatorial exhaustion |
 | `tests/test_matrix.json` | 4,897 | 288 scenarios | JSON test fixture: 288 unique edge-case scenarios with orthogonal binning | Data fixture |
@@ -155,8 +157,8 @@ python validation/hmm_validation_suite/code/02_hardened_independent_validation.p
 
 | Metric | Value |
 |---|---|
-| Total test files | 11 |
-| Total lines of test code | 8,772 |
+| Total test files | 13 |
+| Total lines of test code | 8,236 |
 | Total individual assertions | 319+ |
 | Hard pass/fail gates (validation) | 76 (38 per round) |
 | Independent validation patients | 5,000 per round (10,000 total) |

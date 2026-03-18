@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { api, type PatientState } from "@/lib/api";
 
-const PATIENT_ID = "P001";
+const DEFAULT_PATIENT_ID = "P001";
 const REFRESH_INTERVAL_MS = 30_000;
 
 type AlertAction = "acknowledge" | "on_my_way" | "need_help" | "escalate";
@@ -42,6 +43,7 @@ interface BurdenData {
 interface DashboardData {
     patient_status?: string;
     alerts?: Alert[];
+    recent_alerts?: Alert[];
     risk_score?: number;
     current_state?: string;
     last_updated?: string;
@@ -381,6 +383,9 @@ function Vitals({ biometrics }: { biometrics: PatientState["biometrics"] | null 
 // --- Main Dashboard ---
 
 export default function CaregiverDashboard() {
+    const searchParams = useSearchParams();
+    const patientId = searchParams.get("patient") || DEFAULT_PATIENT_ID;
+
     const [patientState, setPatientState] = useState<PatientState | null>(null);
     const [dashboard, setDashboard] = useState<DashboardData | null>(null);
     const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -392,25 +397,30 @@ export default function CaregiverDashboard() {
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
     const fetchAll = useCallback(async () => {
-        const [stateRes, dashRes, streakRes, weeklyRes, burdenRes] = await Promise.all([
-            api.getPatientState(PATIENT_ID),
-            api.getCaregiverDashboard(PATIENT_ID),
-            api.getStreaks(PATIENT_ID),
-            api.getWeeklyReport(PATIENT_ID),
-            api.getCaregiverBurden(PATIENT_ID),
-        ]);
+        try {
+            const [stateRes, dashRes, streakRes, weeklyRes, burdenRes] = await Promise.all([
+                api.getPatientState(patientId),
+                api.getCaregiverDashboard(patientId),
+                api.getStreaks(patientId),
+                api.getWeeklyReport(patientId),
+                api.getCaregiverBurden(patientId),
+            ]);
 
-        setPatientState(stateRes);
-        setDashboard(dashRes);
-        setStreakData(streakRes);
-        setWeeklyReport(weeklyRes);
-        setBurden(burdenRes);
+            setPatientState(stateRes);
+            setDashboard(dashRes);
+            setStreakData(streakRes);
+            setWeeklyReport(weeklyRes);
+            setBurden(burdenRes);
 
-        const rawAlerts: Alert[] = dashRes?.alerts || [];
-        setAlerts(rawAlerts);
-        setLastRefresh(new Date());
-        setLoading(false);
-    }, []);
+            const rawAlerts: Alert[] = dashRes?.alerts || dashRes?.recent_alerts || [];
+            setAlerts(rawAlerts);
+            setLastRefresh(new Date());
+        } catch (err) {
+            console.error("Caregiver dashboard fetch failed:", err);
+        } finally {
+            setLoading(false);
+        }
+    }, [patientId]);
 
     useEffect(() => {
         fetchAll();
@@ -420,13 +430,20 @@ export default function CaregiverDashboard() {
 
     const handleRespond = async (alertId: string, action: AlertAction) => {
         setRespondingId(alertId);
-        await api.caregiverRespond(alertId, action, PATIENT_ID);
-        setAlerts((prev) =>
-            prev.map((a) =>
-                a.id === alertId ? { ...a, responded: true, response_action: action } : a
-            )
-        );
-        setRespondingId(null);
+        try {
+            const result = await api.caregiverRespond(alertId, action, patientId);
+            if (result?.success !== false) {
+                setAlerts((prev) =>
+                    prev.map((a) =>
+                        a.id === alertId ? { ...a, responded: true, response_action: action } : a
+                    )
+                );
+            }
+        } catch (err) {
+            console.error("Failed to respond to alert:", err);
+        } finally {
+            setRespondingId(null);
+        }
     };
 
     const currentState = patientState?.current_state || dashboard?.current_state || "STABLE";

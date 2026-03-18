@@ -31,6 +31,7 @@ Deterministic clinical safety fused with generative empathy — each layer const
 | **Agentic ReAct Loop (18 Tools)** | Outcome-based tool selection with 14-day effectiveness decay. Appointment booking, SBAR escalation, drug interaction checks, loss-aversion vouchers (Prospect Theory). | Reasons over HMM context, executes interventions, learns what works per patient. |
 | **6-Dimension Safety Filter** | Screens for medical overclaims, hallucination, emotional mismatch, scope violations | Hard overrides: glucose <3.0 or >20.0 mmol/L → forced Crisis regardless of model output. |
 | **SEA-LION v4 27B** | AI Singapore's National LLM for Singlish cultural adaptation via official API | *"Uncle, sugar drop already lah — makan something sweet now!"* |
+| **MERaLiON SER** | A*STAR's National LLM for paralinguistic speech emotion recognition | Detects fatigue/distress in voice check-ins — "I'm fine lah" said tiredly triggers proactive care |
 
 ## Privacy & Data
 
@@ -47,7 +48,7 @@ PDPA-compliant by design. HMM runs fully offline — no internet needed for stat
 
 ## Prototype
 
-**~32,400 lines of production code.** FastAPI backend (66 endpoints), custom HMM + risk engines (22K lines Python), Next.js frontend — fully functional, not a mockup. Generalises to hypertension, COPD, and heart failure by retraining emission parameters.
+**~32,400 lines of production code.** FastAPI backend (67 endpoints), custom HMM + risk engines (22K lines Python), Next.js frontend — fully functional, not a mockup. Generalises to hypertension, COPD, and heart failure by retraining emission parameters.
 
 ---
 

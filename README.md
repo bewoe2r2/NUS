@@ -20,7 +20,7 @@ Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic pat
                     Gemini Agent (Multi-turn ReAct, 18 tools)
                          │
                          ▼
-                    SEA-LION (Singlish/cultural adaptation)
+                    SEA-LION + MERaLiON (Singlish/cultural + voice emotion)
                          │
                          ▼
                     Safety Classifier (6-dimension filter)
@@ -33,7 +33,7 @@ Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic pat
 1. **HMM Engine** classifies patient state (STABLE / WARNING / CRISIS) using 9 orthogonal health features with Viterbi decoding. Baum-Welch trains personalized transition and emission parameters per patient.
 2. **Merlion Risk Engine** runs Monte Carlo simulation (2,000 paths, 48h horizon) to predict crisis probability.
 3. **Gemini Agent** reasons in a multi-turn ReAct loop (Observe → Think → Act → Observe, up to 5 turns) with access to 18 specialized healthcare tools.
-4. **SEA-LION** adapts responses for Singapore's multilingual elderly population (Singlish, cultural norms).
+4. **SEA-LION** adapts responses for Singapore's multilingual elderly population (Singlish, cultural norms). **MERaLiON** (A*STAR) provides paralinguistic emotion detection from voice check-ins.
 5. **Safety Classifier** screens every AI response across 6 dimensions before delivery.
 
 ---
@@ -88,7 +88,7 @@ The agent autonomously decides which tools to use based on patient context:
 ```
 Healthcare/
 ├── backend/
-│   └── api.py                  # FastAPI server (66 API routes)
+│   └── api.py                  # FastAPI server (67 API routes)
 ├── core/
 │   ├── hmm_engine.py           # HMM + Viterbi + Baum-Welch
 │   ├── agent_runtime.py        # Agentic orchestration, 18 tools
@@ -96,6 +96,7 @@ Healthcare/
 │   ├── clinical_engine.py      # Clinical decision support
 │   ├── merlion_risk_engine.py  # Monte Carlo risk forecasting
 │   ├── sealion_interface.py    # Cultural/language adaptation
+│   ├── meralion_interface.py   # MERaLiON speech emotion recognition
 │   ├── voucher_system.py       # Gamification engine
 │   └── demo_controller.py      # Demo scenario injection
 ├── tools/
@@ -107,7 +108,7 @@ Healthcare/
 │   ├── screen_time_tracker.py  # Screen time monitoring
 │   └── step_counter.py         # Activity tracking
 ├── frontend/                   # Next.js React app
-│   ├── app/                    # Patient (/), Nurse (/nurse), Judge (/judge)
+│   ├── app/                    # Patient (/), Nurse (/nurse), Caregiver (/caregiver), Judge (/judge)
 │   ├── components/             # React components
 │   └── tests/                  # Frontend tests (API client, components, walkthrough)
 ├── database/
@@ -161,17 +162,18 @@ cd frontend && npm install && npm run dev
 
 ### For Judges
 
-Open `http://localhost:3000/judge` — the **Guided Walkthrough** launches automatically and walks you through every feature, view, and scenario in 24 steps. Just follow the prompts.
+Open `http://localhost:3000/judge` — the **Guided Walkthrough** launches automatically and walks you through every feature, view, and scenario in 23 steps. Just follow the prompts.
 
 | View | URL | Description |
 |------|-----|-------------|
 | Judge Console | `/judge` | Full control panel with guided walkthrough |
 | Patient App | `/` | Mobile companion (what Mr. Tan sees) |
 | Nurse Dashboard | `/nurse` | Clinical triage interface |
+| Caregiver View | `/caregiver` | Family caregiver dashboard with alerts and burden score |
 
 ---
 
-## API Overview (66 Routes)
+## API Overview (67 Routes)
 
 ### Patient
 | Method | Endpoint | Description |
@@ -339,6 +341,7 @@ Built for the **NUS-Synapxe-IMDA Healthcare AI Innovation Challenge**, targeting
 
 - **Merlion** (A*STAR): Time-series risk forecasting
 - **SEA-LION** (AI Singapore): Singlish/multilingual cultural adaptation
+- **MERaLiON** (A*STAR): Paralinguistic speech emotion recognition for voice check-ins
 - **SBAR**: Standardized clinical reporting used in Singapore hospitals
 - **CDC Voucher Integration**: Aligned with Singapore's Community Development Council voucher system for gamified health engagement
 

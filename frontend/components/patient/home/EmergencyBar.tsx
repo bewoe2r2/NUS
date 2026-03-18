@@ -27,7 +27,7 @@ export function EmergencyBar({ state }: EmergencyBarProps) {
       {!isWarning && (
         <a
           href="tel:995"
-          className="shrink-0 flex items-center gap-1.5 bg-error-500 text-white px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-transform"
+          className="shrink-0 flex items-center gap-1.5 bg-error-500 text-white px-5 py-3 min-h-[44px] rounded-full text-sm font-bold active:scale-95 transition-transform"
         >
           <Phone size={14} />
           Call 995

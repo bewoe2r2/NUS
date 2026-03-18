@@ -14,6 +14,8 @@ import { FoodModal } from "@/components/patient/actions/FoodModal";
 import { VoiceModal } from "@/components/patient/actions/VoiceModal";
 import { api, type PatientState } from "@/lib/api";
 import { VoucherCard } from "@/components/patient/rewards/VoucherCard";
+import { EmergencyBar } from "@/components/patient/home/EmergencyBar";
+import { CaregiverIndicator } from "@/components/patient/home/CaregiverIndicator";
 import { WifiOff, Loader2 } from "lucide-react";
 
 export default function Home() {
@@ -90,6 +92,11 @@ export default function Home() {
         </div>
       </header>
 
+      {/* 1b. EMERGENCY BAR — amber for WARNING, red for CRISIS, hidden for STABLE */}
+      <div className="fixed top-[60px] left-0 right-0 z-40">
+        <EmergencyBar state={data.current_state} />
+      </div>
+
       {/* 2. BODY CONTENT */}
       <div className="pt-24 px-6 max-w-md mx-auto space-y-6">
 
@@ -135,6 +142,11 @@ export default function Home() {
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Schedule</h2>
           <MedicationList />
+        </section>
+
+        {/* CAREGIVER INDICATOR */}
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:380ms] fill-mode-backwards">
+          <CaregiverIndicator />
         </section>
 
         {/* CHAT */}

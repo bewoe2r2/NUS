@@ -170,9 +170,14 @@ class MeralionInterface:
             response.raise_for_status()
             result = response.json()
 
+            # HF Inference API may return [[{label, score}, ...]] or [{label, score}, ...]
             if isinstance(result, list) and len(result) > 0:
+                items = result
+                if isinstance(result[0], list):
+                    items = result[0]
+
                 all_scores = {}
-                for item in result:
+                for item in items:
                     if isinstance(item, dict) and "label" in item and "score" in item:
                         label = item["label"].lower()
                         all_scores[label] = item["score"]

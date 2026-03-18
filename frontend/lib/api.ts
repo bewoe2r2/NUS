@@ -432,10 +432,10 @@ export const api = {
 
     caregiverRespond: async (alertId: string, action: string, patientId: string = "P001"): Promise<any> => {
         try {
-            const res = await authFetch(`${API_BASE}/caregiver/respond`, {
+            const res = await authFetch(`${API_BASE}/caregiver/respond/${alertId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ alert_id: alertId, action, patient_id: patientId }),
+                body: JSON.stringify({ caregiver_id: patientId, response_type: action, message: "" }),
             });
             if (!res.ok) return { success: false };
             return res.json();
