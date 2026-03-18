@@ -41,6 +41,7 @@
   --green:             #10b981;
   --amber:             #f59e0b;
   --red:               #ef4444;
+  --rose:              #f43f5e;
 
   /* ---- Fonts ---- */
   --font-sans:         'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -546,6 +547,22 @@ html, body {
   text-shadow: 0 0 80px rgba(6, 182, 212, 0.25);
 }
 
+.glow-text.text-green {
+  text-shadow: 0 0 80px rgba(16, 185, 129, 0.4), 0 0 160px rgba(16, 185, 129, 0.15);
+}
+
+.glow-text.text-accent {
+  text-shadow: 0 0 80px rgba(6, 182, 212, 0.4), 0 0 160px rgba(6, 182, 212, 0.15);
+}
+
+.glow-text.text-amber {
+  text-shadow: 0 0 80px rgba(245, 158, 11, 0.4), 0 0 160px rgba(245, 158, 11, 0.15);
+}
+
+.glow-text.text-red {
+  text-shadow: 0 0 80px rgba(239, 68, 68, 0.4), 0 0 160px rgba(239, 68, 68, 0.15);
+}
+
 .gradient-accent {
   background: linear-gradient(135deg, #06b6d4, #10b981);
   -webkit-background-clip: text;
@@ -592,6 +609,79 @@ html, body {
   border-left: 2px solid var(--accent);
   padding-left: 1rem;
 }
+
+/* Background variants for slide variety */
+.bg-red-glow {
+  position: relative;
+}
+.bg-red-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-red-glow > * { position: relative; z-index: 1; }
+
+.bg-green-glow {
+  position: relative;
+}
+.bg-green-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-green-glow > * { position: relative; z-index: 1; }
+
+.bg-teal-green-gradient {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%), var(--bg) !important;
+}
+
+/* Before/After tinting for SEA-LION slide */
+.tint-red {
+  background: rgba(244, 63, 94, 0.06);
+  border: 1px solid rgba(244, 63, 94, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.tint-green {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+/* Colored left borders for stakeholder panels */
+.border-left-teal {
+  border-left: 3px solid var(--accent);
+}
+.border-left-green {
+  border-left: 3px solid var(--green);
+}
+.border-left-amber {
+  border-left: 3px solid var(--amber);
+}
+.border-left-red {
+  border-left: 3px solid var(--red);
+}
+
+/* Rose color token */
+.text-rose { color: var(--rose); }
 
 /* ================================================================
    8. SLIDE CHROME
@@ -677,6 +767,9 @@ html, body {
 .mt-4 { margin-top: 2rem; }
 .mt-6 { margin-top: 3rem; }
 .mt-8 { margin-top: 4rem; }
+
+.ml-1 { margin-left: 0.5rem; }
+.ml-2 { margin-left: 1rem; }
 
 .mb-0 { margin-bottom: 0; }
 .mb-1 { margin-bottom: 0.5rem; }
@@ -862,8 +955,8 @@ html, body {
 <section class="slide bg-glow active" data-slide="1">
   <div class="center">
     <div class="anim s1 label accent">Every 6 Minutes</div>
-    <div class="anim s2 title mt-4">One preventable admission.</div>
-    <div class="anim s3 hero-xl glow-text mono mt-6">6<span class="subtitle w-300 ml-2" style="margin-left: 0.5em;">minutes</span></div>
+    <div class="anim s2 title mt-4">One <span class="text-accent">preventable</span> admission.</div>
+    <div class="anim s3 hero-xl glow-text text-accent mono mt-6">6<span class="subtitle w-300 ml-2" style="margin-left: 0.5em;">minutes</span></div>
     <div class="anim s4 body mt-6 max-w-lg">That is how often a diabetic ER admission happens in Singapore.</div>
     <div class="anim s5 body max-w-lg">Most were predictable. None were predicted.</div>
   </div>
@@ -876,11 +969,11 @@ html, body {
   <div class="split">
     <div class="stack anim-left s1">
       <div class="label accent anim s1">The Problem</div>
-      <div class="title anim s2 mt-2">Between visits, nobody is watching.</div>
+      <div class="title anim s2 mt-2">Between visits, <span class="text-accent">nobody</span> is watching.</div>
       <div class="stack mt-4 gap-3">
         <div class="anim s3 body"><span class="accent-dot"></span><span class="mono text-accent w-700">440K</span> diabetics in Singapore &mdash; one in nine adults</div>
         <div class="anim s4 body"><span class="accent-dot"></span><span class="mono text-accent w-700">3&ndash;6 months</span> between clinic visits &mdash; that is 180 days alone</div>
-        <div class="anim s5 body"><span class="accent-dot"></span><span class="mono text-accent w-700">$8,800</span> per preventable ER visit &mdash; paid by the system, suffered by the patient</div>
+        <div class="anim s5 body"><span class="accent-dot"></span><span class="mono text-rose w-700">$8,800</span> per preventable ER visit &mdash; paid by the system, suffered by the patient</div>
       </div>
     </div>
     <div class="glass-panel anim-scale s4">
@@ -903,7 +996,7 @@ html, body {
 <!-- ============================================================
      SLIDE 3 — THE INSIGHT
      ============================================================ -->
-<section class="slide" data-slide="3">
+<section class="slide bg-red-glow" data-slide="3">
   <div class="center">
     <div class="anim s1 label accent">The Insight</div>
     <div class="anim s2 title mt-4 max-w-xl">LLMs hallucinate. In healthcare, <span class="gradient-warm">that kills.</span></div>
@@ -937,9 +1030,9 @@ html, body {
     <div class="anim s1 label accent">System Design</div>
     <div class="anim s2 title mt-2">The <span class="gradient-accent">Diamond Architecture.</span></div>
     <div class="stack mt-6 gap-3">
-      <div class="glass-panel anim s3" style="border-left: 3px solid var(--accent);">
+      <div class="glass-panel anim s3" style="border-left: 3px solid var(--green);">
         <div class="flex items-center gap-3">
-          <div class="mono text-accent w-700">L4</div>
+          <div class="mono text-green w-700">L4</div>
           <div>
             <div class="body w-600 text-primary">Cultural Intelligence</div>
             <div class="body">SEA-LION + MERaLiON for Singlish voice</div>
@@ -957,14 +1050,14 @@ html, body {
           <div class="tag" style="margin-left: auto;">NUS</div>
         </div>
       </div>
-      <div class="glass-panel anim s5" style="border-left: 3px solid var(--green);">
+      <div class="glass-panel anim s5" style="border-left: 3px solid var(--amber);">
         <div class="flex items-center gap-3">
-          <div class="mono text-green w-700">L2</div>
+          <div class="mono text-amber w-700">L2</div>
           <div>
             <div class="body w-600 text-primary">Statistical Engine</div>
             <div class="body">HMM Viterbi + 2,000 Monte Carlo simulations</div>
           </div>
-          <div class="tag green" style="margin-left: auto;">Core</div>
+          <div class="tag amber" style="margin-left: auto;">Core</div>
         </div>
       </div>
       <div class="glass-panel anim s6" style="border-left: 3px solid var(--red);">
@@ -989,7 +1082,7 @@ html, body {
   <div class="split">
     <div class="stack">
       <div class="anim s1 label accent">Core Innovation</div>
-      <div class="anim s2 title mt-2">Why HMM, not neural nets.</div>
+      <div class="anim s2 title mt-2">Why <span class="text-accent">HMM</span>, not neural nets.</div>
       <div class="anim s3 mt-4">
         <table class="data-table">
           <thead>
@@ -1037,7 +1130,7 @@ html, body {
       <div class="anim s5 body mt-4 text-primary w-500">"Can you explain WHY to a doctor, a patient, and a regulator?"</div>
     </div>
     <div class="center">
-      <div class="anim s4 hero-lg mono glow-text">12.7<span class="subtitle w-300" style="margin-left: 0.3em;">ms</span></div>
+      <div class="anim s4 hero-lg mono glow-text text-accent">12.7<span class="subtitle w-300" style="margin-left: 0.3em;">ms</span></div>
       <div class="anim s5 body mt-2">HMM inference time</div>
     </div>
   </div>
@@ -1067,7 +1160,7 @@ html, body {
       </div>
     </div>
     <div class="center">
-      <div class="anim s3 hero-lg mono glow-text">48<span class="subtitle w-300" style="margin-left: 0.3em;">hours</span></div>
+      <div class="anim s3 hero-lg mono glow-text text-accent">48<span class="subtitle w-300" style="margin-left: 0.3em;">hours</span></div>
       <div class="anim s4 body mt-2">prediction window</div>
     </div>
   </div>
@@ -1079,7 +1172,7 @@ html, body {
 <section class="slide" data-slide="7">
   <div class="stack" style="height: 100%; justify-content: center;">
     <div class="anim s1 label accent">Agentic AI</div>
-    <div class="anim s2 title mt-2">Not a chatbot. A <span class="gradient-accent">background agent.</span></div>
+    <div class="anim s2 title mt-2">Not a chatbot. An <span class="gradient-accent">autonomous agent.</span></div>
     <div class="layout-bento cols-3 mt-6" style="height: auto;">
       <div class="glass-panel anim-scale s3">
         <div class="body w-600 text-primary mb-2">Planning Agent</div>
@@ -1113,16 +1206,16 @@ html, body {
 <!-- ============================================================
      SLIDE 8 — VALIDATION
      ============================================================ -->
-<section class="slide bg-glow" data-slide="8">
+<section class="slide bg-green-glow" data-slide="8">
   <div class="center">
     <div class="anim s1 label accent">Validation</div>
-    <div class="anim s2 title mt-4">Zero unsafe misclassifications.</div>
-    <div class="anim s3 hero-xl glow-text text-green mono mt-6">0</div>
+    <div class="anim s2 title mt-4"><span class="text-green">Zero</span> unsafe misclassifications.</div>
+    <div class="anim s3 hero-xl glow-text text-green mono mt-6" style="font-size: 14rem;">0</div>
     <div class="anim s4 body mt-4 max-w-lg">No patient in danger was ever told they were safe.</div>
     <div class="anim s5 body max-w-lg">5,000 hardened patients. 32 clinical archetypes. 230 tests passing.</div>
     <div class="metric-grid mt-8 anim s6" style="max-width: 800px;">
       <div class="metric">
-        <div class="metric-value">99.3%</div>
+        <div class="metric-value text-green">99.3%</div>
         <div class="metric-label">accuracy on clean clinical data</div>
       </div>
       <div class="metric">
@@ -1130,7 +1223,7 @@ html, body {
         <div class="metric-label">crisis recall (every true crisis detected)</div>
       </div>
       <div class="metric">
-        <div class="metric-value">82.1%</div>
+        <div class="metric-value text-amber">82.1%</div>
         <div class="metric-label">accuracy on hardened validation</div>
       </div>
     </div>
@@ -1151,10 +1244,14 @@ html, body {
           <div class="tag">AI Singapore</div>
           <div class="caption mono">27B parameters</div>
         </div>
-        <div class="body text-tertiary mb-2">Before:</div>
-        <div class="body mb-3">"Your blood glucose level of 15.2 mmol/L is significantly elevated..."</div>
-        <div class="body text-green mb-2">After:</div>
-        <div class="body text-primary w-500">"Uncle, your sugar a bit high lah. After makan, better take your medicine first, ok?"</div>
+        <div class="tint-red mb-3">
+          <div class="body text-red w-600 mb-1">Before:</div>
+          <div class="body">"Your blood glucose level of 15.2 mmol/L is significantly elevated..."</div>
+        </div>
+        <div class="tint-green">
+          <div class="body text-green w-600 mb-1">After:</div>
+          <div class="body text-primary w-500">"Uncle, your sugar a bit high lah. After makan, better take your medicine first, ok?"</div>
+        </div>
       </div>
     </div>
     <div class="stack">
@@ -1170,7 +1267,7 @@ html, body {
         </div>
       </div>
       <div class="anim s5 mt-4 text-center">
-        <div class="hero-lg mono">2</div>
+        <div class="hero-lg mono glow-text text-accent">2</div>
         <div class="body mt-1">national LLMs integrated</div>
       </div>
     </div>
@@ -1184,7 +1281,7 @@ html, body {
   <div class="split">
     <div class="stack">
       <div class="anim s1 label accent">For the Patient</div>
-      <div class="anim s2 title mt-2">Zero effort. The system does the work.</div>
+      <div class="anim s2 title mt-2"><span class="text-accent">Zero effort.</span> The system does the work.</div>
       <div class="anim s3 subtitle mt-4 text-primary w-500">Works for Mr. Tan who can barely use a phone.</div>
       <div class="stack mt-4 gap-3">
         <div class="anim s4">
@@ -1206,7 +1303,7 @@ html, body {
       </div>
     </div>
     <div class="center anim s5">
-      <div class="glass-panel text-center">
+      <div class="glass-panel text-center border-left-teal">
         <div class="body w-600 text-primary">Voice-first. Proactive outreach.</div>
         <div class="body mt-2">The patient never has to initiate.</div>
       </div>
@@ -1220,21 +1317,21 @@ html, body {
 <section class="slide" data-slide="11">
   <div class="stack" style="height: 100%; justify-content: center;">
     <div class="anim s1 label accent">For the Caregiver</div>
-    <div class="anim s2 title mt-2">"Your father is safe."</div>
+    <div class="anim s2 title mt-2">"Your father is <span class="text-green">safe.</span>"</div>
     <div class="layout-bento cols-2 mt-6 anim s3" style="height: auto;">
-      <div class="glass-panel anim-scale s3">
+      <div class="glass-panel anim-scale s3 border-left-green">
         <div class="body w-600 text-primary mb-2">One-glance Dashboard</div>
         <div class="body">Green / yellow / red. Answered in under one second.</div>
       </div>
-      <div class="glass-panel anim-scale s4">
+      <div class="glass-panel anim-scale s4 border-left-green">
         <div class="body w-600 text-primary mb-2">3-Tier Escalation</div>
         <div class="body">Info = push notification. Warning = SMS. Critical = phone call.</div>
       </div>
-      <div class="glass-panel anim-scale s5">
+      <div class="glass-panel anim-scale s5 border-left-green">
         <div class="body w-600 text-primary mb-2">One-tap Response</div>
         <div class="body">Acknowledge, call, or escalate. No app-switching.</div>
       </div>
-      <div class="glass-panel anim-scale s6">
+      <div class="glass-panel anim-scale s6 border-left-green">
         <div class="body w-600 text-primary mb-2">Burden Scoring</div>
         <div class="body">Detects caregiver fatigue. Auto-switches to digest mode.</div>
       </div>
@@ -1250,7 +1347,7 @@ html, body {
   <div class="split">
     <div class="stack">
       <div class="anim s1 label accent">For the Nurse</div>
-      <div class="anim s2 title mt-2">The system surfaces. The human decides.</div>
+      <div class="anim s2 title mt-2">The system <span class="text-amber">surfaces.</span> The human decides.</div>
       <div class="stack mt-4 gap-4">
         <div class="anim s4">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Auto-SBAR Reports</div>
@@ -1267,7 +1364,7 @@ html, body {
       </div>
     </div>
     <div class="center">
-      <div class="anim s3 hero-lg mono glow-text">1:100</div>
+      <div class="anim s3 hero-lg mono glow-text text-amber">1:100</div>
       <div class="anim s4 body mt-2">nurse-to-patient ratio (from 1:20 today)</div>
     </div>
   </div>
@@ -1279,7 +1376,7 @@ html, body {
 <section class="slide" data-slide="13">
   <div class="stack" style="height: 100%; justify-content: center;">
     <div class="anim s1 label accent">Safety and Governance</div>
-    <div class="anim s2 title mt-2">Safety is <span class="gradient-accent">never probabilistic.</span></div>
+    <div class="anim s2 title mt-2">Safety is <span class="text-red">never</span> <span class="gradient-accent">probabilistic.</span></div>
     <div class="layout-bento cols-3 mt-6" style="height: auto;">
       <div class="glass-panel anim-scale s3">
         <div class="label text-red mb-3">Data Protection</div>
@@ -1319,39 +1416,39 @@ html, body {
 <section class="slide" data-slide="14">
   <div class="stack" style="height: 100%; justify-content: center;">
     <div class="anim s1 label accent">The Numbers</div>
-    <div class="anim s2 title mt-2">Built to deploy, not to demo.</div>
+    <div class="anim s2 title mt-2">Built to <span class="text-accent">deploy</span>, not to demo.</div>
     <div class="layout-bento cols-3 mt-6" style="height: auto;">
       <div class="glass-panel anim-scale s3 text-center">
         <div class="metric">
-          <div class="metric-value text-green">$0.40</div>
+          <div class="metric-value text-accent glow-text">$0.40</div>
           <div class="metric-label mt-2">per patient per month</div>
         </div>
         <div class="caption mt-2">cheaper than a single blood test</div>
       </div>
       <div class="glass-panel anim-scale s4 text-center">
         <div class="metric">
-          <div class="metric-value">$8,800</div>
+          <div class="metric-value text-green glow-text">$8,800</div>
           <div class="metric-label mt-2">saved per prevented ER visit</div>
         </div>
         <div class="caption mt-2">one save funds the system for years</div>
       </div>
       <div class="glass-panel anim-scale s5 text-center">
         <div class="metric">
-          <div class="metric-value">22,000</div>
+          <div class="metric-value text-amber glow-text">22,000</div>
           <div class="metric-label mt-2">patient-months funded by a single ER save</div>
         </div>
         <div class="caption mt-2">the economics are overwhelming</div>
       </div>
       <div class="glass-panel anim-scale s6 text-center">
         <div class="metric">
-          <div class="metric-value">186ms</div>
+          <div class="metric-value text-accent glow-text">186ms</div>
           <div class="metric-label mt-2">total core pipeline</div>
         </div>
         <div class="caption mt-2">real-time on a phone, no server dependency</div>
       </div>
       <div class="glass-panel anim-scale s7 text-center">
         <div class="metric">
-          <div class="metric-value text-green">230/230</div>
+          <div class="metric-value text-green glow-text">230/230</div>
           <div class="metric-label mt-2">tests, 76/76 gates</div>
         </div>
         <div class="caption mt-2">every validation gate green</div>
@@ -1370,7 +1467,7 @@ html, body {
 <!-- ============================================================
      SLIDE 15 — CLOSE
      ============================================================ -->
-<section class="slide bg-glow" data-slide="15">
+<section class="slide bg-glow bg-teal-green-gradient" data-slide="15">
   <div class="center">
     <div class="anim s1 title" style="font-size: 3.5rem; line-height: 1.3; max-width: 900px;">
       Bewo does not wait for crisis.<br>
