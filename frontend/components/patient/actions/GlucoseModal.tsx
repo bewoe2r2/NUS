@@ -21,12 +21,13 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
     const [analyzing, setAnalyzing] = useState(false);
     const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Close on Escape key
+    // Close on Escape key — only listen when modal is open
     const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose]);
     useEffect(() => {
+        if (!isOpen) return;
         window.addEventListener('keydown', handleEscape);
         return () => window.removeEventListener('keydown', handleEscape);
-    }, [handleEscape]);
+    }, [isOpen, handleEscape]);
 
     // Reset state when modal closes
     useEffect(() => {

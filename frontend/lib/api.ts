@@ -231,7 +231,11 @@ export const api = {
             ...(data.medication_videos || []).map((a: any) => ({...a, category: 'medication_video'})),
             ...(data.appointment_requests || []).map((a: any) => ({...a, category: 'appointment'})),
         ];
-        allAlerts.sort((a, b) => (b.created_at || b.timestamp_utc || 0) - (a.created_at || a.timestamp_utc || 0));
+        allAlerts.sort((a, b) => {
+            const ta = new Date(b.created_at || b.timestamp_utc || 0).getTime();
+            const tb = new Date(a.created_at || a.timestamp_utc || 0).getTime();
+            return (isNaN(ta) ? 0 : ta) - (isNaN(tb) ? 0 : tb);
+        });
         return allAlerts;
     },
 

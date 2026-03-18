@@ -42,7 +42,7 @@ export function DailyChallengeCard() {
 
     const progress = challenge.progress ?? 0;
     const target = challenge.target ?? 100;
-    const pct = Math.min(Math.round((progress / target) * 100), 100);
+    const pct = target > 0 ? Math.min(Math.round((progress / target) * 100), 100) : 0;
 
     return (
         <motion.div

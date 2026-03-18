@@ -18,12 +18,13 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
     const [result, setResult] = useState<{ sentiment: number; urgency: string; response?: string } | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    // Close on Escape key
+    // Close on Escape key — only listen when modal is open
     const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose]);
     useEffect(() => {
+        if (!isOpen) return;
         window.addEventListener('keydown', handleEscape);
         return () => window.removeEventListener('keydown', handleEscape);
-    }, [handleEscape]);
+    }, [isOpen, handleEscape]);
 
     // Reset state when modal closes
     useEffect(() => {
@@ -196,7 +197,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
 
                                     <div className="flex gap-2 justify-center mb-6">
                                         <span className="px-3 py-1 bg-neutral-100 rounded-full text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                                            Sentiment: {result.sentiment > 0 ? "Positive" : "Negative"}
+                                            Sentiment: {result.sentiment > 0.05 ? "Positive" : result.sentiment < -0.05 ? "Negative" : "Neutral"}
                                         </span>
                                         {result.urgency === "medium" && (
                                             <span className="px-3 py-1 bg-warning-100 text-warning-700 rounded-full text-xs font-bold uppercase tracking-wider">

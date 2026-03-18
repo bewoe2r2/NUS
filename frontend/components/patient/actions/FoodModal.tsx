@@ -31,12 +31,13 @@ export function FoodModal({ isOpen, onClose }: FoodModalProps) {
         onClose();
     }, [onClose]);
 
-    // Close on Escape key
+    // Close on Escape key — only listen when modal is open
     const handleEscape = useCallback((e: KeyboardEvent) => { if (e.key === 'Escape') resetAndClose(); }, [resetAndClose]);
     useEffect(() => {
+        if (!isOpen) return;
         window.addEventListener('keydown', handleEscape);
         return () => window.removeEventListener('keydown', handleEscape);
-    }, [handleEscape]);
+    }, [isOpen, handleEscape]);
 
     const handleSubmit = async () => {
         if (!value.trim()) return;
