@@ -480,17 +480,9 @@ function CaregiverDashboard() {
     }, [patientId]);
 
     useEffect(() => {
-        let cancelled = false;
-        const safeFetch = async () => {
-            await fetchAll();
-            // State updates in fetchAll are safe — React ignores setState on unmounted components in React 18+
-        };
-        safeFetch();
-        const interval = setInterval(safeFetch, REFRESH_INTERVAL_MS);
-        return () => {
-            cancelled = true;
-            clearInterval(interval);
-        };
+        fetchAll();
+        const interval = setInterval(fetchAll, REFRESH_INTERVAL_MS);
+        return () => clearInterval(interval);
     }, [fetchAll]);
 
     const handleRespond = async (alertId: string, action: AlertAction) => {
