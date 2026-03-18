@@ -66,13 +66,13 @@ export default function Home() {
         <div className="text-error-500 mb-4">
           <WifiOff size={48} />
         </div>
-        <h1 className="text-xl font-bold mb-2 text-neutral-900">Connection Lost</h1>
-        <p className="text-neutral-500">
+        <h1 className="text-2xl font-bold mb-2 text-neutral-900">Connection Lost</h1>
+        <p className="text-lg text-neutral-500">
           Cannot connect to Bewo Health Engine. <br />Ensure the backend API is running on port 8000.
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-6 px-6 py-2 bg-neutral-900 text-white rounded-full font-medium active:scale-95 transition-transform"
+          className="mt-6 px-8 py-3 bg-neutral-900 text-white rounded-full font-medium text-lg active:scale-95 transition-transform min-h-[48px]"
         >
           Retry
         </button>
@@ -87,7 +87,7 @@ export default function Home() {
         <div className="font-semibold text-lg tracking-tight select-none">
           Bewo <span className="text-accent-500">Health</span>
         </div>
-        <div className="h-9 w-9 bg-accent-100 rounded-full flex items-center justify-center text-accent-500 font-bold border border-accent-200">
+        <div className="h-11 w-11 bg-accent-100 rounded-full flex items-center justify-center text-accent-500 font-bold text-lg border border-accent-200">
           T
         </div>
       </header>

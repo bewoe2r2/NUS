@@ -98,9 +98,9 @@ export function MedicationList() {
             {/* MORNING GROUP */}
             {grouped.morning.length > 0 && (
                 <div className="space-y-3">
-                    <motion.div variants={fadeInUp} className="flex items-center gap-2 px-3 py-1 bg-warning-50/50 rounded-full w-fit mb-3 border border-warning-100/50">
-                        <Sun size={14} className="text-[var(--warning-solid)]" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-warning-700">Morning</span>
+                    <motion.div variants={fadeInUp} className="flex items-center gap-2 px-4 py-1.5 bg-warning-50/50 rounded-full w-fit mb-3 border border-warning-100/50">
+                        <Sun size={16} className="text-[var(--warning-solid)]" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-warning-700">Morning</span>
                     </motion.div>
                     {grouped.morning.map(med => (
                         <MedicationItem
@@ -119,9 +119,9 @@ export function MedicationList() {
             {/* AFTERNOON GROUP */}
             {grouped.afternoon.length > 0 && (
                 <div className="space-y-3">
-                    <motion.div variants={fadeInUp} className="flex items-center gap-2 px-3 py-1 bg-accent-50/50 rounded-full w-fit mb-3 border border-accent-100/50">
-                        <CloudSun size={14} className="text-accent-500" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-accent-700">Afternoon</span>
+                    <motion.div variants={fadeInUp} className="flex items-center gap-2 px-4 py-1.5 bg-accent-50/50 rounded-full w-fit mb-3 border border-accent-100/50">
+                        <CloudSun size={16} className="text-accent-500" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-accent-700">Afternoon</span>
                     </motion.div>
                     {grouped.afternoon.map(med => (
                         <MedicationItem
@@ -140,9 +140,9 @@ export function MedicationList() {
             {/* EVENING GROUP */}
             {grouped.evening.length > 0 && (
                 <div className="space-y-3">
-                    <motion.div variants={fadeInUp} className="flex items-center gap-2 px-1 text-neutral-500 mb-2 mt-4">
+                    <motion.div variants={fadeInUp} className="flex items-center gap-2 px-4 py-1.5 bg-accent-50/50 rounded-full w-fit mb-3 border border-accent-100/50">
                         <Moon size={16} className="text-accent-500" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Evening</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-accent-700">Evening</span>
                     </motion.div>
                     {grouped.evening.map(med => (
                         <MedicationItem
@@ -159,7 +159,7 @@ export function MedicationList() {
             )}
 
             {meds.length === 0 && !loading && (
-                <div className="text-center py-8 text-neutral-400 text-sm">
+                <div className="text-center py-8 text-neutral-500 text-base">
                     No medications scheduled for today.
                 </div>
             )}

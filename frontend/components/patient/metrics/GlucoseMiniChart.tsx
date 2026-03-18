@@ -35,8 +35,8 @@ export function GlucoseMiniChart() {
               : "var(--success-solid, #22c55e)";
 
     return (
-        <div className="w-full h-12 mt-3">
-            <div className="text-[10px] text-neutral-400 font-medium mb-1">7-day trend</div>
+        <div className="w-full h-14 mt-4">
+            <div className="text-xs text-neutral-500 font-medium mb-1">7-day trend</div>
             <ResponsiveContainer width="100%" height={32}>
                 <LineChart data={points}>
                     <ReferenceLine y={7.8} stroke="#e5e7eb" strokeDasharray="2 2" />

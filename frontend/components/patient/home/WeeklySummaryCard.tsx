@@ -49,21 +49,21 @@ export function WeeklySummaryCard() {
         <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden"
+            className="w-full bg-white rounded-3xl border border-neutral-100 shadow-card overflow-hidden"
         >
             {/* Collapsed header - always visible */}
             <button
                 onClick={() => setOpen(!open)}
-                className="w-full flex items-center justify-between p-5 min-h-[56px] active:bg-neutral-50 transition-colors"
+                className="w-full flex items-center justify-between p-6 min-h-[56px] active:bg-neutral-50 transition-colors"
             >
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-neutral-50 rounded-xl">
-                        <CalendarDays size={18} className="text-neutral-500" />
+                        <CalendarDays size={20} className="text-neutral-500" />
                     </div>
-                    <span className="font-semibold text-neutral-800">This Week</span>
+                    <span className="font-semibold text-lg text-neutral-800">This Week</span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className={cn("px-2.5 py-1 rounded-full text-sm font-bold border", gradeColor)}>
+                    <span className={cn("px-3 py-1 rounded-full text-base font-bold border", gradeColor)}>
                         {grade}
                     </span>
                     {open ? (
@@ -84,18 +84,18 @@ export function WeeklySummaryCard() {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                     >
-                        <div className="px-5 pb-5 grid grid-cols-2 gap-4">
-                            <div className="bg-neutral-50 rounded-xl p-4 text-center">
+                        <div className="px-6 pb-5 grid grid-cols-2 gap-4">
+                            <div className="bg-neutral-50 rounded-2xl p-4 text-center">
                                 <div className="text-2xl font-bold text-neutral-800">{adherence}%</div>
-                                <div className="text-xs text-neutral-500 mt-1">Adherence</div>
+                                <div className="text-sm text-neutral-500 mt-1">Adherence</div>
                             </div>
-                            <div className="bg-neutral-50 rounded-xl p-4 text-center">
+                            <div className="bg-neutral-50 rounded-2xl p-4 text-center">
                                 <div className="text-2xl font-bold text-neutral-800">{daysInTarget}/7</div>
-                                <div className="text-xs text-neutral-500 mt-1">Days In Target</div>
+                                <div className="text-sm text-neutral-500 mt-1">Days In Target</div>
                             </div>
                         </div>
                         {data.summary && (
-                            <div className="px-5 pb-5 text-sm text-neutral-600 leading-relaxed">
+                            <div className="px-6 pb-6 text-base text-neutral-600 leading-relaxed">
                                 {data.summary}
                             </div>
                         )}

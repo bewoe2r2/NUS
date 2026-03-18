@@ -24,7 +24,7 @@ export function ClinicalCard({
 }: ClinicalCardProps) {
     return (
         <Card className={cn(
-            "bg-white border-slate-200 shadow-sm transition-all duration-150 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-[2px]",
+            "bg-white border-slate-200 shadow-sm",
             className
         )}>
             {(title || icon) && (

@@ -96,7 +96,7 @@ export function ChatContainer() {
     };
 
     return (
-        <Card className="flex flex-col h-[500px] w-full border-none shadow-card overflow-hidden bg-white/50 backdrop-blur-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
+        <Card className="flex flex-col h-[500px] w-full border border-neutral-100 shadow-card overflow-hidden bg-white/50 backdrop-blur-sm rounded-3xl transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
 
             {/* HEADER */}
             <div className="px-4 py-3 border-b border-neutral-100 bg-white/80 backdrop-blur-md flex items-center justify-between z-10 sticky top-0">
@@ -105,8 +105,8 @@ export function ChatContainer() {
                         <Sparkles size={16} />
                     </div>
                     <div>
-                        <div className="font-semibold text-sm text-neutral-900">Bewo Assistant</div>
-                        <div className="text-[10px] uppercase font-bold text-accent-500 tracking-wider">Online</div>
+                        <div className="font-semibold text-base text-neutral-900">Bewo Assistant</div>
+                        <div className="text-xs uppercase font-bold text-accent-500 tracking-wider">Online</div>
                     </div>
                 </div>
                 <MoreHorizontal size={20} className="text-neutral-400" aria-hidden="true" />
@@ -133,7 +133,7 @@ export function ChatContainer() {
                                     <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
                                     <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                                 </div>
-                                <span className="text-xs text-neutral-400 ml-2">Analysing your health data...</span>
+                                <span className="text-sm text-neutral-400 ml-2">Analysing your health data...</span>
                             </div>
                         </div>
                     </motion.div>

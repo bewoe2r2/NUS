@@ -45,7 +45,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
         )}>
             <div className="flex items-end gap-2 max-w-md mx-auto">
                 {/* ATTACHMENT / VOICE */}
-                <Button variant="ghost" size="icon" className="rounded-full text-neutral-400 hover:text-neutral-600 h-10 w-10 shrink-0" aria-label="Voice input available in menu" disabled>
+                <Button variant="ghost" size="icon" className="rounded-full text-neutral-400 hover:text-neutral-600 h-11 w-11 shrink-0" aria-label="Voice input available in menu" disabled>
                     <Mic size={20} />
                 </Button>
 
@@ -61,7 +61,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
                         placeholder="Ask Bewo..."
                         aria-label="Type your message"
                         rows={1}
-                        className="w-full bg-transparent border-none focus:ring-0 px-4 py-3 max-h-[120px] resize-none text-sm placeholder:text-neutral-400 leading-relaxed"
+                        className="w-full bg-transparent border-none focus:ring-0 px-4 py-3 max-h-[120px] resize-none text-base placeholder:text-neutral-400 leading-relaxed"
                     />
                 </div>
 
@@ -71,7 +71,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
                     disabled={!input.trim() || isLoading}
                     size="icon"
                     className={cn(
-                        "rounded-full h-10 w-10 shrink-0 transition-all duration-200",
+                        "rounded-full h-11 w-11 shrink-0 transition-all duration-200",
                         input.trim()
                             ? "bg-accent-500 text-white shadow-md hover:bg-accent-600 scale-100"
                             : "bg-neutral-100 text-neutral-300 scale-95"

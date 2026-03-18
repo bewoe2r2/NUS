@@ -40,13 +40,13 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
         >
             {/* GLUCOSE - LARGE CELL */}
             <motion.div variants={fadeInUp} className="col-span-2">
-                <Card className="p-6 flex flex-col justify-between h-full bg-white relative overflow-hidden group hover:border-accent-200 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
+                <Card className="p-6 flex flex-col justify-between h-full bg-white relative overflow-hidden rounded-3xl group hover:border-accent-200 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
                     <div className="flex justify-between items-start z-10">
                         <div className="flex items-center gap-2 text-neutral-500 font-medium text-sm uppercase tracking-wider">
-                            <Activity size={16} />
+                            <Activity size={18} />
                             <span>Avg. Glucose</span>
                         </div>
-                        <span className={cn("px-2 py-0.5 rounded-full text-xs font-bold", glucoseBg, glucoseColor)}>
+                        <span className={cn("px-3 py-1 rounded-full text-sm font-bold", glucoseBg, glucoseColor)}>
                             {isHypo ? "LOW" : isElevated ? "ELEVATED" : "NORMAL"}
                         </span>
                     </div>
@@ -74,26 +74,26 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
 
             {/* STEPS */}
             <motion.div variants={fadeInUp}>
-                <Card className="p-5 flex flex-col justify-between h-32 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
-                    <div className="text-neutral-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <Footprints size={14} /> Activity
+                <Card className="p-5 flex flex-col justify-between h-32 rounded-3xl transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
+                    <div className="text-neutral-500 text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        <Footprints size={16} /> Activity
                     </div>
                     <div>
                         <div className="text-2xl font-bold text-neutral-900">{steps.toLocaleString()}</div>
-                        <div className="text-xs text-neutral-400 mt-1">steps today</div>
+                        <div className="text-sm text-neutral-400 mt-1">steps today</div>
                     </div>
                 </Card>
             </motion.div>
 
             {/* HEART RATE */}
             <motion.div variants={fadeInUp}>
-                <Card className="p-5 flex flex-col justify-between h-32 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
-                    <div className="text-neutral-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <Heart size={14} /> Heart Rate
+                <Card className="p-5 flex flex-col justify-between h-32 rounded-3xl transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]">
+                    <div className="text-neutral-500 text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        <Heart size={16} /> Heart Rate
                     </div>
                     <div>
                         <div className="text-2xl font-bold text-neutral-900">{hr}</div>
-                        <div className="text-xs text-neutral-400 mt-1">bpm (resting)</div>
+                        <div className="text-sm text-neutral-400 mt-1">bpm (resting)</div>
                     </div>
                 </Card>
             </motion.div>

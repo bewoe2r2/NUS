@@ -32,7 +32,7 @@ export function DailyChallengeCard() {
 
     if (loading) {
         return (
-            <div className="w-full bg-white rounded-2xl border border-neutral-100 p-5 flex items-center justify-center h-20">
+            <div className="w-full bg-white rounded-3xl border border-neutral-100 p-6 flex items-center justify-center h-20 shadow-card">
                 <Loader2 className="animate-spin text-neutral-300" size={20} />
             </div>
         );
@@ -48,15 +48,15 @@ export function DailyChallengeCard() {
         <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-white rounded-2xl border border-accent-100 p-5 shadow-sm"
+            className="w-full bg-white rounded-3xl border border-accent-100 p-6 shadow-card"
         >
             <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-accent-50 rounded-xl">
                     <Target size={20} className="text-accent-500" />
                 </div>
                 <div>
-                    <div className="text-[10px] uppercase font-bold tracking-widest text-neutral-400">Today&apos;s Goal</div>
-                    <div className="text-base font-semibold text-neutral-800 leading-tight">
+                    <div className="text-xs uppercase font-bold tracking-widest text-neutral-500">Today&apos;s Goal</div>
+                    <div className="text-lg font-semibold text-neutral-800 leading-tight">
                         {challenge.challenge}
                     </div>
                 </div>
@@ -71,7 +71,7 @@ export function DailyChallengeCard() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 />
             </div>
-            <div className="mt-1.5 text-xs text-neutral-500 font-medium text-right">
+            <div className="mt-2 text-sm text-neutral-500 font-medium text-right">
                 {pct}% done
             </div>
         </motion.div>

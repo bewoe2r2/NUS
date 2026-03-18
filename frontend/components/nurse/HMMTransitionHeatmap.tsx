@@ -12,9 +12,17 @@ interface HMMTransitionHeatmapProps {
 export function HMMTransitionHeatmap({ matrix }: HMMTransitionHeatmapProps) {
     if (!matrix || matrix.length !== 3 || matrix.some(row => !Array.isArray(row) || row.length !== 3)) {
         return (
-            <Card className="h-full bg-slate-900/50 border-slate-800 backdrop-blur-sm">
-                <CardContent className="flex items-center justify-center h-full text-slate-500">
-                    No transition model loaded
+            <Card className="h-full bg-white border-slate-200 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-slate-800 flex items-center gap-2">
+                        <GitCompare className="h-4 w-4 text-blue-500" />
+                        Transition Dynamics
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center h-[200px] gap-2">
+                    <GitCompare className="h-8 w-8 text-slate-200" />
+                    <span className="text-sm text-slate-400">No transition model loaded</span>
+                    <span className="text-xs text-slate-300">Transition matrix populates after HMM analysis</span>
                 </CardContent>
             </Card>
         );
@@ -28,8 +36,8 @@ export function HMMTransitionHeatmap({ matrix }: HMMTransitionHeatmapProps) {
     const getOpacity = (prob: number) => Math.max(0.1, prob);
 
     return (
-        <Card className="h-full bg-white border-slate-200 shadow-none">
-            <CardHeader className="pb-2">
+        <Card className="h-full bg-white border-slate-200 shadow-sm">
+            <CardHeader className="pb-2 border-b border-slate-100 bg-slate-50/50">
                 <CardTitle className="text-slate-800 flex items-center gap-2">
                     <GitCompare className="h-4 w-4 text-blue-500" />
                     Transition Dynamics
@@ -39,12 +47,14 @@ export function HMMTransitionHeatmap({ matrix }: HMMTransitionHeatmapProps) {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 items-center">
+                <div className="grid grid-cols-[5rem_1fr_1fr_1fr] gap-1.5 items-center">
                     {/* Header Row */}
-                    <div className="h-8 w-16"></div>
+                    <div className="h-8 w-20 flex items-end justify-end pr-2">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">From / To</span>
+                    </div>
                     {states.map((s, i) => (
-                        <div key={s} className={`text-xs font-bold text-center ${textColors[i]}`}>
-                            TO {s.slice(0, 1)}
+                        <div key={s} className={`text-[10px] font-bold text-center uppercase tracking-wide ${textColors[i]}`}>
+                            {s}
                         </div>
                     ))}
 
@@ -52,7 +62,7 @@ export function HMMTransitionHeatmap({ matrix }: HMMTransitionHeatmapProps) {
                     {states.map((fromState, i) => (
                         <Fragment key={`row-${i}`}>
                             {/* Row Label */}
-                            <div key={`label-${i}`} className={`text-xs font-bold ${textColors[i]} flex items-center justify-end gap-1 pr-2`}>
+                            <div key={`label-${i}`} className={`text-[10px] font-bold uppercase tracking-wide ${textColors[i]} flex items-center justify-end gap-1 pr-2`}>
                                 {fromState}
                             </div>
 
@@ -70,7 +80,7 @@ export function HMMTransitionHeatmap({ matrix }: HMMTransitionHeatmapProps) {
                                                             `rgba(244, 63, 94, ${getOpacity(prob)})`
                                                 }}
                                             >
-                                                <span className={`text-xs font-bold shadow-sm ${prob > 0.5 ? 'text-white' : 'text-slate-700'}`}>
+                                                <span className={`text-xs font-bold font-mono ${prob > 0.5 ? 'text-white' : 'text-slate-700'}`}>
                                                     {(prob * 100).toFixed(0)}%
                                                 </span>
                                             </div>

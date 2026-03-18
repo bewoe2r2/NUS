@@ -46,10 +46,10 @@ export function VoucherCard() {
     };
 
     if (loading) return (
-        <div className="w-full bg-white rounded-3xl shadow-sm border border-neutral-100 p-6 animate-pulse">
-            <div className="h-4 bg-neutral-100 rounded w-24 mb-3"></div>
-            <div className="h-10 bg-neutral-100 rounded w-20 mb-2"></div>
-            <div className="h-3 bg-neutral-100 rounded w-32"></div>
+        <div className="w-full bg-white rounded-3xl shadow-card border border-neutral-100 p-6 animate-pulse">
+            <div className="h-4 bg-neutral-100 rounded-lg w-24 mb-3"></div>
+            <div className="h-10 bg-neutral-100 rounded-lg w-20 mb-2"></div>
+            <div className="h-4 bg-neutral-100 rounded-lg w-32"></div>
         </div>
     );
     if (!voucher) return null;
@@ -72,22 +72,22 @@ export function VoucherCard() {
             <motion.div
                 whileTap={{ scale: 0.98 }}
                 onClick={handleRedeem}
-                className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6 flex items-center justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]"
+                className="bg-white rounded-3xl shadow-card border border-neutral-100 p-6 flex items-center justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]"
             >
                 {/* Background Decor */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-accent-50 rounded-full translate-x-1/3 -translate-y-1/3 opacity-50 blur-2xl pointer-events-none"></div>
 
                 <div className="flex flex-col gap-1 z-10">
                     <div className="flex items-center gap-2 text-neutral-500 mb-1">
-                        <Ticket size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wider">Weekly Reward</span>
+                        <Ticket size={18} />
+                        <span className="text-sm font-bold uppercase tracking-wider">Weekly Reward</span>
                     </div>
 
                     <div className={cn("font-display text-4xl tracking-tighter", textColor)}>
                         ${value.toFixed(2)}
                     </div>
 
-                    <div className="text-sm text-neutral-400 font-medium">
+                    <div className="text-base text-neutral-500 font-medium">
                         {voucher.can_redeem
                             ? "Ready to redeem!"
                             : `${voucher.days_until_redemption} days until Sunday`
@@ -96,7 +96,7 @@ export function VoucherCard() {
                 </div>
 
                 <div className="flex flex-col items-end gap-3 z-10">
-                    <div className="px-3 py-1 bg-neutral-100 rounded-full text-xs font-semibold text-neutral-600 border border-neutral-200">
+                    <div className="px-3 py-1.5 bg-neutral-100 rounded-full text-sm font-semibold text-neutral-600 border border-neutral-200">
                         🔥 {voucher.streak_days} Day Streak
                     </div>
 
@@ -107,7 +107,7 @@ export function VoucherCard() {
                         }}
                         disabled={!voucher.can_redeem}
                         className={cn(
-                            "h-10 px-5 rounded-full font-semibold transition-all shadow-sm flex items-center gap-2",
+                            "h-12 px-5 rounded-full font-semibold transition-all shadow-sm flex items-center gap-2 text-base",
                             voucher.can_redeem
                                 ? "bg-black text-white active:scale-95 hover:bg-neutral-800"
                                 : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
@@ -141,7 +141,7 @@ export function VoucherCard() {
                                     <h3 className="text-lg font-bold text-neutral-900">Redeem Voucher</h3>
                                     <p className="text-sm text-neutral-500">Show to staff at Kopitiam</p>
                                 </div>
-                                <button onClick={() => setShowQR(false)} className="p-2 bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200 transition-colors">
+                                <button onClick={() => setShowQR(false)} className="p-3 bg-neutral-100 rounded-full text-neutral-500 hover:bg-neutral-200 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -159,7 +159,7 @@ export function VoucherCard() {
                                 </div>
                             </div>
 
-                            <div className="text-center text-xs text-neutral-400">
+                            <div className="text-center text-sm text-neutral-500">
                                 Valid for one-time use only. Expires in 24 hours.
                             </div>
                         </motion.div>

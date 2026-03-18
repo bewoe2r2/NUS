@@ -48,8 +48,9 @@ export function BiometricTrendChart({ patientId = "P001" }: { patientId?: string
 
     if (data.length === 0) {
         return (
-            <div className="h-[250px] w-full flex items-center justify-center text-neutral-400 text-sm">
-                No biometric data available. Run a scenario to populate.
+            <div className="h-[250px] w-full flex flex-col items-center justify-center gap-2">
+                <span className="text-slate-400 text-sm">No biometric readings recorded for this period</span>
+                <span className="text-slate-300 text-xs">Data will populate automatically once patient monitoring begins</span>
             </div>
         );
     }

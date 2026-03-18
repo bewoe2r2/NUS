@@ -54,7 +54,7 @@ export function ActionMenu({ onLogGlucose, onLogFood, onVoiceCheckIn }: ActionMe
                                 transition={{ delay: i * 0.05, type: "spring", stiffness: 400, damping: 25 }}
                                 className="flex items-center gap-3"
                             >
-                                <span className="text-sm font-semibold bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm text-neutral-700">
+                                <span className="text-base font-semibold bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-sm text-neutral-700">
                                     {action.label}
                                 </span>
                                 <Button

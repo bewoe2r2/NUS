@@ -27,7 +27,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     if (isSystem) {
         return (
             <div className="flex justify-center my-4">
-                <span className="text-xs text-neutral-400 font-mono py-1 px-3 bg-neutral-100 rounded-full">
+                <span className="text-sm text-neutral-500 font-mono py-1.5 px-4 bg-neutral-100 rounded-full">
                     {message.content}
                 </span>
             </div>
@@ -56,23 +56,23 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
                 {/* BUBBLE */}
                 <div className={cn(
-                    "relative px-4 py-3 text-[15px] leading-relaxed shadow-sm",
+                    "relative px-4 py-3 text-base leading-relaxed shadow-sm",
                     isUser
                         ? "bg-accent-500 text-white rounded-2xl rounded-br-sm"
                         : "bg-white border text-neutral-800 rounded-2xl rounded-bl-sm",
-                    !isUser && message.hmm_state === "CRISIS" && "border-red-400 border-l-4",
-                    !isUser && message.hmm_state === "WARNING" && "border-amber-400 border-l-4",
+                    !isUser && message.hmm_state === "CRISIS" && "border-error-500 border-l-4",
+                    !isUser && message.hmm_state === "WARNING" && "border-warning-500 border-l-4",
                     !isUser && message.hmm_state !== "CRISIS" && message.hmm_state !== "WARNING" && "border-neutral-200"
                 )}>
                     <span className="inline-flex items-center gap-1">
-                        {message.hmm_state === "CRISIS" && <span className="w-2 h-2 rounded-full bg-red-500 inline-block mr-1 shrink-0" />}
-                        {message.hmm_state === "WARNING" && <span className="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1 shrink-0" />}
+                        {message.hmm_state === "CRISIS" && <span className="w-2 h-2 rounded-full bg-error-500 inline-block mr-1 shrink-0" />}
+                        {message.hmm_state === "WARNING" && <span className="w-2 h-2 rounded-full bg-warning-500 inline-block mr-1 shrink-0" />}
                     </span>
                     {message.content}
 
                     {/* TIMESTAMP */}
                     <div className={cn(
-                        "text-[10px] mt-1 opacity-70 flex items-center gap-1",
+                        "text-xs mt-1.5 opacity-70 flex items-center gap-1",
                         isUser ? "justify-end text-accent-100" : "text-neutral-400"
                     )}>
                         {message.timestamp}

@@ -37,10 +37,10 @@ export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: Medi
     };
 
     return (
-        <div className="relative w-full h-24 mb-3 touch-none select-none">
+        <div className="relative w-full h-24 touch-none select-none">
             {/* Background Layer (Success State) */}
             <motion.div
-                className="absolute inset-0 rounded-xl flex items-center justify-start px-6 bg-[var(--success-solid)]"
+                className="absolute inset-0 rounded-2xl flex items-center justify-start px-6 bg-[var(--success-solid)]"
                 style={{ opacity: bgOpacity }}
             >
                 <motion.div style={{ scale: scaleIcon }}>
@@ -59,7 +59,7 @@ export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: Medi
                 animate={{ x: 0 }} // Always spring back
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 className={cn(
-                    "relative h-full bg-white rounded-xl border border-neutral-200 shadow-sm flex items-center p-4 transition-colors z-10",
+                    "relative h-full bg-white rounded-2xl border border-neutral-200 shadow-sm flex items-center p-4 transition-colors z-10",
                     isTaken ? "bg-neutral-50/50" : "bg-white"
                 )}
             >
@@ -75,13 +75,13 @@ export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: Medi
                             <h4 className={cn("text-lg font-semibold text-neutral-900 transition-all", isTaken && "line-through text-neutral-400")}>
                                 {name}
                             </h4>
-                            <p className="text-sm text-neutral-500 flex items-center mt-0.5">
-                                <Pill size={12} className="mr-1.5" />
+                            <p className="text-base text-neutral-500 flex items-center mt-0.5">
+                                <Pill size={14} className="mr-1.5" />
                                 {dose}
                             </p>
                         </div>
 
-                        <Badge variant={isTaken ? "success" : "secondary"} className="font-mono text-xs">
+                        <Badge variant={isTaken ? "success" : "secondary"} className="font-mono text-sm">
                             {time}
                         </Badge>
                     </div>
@@ -91,11 +91,11 @@ export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: Medi
                 <button
                     onClick={() => onToggle(id)}
                     className={cn(
-                        "h-8 w-8 rounded-full border-2 ml-4 flex items-center justify-center transition-all",
+                        "h-11 w-11 rounded-full border-2 ml-4 flex items-center justify-center transition-all shrink-0",
                         isTaken ? "bg-[var(--success-solid)] border-[var(--success-solid)]" : "border-neutral-300 hover:border-[var(--accent-500)]"
                     )}
                 >
-                    {isTaken && <Check size={16} className="text-white" strokeWidth={3} />}
+                    {isTaken && <Check size={20} className="text-white" strokeWidth={3} />}
                 </button>
 
             </motion.div>

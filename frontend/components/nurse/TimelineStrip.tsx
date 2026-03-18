@@ -75,7 +75,7 @@ export function TimelineStrip({ days, selectedDate, onSelectDate }: TimelineStri
                             </div>
 
                             {/* Confidence */}
-                            <span className="text-[9px] font-medium text-white/70 mt-1">
+                            <span className="text-[10px] font-mono font-medium text-white/80 mt-1">
                                 {(day.confidence * 100).toFixed(0)}%
                             </span>
 

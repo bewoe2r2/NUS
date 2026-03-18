@@ -43,11 +43,11 @@ export function StreakDisplay() {
             {items.map((item) => (
                 <div
                     key={item.label}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-neutral-100 shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-neutral-100 shadow-sm"
                 >
-                    <span className="text-base" role="img" aria-label={item.label}>{item.emoji}</span>
-                    <span className="text-sm font-bold text-neutral-800 tabular-nums">{item.value}</span>
-                    <span className="text-[10px] text-neutral-400 font-medium uppercase">{item.label}</span>
+                    <span className="text-lg" role="img" aria-label={item.label}>{item.emoji}</span>
+                    <span className="text-base font-bold text-neutral-800 tabular-nums">{item.value}</span>
+                    <span className="text-xs text-neutral-500 font-medium uppercase">{item.label}</span>
                 </div>
             ))}
         </motion.div>

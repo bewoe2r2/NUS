@@ -50,14 +50,14 @@ interface DashboardData {
 }
 // --- Helpers ---
 
-function stateColor(state: string): { bg: string; text: string; border: string; dot: string; label: string } {
+function stateColor(state: string): { bg: string; text: string; border: string; dot: string; label: string; icon: string } {
     switch (state) {
         case "CRISIS":
-            return { bg: "bg-red-50", text: "text-red-800", border: "border-red-200", dot: "bg-red-500", label: "Act Now" };
+            return { bg: "bg-error-50", text: "text-error-700", border: "border-error-200", dot: "bg-error-solid", label: "Act Now", icon: "M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" };
         case "WARNING":
-            return { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200", dot: "bg-amber-500", label: "Heads Up" };
+            return { bg: "bg-warning-50", text: "text-warning-700", border: "border-warning-200", dot: "bg-warning-solid", label: "Heads Up", icon: "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" };
         default:
-            return { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200", dot: "bg-emerald-500", label: "Safe" };
+            return { bg: "bg-success-50", text: "text-success-700", border: "border-success-200", dot: "bg-success-solid", label: "All Safe", icon: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" };
     }
 }
 
@@ -72,14 +72,14 @@ function statusHeadline(state: string): string {
     }
 }
 
-function severityBadge(severity: string) {
+function severityBadge(severity: string): { classes: string; label: string; cardBorder: string } {
     switch (severity) {
         case "high":
-            return "bg-red-100 text-red-700";
+            return { classes: "bg-error-100 text-error-700", label: "Urgent", cardBorder: "border-l-error-solid" };
         case "medium":
-            return "bg-amber-100 text-amber-700";
+            return { classes: "bg-warning-100 text-warning-700", label: "Attention", cardBorder: "border-l-warning-solid" };
         default:
-            return "bg-stone-100 text-stone-600";
+            return { classes: "bg-neutral-100 text-neutral-600", label: "Info", cardBorder: "border-l-neutral-300" };
     }
 }
 
@@ -113,32 +113,36 @@ function burdenMessage(level: string): string {
 }
 
 function gradeColor(grade: string): string {
-    if (!grade) return "text-stone-500";
+    if (!grade) return "text-neutral-500";
     const g = grade.toUpperCase();
-    if (g === "A" || g === "A+") return "text-emerald-600";
-    if (g === "B" || g === "B+") return "text-lime-600";
-    if (g === "C" || g === "C+") return "text-amber-600";
-    return "text-red-600";
+    if (g === "A" || g === "A+") return "text-success-600";
+    if (g === "B" || g === "B+") return "text-success-700";
+    if (g === "C" || g === "C+") return "text-warning-600";
+    return "text-error-600";
 }
 // --- Components ---
 
 function StatusHeader({ state, riskScore, lastUpdated }: { state: string; riskScore: number; lastUpdated: string }) {
     const colors = stateColor(state);
     return (
-        <div className={`rounded-2xl p-5 ${colors.bg} ${colors.border} border`}>
-            <div className="flex items-start gap-3">
-                <div className={`w-3 h-3 rounded-full mt-1.5 ${colors.dot} animate-pulse`} />
-                <div className="flex-1">
-                    <h1 className={`text-xl font-bold ${colors.text}`}>{statusHeadline(state)}</h1>
-                    <div className="flex items-center gap-3 mt-2 text-sm">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text} border ${colors.border}`}>
+        <div className={`rounded-2xl p-6 ${colors.bg} ${colors.border} border-2 shadow-card animate-in fade-in slide-in-from-bottom-4`}>
+            <div className="flex items-start gap-4">
+                <div className="shrink-0 mt-0.5">
+                    <div className={`w-10 h-10 rounded-full ${colors.bg} ${colors.border} border flex items-center justify-center`}>
+                        <svg className={`w-5 h-5 ${colors.text}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d={colors.icon} />
+                        </svg>
+                    </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h1 className={`text-2xl font-bold ${colors.text} leading-tight`}>{statusHeadline(state)}</h1>
+                    <div className="flex items-center gap-3 mt-3">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${colors.bg} ${colors.text} border ${colors.border}`}>
+                            <span className={`w-2 h-2 rounded-full ${colors.dot} animate-pulse`} />
                             {colors.label}
                         </span>
-                        <span className="text-stone-500">
-                            Risk: {(riskScore * 100).toFixed(0)}%
-                        </span>
                         {lastUpdated && (
-                            <span className="text-stone-400">
+                            <span className="text-neutral-400 text-xs">
                                 {formatTime(lastUpdated)}
                             </span>
                         )}
@@ -158,91 +162,113 @@ function AlertFeed({
     respondingId: string | null;
     onRespond: (alertId: string, action: AlertAction) => void;
 }) {
-    const actionButtons: { action: AlertAction; label: string; style: string }[] = [
-        { action: "acknowledge", label: "Got it", style: "bg-stone-100 text-stone-700 hover:bg-stone-200" },
-        { action: "on_my_way", label: "On my way", style: "bg-blue-100 text-blue-700 hover:bg-blue-200" },
-        { action: "need_help", label: "Need help", style: "bg-amber-100 text-amber-700 hover:bg-amber-200" },
-        { action: "escalate", label: "Escalate", style: "bg-red-100 text-red-700 hover:bg-red-200" },
+    const actionButtons: { action: AlertAction; label: string; style: string; icon: string }[] = [
+        { action: "acknowledge", label: "Got it", style: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 active:bg-neutral-300", icon: "M4.5 12.75l6 6 9-13.5" },
+        { action: "on_my_way", label: "On my way", style: "bg-accent-100 text-accent-700 hover:bg-accent-200 active:bg-accent-300", icon: "M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" },
+        { action: "need_help", label: "Need help", style: "bg-warning-100 text-warning-700 hover:bg-warning-200 active:bg-warning-500/20", icon: "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" },
+        { action: "escalate", label: "Escalate", style: "bg-error-100 text-error-700 hover:bg-error-200 active:bg-error-500/20", icon: "M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" },
     ];
 
     if (alerts.length === 0) {
         return (
-            <div className="text-center py-8 text-stone-400 text-sm">
-                No recent alerts. All quiet.
+            <div className="bg-success-50 border border-success-200 rounded-2xl p-8 text-center animate-in fade-in slide-in-from-bottom-4">
+                <div className="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <p className="text-sm font-medium text-success-700">All quiet. Nothing needs your attention.</p>
+                <p className="text-xs text-neutral-400 mt-1">We will notify you if anything comes up.</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-3">
-            {alerts.map((alert) => (
-                <div key={alert.id} className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm text-stone-800 flex-1">{alert.message}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${severityBadge(alert.severity)}`}>
-                            {alert.severity}
-                        </span>
-                    </div>
-                    <p className="text-xs text-stone-400 mt-1">{formatTime(alert.timestamp)}</p>
+            {alerts.map((alert, idx) => {
+                const badge = severityBadge(alert.severity);
+                return (
+                    <div
+                        key={alert.id}
+                        className={`bg-white rounded-2xl border border-neutral-200 border-l-4 ${badge.cardBorder} p-4 shadow-card animate-in fade-in slide-in-from-bottom-4`}
+                        style={{ animationDelay: `${idx * 80}ms` }}
+                    >
+                        <div className="flex items-start justify-between gap-3">
+                            <p className="text-sm text-neutral-800 flex-1 leading-relaxed">{alert.message}</p>
+                            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold shrink-0 ${badge.classes}`}>
+                                {badge.label}
+                            </span>
+                        </div>
+                        <p className="text-xs text-neutral-400 mt-1.5">{formatTime(alert.timestamp)}</p>
 
-                    {alert.responded ? (
-                        <div className="mt-3 text-xs text-emerald-600 font-medium">
-                            Responded: {alert.response_action?.replace(/_/g, " ")}
-                        </div>
-                    ) : (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {actionButtons.map((btn) => (
-                                <button
-                                    key={btn.action}
-                                    disabled={respondingId === alert.id}
-                                    onClick={() => onRespond(alert.id, btn.action)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${btn.style} disabled:opacity-50`}
-                                >
-                                    {respondingId === alert.id ? "..." : btn.label}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ))}
+                        {alert.responded ? (
+                            <div className="mt-3 flex items-center gap-1.5 text-sm text-success-600 font-medium">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Responded: {alert.response_action?.replace(/_/g, " ")}
+                            </div>
+                        ) : (
+                            <div className="mt-4 grid grid-cols-2 gap-2">
+                                {actionButtons.map((btn) => (
+                                    <button
+                                        key={btn.action}
+                                        disabled={respondingId === alert.id}
+                                        onClick={() => onRespond(alert.id, btn.action)}
+                                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${btn.style} disabled:opacity-50 min-h-[44px]`}
+                                    >
+                                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d={btn.icon} />
+                                        </svg>
+                                        {respondingId === alert.id ? "..." : btn.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }
 function WeeklySummaryCard({ report }: { report: WeeklyReport | null }) {
     if (!report) {
         return (
-            <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-stone-700 mb-2">This Week</h3>
-                <p className="text-xs text-stone-400">Loading weekly summary...</p>
+            <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card">
+                <h3 className="text-base font-semibold text-neutral-800 mb-2">This Week</h3>
+                <div className="flex items-center gap-2 text-sm text-neutral-400">
+                    <div className="w-4 h-4 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
+                    Loading weekly summary...
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-stone-700 mb-3">This Week</h3>
+        <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: "200ms" }}>
+            <h3 className="text-base font-semibold text-neutral-800 mb-4">This Week</h3>
             <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
-                    <div className="text-2xl font-bold text-stone-800">
+                <div className="bg-neutral-50 rounded-xl p-3">
+                    <div className="text-2xl font-bold text-neutral-800">
                         {report.adherence_pct != null ? `${report.adherence_pct}%` : "--"}
                     </div>
-                    <div className="text-xs text-stone-500 mt-0.5">Adherence</div>
+                    <div className="text-xs text-neutral-500 mt-1">Adherence</div>
                 </div>
-                <div>
-                    <div className="text-2xl font-bold text-stone-800 capitalize">
+                <div className="bg-neutral-50 rounded-xl p-3">
+                    <div className="text-2xl font-bold text-neutral-800 capitalize">
                         {report.glucose_trend || "--"}
                     </div>
-                    <div className="text-xs text-stone-500 mt-0.5">Glucose trend</div>
+                    <div className="text-xs text-neutral-500 mt-1">Glucose</div>
                 </div>
-                <div>
+                <div className="bg-neutral-50 rounded-xl p-3">
                     <div className={`text-2xl font-bold ${gradeColor(report.grade || "")}`}>
                         {report.grade || "--"}
                     </div>
-                    <div className="text-xs text-stone-500 mt-0.5">Grade</div>
+                    <div className="text-xs text-neutral-500 mt-1">Grade</div>
                 </div>
             </div>
             {report.summary && (
-                <p className="text-xs text-stone-500 mt-3 leading-relaxed border-t border-stone-100 pt-3">
+                <p className="text-sm text-neutral-500 mt-4 leading-relaxed border-t border-neutral-100 pt-4">
                     {report.summary}
                 </p>
             )}
@@ -253,32 +279,33 @@ function WeeklySummaryCard({ report }: { report: WeeklyReport | null }) {
 function StreakDisplay({ streakData }: { streakData: StreakData | null }) {
     const streaks = streakData?.streaks;
     const items = [
-        { key: "medication", label: "Medication" },
-        { key: "glucose", label: "Glucose check" },
+        { key: "medication", label: "Medication", emoji: "💊" },
+        { key: "glucose", label: "Glucose check", emoji: "🩸" },
     ];
 
     return (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-stone-700 mb-3">Streaks</h3>
-            <div className="space-y-3">
-                {items.map(({ key, label }) => {
+        <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: "280ms" }}>
+            <h3 className="text-base font-semibold text-neutral-800 mb-4">Streaks</h3>
+            <div className="space-y-4">
+                {items.map(({ key, label, emoji }) => {
                     const s = streaks?.[key];
                     const current = s?.current ?? 0;
                     const best = s?.best ?? 0;
                     return (
-                        <div key={key} className="flex items-center gap-3">
+                        <div key={key} className="flex items-start gap-3">
+                            <span className="text-lg mt-0.5" role="img" aria-label={label}>{emoji}</span>
                             <div className="flex-1">
                                 <div className="flex items-baseline justify-between">
-                                    <span className="text-sm text-stone-700">{label}</span>
-                                    <span className="text-xs text-stone-400">Best: {best}d</span>
+                                    <span className="text-sm font-medium text-neutral-700">{label}</span>
+                                    <span className="text-xs text-neutral-400">Best: {best}d</span>
                                 </div>
-                                <div className="mt-1 h-2 bg-stone-100 rounded-full overflow-hidden">
+                                <div className="mt-1.5 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                                        className="h-full bg-success-solid rounded-full transition-all duration-700 ease-out"
                                         style={{ width: `${best > 0 ? Math.min((current / best) * 100, 100) : (current > 0 ? 100 : 0)}%` }}
                                     />
                                 </div>
-                                <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                                <div className="text-xs text-success-600 font-medium mt-1">
                                     {current} day{current !== 1 ? "s" : ""} running
                                 </div>
                             </div>
@@ -292,45 +319,55 @@ function StreakDisplay({ streakData }: { streakData: StreakData | null }) {
 function BurdenCard({ burden }: { burden: BurdenData | null }) {
     if (!burden) {
         return (
-            <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-stone-700 mb-2">How are you doing?</h3>
-                <p className="text-xs text-stone-400">Checking in...</p>
+            <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card">
+                <h3 className="text-base font-semibold text-neutral-800 mb-2">Your wellbeing</h3>
+                <div className="flex items-center gap-2 text-sm text-neutral-400">
+                    <div className="w-4 h-4 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
+                    Checking in...
+                </div>
             </div>
         );
     }
 
     const level = burden.level || "low";
-    const bgMap: Record<string, string> = {
-        low: "bg-emerald-50 border-emerald-200",
-        moderate: "bg-amber-50 border-amber-200",
-        high: "bg-rose-50 border-rose-200",
+    const config: Record<string, { bg: string; bar: string; icon: string }> = {
+        low: { bg: "bg-success-50 border-success-200", bar: "bg-success-solid", icon: "M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" },
+        moderate: { bg: "bg-warning-50 border-warning-200", bar: "bg-warning-solid", icon: "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" },
+        high: { bg: "bg-error-50 border-error-200", bar: "bg-error-solid", icon: "M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" },
     };
-    const bg = bgMap[level] || bgMap.low;
+    const cfg = config[level] || config.low;
 
     return (
-        <div className={`rounded-xl border p-4 shadow-sm ${bg}`}>
+        <div className={`rounded-2xl border-2 p-5 shadow-card animate-in fade-in slide-in-from-bottom-4 ${cfg.bg}`} style={{ animationDelay: "120ms" }}>
             <div className="flex items-start gap-3">
-                <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-stone-700">How are you doing?</h3>
-                    <p className="text-sm text-stone-600 mt-1">
+                <div className="shrink-0">
+                    <div className={`w-10 h-10 rounded-full bg-white/60 flex items-center justify-center`}>
+                        <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d={cfg.icon} />
+                        </svg>
+                    </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-neutral-800">Your wellbeing</h3>
+                    <p className="text-sm text-neutral-600 mt-1 leading-relaxed">
                         {burden.message || burdenMessage(level)}
                     </p>
                     {burden.recommendation && (
-                        <p className="text-xs text-stone-500 mt-2 italic">{burden.recommendation}</p>
+                        <p className="text-xs text-neutral-500 mt-2 leading-relaxed">{burden.recommendation}</p>
                     )}
                 </div>
             </div>
             {burden.score != null && (
-                <div className="mt-3 flex items-center gap-2">
-                    <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
+                <div className="mt-4 flex items-center gap-3">
+                    <div className="flex-1 h-2.5 bg-white/60 rounded-full overflow-hidden">
                         <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                                level === "low" ? "bg-emerald-400" : level === "moderate" ? "bg-amber-400" : "bg-rose-400"
-                            }`}
+                            className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
                             style={{ width: `${Math.min(burden.score * 100, 100)}%` }}
                         />
                     </div>
-                    <span className="text-xs text-stone-500 tabular-nums">{(burden.score * 100).toFixed(0)}%</span>
+                    <span className="text-xs font-medium text-neutral-500 tabular-nums w-8 text-right">
+                        {burden.score <= 0.33 ? "Low" : burden.score <= 0.66 ? "Mid" : "High"}
+                    </span>
                 </div>
             )}
         </div>
@@ -339,23 +376,27 @@ function BurdenCard({ burden }: { burden: BurdenData | null }) {
 
 function QuickActions() {
     return (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: "360ms" }}>
             <a
                 href="tel:+6591234567"
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-white rounded-xl border border-stone-200 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
+                className="flex flex-col items-center justify-center gap-2 px-4 py-5 bg-white rounded-2xl border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100 transition-all shadow-card min-h-[72px]"
             >
-                <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Call nurse
+                <div className="w-10 h-10 rounded-full bg-success-50 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-success-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                </div>
+                Call Nurse
             </a>
             <a
                 href="tel:+6598765432"
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-white rounded-xl border border-stone-200 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
+                className="flex flex-col items-center justify-center gap-2 px-4 py-5 bg-white rounded-2xl border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100 transition-all shadow-card min-h-[72px]"
             >
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+                <div className="w-10 h-10 rounded-full bg-accent-50 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
                 Call Papa
             </a>
         </div>
@@ -365,16 +406,17 @@ function QuickActions() {
 function Vitals({ biometrics }: { biometrics: PatientState["biometrics"] | null }) {
     if (!biometrics) return null;
     const items = [
-        { label: "Glucose", value: `${biometrics.glucose?.toFixed(1) ?? "--"} mmol/L` },
-        { label: "Heart rate", value: `${biometrics.hr ?? "--"} bpm` },
-        { label: "Steps today", value: `${biometrics.steps?.toLocaleString() ?? "--"}` },
+        { label: "Glucose", value: `${biometrics.glucose?.toFixed(1) ?? "--"}`, unit: "mmol/L", icon: "🩸" },
+        { label: "Heart rate", value: `${biometrics.hr ?? "--"}`, unit: "bpm", icon: "💓" },
+        { label: "Steps", value: `${biometrics.steps?.toLocaleString() ?? "--"}`, unit: "today", icon: "👟" },
     ];
     return (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: "80ms" }}>
             {items.map((item) => (
-                <div key={item.label} className="bg-white rounded-xl border border-stone-200 p-3 text-center shadow-sm">
-                    <div className="text-sm font-bold text-stone-800 mt-1">{item.value}</div>
-                    <div className="text-xs text-stone-500">{item.label}</div>
+                <div key={item.label} className="bg-white rounded-2xl border border-neutral-200 p-4 text-center shadow-card">
+                    <span className="text-lg" role="img" aria-label={item.label}>{item.icon}</span>
+                    <div className="text-lg font-bold text-neutral-800 mt-1">{item.value}</div>
+                    <div className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider mt-0.5">{item.unit}</div>
                 </div>
             ))}
         </div>
@@ -453,56 +495,59 @@ export default function CaregiverDashboard() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center space-y-3">
-                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-sm text-stone-500">Loading your father&apos;s dashboard...</p>
+                <div className="text-center space-y-4">
+                    <div className="w-10 h-10 border-3 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                    <div>
+                        <p className="text-base font-medium text-neutral-700">Loading Papa&apos;s dashboard</p>
+                        <p className="text-sm text-neutral-400 mt-1">Just a moment...</p>
+                    </div>
                 </div>
             </div>
         );
     }
     return (
-        <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+        <div className="max-w-lg mx-auto px-4 pt-6 pb-12 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between animate-in fade-in">
                 <div>
-                    <h2 className="text-lg font-bold text-stone-800">Hi, caring for Papa</h2>
-                    <p className="text-xs text-stone-400">
+                    <h2 className="text-xl font-bold text-neutral-800">Caring for Papa</h2>
+                    <p className="text-xs text-neutral-400 mt-0.5">
                         Updated {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        {" · "}auto-refreshes every 30s
+                        {" · "}refreshes every 30s
                     </p>
                 </div>
                 <button
                     onClick={fetchAll}
-                    className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+                    className="p-2.5 rounded-xl hover:bg-neutral-100 active:bg-neutral-200 transition-colors"
                     title="Refresh now"
                 >
-                    <svg className="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                 </button>
             </div>
 
-            {/* Patient status */}
+            {/* Patient status — the hero element */}
             <StatusHeader state={currentState} riskScore={riskScore} lastUpdated={lastUpdated} />
 
-            {/* Vitals */}
+            {/* Vitals at a glance */}
             <Vitals biometrics={patientState?.biometrics ?? null} />
 
-            {/* Burden check */}
-            <BurdenCard burden={burden} />
-
-            {/* Alerts */}
-            <div>
-                <h3 className="text-sm font-semibold text-stone-700 mb-2">
+            {/* Alerts — action-required items */}
+            <section>
+                <h3 className="text-base font-semibold text-neutral-800 mb-3">
                     Recent Alerts
                     {alerts.length > 0 && (
-                        <span className="ml-2 text-xs font-normal text-stone-400">
-                            {alerts.filter((a) => !a.responded).length} pending
+                        <span className="ml-2 inline-flex items-center justify-center text-xs font-semibold text-white bg-error-solid rounded-full w-5 h-5 align-middle">
+                            {alerts.filter((a) => !a.responded).length}
                         </span>
                     )}
                 </h3>
                 <AlertFeed alerts={alerts} respondingId={respondingId} onRespond={handleRespond} />
-            </div>
+            </section>
+
+            {/* Caregiver wellbeing */}
+            <BurdenCard burden={burden} />
 
             {/* Weekly summary */}
             <WeeklySummaryCard report={weeklyReport} />
@@ -511,13 +556,13 @@ export default function CaregiverDashboard() {
             <StreakDisplay streakData={streakData} />
 
             {/* Quick actions */}
-            <div>
-                <h3 className="text-sm font-semibold text-stone-700 mb-2">Quick Actions</h3>
+            <section>
+                <h3 className="text-base font-semibold text-neutral-800 mb-3">Quick Actions</h3>
                 <QuickActions />
-            </div>
+            </section>
 
             {/* Footer */}
-            <p className="text-center text-xs text-stone-300 pt-4 pb-8">
+            <p className="text-center text-xs text-neutral-300 pt-6 pb-4">
                 BeWo Caregiver Dashboard
             </p>
         </div>

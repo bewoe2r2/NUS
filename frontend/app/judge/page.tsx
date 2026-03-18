@@ -26,12 +26,14 @@ import {
     Play,
     Terminal,
     CheckCircle2,
-    XCircle,
     Sparkles,
     Calendar,
     Bell,
     UtensilsCrossed,
     Award,
+    ExternalLink,
+    Phone,
+    SmartphoneNfc,
 } from 'lucide-react';
 
 // ============================================================================
@@ -79,6 +81,26 @@ export default function JudgePage() {
     const [caregiverBurden, setCaregiverBurden] = useState<any>(null);
     const [proactiveHistory, setProactiveHistory] = useState<any[]>([]);
     const [counterfactual, setCounterfactual] = useState<any>(null);
+
+    // Caregiver data
+    const [caregiverDashboard, setCaregiverDashboard] = useState<any>(null);
+    const [caregiverBurdenData, setCaregiverBurdenData] = useState<any>(null);
+
+    const fetchCaregiverData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const [dashboard, burden] = await Promise.all([
+                api.getCaregiverDashboard("P001").catch(() => null),
+                api.getCaregiverBurden("P001").catch(() => null),
+            ]);
+            setCaregiverDashboard(dashboard);
+            setCaregiverBurdenData(burden);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     const fetchOverviewData = useCallback(async () => {
         setLoading(true);
@@ -137,7 +159,8 @@ export default function JudgePage() {
     useEffect(() => {
         if (activeTab === 'overview') fetchOverviewData();
         if (activeTab === 'intelligence') fetchIntelligenceData();
-    }, [refreshKey, fetchOverviewData, fetchIntelligenceData, activeTab]);
+        if (activeTab === 'caregiver') fetchCaregiverData();
+    }, [refreshKey, fetchOverviewData, fetchIntelligenceData, fetchCaregiverData, activeTab]);
 
     const handleRefresh = () => {
         setRefreshKey(prev => prev + 1);
@@ -173,14 +196,15 @@ export default function JudgePage() {
                                 <button
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
+                                    title={tab.label}
+                                    className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
                                         ${isActive
                                             ? 'bg-zinc-900 text-white shadow-sm'
                                             : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
                                         }`}
                                 >
-                                    <Icon size={14} />
-                                    {tab.label}
+                                    <Icon size={14} className="shrink-0" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
                                 </button>
                             );
                         })}
@@ -234,21 +258,10 @@ export default function JudgePage() {
                         </div>
                     )}
                     {activeTab === 'caregiver' && (
-                        <div className="h-full overflow-auto flex items-center justify-center bg-zinc-50">
-                            <div className="text-center max-w-md mx-auto p-8">
-                                <Users size={48} className="mx-auto text-indigo-600 mb-4" />
-                                <h2 className="text-xl font-bold text-zinc-900 mb-2">Caregiver Dashboard</h2>
-                                <p className="text-zinc-500 text-sm mb-6">View the caregiver experience &mdash; notification tiers, burden scoring, and escalation management.</p>
-                                <a
-                                    href="/caregiver"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-sm"
-                                >
-                                    Open Caregiver Dashboard
-                                </a>
-                            </div>
-                        </div>
+                        <CaregiverTab
+                            dashboard={caregiverDashboard}
+                            burden={caregiverBurdenData}
+                        />
                     )}
                     {activeTab === 'intelligence' && (
                         <IntelligenceTab
@@ -316,7 +329,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             </div>
 
             {/* STATE CARDS */}
-            <div id="state-cards-grid" className="grid grid-cols-4 gap-4">
+            <div id="state-cards-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StateCard
                     label="HMM State"
                     value={state || 'Awaiting Data'}
@@ -373,7 +386,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
 
                         if (sbarData && typeof sbarData === 'object') {
                             return (
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {Object.entries(sbarData).map(([key, val]) => (
                                         <div key={key} className={`p-4 bg-zinc-50 rounded-lg border border-zinc-100 border-l-[3px] ${sbarColorMap[key.toLowerCase()] || 'border-l-zinc-400'}`}>
                                             <div className={`font-semibold uppercase text-xs tracking-wider mb-2 ${sbarLabelColorMap[key.toLowerCase()] || 'text-zinc-800'}`}>{key}</div>
@@ -385,7 +398,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                         }
                         // Fallback: render non-metadata keys in 2x2 grid
                         return (
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {Object.entries(clinicianSummary).filter(([key]) => !['success', 'patient_id', 'period_days'].includes(key)).map(([key, val]) => (
                                     <div key={key} className={`p-4 bg-zinc-50 rounded-lg border border-zinc-100 border-l-[3px] ${sbarColorMap[key.toLowerCase()] || 'border-l-zinc-400'}`}>
                                         <div className={`font-semibold uppercase text-xs tracking-wider mb-2 ${sbarLabelColorMap[key.toLowerCase()] || 'text-zinc-800'}`}>{key}</div>
@@ -402,7 +415,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             </div>
 
             {/* TRIAGE + DRUG INTERACTIONS */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* TRIAGE */}
                 <div id="triage-section" className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
@@ -476,7 +489,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                         <BarChart3 size={18} className="text-emerald-600" />
                         <h2 className="text-lg font-bold text-zinc-900">Impact Metrics</h2>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(impactMetrics).map(([key, value]) => {
                             if (typeof value === 'object') return null;
                             return (
@@ -501,7 +514,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                         <Activity size={18} className="text-blue-600" />
                         <h2 className="text-lg font-bold text-zinc-900">Current Biometrics</h2>
                     </div>
-                    <div className="grid grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                         {Object.entries(patientState.biometrics).filter(([, v]) => v != null).map(([key, value]) => (
                             <div key={key} className="text-center p-3 bg-zinc-50 rounded-lg border border-zinc-100">
                                 <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</div>
@@ -537,7 +550,7 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                 <p className="text-sm text-zinc-500 mt-1">Deep visibility into agent reasoning, memory, safety, and learning</p>
             </div>
 
-            <div id="intel-grid" className="grid grid-cols-2 gap-6">
+            <div id="intel-grid" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* AGENT MEMORY */}
                 <IntelCard title="Agent Memory" icon={<Brain size={16} />} color="indigo">
                     {agentMemory && agentMemory.length > 0 ? (
@@ -1141,7 +1154,7 @@ function ToolDemoTab() {
             </div>
 
             {/* TOOL BUTTONS */}
-            <div id="tool-grid" className="grid grid-cols-3 gap-3">
+            <div id="tool-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {DEMO_TOOLS.map((tool) => {
                     const Icon = tool.icon;
                     const isRunAll = tool.id === 'run_all';
@@ -1152,7 +1165,7 @@ function ToolDemoTab() {
                             disabled={running}
                             className={`p-4 rounded-xl border text-left transition-all group ${
                                 isRunAll
-                                    ? 'bg-zinc-900 border-zinc-700 text-white col-span-3 hover:bg-zinc-800'
+                                    ? 'bg-zinc-900 border-zinc-700 text-white col-span-1 sm:col-span-2 lg:col-span-3 hover:bg-zinc-800'
                                     : 'bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm disabled:opacity-50'
                             }`}
                         >
@@ -1213,6 +1226,222 @@ function ToolDemoTab() {
                             <span>...</span>
                         </div>
                     )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================================
+// CAREGIVER TAB
+// ============================================================================
+function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
+    const alerts = dashboard?.alerts || dashboard?.active_alerts || [];
+    const burdenScore = burden?.burden_score ?? burden?.score ?? null;
+    const burdenLevel = burdenScore != null
+        ? (burdenScore > 70 ? 'CRITICAL' : burdenScore > 40 ? 'MODERATE' : 'LOW')
+        : null;
+    const burdenColor = burdenScore != null
+        ? (burdenScore > 70 ? 'rose' : burdenScore > 40 ? 'amber' : 'emerald')
+        : 'blue';
+    const hasData = !!dashboard || !!burden;
+
+    const escalationTiers = [
+        { tier: 'Info', channel: 'In-app push notification', trigger: 'Stable drift, minor reminders', color: 'emerald', icon: <Bell size={14} /> },
+        { tier: 'Warning', channel: 'SMS with action link', trigger: 'Pattern shift detected (WARNING state)', color: 'amber', icon: <SmartphoneNfc size={14} /> },
+        { tier: 'Critical', channel: 'SMS + automated phone call', trigger: 'Crisis detected, immediate risk', color: 'rose', icon: <Phone size={14} /> },
+    ];
+
+    return (
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            {/* HEADER */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-zinc-900">Caregiver Experience</h1>
+                    <p className="text-sm text-zinc-500 mt-1">
+                        {hasData
+                            ? 'Mrs. Tan Mei Ling — notification tiers, burden scoring, and escalation management'
+                            : 'Run a simulation to populate caregiver data'
+                        }
+                    </p>
+                </div>
+                <a
+                    href="/caregiver"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm"
+                >
+                    <ExternalLink size={14} />
+                    Open Mobile View
+                </a>
+            </div>
+
+            {/* TOP CARDS */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <StateCard
+                    label="Burden Score"
+                    value={burdenScore != null ? `${burdenScore}/100` : '\u2014'}
+                    color={burdenColor}
+                    icon={<Heart size={18} />}
+                />
+                <StateCard
+                    label="Burden Level"
+                    value={burdenLevel || 'Awaiting Data'}
+                    color={burdenColor}
+                    icon={<Users size={18} />}
+                />
+                <StateCard
+                    label="Active Alerts"
+                    value={alerts.length}
+                    color={alerts.some((a: any) => a.severity === 'critical' || a.priority === 'HIGH') ? 'rose' : alerts.length > 0 ? 'amber' : 'emerald'}
+                    icon={<Bell size={18} />}
+                />
+                <StateCard
+                    label="Alert Mode"
+                    value={burdenScore != null && burdenScore > 70 ? 'Daily Digest' : 'Real-time'}
+                    color={burdenScore != null && burdenScore > 70 ? 'amber' : 'emerald'}
+                    icon={<MessageSquare size={18} />}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* ACTIVE ALERTS */}
+                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Bell size={18} className="text-amber-600" />
+                        <h2 className="text-lg font-bold text-zinc-900">Active Alerts</h2>
+                    </div>
+                    {alerts.length > 0 ? (
+                        <div className="space-y-3">
+                            {alerts.slice(0, 8).map((alert: any, i: number) => {
+                                const sev = alert.severity || alert.priority || 'info';
+                                const sevLower = sev.toLowerCase();
+                                return (
+                                    <div key={alert.id || `alert-${i}`} className="p-3 rounded-lg bg-zinc-50 border border-zinc-100 flex items-start gap-3">
+                                        <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${
+                                            sevLower === 'critical' || sevLower === 'high' ? 'bg-rose-500' :
+                                            sevLower === 'warning' || sevLower === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                                        }`} />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium text-zinc-800">{alert.title || alert.message || alert.alert_type || 'Alert'}</div>
+                                            <div className="text-xs text-zinc-500 mt-0.5">{alert.description || alert.details || ''}</div>
+                                        </div>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                                            sevLower === 'critical' || sevLower === 'high' ? 'bg-rose-100 text-rose-700' :
+                                            sevLower === 'warning' || sevLower === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                                        }`}>
+                                            {sev.toUpperCase()}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-zinc-400 italic py-4 text-center">No active alerts. Run a simulation to generate caregiver alerts.</p>
+                    )}
+                </div>
+
+                {/* 3-TIER ESCALATION SYSTEM */}
+                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Shield size={18} className="text-indigo-600" />
+                        <h2 className="text-lg font-bold text-zinc-900">3-Tier Escalation System</h2>
+                    </div>
+                    <div className="space-y-3">
+                        {escalationTiers.map((tier) => (
+                            <div key={tier.tier} className={`p-4 rounded-lg border border-zinc-100 bg-zinc-50 border-l-[3px] ${
+                                tier.color === 'emerald' ? 'border-l-emerald-500' :
+                                tier.color === 'amber' ? 'border-l-amber-500' : 'border-l-rose-500'
+                            }`}>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`${
+                                        tier.color === 'emerald' ? 'text-emerald-600' :
+                                        tier.color === 'amber' ? 'text-amber-600' : 'text-rose-600'
+                                    }`}>{tier.icon}</span>
+                                    <span className="text-sm font-bold text-zinc-800">{tier.tier} Tier</span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto ${
+                                        tier.color === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
+                                        tier.color === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+                                    }`}>{tier.channel}</span>
+                                </div>
+                                <div className="text-xs text-zinc-500">{tier.trigger}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* BURDEN DETAIL + BURNOUT PREVENTION */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* BURDEN GAUGE */}
+                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Heart size={18} className="text-pink-600" />
+                        <h2 className="text-lg font-bold text-zinc-900">Caregiver Burden</h2>
+                    </div>
+                    {burdenScore != null ? (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className="text-4xl font-bold text-zinc-900">{burdenScore}</div>
+                                <div className="text-sm text-zinc-500">/ 100</div>
+                                <div className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                                    burdenScore > 70 ? 'bg-rose-100 text-rose-700' :
+                                    burdenScore > 40 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                                }`}>
+                                    {burdenLevel}
+                                </div>
+                            </div>
+                            <div className="w-full h-3 bg-zinc-100 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-700 ${
+                                        burdenScore > 70 ? 'bg-rose-500' :
+                                        burdenScore > 40 ? 'bg-amber-500' : 'bg-emerald-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, burdenScore)}%` }}
+                                />
+                            </div>
+                            {burden && typeof burden === 'object' && (
+                                <div className="space-y-1.5">
+                                    {Object.entries(burden).filter(([k]) => !['burden_score', 'score', 'success', 'patient_id', 'caregiver_id'].includes(k)).map(([key, val]) => (
+                                        <div key={key} className="flex items-center justify-between text-xs p-2 bg-zinc-50 rounded">
+                                            <span className="text-zinc-600 capitalize">{key.replace(/_/g, ' ')}</span>
+                                            <span className="font-bold text-zinc-800">{String(val)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-zinc-400 italic py-4 text-center">Run a simulation to calculate caregiver burden</p>
+                    )}
+                </div>
+
+                {/* BURNOUT PREVENTION */}
+                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Sparkles size={18} className="text-teal-600" />
+                        <h2 className="text-lg font-bold text-zinc-900">Burnout Prevention</h2>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="p-3 bg-teal-50 rounded-lg border border-teal-100">
+                            <div className="text-[10px] font-bold text-teal-700 uppercase tracking-wider mb-1">Auto-Digest Mode</div>
+                            <div className="text-xs text-zinc-600 leading-relaxed">
+                                When burden exceeds 70, non-urgent alerts batch into a single evening summary. Prevents alert fatigue while keeping caregivers informed.
+                            </div>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <div className="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-1">One-Tap Responses</div>
+                            <div className="text-xs text-zinc-600 leading-relaxed">
+                                Caregivers respond with pre-built actions: &quot;I&apos;ll check in&quot;, &quot;Call me&quot;, &quot;Noted&quot;. Minimal friction, maximum engagement.
+                            </div>
+                        </div>
+                        <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
+                            <div className="text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1">Adaptive Frequency</div>
+                            <div className="text-xs text-zinc-600 leading-relaxed">
+                                Alert frequency adapts to response patterns. Engaged caregivers get richer updates; overwhelmed ones get essentials only.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -170,10 +170,10 @@ export default function NurseDashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full min-h-[400px] bg-slate-50 text-blue-600">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="animate-spin h-10 w-10" />
-                    <span className="text-sm font-semibold tracking-wider text-slate-500">LOADING CLINICAL DATA...</span>
+            <div className="flex items-center justify-center h-full min-h-[400px] bg-slate-50">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="animate-spin h-8 w-8 text-blue-500" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Loading patient data</span>
                 </div>
             </div>
         );
@@ -181,15 +181,17 @@ export default function NurseDashboard() {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-full min-h-[400px] bg-slate-50 text-rose-600">
-                <div className="flex flex-col items-center gap-4 max-w-md text-center">
-                    <AlertCircle className="h-12 w-12" />
-                    <h2 className="text-xl font-bold">Connection Error</h2>
-                    <p className="text-slate-600">{error}</p>
-                    <p className="text-sm text-slate-500">
-                        Make sure the backend is running:<br />
-                        <code className="bg-slate-200 px-2 py-1 rounded">uvicorn backend.api:app --reload --port 8000</code>
-                    </p>
+            <div className="flex items-center justify-center h-full min-h-[400px] bg-slate-50">
+                <div className="flex flex-col items-center gap-3 max-w-sm text-center">
+                    <div className="p-3 rounded-full bg-rose-50">
+                        <AlertCircle className="h-8 w-8 text-rose-500" />
+                    </div>
+                    <h2 className="text-lg font-bold text-slate-800">Unable to Connect</h2>
+                    <p className="text-sm text-slate-500">{error}</p>
+                    <div className="mt-2 px-4 py-2.5 bg-slate-100 rounded-lg">
+                        <p className="text-xs text-slate-500 mb-1">Verify the clinical data service is running:</p>
+                        <code className="text-xs font-mono text-slate-700">uvicorn backend.api:app --reload --port 8000</code>
+                    </div>
                 </div>
             </div>
         );
@@ -245,7 +247,7 @@ export default function NurseDashboard() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.15 }}
-                                className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm transition-all duration-150 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-[2px]"
+                                className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm"
                             >
                                 <div className="flex items-start justify-between mb-6">
                                     <div>
@@ -265,16 +267,17 @@ export default function NurseDashboard() {
                                     </div>
                                     <button
                                         onClick={() => setSelectedDate(null)}
-                                        className="p-2 rounded-lg hover:bg-slate-100"
+                                        aria-label="Close detail view"
+                                        className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
                                     >
-                                        ✕
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                     </button>
                                 </div>
 
                                 {/* Probability Gallery from API */}
-                                <h3 className="text-lg font-semibold text-slate-700 mb-4">Probability Gallery</h3>
-                                <p className="text-sm text-slate-500 mb-4">
-                                    Gaussian curves per state. The dashed line shows observed value.
+                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Probability Distributions</h3>
+                                <p className="text-xs text-slate-500 mb-4">
+                                    Gaussian emission curves per state. Dashed line indicates observed value.
                                 </p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -351,48 +354,50 @@ export default function NurseDashboard() {
                                 </div>
 
                                 {/* Evidence Table */}
-                                <h3 className="text-lg font-semibold text-slate-700 mt-6 mb-3">Evidence</h3>
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-slate-200">
-                                            <th className="text-left py-2 px-3 font-semibold text-slate-600">Feature</th>
-                                            <th className="text-center py-2 px-3 font-semibold text-slate-600">Weight</th>
-                                            <th className="text-right py-2 px-3 font-semibold text-slate-600">Value</th>
-                                            <th className="text-center py-2 px-3 font-semibold text-slate-600">Contribution</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {selectedDetail.evidence.map((e) => (
-                                            <tr key={e.feature} className="border-b border-slate-100">
-                                                <td className="py-2 px-3 capitalize">{e.feature.replace(/_/g, ' ')}</td>
-                                                <td className="py-2 px-3 text-center">{(e.weight * 100).toFixed(0)}%</td>
-                                                <td className="py-2 px-3 text-right font-mono">{e.value}</td>
-                                                <td className="py-2 px-3 text-center">
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${e.contribution === 'Critical' ? 'bg-rose-100 text-rose-700' :
-                                                        e.contribution === 'Warning' ? 'bg-amber-100 text-amber-700' :
-                                                            'bg-emerald-100 text-emerald-700'
-                                                        }`}>
-                                                        {e.contribution}
-                                                    </span>
-                                                </td>
+                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mt-6 mb-3">Evidence Breakdown</h3>
+                                <div className="rounded-lg border border-slate-200 overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="bg-slate-50 border-b border-slate-200">
+                                                <th className="text-left py-2.5 px-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Feature</th>
+                                                <th className="text-center py-2.5 px-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Weight</th>
+                                                <th className="text-right py-2.5 px-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Value</th>
+                                                <th className="text-center py-2.5 px-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Contribution</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {selectedDetail.evidence.map((e, idx) => (
+                                                <tr key={e.feature} className={`border-b border-slate-100 ${idx % 2 === 1 ? 'bg-slate-50/50' : ''}`}>
+                                                    <td className="py-2.5 px-3 capitalize text-slate-700 font-medium">{e.feature.replace(/_/g, ' ')}</td>
+                                                    <td className="py-2.5 px-3 text-center font-mono text-slate-600">{(e.weight * 100).toFixed(0)}%</td>
+                                                    <td className="py-2.5 px-3 text-right font-mono text-slate-800">{e.value}</td>
+                                                    <td className="py-2.5 px-3 text-center">
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${e.contribution === 'Critical' ? 'bg-rose-100 text-rose-700' :
+                                                            e.contribution === 'Warning' ? 'bg-amber-100 text-amber-700' :
+                                                                'bg-emerald-100 text-emerald-700'
+                                                            }`}>
+                                                            {e.contribution}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
 
                                 {/* Log-Likelihood Heatmap */}
                                 {selectedDetail.heatmap && selectedDetail.heatmap.length > 0 && (
                                     <>
-                                        <h3 className="text-lg font-semibold text-slate-700 mt-6 mb-3">Log-Likelihood Heatmap</h3>
-                                        <p className="text-sm text-slate-500 mb-3">Feature pull toward each state. Blue = strong fit, Red = poor fit.</p>
-                                        <div className="overflow-x-auto">
+                                        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mt-6 mb-3">Log-Likelihood Heatmap</h3>
+                                        <p className="text-xs text-slate-500 mb-3">Feature affinity toward each state. Highlighted cells indicate strongest fit.</p>
+                                        <div className="overflow-x-auto rounded-lg border border-slate-200">
                                             <table className="w-full text-sm">
                                                 <thead>
-                                                    <tr className="border-b border-slate-200">
-                                                        <th className="text-left py-2 px-3 font-semibold text-slate-600">Feature</th>
-                                                        <th className="text-center py-2 px-3 font-semibold text-emerald-600">STABLE</th>
-                                                        <th className="text-center py-2 px-3 font-semibold text-amber-600">WARNING</th>
-                                                        <th className="text-center py-2 px-3 font-semibold text-rose-600">CRISIS</th>
+                                                    <tr className="bg-slate-50 border-b border-slate-200">
+                                                        <th className="text-left py-2.5 px-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Feature</th>
+                                                        <th className="text-center py-2.5 px-3 font-semibold text-emerald-600 text-xs uppercase tracking-wider">Stable</th>
+                                                        <th className="text-center py-2.5 px-3 font-semibold text-amber-600 text-xs uppercase tracking-wider">Warning</th>
+                                                        <th className="text-center py-2.5 px-3 font-semibold text-rose-600 text-xs uppercase tracking-wider">Crisis</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -516,11 +521,17 @@ export default function NurseDashboard() {
                                                         assessment: 'text-amber-600',
                                                         recommendation: 'text-emerald-600',
                                                     };
+                                                    const sbarBorders: Record<string, string> = {
+                                                        situation: 'border-l-rose-400',
+                                                        background: 'border-l-blue-400',
+                                                        assessment: 'border-l-amber-400',
+                                                        recommendation: 'border-l-emerald-400',
+                                                    };
                                                     return (
                                                         <div className={entries.length === 4 ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-3"}>
                                                             {entries.map(([key, val]) => (
-                                                                <div key={key} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-                                                                    <span className={`font-bold text-[10px] uppercase tracking-widest block mb-1 ${sbarColors[key.toLowerCase()] || 'text-slate-500'}`}>{key}</span>
+                                                                <div key={key} className={`bg-slate-50 rounded-lg p-3 border border-slate-100 border-l-[3px] ${sbarBorders[key.toLowerCase()] || 'border-l-slate-300'}`}>
+                                                                    <span className={`font-bold text-[11px] uppercase tracking-wider block mb-1.5 ${sbarColors[key.toLowerCase()] || 'text-slate-500'}`}>{key}</span>
                                                                     <span className="text-slate-600 text-sm leading-relaxed">{Array.isArray(val) ? (val as string[]).join('; ') : typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
                                                                 </div>
                                                             ))}
@@ -532,7 +543,7 @@ export default function NurseDashboard() {
                                                     <div className={fallbackEntries.length === 4 ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-3"}>
                                                         {fallbackEntries.map(([key, val]) => (
                                                             <div key={key} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-                                                                <span className="font-bold text-[10px] uppercase tracking-widest block mb-1 text-slate-500">{key}</span>
+                                                                <span className="font-bold text-[11px] uppercase tracking-wider block mb-1.5 text-slate-500">{key}</span>
                                                                 <span className="text-slate-600 text-sm leading-relaxed">{typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}</span>
                                                             </div>
                                                         ))}
@@ -541,9 +552,11 @@ export default function NurseDashboard() {
                                             })()}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-slate-400 italic py-4 text-center">
-                                            SBAR report will appear after data injection and HMM analysis
-                                        </p>
+                                        <div className="flex flex-col items-center gap-2 py-6 text-center">
+                                            <FileText className="h-8 w-8 text-slate-200" />
+                                            <p className="text-sm text-slate-400">No clinical summary available</p>
+                                            <p className="text-xs text-slate-300">SBAR report generates after patient data collection and HMM analysis</p>
+                                        </div>
                                     )}
                                 </ClinicalCard>
                             </motion.div>
@@ -583,11 +596,19 @@ export default function NurseDashboard() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-slate-400 italic py-4 text-center">
-                                            {drugInteractions?.interactions_found === 0
-                                                ? "No drug interactions detected"
-                                                : "Run simulation to check drug interactions"}
-                                        </p>
+                                        <div className="flex flex-col items-center gap-2 py-6 text-center">
+                                            <Pill className="h-8 w-8 text-slate-200" />
+                                            <p className="text-sm text-slate-400">
+                                                {drugInteractions?.interactions_found === 0
+                                                    ? "No drug interactions detected"
+                                                    : "No active medication data"}
+                                            </p>
+                                            <p className="text-xs text-slate-300">
+                                                {drugInteractions?.interactions_found === 0
+                                                    ? "Current medications have been cross-referenced with no conflicts found"
+                                                    : "Interaction screening requires active medication records"}
+                                            </p>
+                                        </div>
                                     )}
                                 </ClinicalCard>
                             </motion.div>
@@ -654,9 +675,11 @@ export default function NurseDashboard() {
                                             })}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-slate-400 italic py-4 text-center">
-                                            No triage data available yet
-                                        </p>
+                                        <div className="flex flex-col items-center gap-2 py-6 text-center">
+                                            <Users className="h-8 w-8 text-slate-200" />
+                                            <p className="text-sm text-slate-400">No triage data available</p>
+                                            <p className="text-xs text-slate-300">Patient ranking populates when multiple patients are being monitored</p>
+                                        </div>
                                     )}
                                 </ClinicalCard>
                             </motion.div>
@@ -699,9 +722,11 @@ export default function NurseDashboard() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-slate-400 italic py-4 text-center">
-                                            No active alerts
-                                        </p>
+                                        <div className="flex flex-col items-center gap-2 py-6 text-center">
+                                            <Shield className="h-8 w-8 text-slate-200" />
+                                            <p className="text-sm text-slate-400">No active alerts</p>
+                                            <p className="text-xs text-slate-300">All monitored parameters are within acceptable ranges</p>
+                                        </div>
                                     )}
                                 </ClinicalCard>
                             </motion.div>

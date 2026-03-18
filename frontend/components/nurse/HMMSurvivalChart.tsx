@@ -17,9 +17,17 @@ interface HMMSurvivalChartProps {
 export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
     if (!data || data.length === 0) {
         return (
-            <Card className="h-full bg-slate-900/50 border-slate-800 backdrop-blur-sm">
-                <CardContent className="flex items-center justify-center h-full text-slate-500">
-                    No forecast data available
+            <Card className="h-full bg-white border-slate-200 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-slate-800 flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-blue-500" />
+                        Monte Carlo Forecast (48h)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center h-[250px] gap-2">
+                    <Activity className="h-8 w-8 text-slate-200" />
+                    <span className="text-sm text-slate-400">Forecast unavailable</span>
+                    <span className="text-xs text-slate-300">Requires HMM state classification to generate predictions</span>
                 </CardContent>
             </Card>
         );
@@ -36,8 +44,8 @@ export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
     const isHighRisk = maxRisk > 50;
 
     return (
-        <Card className="h-full bg-white border-slate-200 shadow-none overflow-hidden relative">
-            <CardHeader className="pb-2">
+        <Card className="h-full bg-white border-slate-200 shadow-sm overflow-hidden relative">
+            <CardHeader className="pb-2 border-b border-slate-100 bg-slate-50/50">
                 <div className="flex justify-between items-start">
                     <div>
                         <CardTitle className="text-slate-800 flex items-center gap-2">
@@ -49,9 +57,9 @@ export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
                         </CardDescription>
                     </div>
                     {risk48h !== undefined && (
-                        <div className={`text-2xl font-bold ${isHighRisk ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        <div className={`text-2xl font-bold font-mono tabular-nums ${isHighRisk ? 'text-rose-600' : 'text-emerald-600'}`}>
                             {(risk48h * 100).toFixed(1)}%
-                            <span className="text-xs font-normal text-slate-400 block text-right">48h Risk</span>
+                            <span className="text-[10px] font-sans font-semibold text-slate-400 block text-right uppercase tracking-wide">48h Risk</span>
                         </div>
                     )}
                 </div>
@@ -102,8 +110,9 @@ export function HMMSurvivalChart({ data, risk48h }: HMMSurvivalChartProps) {
                 </ResponsiveContainer>
             </CardContent>
             {isHighRisk && (
-                <div className="absolute top-4 right-20 animate-pulse">
-                    <AlertTriangle className="text-rose-500 h-6 w-6 opacity-60" />
+                <div className="absolute bottom-4 left-6 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200">
+                    <AlertTriangle className="text-rose-500 h-3.5 w-3.5" />
+                    <span className="text-[10px] font-semibold text-rose-600 uppercase tracking-wide">Elevated Risk</span>
                 </div>
             )}
         </Card>
