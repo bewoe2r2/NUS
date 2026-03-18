@@ -43,6 +43,7 @@ export function WeeklySummaryCard() {
         "text-accent-600 bg-accent-50 border-accent-200": grade === "B",
         "text-warning-600 bg-warning-50 border-warning-200": grade === "C",
         "text-error-600 bg-error-bg border-error-200": grade === "D" || grade === "F",
+        "text-neutral-600 bg-neutral-50 border-neutral-200": !["A", "B", "C", "D", "F"].includes(grade),
     });
 
     return (

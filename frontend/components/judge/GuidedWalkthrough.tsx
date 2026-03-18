@@ -592,10 +592,11 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         });
     };
 
-    // Keyboard navigation
+    // Keyboard navigation (throttled to prevent rapid double-stepping during transitions)
     const canProceedRef = useRef(canProceed);
     const actionRunningRef = useRef(actionRunning);
     const isFirstRef = useRef(isFirst);
+    const navThrottleRef = useRef(false);
     canProceedRef.current = canProceed;
     actionRunningRef.current = actionRunning;
     isFirstRef.current = isFirst;
@@ -603,8 +604,17 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if (e.key === "Escape") { onClose(); return; }
-            if (e.key === "ArrowRight" && canProceedRef.current && !actionRunningRef.current) goNext();
-            if (e.key === "ArrowLeft" && !isFirstRef.current && !actionRunningRef.current) goPrev();
+            if (navThrottleRef.current) return;
+            if (e.key === "ArrowRight" && canProceedRef.current && !actionRunningRef.current) {
+                navThrottleRef.current = true;
+                goNext();
+                setTimeout(() => { navThrottleRef.current = false; }, 400);
+            }
+            if (e.key === "ArrowLeft" && !isFirstRef.current && !actionRunningRef.current) {
+                navThrottleRef.current = true;
+                goPrev();
+                setTimeout(() => { navThrottleRef.current = false; }, 400);
+            }
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);

@@ -1,7 +1,10 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+
+let _msgCounter = 0;
+const nextId = () => `msg-${Date.now()}-${++_msgCounter}`;
 import { MessageBubble, ChatMessage } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
 import { api } from "@/lib/api";
@@ -47,7 +50,7 @@ export function ChatContainer() {
 
     const handleSendMessage = async (text: string) => {
         const userMsg: ChatMessage = {
-            id: Date.now().toString(),
+            id: nextId(),
             role: "user",
             content: text,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -66,7 +69,7 @@ export function ChatContainer() {
             }
 
             const aiMsg: ChatMessage = {
-                id: (Date.now() + 1).toString(),
+                id: nextId(),
                 role: "ai",
                 content: res.message, // Real response from Gemini
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -82,7 +85,7 @@ export function ChatContainer() {
             console.error(err);
             const isTimeout = err instanceof DOMException && err.name === "AbortError";
             const errorMsg: ChatMessage = {
-                id: (Date.now() + 1).toString(),
+                id: nextId(),
                 role: "system",
                 content: isTimeout
                     ? "Request timed out. The server may be busy — please try again."

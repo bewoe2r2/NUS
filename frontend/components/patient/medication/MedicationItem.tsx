@@ -17,11 +17,10 @@ interface MedicationItemProps {
 }
 
 export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: MedicationItemProps) {
-    const [isDragging, setIsDragging] = useState(false);
     const x = useMotionValue(0);
 
-    // Transform x drag value to background opacity/color
-    const bgOpacity = useTransform(x, [0, 100], [0, 1]);
+    // Transform x drag value to background opacity/color — clamp to [0,1] for left-swipe safety
+    const bgOpacity = useTransform(x, [0, 100], [0, 1], { clamp: true });
     const scaleIcon = useTransform(x, [0, 50], [0.8, 1.2]);
 
     const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -54,7 +53,6 @@ export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: Medi
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.1} // Resistive elasticity
-                onDragStart={() => setIsDragging(true)}
                 onDragEnd={handleDragEnd}
                 animate={{ x: 0 }} // Always spring back
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
