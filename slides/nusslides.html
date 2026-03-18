@@ -26,8 +26,8 @@
 
   /* Text */
   --text-primary: #f0f0f5;
-  --text-secondary: #8b8fa3;
-  --text-muted: #5a5e72;
+  --text-secondary: #9a9eb2;
+  --text-muted: #6f7387;
   --text-accent: #06b6d4;
 
   /* Accent Colors */
@@ -124,7 +124,7 @@ body {
    ============================================================ */
 .progress-bar {
   position: fixed; top: 0; left: 0; height: 3px; z-index: 100;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  background: linear-gradient(90deg, var(--cyan), var(--emerald));
   transition: width 0.4s var(--ease-out);
   border-radius: 0 2px 2px 0;
 }
@@ -140,12 +140,12 @@ body {
 }
 .logo-watermark {
   position: fixed; top: 20px; left: 28px; z-index: 100;
-  font-weight: 800; font-size: 0.85rem; letter-spacing: -0.02em;
+  font-weight: 800; font-size: 0.9rem; letter-spacing: -0.02em;
   color: var(--text-muted);
-  opacity: 0.5;
+  opacity: 0.6;
   transition: opacity 0.3s;
 }
-.logo-watermark:hover { opacity: 0.8; }
+.logo-watermark:hover { opacity: 0.85; }
 .logo-watermark span { color: var(--cyan); }
 
 /* ============================================================
@@ -153,11 +153,11 @@ body {
    ============================================================ */
 .t-hero { font-size: 3.5rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; }
 .t-stat { font-size: 4.5rem; font-weight: 900; line-height: 1; letter-spacing: -0.04em; font-family: var(--font-mono); }
-.t-title { font-size: 2rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
-.t-subtitle { font-size: 1.25rem; font-weight: 500; line-height: 1.5; color: var(--text-secondary); }
-.t-section { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; }
-.t-body { font-size: 0.95rem; font-weight: 400; line-height: 1.6; color: var(--text-secondary); }
-.t-caption { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); }
+.t-title { font-size: 2.4rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; }
+.t-subtitle { font-size: 1.35rem; font-weight: 500; line-height: 1.5; color: var(--text-secondary); }
+.t-section { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+.t-body { font-size: 1.05rem; font-weight: 400; line-height: 1.6; color: var(--text-secondary); }
+.t-caption { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
 .t-mono { font-family: var(--font-mono); }
 .t-cyan { color: var(--cyan); }
 .t-emerald { color: var(--emerald); }
@@ -218,8 +218,8 @@ body {
    ============================================================ */
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px; border-radius: 100px;
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 100px;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
 }
 .badge-cyan { background: var(--cyan-dim); color: var(--cyan); }
 .badge-emerald { background: var(--emerald-dim); color: var(--emerald); }
@@ -268,8 +268,8 @@ body {
   flex-shrink: 0;
 }
 .arch-layer .layer-content { flex: 1; }
-.arch-layer .layer-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
-.arch-layer .layer-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4; }
+.arch-layer .layer-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+.arch-layer .layer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
 .arch-layer .layer-badge {
   flex-shrink: 0; font-size: 0.65rem; font-weight: 600;
   padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.08em;
@@ -307,7 +307,7 @@ body {
 }
 .compare-row {
   display: flex; align-items: center; gap: 8px;
-  font-size: 0.82rem; line-height: 1.4;
+  font-size: 0.88rem; line-height: 1.4;
 }
 .compare-icon {
   width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
@@ -333,8 +333,8 @@ body {
   width: 28px; text-align: center; flex-shrink: 0;
 }
 .stack-content { flex: 1; }
-.stack-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 1px; }
-.stack-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
+.stack-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
+.stack-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
 
 /* ============================================================
    COMPONENT: METRIC CARDS
@@ -344,23 +344,23 @@ body {
   border-radius: 12px; padding: 20px 24px; text-align: center;
 }
 .metric-value {
-  font-family: var(--font-mono); font-weight: 900; font-size: 2.2rem;
-  line-height: 1; margin-bottom: 6px; letter-spacing: -0.03em;
+  font-family: var(--font-mono); font-weight: 900; font-size: 2.4rem;
+  line-height: 1; margin-bottom: 8px; letter-spacing: -0.03em;
 }
-.metric-label { font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
+.metric-label { font-size: 0.88rem; color: var(--text-secondary); font-weight: 500; }
 
 /* ============================================================
    COMPONENT: TABLE
    ============================================================ */
-.clean-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.clean-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .clean-table th {
-  text-align: left; padding: 8px 12px; font-weight: 600; font-size: 0.7rem;
+  text-align: left; padding: 10px 12px; font-weight: 600; font-size: 0.75rem;
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
   border-bottom: 1px solid var(--border-medium);
 }
 .clean-table td {
   padding: 10px 12px; border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-secondary); line-height: 1.4;
+  color: var(--text-secondary); line-height: 1.45;
 }
 .clean-table td:first-child { color: var(--text-primary); font-weight: 500; }
 
@@ -387,30 +387,30 @@ body {
    SPECIAL: HOOK SLIDE
    ============================================================ */
 .slide-hook {
-  background: radial-gradient(ellipse at 50% 40%, rgba(6,182,212,0.06) 0%, var(--bg-deep) 70%);
+  background: radial-gradient(ellipse at 50% 35%, rgba(6,182,212,0.08) 0%, rgba(16,185,129,0.03) 40%, var(--bg-deep) 75%);
   justify-content: center; align-items: center; text-align: center;
 }
 .hook-stat {
-  font-size: 7rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--cyan) 100%);
+  font-size: 7.5rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+  background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 60%, var(--emerald) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 40px rgba(6,182,212,0.15));
+  filter: drop-shadow(0 0 60px rgba(6,182,212,0.2));
 }
 .hook-source {
-  font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;
+  font-size: 0.8rem; color: var(--text-muted); margin-top: 12px;
   font-style: italic;
 }
 .hook-question {
-  font-size: 1.6rem; font-weight: 400; color: var(--text-secondary);
-  margin-top: 24px; max-width: 700px;
+  font-size: 1.8rem; font-weight: 400; color: var(--text-secondary);
+  margin-top: 32px; max-width: 760px; line-height: 1.5;
 }
 .hook-question em { color: var(--cyan); font-style: normal; font-weight: 600; }
 .hook-logo {
-  margin-top: 56px; font-size: 1.1rem; font-weight: 300; color: var(--text-muted);
+  margin-top: 56px; font-size: 1.25rem; font-weight: 300; color: var(--text-muted);
   letter-spacing: 0.15em; text-transform: uppercase;
 }
-.hook-logo strong { font-weight: 800; color: var(--text-secondary); letter-spacing: -0.01em; text-transform: none; }
+.hook-logo strong { font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; text-transform: none; }
 
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.1); }
@@ -430,11 +430,11 @@ body {
 }
 .persona-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  background: linear-gradient(90deg, var(--cyan), var(--emerald));
 }
 .persona-avatar {
   width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--cyan-dim), var(--purple-dim));
+  background: linear-gradient(135deg, var(--cyan-dim), var(--emerald-dim));
   border: 2px solid var(--border-medium);
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 1.2rem; color: var(--cyan);
@@ -457,31 +457,31 @@ body {
 
 /* Impact slide: larger headline metrics */
 .slide-impact .metric-value {
-  font-size: 2.8rem;
+  font-size: 3rem;
 }
 .slide-impact .metric-label {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
 }
 
 .slide-close {
-  background: radial-gradient(ellipse at 50% 60%, rgba(6,182,212,0.08) 0%, var(--bg-deep) 70%);
+  background: radial-gradient(ellipse at 50% 55%, rgba(6,182,212,0.1) 0%, rgba(16,185,129,0.04) 40%, var(--bg-deep) 75%);
   justify-content: center; align-items: center; text-align: center;
 }
 .close-quote {
-  font-size: 1.8rem; font-weight: 600; line-height: 1.5;
-  max-width: 800px; color: var(--text-primary);
-  letter-spacing: -0.01em;
+  font-size: 2.1rem; font-weight: 600; line-height: 1.5;
+  max-width: 840px; color: var(--text-primary);
+  letter-spacing: -0.015em;
 }
-.close-quote em { color: var(--cyan); font-style: normal; }
+.close-quote em { color: var(--cyan); font-style: normal; font-weight: 700; }
 
 /* ============================================================
    RESPONSIVE (shouldn't need much at 16:9 fullscreen)
    ============================================================ */
 @media (max-width: 1200px) {
   :root { --slide-pad: 48px; --slide-pad-y: 40px; }
-  .hook-stat { font-size: 4.5rem; }
+  .hook-stat { font-size: 5rem; }
   .t-hero { font-size: 2.5rem; }
-  .t-title { font-size: 1.6rem; }
+  .t-title { font-size: 1.8rem; }
 }
 
 /* ============================================================
@@ -554,9 +554,9 @@ body {
         </div>
         <div class="t-caption" style="margin-top:4px;">Health Promotion Board</div>
       </div>
-      <div class="card card-sm" style="border-left:3px solid var(--purple);">
+      <div class="card card-sm" style="border-left:3px solid var(--cyan);">
         <div style="display:flex;align-items:baseline;gap:12px;">
-          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--purple);">$8,800</span>
+          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--cyan);">$8,800</span>
           <span class="t-body">Per preventable ER admission. <strong style="color:var(--text-primary);">68%</strong> are preventable.</span>
         </div>
         <div class="t-caption" style="margin-top:4px;">MOH Expenditure Data</div>
@@ -1785,12 +1785,12 @@ body {
       <div class="close-quote">
         The future of healthcare isn't reactive.<br>
         It's <em>predictive</em>, <em>personalised</em>, and <em>proactive</em>.<br>
-        <span style="font-weight:800;">Bewo doesn't wait for the crisis. It sees it coming.</span>
+        <span style="font-weight:900; font-size:1.15em; display:inline-block; margin-top:8px;">Bewo doesn't wait for the crisis. It sees it coming.</span>
       </div>
-      <div style="margin-top:28px; font-size:1.5rem; font-weight:800; letter-spacing:-0.02em;">
+      <div style="margin-top:36px; font-size:2rem; font-weight:800; letter-spacing:-0.02em;">
         <span style="color:var(--cyan);">B</span>ewo Health
       </div>
-      <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted);">
+      <div style="margin-top:14px; font-size:0.9rem; color:var(--text-muted); letter-spacing:0.03em;">
         NUS-Synapxe-IMDA AI Innovation Challenge 2026 &middot; Problem Statement 1
       </div>
     </div>
