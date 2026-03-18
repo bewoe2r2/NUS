@@ -1,0 +1,1022 @@
+/* ================================================================
+   BEWO HEALTH — $50K Competition Slide Deck Design System
+   ================================================================
+   Inspired by: Vercel Ship, Apple WWDC, Linear, Stripe
+   Target: 1920x1080 projection
+   Fonts: Inter (sans), JetBrains Mono (mono)
+   ================================================================ */
+
+/* ================================================================
+   0. FONT IMPORTS
+   ================================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
+/* ================================================================
+   1. DESIGN TOKENS
+   ================================================================ */
+:root {
+  /* ---- Surfaces ---- */
+  --bg:                #09090b;
+  --bg-elevated:       #18181b;
+  --bg-card:           rgba(255, 255, 255, 0.04);
+  --border:            rgba(255, 255, 255, 0.08);
+  --border-subtle:     rgba(255, 255, 255, 0.06);
+
+  /* ---- Text ---- */
+  --text-primary:      #fafafa;
+  --text-secondary:    #a1a1aa;
+  --text-tertiary:     #52525b;
+
+  /* ---- Accent ---- */
+  --accent:            #06b6d4;
+  --accent-glow:       rgba(6, 182, 212, 0.07);
+  --accent-30:         rgba(6, 182, 212, 0.30);
+
+  /* ---- Semantic ---- */
+  --green:             #10b981;
+  --amber:             #f59e0b;
+  --red:               #ef4444;
+
+  /* ---- Fonts ---- */
+  --font-sans:         'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ---- Timing ---- */
+  --ease-out:          cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth:       cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-reveal:   0.6s;
+  --stagger:           0.12s;
+
+  /* ---- Spacing ---- */
+  --slide-pad-v:       10vh;
+  --slide-pad-h:       10vw;
+}
+
+/* ================================================================
+   2. RESET & BASE
+   ================================================================ */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+::selection {
+  background: rgba(6, 182, 212, 0.25);
+  color: var(--text-primary);
+}
+
+/* ================================================================
+   3. TYPOGRAPHY SCALE (1920x1080 projection)
+   ================================================================ */
+
+/* --- Hero XL: Single massive number/word --- */
+.hero-xl {
+  font-family: var(--font-sans);
+  font-size: 11rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  color: var(--text-primary);
+}
+
+/* --- Hero LG: Large statement headline --- */
+.hero-lg {
+  font-family: var(--font-sans);
+  font-size: 7rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  color: var(--text-primary);
+}
+
+/* --- Hero MD: Section opener headline --- */
+.hero-md {
+  font-family: var(--font-sans);
+  font-size: 4.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+/* --- Title: Slide title --- */
+.title {
+  font-family: var(--font-sans);
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+/* --- Subtitle: Explanatory text below title --- */
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* --- Body: Paragraph text --- */
+.body {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* --- Label: Small uppercase category markers --- */
+.label {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.label.accent {
+  color: var(--accent);
+}
+
+/* --- Mono: Numbers, code, technical data --- */
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* --- Caption: Source attributions, footnotes --- */
+.caption {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   4. LAYOUT SYSTEM
+   ================================================================ */
+
+/* --- Slide Base --- */
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--slide-pad-v) var(--slide-pad-h);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-smooth);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.slide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --- Slide Top: justify start for dense content --- */
+.slide-top {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: var(--slide-pad-v) var(--slide-pad-h);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-smooth);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.slide-top.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --- Center: centered content (hero slides) --- */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* --- Split: two-column layout --- */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6vw;
+  align-items: center;
+  height: 100%;
+}
+
+/* --- Stack: vertical flex with gap --- */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- Row: horizontal flex --- */
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 4rem;
+  align-items: baseline;
+}
+
+/* --- Metric Grid: for stat/KPI displays --- */
+.metric-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3rem;
+  text-align: center;
+}
+
+/* ================================================================
+   4b. LEGACY LAYOUT ALIASES (backward compatible)
+   ================================================================ */
+.layout-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+.layout-hero-number {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6vw;
+  align-items: center;
+  height: 100%;
+}
+
+.layout-bento {
+  display: grid;
+  gap: 1.5rem;
+  height: 100%;
+  align-content: center;
+}
+
+.layout-bento.cols-2 { grid-template-columns: 1fr 1fr; }
+.layout-bento.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.layout-bento.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.layout-bento.cols-2x2 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+}
+
+.layout-points {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5rem;
+  height: 100%;
+}
+
+/* ================================================================
+   5. COMPONENTS
+   ================================================================ */
+
+/* --- Glass Panel --- */
+.glass-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+}
+
+/* Legacy alias */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+}
+
+/* --- Elevated Panel (solid, slightly raised) --- */
+.elevated-panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+}
+
+/* --- Divider --- */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-subtle);
+  border: none;
+  margin: 1.5rem 0;
+}
+
+/* --- Accent Dot (inline visual marker) --- */
+.accent-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-right: 0.5em;
+  flex-shrink: 0;
+}
+
+/* --- Tag (pill label) --- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-30);
+  border-radius: 100px;
+  padding: 0.3em 1em;
+  white-space: nowrap;
+}
+
+.tag.green {
+  color: var(--green);
+  border-color: rgba(16, 185, 129, 0.30);
+}
+
+.tag.amber {
+  color: var(--amber);
+  border-color: rgba(245, 158, 11, 0.30);
+}
+
+.tag.red {
+  color: var(--red);
+  border-color: rgba(239, 68, 68, 0.30);
+}
+
+/* --- Metric Component --- */
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.metric-label {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0;
+}
+
+.metric-delta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.metric-delta.up { color: var(--green); }
+.metric-delta.down { color: var(--red); }
+
+/* --- Table styling --- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.1rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th.accent {
+  color: var(--accent);
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table .highlight {
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* --- List items for point-based slides --- */
+.point-item {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.point-item:last-child {
+  border-bottom: none;
+}
+
+.point-number {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.point-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.point-desc {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ================================================================
+   6. ANIMATIONS
+   ================================================================ */
+
+/* --- Reveal keyframes --- */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes count-glow {
+  0%   { text-shadow: 0 0 40px rgba(6, 182, 212, 0.0); }
+  50%  { text-shadow: 0 0 80px rgba(6, 182, 212, 0.25); }
+  100% { text-shadow: 0 0 40px rgba(6, 182, 212, 0.0); }
+}
+
+/* --- Animation base state --- */
+.anim {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* --- Trigger on active slide --- */
+.slide.active .anim,
+.slide-top.active .anim {
+  animation: reveal var(--duration-reveal) var(--ease-out) forwards;
+}
+
+/* --- Stagger delays (s1-s8) --- */
+.s1 { animation-delay: 0s !important; }
+.s2 { animation-delay: 0.12s !important; }
+.s3 { animation-delay: 0.24s !important; }
+.s4 { animation-delay: 0.36s !important; }
+.s5 { animation-delay: 0.48s !important; }
+.s6 { animation-delay: 0.60s !important; }
+.s7 { animation-delay: 0.72s !important; }
+.s8 { animation-delay: 0.84s !important; }
+
+/* --- Legacy delay aliases --- */
+.d1 { animation-delay: 0.1s !important; }
+.d2 { animation-delay: 0.25s !important; }
+.d3 { animation-delay: 0.4s !important; }
+.d4 { animation-delay: 0.55s !important; }
+.d5 { animation-delay: 0.7s !important; }
+
+/* --- Alternate animation variants --- */
+.anim-scale {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.slide.active .anim-scale,
+.slide-top.active .anim-scale {
+  animation: reveal-scale var(--duration-reveal) var(--ease-out) forwards;
+}
+
+.anim-left {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.slide.active .anim-left,
+.slide-top.active .anim-left {
+  animation: reveal-left var(--duration-reveal) var(--ease-out) forwards;
+}
+
+.anim-fade {
+  opacity: 0;
+  will-change: opacity;
+}
+
+.slide.active .anim-fade,
+.slide-top.active .anim-fade {
+  animation: fade-in 0.8s var(--ease-smooth) forwards;
+}
+
+/* ================================================================
+   7. SPECIAL EFFECTS (use sparingly)
+   ================================================================ */
+
+/* --- Glow Text: for hero numbers only --- */
+.glow-text {
+  text-shadow: 0 0 80px rgba(6, 182, 212, 0.25);
+}
+
+/* --- Gradient Accent: text with cyan-to-green gradient --- */
+.gradient-accent {
+  background: linear-gradient(135deg, #06b6d4, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Gradient Warm: for emphasis/urgency --- */
+.gradient-warm {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Background Glow: ambient radial glow behind hero content --- */
+.bg-glow {
+  position: relative;
+}
+
+.bg-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(6, 182, 212, 0.07) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Glow BG (legacy/alternate): top-centered ellipse --- */
+.glow-bg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(6, 182, 212, 0.08), transparent 70%),
+    var(--bg);
+}
+
+/* --- Accent Glow (positionable via custom property) --- */
+.accent-glow {
+  position: relative;
+}
+
+.accent-glow::after {
+  content: '';
+  position: absolute;
+  top: var(--glow-y, 50%);
+  left: var(--glow-x, 50%);
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--accent-glow) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Subtle line highlight for emphasis rows --- */
+.highlight-row {
+  background: rgba(6, 182, 212, 0.04);
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+}
+
+/* ================================================================
+   8. SLIDE CHROME
+   ================================================================ */
+
+/* --- Progress Bar: fixed top, cyan gradient --- */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), rgba(6, 182, 212, 0.6));
+  transition: width 0.4s var(--ease-out);
+  z-index: 1000;
+}
+
+/* --- Slide Counter: fixed bottom-right, mono --- */
+.slide-counter {
+  position: fixed;
+  bottom: 32px;
+  right: 40px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  z-index: 1000;
+  user-select: none;
+}
+
+/* Format helper: "01 — 15" with em dash */
+.slide-counter .separator {
+  margin: 0 0.4em;
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+/* --- Logo: fixed top-left, "Bewo" --- */
+.logo-watermark {
+  position: fixed;
+  top: 32px;
+  left: 40px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  letter-spacing: -0.02em;
+  z-index: 1000;
+  user-select: none;
+}
+
+.logo-watermark span {
+  color: var(--accent);
+}
+
+/* --- No nav hint: removed (looks amateur) --- */
+.nav-hint {
+  display: none;
+}
+
+/* ================================================================
+   9. UTILITY CLASSES
+   ================================================================ */
+
+/* Colors */
+.text-primary   { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary  { color: var(--text-tertiary); }
+.text-accent    { color: var(--accent); }
+.text-green     { color: var(--green); }
+.text-amber     { color: var(--amber); }
+.text-red       { color: var(--red); }
+
+/* Font weights */
+.w-300 { font-weight: 300; }
+.w-400 { font-weight: 400; }
+.w-500 { font-weight: 500; }
+.w-600 { font-weight: 600; }
+.w-700 { font-weight: 700; }
+.w-800 { font-weight: 800; }
+
+/* Text alignment */
+.text-left   { text-align: left; }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+
+/* Spacing */
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+.mt-6 { margin-top: 3rem; }
+.mt-8 { margin-top: 4rem; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+.mb-6 { margin-bottom: 3rem; }
+
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.gap-3 { gap: 1.5rem; }
+.gap-4 { gap: 2rem; }
+.gap-6 { gap: 3rem; }
+.gap-8 { gap: 4rem; }
+
+/* Max widths (for constraining text) */
+.max-w-sm  { max-width: 480px; }
+.max-w-md  { max-width: 680px; }
+.max-w-lg  { max-width: 900px; }
+.max-w-xl  { max-width: 1100px; }
+
+/* Flex/Grid helpers */
+.flex       { display: flex; }
+.flex-col   { flex-direction: column; }
+.flex-row   { flex-direction: row; }
+.items-center   { align-items: center; }
+.items-baseline { align-items: baseline; }
+.items-start    { align-items: flex-start; }
+.justify-center  { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.flex-1     { flex: 1; }
+.flex-wrap  { flex-wrap: wrap; }
+.shrink-0   { flex-shrink: 0; }
+
+/* Display */
+.block  { display: block; }
+.inline { display: inline; }
+.hidden { display: none; }
+
+/* Overflow */
+.overflow-hidden { overflow: hidden; }
+
+/* ================================================================
+   10. LEGACY TYPOGRAPHY ALIASES (backward compatible)
+   ================================================================ */
+.hero-number {
+  font-family: var(--font-sans);
+  font-size: 10rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.slide-title {
+  font-size: 3.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+  max-width: 900px;
+}
+
+.slide-subtitle {
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.body-text {
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 680px;
+}
+
+/* ================================================================
+   11. RESPONSIVE — Smaller screens
+   ================================================================ */
+@media (max-width: 1200px) {
+  :root {
+    --slide-pad-v: 6vh;
+    --slide-pad-h: 6vw;
+  }
+
+  .hero-xl    { font-size: 7rem; }
+  .hero-lg    { font-size: 5rem; }
+  .hero-md    { font-size: 3.5rem; }
+  .title      { font-size: 2.5rem; }
+  .subtitle   { font-size: 1.5rem; }
+  .body       { font-size: 1.15rem; }
+
+  .hero-number { font-size: 7rem; }
+  .slide-title { font-size: 2.75rem; }
+
+  .metric-value { font-size: 2.75rem; }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --slide-pad-v: 4vh;
+    --slide-pad-h: 5vw;
+  }
+
+  .hero-xl    { font-size: 4.5rem; }
+  .hero-lg    { font-size: 3.5rem; }
+  .hero-md    { font-size: 2.5rem; }
+  .title      { font-size: 2rem; }
+  .subtitle   { font-size: 1.25rem; }
+  .body       { font-size: 1.05rem; }
+
+  .hero-number { font-size: 5rem; }
+  .slide-title { font-size: 2rem; }
+
+  /* Single column everything */
+  .split,
+  .layout-split {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .layout-bento.cols-2,
+  .layout-bento.cols-3,
+  .layout-bento.cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .metric-value { font-size: 2.25rem; }
+
+  .glass-panel,
+  .glass-card,
+  .elevated-panel {
+    padding: 1.5rem;
+    border-radius: 14px;
+  }
+}
+
+/* ================================================================
+   12. PRINT
+   ================================================================ */
+@media print {
+  .slide,
+  .slide-top {
+    position: relative;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    page-break-after: always;
+    break-after: page;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Show all slides */
+  .slide,
+  .slide-top {
+    display: flex !important;
+  }
+
+  /* Hide chrome */
+  .progress-bar,
+  .slide-counter,
+  .nav-hint,
+  .logo-watermark {
+    display: none !important;
+  }
+
+  /* Kill animations */
+  .anim,
+  .anim-scale,
+  .anim-left,
+  .anim-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /* Lighten for paper */
+  body {
+    background: white;
+    color: #18181b;
+  }
+
+  .glass-panel,
+  .glass-card,
+  .elevated-panel {
+    background: #f4f4f5;
+    border: 1px solid #d4d4d8;
+  }
+}
+
+/* ================================================================
+   13. PERFORMANCE HINTS
+   ================================================================ */
+.slide:not(.active) {
+  contain: content;
+  visibility: hidden;
+}
+
+.slide.active {
+  visibility: visible;
+}
+
+/* GPU-accelerate slides for smoother transitions */
+.slide,
+.slide-top {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
