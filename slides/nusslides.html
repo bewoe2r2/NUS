@@ -406,6 +406,17 @@ body {
   .two-col, .two-col-narrow { gap: 36px; }
 }
 
+@media (max-width: 768px) {
+  :root { --slide-pad: 24px; --slide-pad-y: 28px; }
+  .slide-title { font-size: 1.5rem; margin-bottom: 24px; }
+  .two-col, .two-col-narrow { grid-template-columns: 1fr; gap: 24px; }
+  .three-col { grid-template-columns: 1fr; gap: 14px; }
+  .hero-number { font-size: 3rem !important; }
+  .metric-value { font-size: 2rem !important; }
+  .nav-hint { display: none; }
+  .logo-watermark { font-size: 0.72rem; }
+}
+
 /* ============================================================
    PRINT
    ============================================================ */
@@ -815,7 +826,7 @@ body {
         unsafe misclassifications
       </div>
       <div style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 10px; max-width: 320px; line-height: 1.55;">
-        No patient in danger was ever told they were safe. 10,000+ patients. 32 clinical archetypes.
+        No patient in danger was ever told they were safe. 10,000+ patients. 32 clinical archetypes. 230 tests. 76 validation gates.
       </div>
     </div>
   </div>
