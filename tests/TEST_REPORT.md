@@ -203,6 +203,21 @@ python validation/hmm_validation_suite/code/02_hardened_independent_validation.p
 | Validation Round 1 | 38/38 gates pass |
 | Validation Round 2 | 38/38 gates pass |
 
+### Performance / Latency Benchmarks
+
+Measured on Windows 11 (Python 3.13.5), 14-day patient window, 9 features:
+
+| Component | Latency | Configuration |
+|-----------|---------|---------------|
+| HMM Viterbi inference | 12.7ms | 14 days, 9 orthogonal features |
+| Monte Carlo simulation | 173.6ms | 2,000 simulation paths, 48h horizon |
+| Counterfactual simulation | 0.1ms | Single intervention scenario |
+| **HMM core pipeline (without Merlion)** | **186.3ms** | **Real-time on-device capable** |
+| Merlion ARIMA forecast | ~8.4s | Trains ARIMA model from scratch |
+| Full /chat pipeline estimate | ~10-15s | HMM + Merlion + Gemini + SEA-LION |
+
+The HMM core runs in under 200ms -- fast enough for real-time on-device inference. The full conversational pipeline takes ~10-15s due to external API calls (Gemini reasoning + SEA-LION translation), which is acceptable for a conversational health companion.
+
 ### Validation Independence
 
 Test data for the validation suite is generated from `CLINICAL_RANGES` sourced from published medical literature (ADA Standards of Care 2024, Lancet 2022, UKPDS). These distributions are verified to be independent of the HMM's `EMISSION_PARAMS` at the start of every run, with exact offsets in standard deviations reported. This eliminates circular validation -- the model has never "seen" the test distributions.

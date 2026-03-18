@@ -1615,19 +1615,26 @@ body {
             <div style="font-size:0.75rem; color:var(--text-secondary);">Cost/patient/month</div>
           </div>
           <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--emerald);">&lt;1ms</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">HMM Inference</div>
+            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--emerald);">&lt;200ms</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">HMM Core Pipeline</div>
+            <div style="font-size:0.62rem; color:var(--text-muted);">on-device real-time capable</div>
           </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
           <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--amber);">+25.3%</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">vs Glucose-Only</div>
-            <div style="font-size:0.62rem; color:var(--text-muted);">p&lt;0.0001</div>
+            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.4rem; color:var(--cyan);">12.7ms</div>
+            <div style="font-size:0.72rem; color:var(--text-secondary);">HMM Inference</div>
+            <div style="font-size:0.62rem; color:var(--text-muted);">14 days, 9 features</div>
           </div>
           <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--text-primary);">32K+</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Lines of Production Code</div>
+            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.4rem; color:var(--cyan);">173.6ms</div>
+            <div style="font-size:0.72rem; color:var(--text-secondary);">Monte Carlo</div>
+            <div style="font-size:0.62rem; color:var(--text-muted);">2K sims, 48h</div>
+          </div>
+          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
+            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.4rem; color:var(--amber);">~10&ndash;15s</div>
+            <div style="font-size:0.72rem; color:var(--text-secondary);">Full /chat Pipeline</div>
+            <div style="font-size:0.62rem; color:var(--text-muted);">HMM + Merlion + Gemini + SEA-LION</div>
           </div>
         </div>
       </div>

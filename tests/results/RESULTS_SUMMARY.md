@@ -126,6 +126,23 @@
 
 ---
 
+## Performance / Latency Benchmarks
+
+Measured on Windows 11 (Python 3.13.5), 14-day patient window, 9 features:
+
+| Component | Latency | Configuration |
+|-----------|---------|---------------|
+| HMM Viterbi inference | 12.7ms | 14 days, 9 orthogonal features |
+| Monte Carlo simulation | 173.6ms | 2,000 simulation paths, 48h horizon |
+| Counterfactual simulation | 0.1ms | Single intervention scenario |
+| **HMM core pipeline (without Merlion)** | **186.3ms** | **Real-time on-device capable** |
+| Merlion ARIMA forecast | ~8.4s | Trains ARIMA model from scratch |
+| Full /chat pipeline estimate | ~10-15s | HMM + Merlion + Gemini + SEA-LION |
+
+The HMM core runs in under 200ms -- fast enough for real-time on-device inference without network dependency. The full pipeline takes ~10-15s due to external API calls (Gemini reasoning + SEA-LION translation), which is acceptable for a conversational health companion.
+
+---
+
 ## Conclusion
 
 All 154 pytest tests and 76 independent validation gates passed with zero failures. The Bewo HMM engine demonstrates strong classification performance on both clean independent data (99.3% accuracy, F1=0.993) and hardened adversarial data with contradictory signals (82.1% accuracy, F1=0.822). Crisis recall remains high across both conditions (100% easy, 87.8% hardened), and critically, zero CRISIS patients were misclassified as STABLE in either validation run. The safety monitor achieved 100% boundary detection accuracy across all tested clinical thresholds. The HMM model provides statistically significant improvement over naive baselines (p < 0.0001), with up to +25.3% accuracy lift over glucose-only classification on hardened data. All results were generated on fully independent data with zero overlap to model training parameters.

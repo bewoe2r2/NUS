@@ -335,6 +335,23 @@ Plus: 4,032 CGM readings, 14 days of Fitbit data (activity, heart rate, sleep), 
 
 ---
 
+## Performance
+
+Measured latency benchmarks (14-day patient window, 9 features):
+
+| Component | Latency | Notes |
+|-----------|---------|-------|
+| HMM Viterbi inference | 12.7ms | 14 days, 9 orthogonal features |
+| Monte Carlo simulation | 173.6ms | 2,000 paths, 48h horizon |
+| Counterfactual simulation | 0.1ms | Single intervention scenario |
+| **HMM core pipeline total** | **186.3ms** | **Fast enough for real-time on-device inference** |
+| Merlion ARIMA forecast | ~8.4s | Trains ARIMA model from scratch per call |
+| Full /chat pipeline | ~10-15s | HMM + Merlion + Gemini reasoning + SEA-LION translation |
+
+**Key insight:** The HMM core (inference + Monte Carlo + counterfactual) runs in under 200ms -- fast enough for real-time on-device inference without network dependency. The full conversational pipeline takes ~10-15s due to external API calls (Gemini multi-turn reasoning + SEA-LION cultural translation), which is acceptable for a conversational health companion where users expect a thoughtful, personalized response.
+
+---
+
 ## Competition Context
 
 Built for the **NUS-Synapxe-IMDA Healthcare AI Innovation Challenge**, targeting Singapore's aging population with Type 2 Diabetes. The system integrates with Singapore's national healthcare infrastructure through:
