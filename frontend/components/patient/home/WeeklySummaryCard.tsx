@@ -94,7 +94,7 @@ export function WeeklySummaryCard() {
                                 <div className="text-sm text-neutral-500 mt-1">Days In Target</div>
                             </div>
                         </div>
-                        {data.summary && (
+                        {typeof data.summary === 'string' && data.summary && (
                             <div className="px-6 pb-6 text-base text-neutral-600 leading-relaxed">
                                 {data.summary}
                             </div>

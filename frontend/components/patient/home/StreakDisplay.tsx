@@ -4,10 +4,16 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { motion } from "framer-motion";
 
+interface StreakValue {
+    current?: number;
+    best?: number;
+    last_action?: string;
+}
+
 interface Streaks {
-    medication?: number;
-    glucose_logging?: number;
-    exercise?: number;
+    medication?: number | StreakValue;
+    glucose_logging?: number | StreakValue;
+    exercise?: number | StreakValue;
 }
 
 export function StreakDisplay() {
@@ -28,10 +34,16 @@ export function StreakDisplay() {
 
     if (!streaks) return null;
 
+    const getVal = (v: number | StreakValue | undefined): number => {
+        if (v == null) return 0;
+        if (typeof v === "number") return v;
+        return v.current ?? 0;
+    };
+
     const items = [
-        { emoji: "\uD83D\uDC8A", label: "Meds", value: streaks.medication ?? 0 },
-        { emoji: "\uD83E\uDE78", label: "Logging", value: streaks.glucose_logging ?? 0 },
-        { emoji: "\uD83D\uDEB6", label: "Exercise", value: streaks.exercise ?? 0 },
+        { emoji: "\uD83D\uDC8A", label: "Meds", value: getVal(streaks.medication) },
+        { emoji: "\uD83E\uDE78", label: "Logging", value: getVal(streaks.glucose_logging) },
+        { emoji: "\uD83D\uDEB6", label: "Exercise", value: getVal(streaks.exercise) },
     ];
 
     return (
