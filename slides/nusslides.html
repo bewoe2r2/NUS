@@ -5,57 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bewo Health — NUS-Synapxe-IMDA AI Innovation Challenge 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    DESIGN SYSTEM
    ============================================================ */
 :root {
-  /* Backgrounds */
-  --bg-deep: #06080f;
-  --bg-slide: #0a0c14;
-  --bg-surface: #10131c;
-  --bg-surface-2: #161a26;
-  --bg-surface-3: #1c2030;
-  --bg-glass: rgba(16, 19, 28, 0.85);
+  --bg-deep: #0A0E1A;
+  --bg-slide: #0C1022;
+  --bg-surface: rgba(255,255,255,0.03);
+  --bg-surface-hover: rgba(255,255,255,0.05);
 
-  /* Borders */
   --border-subtle: rgba(255,255,255,0.06);
-  --border-medium: rgba(255,255,255,0.10);
-  --border-strong: rgba(255,255,255,0.15);
+  --border-card: rgba(255,255,255,0.08);
+  --border-accent: rgba(255,255,255,0.12);
 
-  /* Text */
-  --text-primary: #f0f0f5;
-  --text-secondary: #9a9eb2;
-  --text-muted: #6f7387;
-  --text-accent: #06b6d4;
+  --text-primary: #F0F0F4;
+  --text-secondary: #8B8FA6;
+  --text-muted: #505469;
 
-  /* Accent Colors */
-  --cyan: #06b6d4;
-  --cyan-dim: rgba(6,182,212,0.15);
-  --cyan-glow: rgba(6,182,212,0.3);
-  --emerald: #10b981;
-  --emerald-dim: rgba(16,185,129,0.15);
-  --amber: #f59e0b;
-  --amber-dim: rgba(245,158,11,0.15);
-  --rose: #f43f5e;
-  --rose-dim: rgba(244,63,94,0.15);
-  --purple: #8b5cf6;
-  --purple-dim: rgba(139,92,246,0.15);
-  --blue: #3b82f6;
-  --blue-dim: rgba(59,130,246,0.15);
+  --cyan: #06B6D4;
+  --cyan-dim: rgba(6,182,212,0.10);
+  --cyan-glow: rgba(6,182,212,0.06);
+  --emerald: #10B981;
+  --emerald-dim: rgba(16,185,129,0.10);
+  --emerald-glow: rgba(16,185,129,0.06);
+  --amber: #F59E0B;
+  --amber-dim: rgba(245,158,11,0.10);
+  --rose: #F43F5E;
+  --rose-dim: rgba(244,63,94,0.10);
 
-  /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Spacing */
-  --slide-pad: 72px;
-  --slide-pad-y: 56px;
-
-  /* Transitions */
+  --slide-pad: 80px;
+  --slide-pad-y: 64px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ============================================================
@@ -89,8 +74,9 @@ body {
   padding: var(--slide-pad-y) var(--slide-pad);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s var(--ease-out);
+  transition: opacity 0.4s var(--ease-out);
   overflow: hidden;
+  background: var(--bg-deep);
 }
 .slide.active {
   opacity: 1;
@@ -98,394 +84,330 @@ body {
 }
 .slide.active .anim {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
 }
 
-/* Staggered entrance */
+/* Fade-in animation — subtle, 300ms */
 .anim {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
-  will-change: opacity, transform;
+  transform: translateY(10px);
+  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
 }
-.d1 { transition-delay: 0.08s; }
-.d2 { transition-delay: 0.16s; }
-.d3 { transition-delay: 0.24s; }
-.d4 { transition-delay: 0.32s; }
-.d5 { transition-delay: 0.40s; }
-.d6 { transition-delay: 0.48s; }
-.d7 { transition-delay: 0.56s; }
-.d8 { transition-delay: 0.64s; }
-.d9 { transition-delay: 0.72s; }
-.d10 { transition-delay: 0.80s; }
+.d1 { transition-delay: 0.05s; }
+.d2 { transition-delay: 0.10s; }
+.d3 { transition-delay: 0.15s; }
+.d4 { transition-delay: 0.20s; }
+.d5 { transition-delay: 0.25s; }
+.d6 { transition-delay: 0.30s; }
+.d7 { transition-delay: 0.35s; }
+.d8 { transition-delay: 0.40s; }
 
 /* ============================================================
    PROGRESS BAR & NAV
    ============================================================ */
 .progress-bar {
-  position: fixed; top: 0; left: 0; height: 3px; z-index: 100;
+  position: fixed; top: 0; left: 0; height: 2px; z-index: 100;
   background: linear-gradient(90deg, var(--cyan), var(--emerald));
   transition: width 0.4s var(--ease-out);
-  border-radius: 0 2px 2px 0;
 }
 .slide-counter {
-  position: fixed; bottom: 24px; right: 32px; z-index: 100;
-  font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);
+  position: fixed; bottom: 28px; right: 36px; z-index: 100;
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
   letter-spacing: 0.05em;
 }
 .slide-counter .current { color: var(--text-secondary); font-weight: 600; }
 .nav-hint {
-  position: fixed; bottom: 24px; left: 32px; z-index: 100;
-  font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.03em;
+  position: fixed; bottom: 28px; left: 36px; z-index: 100;
+  font-size: 0.62rem; color: var(--text-muted); letter-spacing: 0.04em;
 }
 .logo-watermark {
-  position: fixed; top: 20px; left: 28px; z-index: 100;
-  font-weight: 800; font-size: 0.9rem; letter-spacing: -0.02em;
-  color: var(--text-muted);
-  opacity: 0.6;
-  transition: opacity 0.3s;
+  position: fixed; top: 24px; left: 32px; z-index: 100;
+  font-weight: 800; font-size: 0.85rem; letter-spacing: -0.02em;
+  color: var(--text-muted); opacity: 0.4;
 }
-.logo-watermark:hover { opacity: 0.85; }
 .logo-watermark span { color: var(--cyan); }
 
 /* ============================================================
-   TYPOGRAPHY UTILITIES
+   TYPOGRAPHY
    ============================================================ */
-.t-hero { font-size: 3.5rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; }
-.t-stat { font-size: 4.5rem; font-weight: 900; line-height: 1; letter-spacing: -0.04em; font-family: var(--font-mono); }
-.t-title { font-size: 2.4rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; }
-.t-subtitle { font-size: 1.35rem; font-weight: 500; line-height: 1.5; color: var(--text-secondary); }
-.t-section { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
-.t-body { font-size: 1.05rem; font-weight: 400; line-height: 1.6; color: var(--text-secondary); }
-.t-caption { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
-.t-mono { font-family: var(--font-mono); }
-.t-cyan { color: var(--cyan); }
-.t-emerald { color: var(--emerald); }
-.t-amber { color: var(--amber); }
-.t-rose { color: var(--rose); }
-.t-purple { color: var(--purple); }
-.t-white { color: var(--text-primary); }
-.t-center { text-align: center; }
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 12px;
+}
+.section-label.cyan { color: var(--cyan); }
+.section-label.emerald { color: var(--emerald); }
+.section-label.amber { color: var(--amber); }
+.section-label.rose { color: var(--rose); }
+
+.slide-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 40px;
+}
+
+.hero-number {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
 
 /* ============================================================
-   LAYOUT UTILITIES
-   ============================================================ */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.flex-center { align-items: center; justify-content: center; }
-.flex-between { justify-content: space-between; }
-.flex-1 { flex: 1; }
-.gap-xs { gap: 8px; }
-.gap-sm { gap: 12px; }
-.gap-md { gap: 20px; }
-.gap-lg { gap: 32px; }
-.gap-xl { gap: 48px; }
-.w-full { width: 100%; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; }
-.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; }
-.self-center { align-self: center; }
-.m-auto { margin: auto; }
-
-/* ============================================================
-   COMPONENT: CARDS
+   CARD SYSTEM — weightless glass
    ============================================================ */
 .card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-card);
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
 }
-.card-sm { padding: 16px; border-radius: 10px; }
-.card-glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-medium);
-  border-radius: 12px;
-  padding: 24px;
-}
-.card-accent {
-  border-left: 3px solid var(--cyan);
-}
-.card-glow-cyan { box-shadow: 0 0 40px rgba(6,182,212,0.08), inset 0 1px 0 rgba(6,182,212,0.1); }
-.card-glow-emerald { box-shadow: 0 0 40px rgba(16,185,129,0.08), inset 0 1px 0 rgba(16,185,129,0.1); }
-.card-glow-amber { box-shadow: 0 0 40px rgba(245,158,11,0.08), inset 0 1px 0 rgba(245,158,11,0.1); }
-.card-glow-rose { box-shadow: 0 0 40px rgba(244,63,94,0.08), inset 0 1px 0 rgba(244,63,94,0.1); }
+.card-sm { padding: 20px; }
 
 /* ============================================================
-   COMPONENT: BADGES & TAGS
+   METRIC CARDS
+   ============================================================ */
+.metric {
+  text-align: center;
+  padding: 28px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+}
+.metric-value {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.metric-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.clean-table { width: 100%; border-collapse: collapse; }
+.clean-table th {
+  text-align: left; padding: 14px 16px; font-weight: 600; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
+  border-bottom: 1px solid var(--border-accent);
+}
+.clean-table td {
+  padding: 13px 16px; border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4;
+}
+.clean-table td:first-child { color: var(--text-primary); font-weight: 500; }
+.check { color: var(--emerald); font-weight: 700; }
+.cross { color: var(--rose); }
+.warn { color: var(--amber); }
+
+/* ============================================================
+   ARCHITECTURE LAYERS
+   ============================================================ */
+.arch-stack { display: flex; flex-direction: column; gap: 0; }
+.arch-layer {
+  border-radius: 10px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid;
+}
+.layer-num {
+  font-family: var(--font-mono);
+  font-weight: 800; font-size: 1rem;
+  width: 36px; text-align: center; flex-shrink: 0;
+}
+.layer-content { flex: 1; }
+.layer-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 3px; }
+.layer-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+.layer-badge {
+  flex-shrink: 0; font-size: 0.58rem; font-weight: 700;
+  padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.arch-connector {
+  width: 1px; height: 10px; margin: 0 auto;
+  background: var(--border-accent);
+}
+
+.layer-safety { background: rgba(244,63,94,0.03); border-color: rgba(244,63,94,0.12); }
+.layer-safety .layer-num { color: var(--rose); }
+.layer-safety .layer-badge { background: var(--rose-dim); color: var(--rose); }
+
+.layer-stats { background: rgba(245,158,11,0.03); border-color: rgba(245,158,11,0.12); }
+.layer-stats .layer-num { color: var(--amber); }
+.layer-stats .layer-badge { background: var(--amber-dim); color: var(--amber); }
+
+.layer-agent { background: rgba(6,182,212,0.03); border-color: rgba(6,182,212,0.12); }
+.layer-agent .layer-num { color: var(--cyan); }
+.layer-agent .layer-badge { background: var(--cyan-dim); color: var(--cyan); }
+
+.layer-culture { background: rgba(16,185,129,0.03); border-color: rgba(16,185,129,0.12); }
+.layer-culture .layer-num { color: var(--emerald); }
+.layer-culture .layer-badge { background: var(--emerald-dim); color: var(--emerald); }
+
+/* ============================================================
+   PERSONA
+   ============================================================ */
+.persona {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  padding: 32px;
+  position: relative;
+}
+.persona::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--emerald));
+  border-radius: 14px 14px 0 0;
+}
+.persona-row {
+  display: flex; align-items: baseline; gap: 10px;
+  font-size: 0.82rem; color: var(--text-secondary); padding: 5px 0;
+}
+.persona-row .label {
+  color: var(--text-muted); min-width: 100px;
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   BADGE
    ============================================================ */
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 14px; border-radius: 100px;
-  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
 }
 .badge-cyan { background: var(--cyan-dim); color: var(--cyan); }
 .badge-emerald { background: var(--emerald-dim); color: var(--emerald); }
 .badge-amber { background: var(--amber-dim); color: var(--amber); }
 .badge-rose { background: var(--rose-dim); color: var(--rose); }
-.badge-purple { background: var(--purple-dim); color: var(--purple); }
-
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.dot-cyan { background: var(--cyan); }
-.dot-emerald { background: var(--emerald); }
-.dot-amber { background: var(--amber); }
-.dot-rose { background: var(--rose); }
 
 /* ============================================================
-   COMPONENT: BARS (for biomarker charts)
+   TWO COLUMN LAYOUT
    ============================================================ */
-.bar-track {
-  height: 28px; background: var(--bg-surface-2); border-radius: 6px;
-  overflow: hidden; position: relative;
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  flex: 1;
+  align-items: start;
 }
-.bar-fill {
-  height: 100%; border-radius: 6px;
-  transition: width 1s var(--ease-out);
-  display: flex; align-items: center; padding-left: 10px;
-  font-size: 0.75rem; font-weight: 700; color: var(--bg-deep);
+.two-col-narrow {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 56px;
+  flex: 1;
+  align-items: start;
 }
 
 /* ============================================================
-   COMPONENT: ARCHITECTURE LAYERS
+   HERO CENTER — for centered stat slides
    ============================================================ */
-.arch-layer {
-  border-radius: 10px;
-  padding: 16px 24px;
+.hero-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+}
+
+/* ============================================================
+   AGENT ROLE ROW
+   ============================================================ */
+.role-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  border: 1px solid;
-  position: relative;
-}
-.arch-layer .layer-num {
-  font-family: var(--font-mono);
-  font-weight: 800;
-  font-size: 1.1rem;
-  width: 32px;
-  text-align: center;
-  flex-shrink: 0;
-}
-.arch-layer .layer-content { flex: 1; }
-.arch-layer .layer-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
-.arch-layer .layer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
-.arch-layer .layer-badge {
-  flex-shrink: 0; font-size: 0.65rem; font-weight: 600;
-  padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.08em;
-}
-.arch-connector {
-  width: 2px; height: 16px; margin: 0 auto;
-  background: linear-gradient(to bottom, var(--border-medium), transparent);
-}
-
-/* Layer colors */
-.layer-4 { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
-.layer-4 .layer-num { color: var(--emerald); }
-.layer-4 .layer-badge { background: var(--emerald-dim); color: var(--emerald); }
-.layer-3 { background: rgba(6,182,212,0.06); border-color: rgba(6,182,212,0.2); }
-.layer-3 .layer-num { color: var(--cyan); }
-.layer-3 .layer-badge { background: var(--cyan-dim); color: var(--cyan); }
-.layer-2 { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
-.layer-2 .layer-num { color: var(--amber); }
-.layer-2 .layer-badge { background: var(--amber-dim); color: var(--amber); }
-.layer-1 { background: rgba(244,63,94,0.06); border-color: rgba(244,63,94,0.2); }
-.layer-1 .layer-num { color: var(--rose); }
-.layer-1 .layer-badge { background: var(--rose-dim); color: var(--rose); }
-
-/* ============================================================
-   COMPONENT: COMPARISON COLUMNS
-   ============================================================ */
-.compare-col {
-  border-radius: 12px; padding: 20px; border: 1px solid var(--border-subtle);
-  display: flex; flex-direction: column; gap: 12px;
-}
-.compare-col.winner {
-  border-color: rgba(6,182,212,0.3);
-  background: rgba(6,182,212,0.04);
-  box-shadow: 0 0 30px rgba(6,182,212,0.06);
-}
-.compare-row {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.88rem; line-height: 1.4;
-}
-.compare-icon {
-  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem; font-weight: 800;
-}
-.icon-yes { background: var(--emerald-dim); color: var(--emerald); }
-.icon-no { background: var(--rose-dim); color: var(--rose); }
-.icon-warn { background: var(--amber-dim); color: var(--amber); }
-
-/* ============================================================
-   COMPONENT: STACK LAYERS (personalisation)
-   ============================================================ */
-.stack-item {
-  display: flex; align-items: center; gap: 16px;
-  padding: 14px 20px; border-radius: 10px;
+  gap: 14px;
+  padding: 12px 16px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-left: 3px solid;
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
 }
-.stack-num {
-  font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem;
-  width: 28px; text-align: center; flex-shrink: 0;
-}
-.stack-content { flex: 1; }
-.stack-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
-.stack-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
-
-/* ============================================================
-   COMPONENT: METRIC CARDS
-   ============================================================ */
-.metric-card {
-  background: var(--bg-surface); border: 1px solid var(--border-subtle);
-  border-radius: 12px; padding: 20px 24px; text-align: center;
-}
-.metric-value {
-  font-family: var(--font-mono); font-weight: 900; font-size: 2.4rem;
-  line-height: 1; margin-bottom: 8px; letter-spacing: -0.03em;
-}
-.metric-label { font-size: 0.88rem; color: var(--text-secondary); font-weight: 500; }
-
-/* ============================================================
-   COMPONENT: TABLE
-   ============================================================ */
-.clean-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.clean-table th {
-  text-align: left; padding: 10px 12px; font-weight: 600; font-size: 0.75rem;
-  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
-  border-bottom: 1px solid var(--border-medium);
-}
-.clean-table td {
-  padding: 10px 12px; border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-secondary); line-height: 1.45;
-}
-.clean-table td:first-child { color: var(--text-primary); font-weight: 500; }
-
-/* ============================================================
-   COMPONENT: TIMELINE
-   ============================================================ */
-.timeline {
-  display: flex; align-items: flex-start; gap: 0; position: relative;
-}
-.timeline::before {
-  content: ''; position: absolute; top: 16px; left: 0; right: 0;
-  height: 2px; background: var(--border-medium);
-}
-.timeline-item {
-  flex: 1; text-align: center; position: relative; padding-top: 36px;
-}
-.timeline-dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
-  border: 2px solid;
-}
-
-/* ============================================================
-   SPECIAL: HOOK SLIDE
-   ============================================================ */
-.slide-hook {
-  background: radial-gradient(ellipse at 50% 35%, rgba(6,182,212,0.08) 0%, rgba(16,185,129,0.03) 40%, var(--bg-deep) 75%);
-  justify-content: center; align-items: center; text-align: center;
-}
-.hook-stat {
-  font-size: 7.5rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
-  background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 60%, var(--emerald) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 60px rgba(6,182,212,0.2));
-}
-.hook-source {
-  font-size: 0.8rem; color: var(--text-muted); margin-top: 12px;
-  font-style: italic;
-}
-.hook-question {
-  font-size: 1.8rem; font-weight: 400; color: var(--text-secondary);
-  margin-top: 32px; max-width: 760px; line-height: 1.5;
-}
-.hook-question em { color: var(--cyan); font-style: normal; font-weight: 600; }
-.hook-logo {
-  margin-top: 56px; font-size: 1.25rem; font-weight: 300; color: var(--text-muted);
-  letter-spacing: 0.15em; text-transform: uppercase;
-}
-.hook-logo strong { font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; text-transform: none; }
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.1); }
-  50% { box-shadow: 0 0 40px rgba(6,182,212,0.25); }
-}
-
-/* ============================================================
-   SPECIAL: PERSONA CARD
-   ============================================================ */
-.persona-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-medium);
-  border-radius: 16px;
-  padding: 28px;
-  position: relative;
-  overflow: hidden;
-}
-.persona-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cyan), var(--emerald));
-}
-.persona-avatar {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--cyan-dim), var(--emerald-dim));
-  border: 2px solid var(--border-medium);
+.role-icon {
+  width: 30px; height: 30px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 1.2rem; color: var(--cyan);
+  font-size: 0.72rem; font-weight: 800; flex-shrink: 0;
 }
-.persona-detail {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.8rem; color: var(--text-secondary); padding: 4px 0;
-}
-.persona-detail .label { color: var(--text-muted); min-width: 90px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.role-name { font-weight: 600; font-size: 0.88rem; }
+.role-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
 
 /* ============================================================
-   SPECIAL: CLOSING SLIDE
+   FEATURE CARD (compact)
    ============================================================ */
-/* Architecture slide: subtle distinct background */
-.slide-arch {
-  background: radial-gradient(ellipse at 30% 50%, rgba(245,158,11,0.04) 0%, var(--bg-slide) 60%),
-              radial-gradient(ellipse at 70% 30%, rgba(6,182,212,0.03) 0%, transparent 50%),
-              var(--bg-slide);
+.feat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  padding: 18px 20px;
 }
-
-/* Impact slide: larger headline metrics */
-.slide-impact .metric-value {
-  font-size: 3rem;
-}
-.slide-impact .metric-label {
+.feat-title {
+  font-weight: 600;
   font-size: 0.92rem;
+  margin-bottom: 5px;
+  color: var(--text-primary);
 }
-
-.slide-close {
-  background: radial-gradient(ellipse at 50% 55%, rgba(6,182,212,0.1) 0%, rgba(16,185,129,0.04) 40%, var(--bg-deep) 75%);
-  justify-content: center; align-items: center; text-align: center;
+.feat-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
 }
-.close-quote {
-  font-size: 2.1rem; font-weight: 600; line-height: 1.5;
-  max-width: 840px; color: var(--text-primary);
-  letter-spacing: -0.015em;
-}
-.close-quote em { color: var(--cyan); font-style: normal; font-weight: 700; }
 
 /* ============================================================
-   RESPONSIVE (shouldn't need much at 16:9 fullscreen)
+   CALLOUT BOX
+   ============================================================ */
+.callout {
+  padding: 36px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  max-width: 380px;
+}
+.callout-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 14px;
+}
+.callout-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ============================================================
+   THREE COLUMN GRID
+   ============================================================ */
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ============================================================
+   RESPONSIVE
    ============================================================ */
 @media (max-width: 1200px) {
-  :root { --slide-pad: 48px; --slide-pad-y: 40px; }
-  .hook-stat { font-size: 5rem; }
-  .t-hero { font-size: 2.5rem; }
-  .t-title { font-size: 1.8rem; }
+  :root { --slide-pad: 48px; --slide-pad-y: 44px; }
+  .slide-title { font-size: 2rem; }
+  .two-col, .two-col-narrow { gap: 36px; }
 }
 
 /* ============================================================
-   PRINT / EXPORT
+   PRINT
    ============================================================ */
 @media print {
   .slide { position: relative; page-break-after: always; opacity: 1 !important; }
@@ -496,10 +418,10 @@ body {
 <body>
 
 <!-- Progress Bar -->
-<div class="progress-bar" id="progressBar" style="width: 10%;"></div>
+<div class="progress-bar" id="progressBar" style="width: 6.67%;"></div>
 
 <!-- Logo Watermark -->
-<div class="logo-watermark"><span>B</span>ewo Health</div>
+<div class="logo-watermark"><span>B</span>ewo</div>
 
 <!-- Slide Counter -->
 <div class="slide-counter"><span class="current" id="currentSlide">01</span> / <span id="totalSlides">15</span></div>
@@ -515,82 +437,73 @@ body {
 <!-- ============================================================
      SLIDE 1: HOOK
      ============================================================ -->
-<section class="slide slide-hook active" data-slide="1">
-  <div class="anim d1" style="margin-bottom:12px;">
-    <span class="badge badge-rose" style="font-size:0.65rem;">Singapore Healthcare Crisis</span>
+<section class="slide active" data-slide="1" style="justify-content: center; align-items: center; text-align: center; background: radial-gradient(ellipse at 50% 40%, rgba(6,182,212,0.05) 0%, var(--bg-deep) 70%);">
+  <div class="anim d1" style="margin-bottom: 56px;">
+    <span style="font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted);">Singapore Healthcare Crisis</span>
   </div>
-  <div class="hook-stat anim d2">Every 6 minutes.</div>
-  <div class="hook-source anim d2">MOH Singapore, Emergency Department Statistics 2024</div>
-  <div class="hook-question anim d3">
-    A Singaporean is rushed to the ER for a <em>preventable</em> diabetic complication.<br>
-    What if we could see it coming <em>48 hours early</em> — and act?
+  <div class="anim d2">
+    <span class="hero-number" style="font-size: 7rem; color: var(--text-primary);">Every </span><span class="hero-number" style="font-size: 7rem; color: var(--cyan);">6</span><span class="hero-number" style="font-size: 7rem; color: var(--text-primary);"> minutes</span>
   </div>
-  <div class="hook-logo anim d5">
-    <strong>Bewo</strong> &nbsp;&middot;&nbsp; Predictive &middot; Personal &middot; Proactive
+  <div class="anim d3" style="margin-top: 36px; font-size: 1.15rem; font-weight: 400; color: var(--text-secondary); max-width: 520px; line-height: 1.6;">
+    one preventable diabetic ER admission in Singapore.
+  </div>
+  <div class="anim d5" style="margin-top: 96px; font-size: 0.68rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.02em;">
+    MOH Singapore, Emergency Department Statistics 2024
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 2: PROBLEM + TARGET USER
+     SLIDE 2: THE PROBLEM
      ============================================================ -->
-<section class="slide" data-slide="2" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">The Problem</div>
-  <div class="t-title anim d1" style="margin-bottom:28px;">The Gap Between Visits</div>
+<section class="slide" data-slide="2">
+  <div class="section-label cyan anim d1">The Problem</div>
+  <div class="slide-title anim d1">
+    Between visits, nobody is watching.
+  </div>
 
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 36px; flex:1;">
+  <div class="two-col">
     <!-- Left: Stats -->
-    <div class="flex flex-col gap-md anim d2">
-      <div class="card card-sm" style="border-left:3px solid var(--rose);">
-        <div style="display:flex;align-items:baseline;gap:12px;">
-          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--rose);">440K</span>
-          <span class="t-body">Singaporeans have diabetes. <strong style="color:var(--text-primary);">1 in 3</strong> over 60.</span>
+    <div style="display: flex; flex-direction: column; gap: 18px;">
+      <div class="card card-sm anim d2" style="border-left: 3px solid var(--rose); border-top: none; border-right: none; border-bottom: none;">
+        <div style="display: flex; align-items: baseline; gap: 14px;">
+          <span class="hero-number" style="font-size: 2.8rem; color: var(--rose);">440K</span>
+          <span style="font-size: 1rem; color: var(--text-secondary);">diabetics in Singapore</span>
         </div>
-        <div class="t-caption" style="margin-top:4px;">MOH Singapore, 2024</div>
       </div>
-      <div class="card card-sm" style="border-left:3px solid var(--amber);">
-        <div style="display:flex;align-items:baseline;gap:12px;">
-          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--amber);">3-6 mo</span>
-          <span class="t-body">Between polyclinic visits — <strong style="color:var(--text-primary);">total blind spot.</strong></span>
+      <div class="card card-sm anim d3" style="border-left: 3px solid var(--amber); border-top: none; border-right: none; border-bottom: none;">
+        <div style="display: flex; align-items: baseline; gap: 14px;">
+          <span class="hero-number" style="font-size: 2.8rem; color: var(--amber);">3-6 mo</span>
+          <span style="font-size: 1rem; color: var(--text-secondary);">gaps between clinic visits</span>
         </div>
-        <div class="t-caption" style="margin-top:4px;">Health Promotion Board</div>
       </div>
-      <div class="card card-sm" style="border-left:3px solid var(--cyan);">
-        <div style="display:flex;align-items:baseline;gap:12px;">
-          <span class="t-mono" style="font-size:2.2rem;font-weight:900;color:var(--cyan);">$8,800</span>
-          <span class="t-body">Per preventable ER admission. <strong style="color:var(--text-primary);">68%</strong> are preventable.</span>
-        </div>
-        <div class="t-caption" style="margin-top:4px;">MOH Expenditure Data</div>
-      </div>
-
-      <div class="card card-sm card-accent anim d4" style="margin-top:8px; background:rgba(6,182,212,0.04);">
-        <div class="t-body" style="font-style:italic; color:var(--text-secondary);">
-          "Most solutions digitise the existing workflow. <strong style="color:var(--cyan);">We redesigned it.</strong>"
+      <div class="card card-sm anim d4" style="border-left: 3px solid var(--cyan); border-top: none; border-right: none; border-bottom: none;">
+        <div style="display: flex; align-items: baseline; gap: 14px;">
+          <span class="hero-number" style="font-size: 2.8rem; color: var(--cyan);">$8,800</span>
+          <span style="font-size: 1rem; color: var(--text-secondary);">per preventable ER visit</span>
         </div>
       </div>
     </div>
 
-    <!-- Right: Persona -->
-    <div class="anim d3">
-      <div class="persona-card">
-        <div class="flex gap-md" style="align-items:center; margin-bottom:20px;">
-          <div class="persona-avatar">T</div>
+    <!-- Right: Mr. Tan -->
+    <div class="anim d4">
+      <div class="persona">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--cyan-dim); border: 1px solid rgba(6,182,212,0.18); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: var(--cyan); flex-shrink: 0;">T</div>
           <div>
-            <div style="font-weight:700; font-size:1.1rem;">Mr. Tan Ah Kow</div>
-            <div style="font-size:0.8rem; color:var(--text-secondary);">67 years old &middot; Toa Payoh HDB</div>
+            <div style="font-weight: 700; font-size: 1.05rem;">Mr. Tan Ah Kow</div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary);">67, lives alone, Toa Payoh HDB</div>
           </div>
-          <span class="badge badge-amber" style="margin-left:auto;">Target User</span>
         </div>
-        <div class="flex flex-col gap-xs">
-          <div class="persona-detail"><span class="label">Conditions</span> Type 2 Diabetes + Hypertension + Hyperlipidaemia</div>
-          <div class="persona-detail"><span class="label">HbA1c</span> <span style="color:var(--amber); font-weight:600;">8.1%</span> (above 7.0% target)</div>
-          <div class="persona-detail"><span class="label">Medications</span> Metformin 1000mg BD, Amlodipine 5mg OD</div>
-          <div class="persona-detail"><span class="label">Language</span> Singlish, Hokkien, basic English</div>
-          <div class="persona-detail"><span class="label">Living</span> Alone. Daughter visits on weekends.</div>
-          <div class="persona-detail"><span class="label">Behaviour</span> <span style="color:var(--rose);">Misses medication 2-3x/week</span></div>
-          <div class="persona-detail"><span class="label">Last Visit</span> 4 months ago</div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <div class="persona-row"><span class="label">Condition</span> Type 2 Diabetes + Hypertension</div>
+          <div class="persona-row"><span class="label">HbA1c</span> <span style="color: var(--amber); font-weight: 600;">8.1%</span> (target: 7.0%)</div>
+          <div class="persona-row"><span class="label">Language</span> Singlish, Hokkien</div>
+          <div class="persona-row"><span class="label">Tech literacy</span> <span style="color: var(--rose);">Can barely use a phone</span></div>
+          <div class="persona-row"><span class="label">Adherence</span> <span style="color: var(--rose);">Misses meds 2-3x/week</span></div>
+          <div class="persona-row"><span class="label">Last visit</span> 4 months ago</div>
         </div>
-        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-subtle);">
-          <div class="t-caption" style="line-height:1.5;">Uncle Tan represents 440,000 Singaporeans. Between clinic visits, <strong style="color:var(--text-secondary);">nobody is watching.</strong></div>
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+          He represents 440,000 Singaporeans.
         </div>
       </div>
     </div>
@@ -598,59 +511,25 @@ body {
 </section>
 
 <!-- ============================================================
-     SLIDE 3: WHY AI, NOT CONVENTIONAL
+     SLIDE 3: THE INSIGHT
      ============================================================ -->
-<section class="slide" data-slide="3" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Rationale</div>
-  <div class="t-title anim d1" style="margin-bottom:32px;">Why Agentic AI — Not Conventional Approaches</div>
-
-  <div class="grid-3 gap-lg" style="flex:1;">
-    <!-- Manual -->
-    <div class="compare-col anim d2">
-      <div style="text-align:center;">
-        <div style="font-size:2.5rem; margin-bottom:8px; opacity:0.7;">&#128100;</div>
-        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px;">Manual Monitoring</div>
-        <span class="badge badge-rose">Cannot Scale</span>
-      </div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>1 nurse : 220 patients</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Reactive — sees crisis at ER</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>3-6 month gaps between visits</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>No continuous monitoring</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Admin-heavy: notes, reports</span></div>
-    </div>
-
-    <!-- Rule-Based -->
-    <div class="compare-col anim d3">
-      <div style="text-align:center;">
-        <div style="font-size:2.5rem; margin-bottom:8px; opacity:0.7;">&#9881;</div>
-        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px;">Rule-Based Automation</div>
-        <span class="badge badge-amber">Cannot Personalise</span>
-      </div>
-      <div class="compare-row"><div class="compare-icon icon-warn">!</div><span>IF glucose &gt; 10 THEN alert</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Population thresholds, not personal</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>No context: mood, time, culture</span></div>
-      <div class="compare-row"><div class="compare-icon icon-no">&#10005;</div><span>Combinatorial explosion at scale</span></div>
-      <div class="compare-row"><div class="compare-icon icon-warn">!</div><span>Alert fatigue from false alarms</span></div>
-    </div>
-
-    <!-- Agentic AI -->
-    <div class="compare-col winner anim d4">
-      <div style="text-align:center;">
-        <div style="font-size:2.5rem; margin-bottom:8px;">&#9670;</div>
-        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px; color:var(--cyan);">Agentic AI (Bewo)</div>
-        <span class="badge badge-cyan">Reasons + Acts</span>
-      </div>
-      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Predicts</strong> crisis 48h early</span></div>
-      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Personalises</strong> to each patient</span></div>
-      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Reasons</strong> across 9 biomarkers</span></div>
-      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Acts</strong> with 18 autonomous tools</span></div>
-      <div class="compare-row"><div class="compare-icon icon-yes">&#10003;</div><span><strong style="color:var(--text-primary);">Learns</strong> what works per patient</span></div>
-    </div>
+<section class="slide" data-slide="3" style="justify-content: center; align-items: center; text-align: center; background: radial-gradient(ellipse at 50% 45%, rgba(244,63,94,0.04) 0%, var(--bg-deep) 65%);">
+  <div class="section-label rose anim d1">The Insight</div>
+  <div class="anim d2" style="font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.25; max-width: 800px;">
+    LLMs hallucinate.<br>
+    <span style="color: var(--rose);">In healthcare, hallucination kills.</span>
   </div>
-
-  <div class="anim d6 card card-sm" style="margin-top:20px; background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.15); max-width:800px;">
-    <div class="t-body" style="line-height:1.6; font-size:0.85rem;">
-      <strong style="color:var(--cyan);">The agentic advantage:</strong> Rules can't handle state &times; time &times; mood &times; medication &times; culture &times; caregiver &times; meal &times; sleep simultaneously. An agent <em>reasons</em> about the optimal combination of actions for this patient at this moment.
+  <div class="anim d3" style="margin-top: 44px; font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; line-height: 1.7;">
+    You cannot wrap GPT around a chatbot and deploy it for clinical decisions. "I think your glucose is fine" is not acceptable when a patient's life is at stake.
+  </div>
+  <div class="anim d4" style="margin-top: 56px; display: flex; gap: 36px; justify-content: center;">
+    <div class="card card-sm" style="text-align: center; min-width: 200px;">
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--rose); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">The problem</div>
+      <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">LLMs are black boxes.<br>Can't explain why.<br>Can't guarantee safety.</div>
+    </div>
+    <div class="card card-sm" style="text-align: center; min-width: 200px; border-color: rgba(6,182,212,0.18);">
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">Our answer</div>
+      <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">The math decides.<br>The AI communicates.<br>Safety is deterministic.</div>
     </div>
   </div>
 </section>
@@ -658,212 +537,133 @@ body {
 <!-- ============================================================
      SLIDE 4: DIAMOND ARCHITECTURE
      ============================================================ -->
-<section class="slide slide-arch" data-slide="4">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">System Design</div>
-  <div class="t-title anim d1" style="margin-bottom:28px;">The Diamond Architecture</div>
+<section class="slide" data-slide="4">
+  <div class="section-label cyan anim d1">System Design</div>
+  <div class="slide-title anim d1">The Diamond Architecture</div>
 
-  <div style="max-width:860px; margin:0 auto; flex:1; display:flex; flex-direction:column; justify-content:center; gap:0;">
-    <!-- Data flow label: UP -->
-    <div style="text-align:center; margin-bottom:4px;" class="anim d2">
-      <span style="font-size:0.65rem; font-weight:600; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase;">&#9650; Patient-facing output</span>
-    </div>
-
-    <!-- Layer 4 -->
-    <div class="arch-layer layer-4 anim d2">
+  <div style="max-width: 860px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0;">
+    <!-- L4: Cultural -->
+    <div class="arch-layer layer-culture anim d2">
       <div class="layer-num">L4</div>
       <div class="layer-content">
-        <div class="layer-title">Cultural Intelligence <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; communicates in the patient's own voice</span></div>
-        <div class="layer-desc"><strong style="color:var(--emerald);">Tech:</strong> SEA-LION v4 27B (Singlish/Malay/Mandarin) &middot; MERaLiON (paralinguistic emotion)</div>
-        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> Elderly patients ignore clinical English. Singlish compliance rates are 3&times; higher.</div>
+        <div class="layer-title">Cultural Intelligence</div>
+        <div class="layer-desc">SEA-LION v4 + MERaLiON &mdash; Singlish, Malay, Mandarin. Voice emotion recognition.</div>
       </div>
       <div class="layer-badge">IMDA</div>
     </div>
     <div class="arch-connector"></div>
 
-    <!-- Layer 3 -->
-    <div class="arch-layer layer-3 anim d3">
+    <!-- L3: Agent -->
+    <div class="arch-layer layer-agent anim d3">
       <div class="layer-num">L3</div>
       <div class="layer-content">
-        <div class="layer-title">Agentic Reasoning <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; decides what to do and when</span></div>
-        <div class="layer-desc"><strong style="color:var(--cyan);">Tech:</strong> Gemini 2.5 Flash &middot; Multi-turn ReAct loop &middot; 18 autonomous tools (incl. caregiver alerts, burden scoring) &middot; Cross-session memory &middot; Counterfactual reasoning</div>
-        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> Rules can't handle state &times; time &times; mood &times; medication &times; culture simultaneously.</div>
+        <div class="layer-title">Agentic Reasoning</div>
+        <div class="layer-desc">Gemini 2.5 Flash + 18 tools + ReAct loop. Decides what to do and when.</div>
       </div>
       <div class="layer-badge">NUS</div>
     </div>
     <div class="arch-connector"></div>
 
-    <!-- Layer 2 -->
-    <div class="arch-layer layer-2 anim d4" style="transform-origin:center;">
+    <!-- L2: Statistical -->
+    <div class="arch-layer layer-stats anim d4">
       <div class="layer-num">L2</div>
       <div class="layer-content">
-        <div class="layer-title" style="font-size:0.95rem;">Statistical Inference Engine <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; the clinical brain (deterministic, explainable)</span></div>
-        <div class="layer-desc"><strong style="color:var(--amber);">Tech:</strong> HMM Viterbi (state detection, 9 biomarkers) &middot; Baum-Welch EM (per-patient personalisation) &middot; Monte Carlo (48h forecast, 2000 sims) &middot; Merlion ARIMA (45-min glucose velocity)</div>
-        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> LLMs hallucinate clinical data. HMMs are mathematically provable &mdash; every output traceable to input.</div>
+        <div class="layer-title">Statistical Inference Engine</div>
+        <div class="layer-desc">HMM Viterbi + Monte Carlo (2,000 sims) + Merlion ARIMA. 9 biomarkers. Explainable.</div>
       </div>
       <div class="layer-badge">Core</div>
     </div>
     <div class="arch-connector"></div>
 
-    <!-- Layer 1 -->
-    <div class="arch-layer layer-1 anim d5">
+    <!-- L1: Safety -->
+    <div class="arch-layer layer-safety anim d5">
       <div class="layer-num">L1</div>
       <div class="layer-content">
-        <div class="layer-title">Safety Foundation <span style="font-weight:400; font-size:0.75rem; color:var(--text-muted);">&mdash; hard rules that always override AI</span></div>
-        <div class="layer-desc"><strong style="color:var(--rose);">Tech:</strong> Deterministic clinical rules &middot; Drug interaction engine (16 pairs, 39 classes) &middot; SBAR clinical reporting &middot; PII de-identification &middot; PDPA compliance</div>
-        <div class="layer-desc" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;"><strong>Why:</strong> "Take double insulin" must be impossible to generate. Safety is never probabilistic.</div>
+        <div class="layer-title">Safety Foundation</div>
+        <div class="layer-desc">ADA 2024 guidelines hardcoded. Drug interactions. PII de-identification. <strong style="color: var(--rose);">Always overrides AI.</strong></div>
       </div>
       <div class="layer-badge">Synapxe</div>
     </div>
-
-    <!-- Data Input -->
-    <div style="text-align:center; margin-top:12px;" class="anim d6">
-      <span style="font-size:0.65rem; font-weight:600; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; display:block; margin-bottom:4px;">&#9660; Data ingestion</span>
-      <div style="display:inline-flex; align-items:center; gap:12px; padding:8px 24px; border-radius:8px; border:1px dashed var(--border-medium); background:var(--bg-surface);">
-        <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">Patient Data &middot; 9 Orthogonal Biomarkers &middot; Wearables &middot; Phone Sensors &middot; CGM</span>
-      </div>
-    </div>
   </div>
 
-  <!-- "Why not just an LLM?" callout -->
-  <div class="anim d7" style="margin-top:12px; display:flex; gap:16px; align-self:center; max-width:860px; width:100%;">
-    <div class="card card-sm" style="flex:1; background:rgba(244,63,94,0.04); border-color:rgba(244,63,94,0.15); padding:12px 16px;">
-      <div style="font-size:0.7rem; font-weight:700; color:var(--rose); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Why not just use an LLM?</div>
-      <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">LLMs hallucinate clinical data, can't guarantee safety invariants, and are black boxes to regulators. You can't deploy "I think your glucose is fine" in healthcare.</div>
-    </div>
-    <div class="card card-sm" style="flex:1; background:rgba(6,182,212,0.04); border-color:rgba(6,182,212,0.15); padding:12px 16px;">
-      <div style="font-size:0.7rem; font-weight:700; color:var(--cyan); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Our hybrid approach</div>
-      <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;"><strong style="color:var(--amber);">Deterministic HMM</strong> for clinical truth. <strong style="color:var(--cyan);">Generative AI</strong> for empathetic communication. The AI <em>talks</em>. The math <em>decides</em>.</div>
-    </div>
+  <div class="anim d6" style="text-align: center; margin-top: 28px;">
+    <span style="font-size: 1.15rem; font-weight: 600; color: var(--text-secondary); letter-spacing: -0.01em;">
+      The math <span style="color: var(--amber);">decides</span>. The AI <span style="color: var(--cyan);">communicates</span>. Safety <span style="color: var(--rose);">never bends</span>.
+    </span>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 5: HMM DEEP DIVE
+     SLIDE 5: WHY HMM
      ============================================================ -->
-<section class="slide" data-slide="5" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Core Innovation</div>
-  <div class="t-title anim d1" style="margin-bottom:20px;">Why Hidden Markov Models</div>
+<section class="slide" data-slide="5">
+  <div class="section-label amber anim d1">Core Innovation</div>
+  <div class="slide-title anim d1">Why HMM, not neural nets</div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: Comparison -->
-    <div class="flex flex-col gap-sm">
-      <div class="t-section t-muted anim d2" style="color:var(--text-muted); margin-bottom:4px;">Head-to-Head Comparison</div>
-      <table class="clean-table anim d2" style="font-size:0.75rem;">
+  <div class="two-col">
+    <!-- Left: Comparison table -->
+    <div class="anim d2">
+      <table class="clean-table">
         <thead>
-          <tr><th style="width:28%;">Dimension</th><th style="color:var(--cyan);">HMM (Ours)</th><th>LSTM</th><th>Raw LLM</th></tr>
+          <tr>
+            <th style="width: 32%;">Dimension</th>
+            <th style="color: var(--cyan);">HMM (Ours)</th>
+            <th>LSTM</th>
+            <th>Raw LLM</th>
+          </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Cold-start data</td>
-            <td><span style="color:var(--emerald); font-weight:600;">7 days</span></td>
-            <td><span style="color:var(--rose);">10,000+ examples</span></td>
-            <td><span style="color:var(--text-muted);">N/A</span></td>
-          </tr>
-          <tr>
             <td>Explainability</td>
-            <td><span style="color:var(--emerald); font-weight:600;">Full trace</span></td>
-            <td><span style="color:var(--rose);">Black box</span></td>
-            <td><span style="color:var(--rose);">&ldquo;I think...&rdquo;</span></td>
+            <td><span class="check">Full trace</span></td>
+            <td><span class="cross">Black box</span></td>
+            <td><span class="cross">"I think..."</span></td>
           </tr>
           <tr>
             <td>Hallucination risk</td>
-            <td><span style="color:var(--emerald); font-weight:600;">Impossible</span></td>
-            <td><span style="color:var(--amber);">Low</span></td>
-            <td><span style="color:var(--rose); font-weight:600;">High</span></td>
+            <td><span class="check">Impossible</span></td>
+            <td><span class="warn">Low</span></td>
+            <td><span class="cross">High</span></td>
           </tr>
           <tr>
             <td>Runs on-device</td>
-            <td><span style="color:var(--emerald);">&#10003; &lt;1ms</span></td>
-            <td><span style="color:var(--rose);">GPU required</span></td>
-            <td><span style="color:var(--rose);">Cloud only</span></td>
+            <td><span class="check">&lt;1ms</span></td>
+            <td><span class="cross">GPU required</span></td>
+            <td><span class="cross">Cloud only</span></td>
           </tr>
           <tr>
-            <td style="font-weight:700; color:var(--text-primary);">Validated accuracy</td>
-            <td><span style="color:var(--emerald); font-weight:700; font-size:0.85rem;">82.1%</span> <span style="color:var(--text-muted); font-size:0.65rem;">hardened</span></td>
-            <td><span style="color:var(--text-muted);">Needs training data</span></td>
-            <td><span style="color:var(--text-muted);">Not applicable</span></td>
+            <td>Cold-start data</td>
+            <td><span class="check">7 days</span></td>
+            <td><span class="cross">10,000+ samples</span></td>
+            <td><span style="color: var(--text-muted);">N/A</span></td>
           </tr>
           <tr>
-            <td style="font-weight:700; color:var(--text-primary);">Safety guarantee</td>
-            <td><span style="color:var(--emerald); font-weight:700; font-size:0.85rem;">0</span> <span style="color:var(--text-muted); font-size:0.65rem;">unsafe misclass</span></td>
-            <td><span style="color:var(--amber);">No guarantee</span></td>
-            <td><span style="color:var(--rose);">Can hallucinate</span></td>
+            <td>Audit trail</td>
+            <td><span class="check">Complete</span></td>
+            <td><span class="cross">None</span></td>
+            <td><span class="cross">None</span></td>
           </tr>
           <tr>
-            <td style="font-weight:700; color:var(--text-primary);">vs glucose-only</td>
-            <td><span style="color:var(--cyan); font-weight:700; font-size:0.85rem;">+25.3%</span> <span style="color:var(--text-muted); font-size:0.65rem;">p&lt;0.0001</span></td>
-            <td><span style="color:var(--text-muted);">&mdash;</span></td>
-            <td><span style="color:var(--text-muted);">&mdash;</span></td>
+            <td>Safety guarantee</td>
+            <td><span class="check">0 unsafe</span></td>
+            <td><span class="warn">No guarantee</span></td>
+            <td><span class="cross">Hallucination</span></td>
           </tr>
         </tbody>
       </table>
-
-      <div class="card card-sm anim d4" style="margin-top:8px; background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.12);">
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--cyan);">Key insight:</strong> In healthcare, the question isn't "can AI predict?" &mdash; it's "can you explain <em>why</em> to a doctor, patient, and regulator?" <strong style="color:var(--text-primary);">HMMs answer all three.</strong>
-        </div>
-      </div>
     </div>
 
-    <!-- Right: Biomarkers -->
-    <div class="flex flex-col gap-sm">
-      <div class="t-section anim d3" style="color:var(--text-muted); margin-bottom:4px;">9 Orthogonal Biomarkers &mdash; Clinically Derived (ADA 2024, UKPDS, ARIC)</div>
-      <div class="flex flex-col gap-xs anim d3">
-        <!-- Each biomarker bar -->
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Glucose Average</span>
-          <div class="bar-track"><div class="bar-fill" style="width:100%; background:linear-gradient(90deg, var(--cyan), var(--blue));">25%</div></div>
-          <span class="t-caption">ADA</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Med Adherence</span>
-          <div class="bar-track"><div class="bar-fill" style="width:72%; background:linear-gradient(90deg, var(--cyan), var(--blue));">18%</div></div>
-          <span class="t-caption">UKPDS</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Glucose Variability</span>
-          <div class="bar-track"><div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--amber), var(--amber));">10%</div></div>
-          <span class="t-caption">Danne</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Sleep Quality</span>
-          <div class="bar-track"><div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--purple), var(--purple));">10%</div></div>
-          <span class="t-caption">DiaBeatIt</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Social Engagement</span>
-          <div class="bar-track"><div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--emerald), var(--emerald));">10%</div></div>
-          <span class="t-caption">Lancet</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Steps Daily</span>
-          <div class="bar-track"><div class="bar-fill" style="width:32%; background:var(--text-muted);">8%</div></div>
-          <span class="t-caption">WHO</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">HRV (RMSSD)</span>
-          <div class="bar-track"><div class="bar-fill" style="width:28%; background:var(--text-muted);">7%</div></div>
-          <span class="t-caption">ARIC</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Carbs Intake</span>
-          <div class="bar-track"><div class="bar-fill" style="width:28%; background:var(--text-muted);">7%</div></div>
-          <span class="t-caption">ADA</span>
-        </div>
-        <div style="display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px;">
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Resting HR</span>
-          <div class="bar-track"><div class="bar-fill" style="width:20%; background:var(--text-muted);">5%</div></div>
-          <span class="t-caption">Clinical</span>
-        </div>
+    <!-- Right: Hero stat -->
+    <div class="anim d3 hero-center">
+      <div class="hero-number" style="font-size: 5.5rem; color: var(--cyan);">
+        12.7ms
       </div>
-
-      <!-- Key insight callout (validation results on dedicated slide 6) -->
-      <div class="card card-sm anim d5" style="margin-top:6px; border-left:3px solid var(--emerald);">
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--emerald);">Validated:</strong> 10,000+ independent synthetic patients across 32 clinical archetypes. <strong style="color:var(--text-primary);">Full results on next slide.</strong>
-        </div>
-        <div style="margin-top:4px; font-size:0.65rem; color:var(--text-muted); line-height:1.4;">
-          <strong>References:</strong> ADA Standards of Care 2024 &middot; UKPDS (Lancet 1998) &middot; ARIC Study (Diabetes Care 2019) &middot; Danne et al. (Diabetes Care 2017) &middot; DiaBeatIt RCT
+      <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 16px; font-weight: 400;">
+        Inference time. Fast enough for<br>real-time on a phone.
+      </div>
+      <div style="margin-top: 44px; padding: 20px 28px; background: var(--bg-surface); border: 1px solid var(--border-card); border-radius: 10px; max-width: 360px;">
+        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          "Can you explain <span style="color: var(--text-primary); font-weight: 600;">why</span> to a doctor, a patient, and a regulator?"
         </div>
       </div>
     </div>
@@ -871,100 +671,94 @@ body {
 </section>
 
 <!-- ============================================================
-     SLIDE 6: VALIDATION RESULTS
+     SLIDE 6: PREDICTION ENGINE
      ============================================================ -->
-<section class="slide" data-slide="6" style="background: radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.05) 0%, var(--bg-slide) 60%), var(--bg-slide);">
-  <div class="t-section t-emerald anim d1" style="margin-bottom:6px;">Validation</div>
-  <div class="t-title anim d1" style="margin-bottom:24px;">Clinically Validated &mdash; Not Just Demonstrated</div>
+<section class="slide" data-slide="6" style="background: radial-gradient(ellipse at 30% 50%, rgba(245,158,11,0.03) 0%, var(--bg-deep) 60%);">
+  <div class="section-label amber anim d1">Prediction Engine</div>
+  <div class="slide-title anim d1">See the crisis before it happens.</div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: Easy Validation -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d2" style="border-top:3px solid var(--cyan);">
-        <div style="font-size:0.7rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Easy Validation &mdash; 5,000 Patients, Clean Boundaries</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div style="text-align:center; padding:12px; background:rgba(6,182,212,0.06); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:2rem; color:var(--cyan);">99.3%</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Accuracy</div>
-          </div>
-          <div style="text-align:center; padding:12px; background:rgba(6,182,212,0.06); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:2rem; color:var(--cyan);">100%</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">CRISIS Recall</div>
-          </div>
-        </div>
-        <div style="text-align:center; padding:10px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.1);">
-          <div style="font-family:var(--font-mono); font-weight:900; font-size:1.6rem; color:var(--cyan);">AUC 1.000</div>
-          <div style="font-size:0.72rem; color:var(--text-muted);">Perfect class separation on clean data</div>
+  <div class="two-col">
+    <!-- Left: capabilities -->
+    <div style="display: flex; flex-direction: column; gap: 18px;">
+      <div class="card card-sm anim d2">
+        <div style="font-size: 0.65rem; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Monte Carlo Simulation</div>
+        <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+          <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 700;">2,000</span> paths projected over a <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 700;">48-hour</span> horizon. Not a single prediction &mdash; a probability distribution of futures.
         </div>
       </div>
-
-      <!-- Hardened Validation -->
-      <div class="card anim d3" style="border-top:3px solid var(--amber);">
-        <div style="font-size:0.7rem; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Hardened Validation &mdash; 5,000 Patients, Contradictory Signals</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div style="text-align:center; padding:12px; background:rgba(245,158,11,0.06); border-radius:8px; border:1px solid rgba(245,158,11,0.15);">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:2rem; color:var(--amber);">82.1%</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Accuracy</div>
-          </div>
-          <div style="text-align:center; padding:12px; background:rgba(245,158,11,0.06); border-radius:8px; border:1px solid rgba(245,158,11,0.15);">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:2rem; color:var(--amber);">87.8%</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">CRISIS Recall</div>
-          </div>
+      <div class="card card-sm anim d3">
+        <div style="font-size: 0.65rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Counterfactual Reasoning</div>
+        <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+          "What if you take your meds?" Risk drops <span style="font-family: var(--font-mono); color: var(--rose); font-weight: 700;">35%</span> &rarr; <span style="font-family: var(--font-mono); color: var(--emerald); font-weight: 700;">12%</span>. Patients see what their actions change.
         </div>
-        <div style="text-align:center; padding:10px; background:rgba(245,158,11,0.04); border-radius:8px; border:1px solid rgba(245,158,11,0.1);">
-          <div style="font-family:var(--font-mono); font-weight:900; font-size:1.6rem; color:var(--amber);">AUC 0.967</div>
-          <div style="font-size:0.72rem; color:var(--text-muted);">Overlapping boundaries, adversarial inputs</div>
+      </div>
+      <div class="card card-sm anim d4">
+        <div style="font-size: 0.65rem; font-weight: 700; color: var(--emerald); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Merlion Time Series</div>
+        <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+          ARIMA-based glucose velocity forecasting. 45-minute lookahead for hypo/hyperglycemia alerts.
         </div>
       </div>
     </div>
 
-    <!-- Right: Key differentiators -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d4" style="border-left:3px solid var(--emerald);">
-        <div class="t-section t-emerald" style="margin-bottom:12px;">Safety Guarantee</div>
-        <div style="text-align:center; padding:16px; margin-bottom:12px; background:rgba(16,185,129,0.06); border-radius:10px; border:1px solid rgba(16,185,129,0.15);">
-          <div style="font-family:var(--font-mono); font-weight:900; font-size:3rem; color:var(--emerald);">0</div>
-          <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary);">CRISIS-as-STABLE Misclassifications</div>
-          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Both suites. No patient in danger was ever told they were safe.</div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="text-align:center; padding:10px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:800; font-size:1.4rem; color:var(--cyan);">+25.3%</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">vs glucose-only baseline</div>
-            <div style="font-size:0.62rem; color:var(--text-muted);">p&lt;0.0001</div>
-          </div>
-          <div style="text-align:center; padding:10px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:800; font-size:1.4rem; color:var(--purple);">Macro F1 0.822</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Hardened suite</div>
-          </div>
-        </div>
+    <!-- Right: Hero stat -->
+    <div class="anim d3 hero-center">
+      <div class="hero-number" style="font-size: 6rem; color: var(--amber);">
+        48h
       </div>
-
-      <div class="card anim d5" style="border-left:3px solid var(--purple);">
-        <div class="t-section t-purple" style="margin-bottom:10px;">Test Coverage</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="text-align:center; padding:10px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:800; font-size:1.6rem; color:var(--text-primary);">230/230</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Tests passed</div>
-          </div>
-          <div style="text-align:center; padding:10px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:800; font-size:1.6rem; color:var(--text-primary);">76/76</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Validation gates</div>
-          </div>
-          <div style="text-align:center; padding:10px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:800; font-size:1.6rem; color:var(--text-primary);">32</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Clinical archetypes</div>
-          </div>
-          <div style="text-align:center; padding:10px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:800; font-size:1.6rem; color:var(--text-primary);">8,772</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Lines of test code</div>
-          </div>
-        </div>
+      <div style="font-size: 1.15rem; color: var(--text-secondary); margin-top: 16px; font-weight: 400; line-height: 1.5;">
+        Predicts crisis before symptoms.
       </div>
+    </div>
+  </div>
+</section>
 
-      <div class="card card-sm anim d6" style="background:rgba(6,182,212,0.04); border-color:rgba(6,182,212,0.15);">
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--cyan);">Why this matters:</strong> Most AI health demos show accuracy on curated data. We stress-tested with <strong style="color:var(--text-primary);">contradictory signals</strong> &mdash; patients whose glucose says "fine" but sleep + adherence say "danger." <strong style="color:var(--text-primary);">Real patients are messy. Our model handles messy.</strong>
+<!-- ============================================================
+     SLIDE 7: THE AGENT
+     ============================================================ -->
+<section class="slide" data-slide="7">
+  <div class="section-label cyan anim d1">Agentic AI</div>
+  <div class="slide-title anim d1">Not a chatbot. A background agent.</div>
+
+  <div class="two-col">
+    <!-- Left: 6 roles -->
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="role-row anim d2">
+        <div class="role-icon" style="background: var(--cyan-dim); color: var(--cyan);">P</div>
+        <div><div class="role-name">Planning Agent</div><div class="role-desc">Orchestrates daily care plan</div></div>
+      </div>
+      <div class="role-row anim d3">
+        <div class="role-icon" style="background: var(--emerald-dim); color: var(--emerald);">C</div>
+        <div><div class="role-name">Check-in Agent</div><div class="role-desc">Proactive outreach, mood sensing</div></div>
+      </div>
+      <div class="role-row anim d4">
+        <div class="role-icon" style="background: var(--amber-dim); color: var(--amber);">F</div>
+        <div><div class="role-name">Caregiver Agent</div><div class="role-desc">Family alerts, burden management</div></div>
+      </div>
+      <div class="role-row anim d5">
+        <div class="role-icon" style="background: var(--rose-dim); color: var(--rose);">D</div>
+        <div><div class="role-name">Clinician Agent</div><div class="role-desc">SBAR reports, drug interaction checks</div></div>
+      </div>
+      <div class="role-row anim d6">
+        <div class="role-icon" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">B</div>
+        <div><div class="role-name">Behavior Coach</div><div class="role-desc">Nudges, challenges, streaks</div></div>
+      </div>
+      <div class="role-row anim d7">
+        <div class="role-icon" style="background: var(--emerald-dim); color: var(--emerald);">K</div>
+        <div><div class="role-name">Cultural Agent</div><div class="role-desc">Singlish translation, local context</div></div>
+      </div>
+    </div>
+
+    <!-- Right: Hero stat -->
+    <div class="anim d3 hero-center">
+      <div class="hero-number" style="font-size: 6rem; color: var(--cyan);">
+        6
+      </div>
+      <div style="font-size: 1.15rem; color: var(--text-secondary); margin-top: 12px;">
+        interventions fire automatically<br>when risk rises.
+      </div>
+      <div style="margin-top: 44px; padding: 20px 28px; background: var(--bg-surface); border: 1px solid var(--border-card); border-radius: 10px; max-width: 360px;">
+        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          <span style="color: var(--cyan); font-weight: 700;">18 tools.</span> ReAct reasoning. Cross-session memory. Reaches out <span style="color: var(--text-primary); font-weight: 600;">without being asked</span>.
         </div>
       </div>
     </div>
@@ -972,120 +766,110 @@ body {
 </section>
 
 <!-- ============================================================
-     SLIDE 7: AGENTIC SYSTEM
+     SLIDE 8: VALIDATION
      ============================================================ -->
-<section class="slide" data-slide="7" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Agentic AI</div>
-  <div class="t-title anim d1" style="margin-bottom:20px;">18 Tools. 5-Turn Reasoning. Autonomous Action.</div>
+<section class="slide" data-slide="8" style="background: radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.04) 0%, var(--bg-deep) 60%);">
+  <div class="section-label emerald anim d1">Validation</div>
+  <div class="slide-title anim d1">Clinically validated, not just demonstrated.</div>
 
-  <div style="display:grid; grid-template-columns:280px 1fr; gap:28px; flex:1;">
-    <!-- Left: ReAct Loop -->
-    <div class="flex flex-col gap-md anim d2">
-      <div class="card" style="position:relative; padding:20px;">
-        <div class="t-section" style="color:var(--cyan); margin-bottom:14px;">ReAct Loop</div>
-        <div class="flex flex-col gap-sm">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:36px;height:36px;border-radius:8px;background:var(--cyan-dim);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--cyan);flex-shrink:0;">O</div>
-            <div><div style="font-weight:600;font-size:0.82rem;">Observe</div><div class="t-caption">HMM state + forecast + context</div></div>
+  <div class="two-col">
+    <!-- Left: Results -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <!-- Easy suite -->
+      <div class="card card-sm anim d2" style="border-top: 2px solid var(--cyan);">
+        <div style="font-size: 0.65rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;">Easy Suite &mdash; 5,000 patients</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="metric">
+            <div class="metric-value" style="font-size: 2.4rem; color: var(--cyan);">99.3%</div>
+            <div class="metric-label">Accuracy</div>
           </div>
-          <div style="width:2px;height:10px;background:var(--border-medium);margin-left:17px;"></div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:36px;height:36px;border-radius:8px;background:var(--purple-dim);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--purple);flex-shrink:0;">T</div>
-            <div><div style="font-weight:600;font-size:0.82rem;">Think</div><div class="t-caption">Gemini reasons about actions</div></div>
-          </div>
-          <div style="width:2px;height:10px;background:var(--border-medium);margin-left:17px;"></div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:36px;height:36px;border-radius:8px;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--emerald);flex-shrink:0;">A</div>
-            <div><div style="font-weight:600;font-size:0.82rem;">Act</div><div class="t-caption">Execute tools, see results</div></div>
-          </div>
-          <div style="width:2px;height:10px;background:var(--border-medium);margin-left:17px;"></div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:36px;height:36px;border-radius:8px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--amber);flex-shrink:0;">&#8634;</div>
-            <div><div style="font-weight:600;font-size:0.82rem;">Loop</div><div class="t-caption">Max 5 turns, safety on every output</div></div>
+          <div class="metric">
+            <div class="metric-value" style="font-size: 2.4rem; color: var(--cyan);">100%</div>
+            <div class="metric-label">CRISIS Recall</div>
           </div>
         </div>
       </div>
-      <!-- Counterfactual -->
-      <div class="card card-sm anim d4" style="border-left:3px solid var(--purple);">
-        <div class="t-section t-purple" style="margin-bottom:8px;">Counterfactual "What-If"</div>
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <div style="margin-bottom:6px;">Current crisis risk: <strong style="color:var(--rose); font-size:1rem;">45%</strong></div>
-          <div>Take Metformin now: <strong style="color:var(--emerald); font-size:1rem;">18%</strong> <span class="t-caption" style="color:var(--emerald);">&#9660; 27%</span></div>
-          <div>Walk 3000 steps: <strong style="color:var(--amber); font-size:1rem;">32%</strong> <span class="t-caption" style="color:var(--emerald);">&#9660; 13%</span></div>
-          <div style="margin-top:6px;" class="t-caption">Runs through actual HMM math. Not hand-wavy.</div>
+
+      <!-- Hardened suite -->
+      <div class="card card-sm anim d3" style="border-top: 2px solid var(--amber);">
+        <div style="font-size: 0.65rem; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;">Hardened Suite &mdash; contradictory signals</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="metric">
+            <div class="metric-value" style="font-size: 2.4rem; color: var(--amber);">82.1%</div>
+            <div class="metric-label">Accuracy</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value" style="font-size: 2.4rem; color: var(--amber);">+25.3%</div>
+            <div class="metric-label">vs glucose-only</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Right: Tools + Behavioral Science -->
-    <div class="flex flex-col gap-md">
-      <!-- 18 Tools Grid -->
-      <div class="anim d3">
-        <div class="t-section" style="color:var(--text-muted); margin-bottom:10px;">18 Autonomous Tools</div>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--cyan); font-weight:600;">&#9673;</span> Book Appointment
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Alert Caregiver
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--purple); font-weight:600;">&#9673;</span> Counterfactual
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--amber); font-weight:600;">&#9673;</span> Med Adjustment
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--emerald); font-weight:600;">&#9673;</span> Set Reminder
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Alert Nurse
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--blue); font-weight:600;">&#9673;</span> Alert Family
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--amber); font-weight:600;">&#9673;</span> Award Voucher
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--purple); font-weight:600;">&#9673;</span> Med Video
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--emerald); font-weight:600;">&#9673;</span> Suggest Activity
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Escalate Doctor
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--emerald); font-weight:600;">&#9673;</span> Recommend Food
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--cyan); font-weight:600;">&#9673;</span> Proactive Check-in
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--amber); font-weight:600;">&#9673;</span> Celebrate Streak
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--blue); font-weight:600;">&#9673;</span> Weekly Report
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--purple); font-weight:600;">&#9673;</span> Adjust Nudge Time
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--cyan); font-weight:600;">&#9673;</span> Clinician Summary
-          </div>
-          <div class="card-sm" style="padding:8px 10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle); font-size:0.7rem;">
-            <span style="color:var(--rose); font-weight:600;">&#9673;</span> Drug Interactions
-          </div>
+    <!-- Right: Hero zero -->
+    <div class="anim d4 hero-center">
+      <div class="hero-number" style="font-size: 8rem; color: var(--emerald);">
+        0
+      </div>
+      <div style="font-size: 1.2rem; color: var(--text-primary); margin-top: 12px; font-weight: 700;">
+        unsafe misclassifications
+      </div>
+      <div style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 10px; max-width: 320px; line-height: 1.55;">
+        No patient in danger was ever told they were safe. 10,000+ patients. 32 clinical archetypes.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9: NATIONAL AI MODELS
+     ============================================================ -->
+<section class="slide" data-slide="9">
+  <div class="section-label emerald anim d1">National AI Models</div>
+  <div class="slide-title anim d1">Built on Singapore's own AI.</div>
+
+  <div class="two-col">
+    <!-- SEA-LION -->
+    <div class="card anim d2" style="border-top: 2px solid var(--emerald);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div>
+          <div style="font-weight: 700; font-size: 1.05rem;">SEA-LION v4</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">AI Singapore &middot; 27B parameters</div>
+        </div>
+        <span class="badge badge-emerald">NMLP Eligible</span>
+      </div>
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Before</div>
+      <div style="padding: 12px 16px; background: rgba(244,63,94,0.03); border: 1px solid rgba(244,63,94,0.10); border-radius: 8px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+        "Your blood glucose level of 15.2 mmol/L is significantly elevated..."
+      </div>
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--emerald); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">After</div>
+      <div style="padding: 12px 16px; background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.10); border-radius: 8px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5;">
+        "Uncle, your sugar a bit high lah. After makan, better take your medicine first, ok?"
+      </div>
+    </div>
+
+    <!-- MERaLiON + Hero -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="card anim d3" style="border-top: 2px solid var(--cyan);">
+        <div style="margin-bottom: 14px;">
+          <div style="font-weight: 700; font-size: 1.05rem;">MERaLiON</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">I2R &middot; Paralinguistic Analysis</div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          Speech emotion recognition from voice. Detects distress, fatigue, and confusion &mdash; even when their words say "I'm fine."
         </div>
       </div>
 
-      <!-- Behavioral Science -->
-      <div class="anim d5">
-        <div class="card card-sm" style="background:rgba(245,158,11,0.04); border-color:rgba(245,158,11,0.15); border-left:3px solid var(--amber);">
-          <div style="font-size:0.68rem; color:var(--amber); font-weight:600; margin-bottom:4px;">BEHAVIORAL SCIENCE &mdash; PROSPECT THEORY</div>
-          <div style="font-size:0.82rem; color:var(--text-secondary); font-style:italic; line-height:1.5;">"You'll lose $1.50 from your voucher if you miss today's dose."</div>
-          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">Agent selects from 4 psychological frames (loss aversion, implementation intention, social proof, autonomy) based on what works for each patient.</div>
+      <!-- Hero stat -->
+      <div class="anim d4" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 36px 0;">
+        <div class="hero-number" style="font-size: 5.5rem; color: var(--emerald);">
+          2
+        </div>
+        <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 12px;">
+          national LLMs integrated
+        </div>
+        <div style="margin-top: 16px;">
+          <span class="badge badge-amber">NMLP Special Award Eligible &middot; $5,000</span>
         </div>
       </div>
     </div>
@@ -1093,96 +877,41 @@ body {
 </section>
 
 <!-- ============================================================
-     SLIDE 8: NATIONAL AI MODELS
+     SLIDE 10: FOR THE PATIENT
      ============================================================ -->
-<section class="slide" data-slide="8" style="background: radial-gradient(ellipse at 70% 60%, rgba(139,92,246,0.04) 0%, var(--bg-slide) 60%), var(--bg-slide);">
-  <div class="t-section t-purple anim d1" style="margin-bottom:6px;">National AI Models &middot; IMDA</div>
-  <div class="t-title anim d1" style="margin-bottom:24px;">Singapore's Own LLMs &mdash; Built for Our Patients</div>
+<section class="slide" data-slide="10">
+  <div class="section-label cyan anim d1">For the Patient</div>
+  <div class="slide-title anim d1">Zero effort. The system does the work.</div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: SEA-LION -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d2" style="border-top:3px solid var(--emerald); flex:1;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-          <div style="font-size:1.5rem;">&#129409;</div>
-          <div>
-            <div style="font-weight:800; font-size:1.1rem; color:var(--emerald);">SEA-LION v4 27B</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">AI Singapore &middot; Cultural Translation Engine</div>
-          </div>
-        </div>
-        <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
-          Converts clinical English into <strong style="color:var(--text-primary);">culturally authentic Singlish</strong> that elderly patients actually understand and respond to.
-        </div>
-        <div class="t-section" style="color:var(--text-muted); margin-bottom:8px;">3-Tier Fallback Chain</div>
-        <div class="flex flex-col gap-xs" style="margin-bottom:14px;">
-          <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-secondary);">
-            <span style="color:var(--emerald); font-weight:700; font-family:var(--font-mono);">1</span> SEA-LION v4 27B &mdash; primary cultural translation
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-secondary);">
-            <span style="color:var(--amber); font-weight:700; font-family:var(--font-mono);">2</span> SEA-LION v3 8B &mdash; lightweight fallback
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-secondary);">
-            <span style="color:var(--rose); font-weight:700; font-family:var(--font-mono);">3</span> Gemini 2.5 Flash &mdash; universal safety net
-          </div>
-        </div>
-
-        <!-- Before/After example -->
-        <div style="margin-top:auto;">
-          <div style="font-size:0.72rem; color:var(--text-muted); font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em;">Before &mdash; Clinical English</div>
-          <div class="card-sm" style="background:var(--bg-surface-2); margin-bottom:10px; font-size:0.82rem; color:var(--text-secondary); line-height:1.5; border:1px solid var(--border-subtle);">
-            "Your glucose is trending upward. Please take 500mg Metformin and avoid high-GI foods."
-          </div>
-          <div style="font-size:0.72rem; color:var(--emerald); font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em;">After &mdash; Singlish (SEA-LION v4)</div>
-          <div class="card-sm" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.15); font-size:0.82rem; color:var(--text-primary); line-height:1.5;">
-            "Ah Uncle, sugar going up leh! Take your medicine first, then don't go eat roti prata today can? Better makan fish porridge &mdash; stomach happy, sugar also happy lah."
-          </div>
-        </div>
+  <div class="two-col">
+    <!-- Left: Features -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="feat-card anim d2">
+        <div class="feat-title">Singlish Chat</div>
+        <div class="feat-desc">Talks like a friend, not a doctor. SEA-LION translates clinical language into natural Singlish.</div>
+      </div>
+      <div class="feat-card anim d3">
+        <div class="feat-title">Voice Check-ins</div>
+        <div class="feat-desc">MERaLiON detects emotional state from tone. No typing required.</div>
+      </div>
+      <div class="feat-card anim d4">
+        <div class="feat-title">Glucose OCR</div>
+        <div class="feat-desc">Point camera at meter. Reading captured automatically.</div>
+      </div>
+      <div class="feat-card anim d5">
+        <div class="feat-title">Loss-aversion Vouchers</div>
+        <div class="feat-desc">Prospect Theory. "You'll lose your $5 FairPrice voucher." Losses motivate 2x more than gains.</div>
       </div>
     </div>
 
-    <!-- Right: MERaLiON -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d3" style="border-top:3px solid var(--purple); flex:1;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-          <div style="font-size:1.5rem;">&#127908;</div>
-          <div>
-            <div style="font-weight:800; font-size:1.1rem; color:var(--purple);">MERaLiON SER</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">I&#178;R / A*STAR &middot; Speech Emotion Recognition</div>
-          </div>
+    <!-- Right: Mr. Tan callout -->
+    <div class="anim d4 hero-center">
+      <div class="callout">
+        <div class="callout-text">
+          Works for Mr. Tan who can barely use a phone.
         </div>
-        <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
-          Detects <strong style="color:var(--text-primary);">7 emotions from voice alone</strong> &mdash; not what they say, but <em>how</em> they say it.
-        </div>
-        <div class="t-section" style="color:var(--text-muted); margin-bottom:8px;">7 Detected Emotions</div>
-        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-bottom:14px;">
-          <div style="text-align:center; padding:6px; background:var(--bg-surface-2); border-radius:6px; font-size:0.72rem; color:var(--text-secondary);">Neutral</div>
-          <div style="text-align:center; padding:6px; background:var(--bg-surface-2); border-radius:6px; font-size:0.72rem; color:var(--text-secondary);">Happy</div>
-          <div style="text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:6px; font-size:0.72rem; color:var(--blue);">Sad</div>
-          <div style="text-align:center; padding:6px; background:rgba(244,63,94,0.1); border-radius:6px; font-size:0.72rem; color:var(--rose);">Angry</div>
-          <div style="text-align:center; padding:6px; background:rgba(245,158,11,0.1); border-radius:6px; font-size:0.72rem; color:var(--amber);">Fearful</div>
-          <div style="text-align:center; padding:6px; background:rgba(139,92,246,0.1); border-radius:6px; font-size:0.72rem; color:var(--purple);">Disgusted</div>
-          <div style="text-align:center; padding:6px; background:rgba(6,182,212,0.1); border-radius:6px; font-size:0.72rem; color:var(--cyan); grid-column:span 2;">Surprised</div>
-        </div>
-
-        <div class="card-sm" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.15); margin-bottom:14px;">
-          <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-            <strong style="color:var(--purple);">Why it matters:</strong> When Uncle Tan says <em>"I'm fine lah"</em> in a tired, flat voice &mdash; MERaLiON flags it. Tired voice &#8800; energetic voice. The words lie. The voice doesn't.
-          </div>
-        </div>
-
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--text-primary);">Integration:</strong> Emotion feeds into HMM as a biomarker signal. Sustained sadness or fear triggers proactive check-in tools autonomously.
-        </div>
-      </div>
-
-      <!-- NMLP Award -->
-      <div class="card card-sm anim d5" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.2); border-left:3px solid var(--amber);">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="font-size:1.2rem;">&#127942;</div>
-          <div>
-            <div style="font-weight:700; font-size:0.85rem; color:var(--amber);">NMLP Special Award Eligible &mdash; $5,000</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">Both SEA-LION and MERaLiON are IMDA National Multimodal LLM Programme models, deeply integrated into our architecture.</div>
-          </div>
+        <div class="callout-sub">
+          Daily challenges. Streak tracking. Voice-first. Proactive outreach. The patient never has to initiate.
         </div>
       </div>
     </div>
@@ -1190,80 +919,45 @@ body {
 </section>
 
 <!-- ============================================================
-     SLIDE 9: PATIENT EXPERIENCE
+     SLIDE 11: FOR THE CAREGIVER
      ============================================================ -->
-<section class="slide" data-slide="9" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Patient Experience</div>
-  <div class="t-title anim d1" style="margin-bottom:24px;">Zero Effort From the Patient &mdash; It Just Works</div>
+<section class="slide" data-slide="11">
+  <div class="section-label emerald anim d1">For the Caregiver</div>
+  <div class="slide-title anim d1">"Your father is safe."</div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: Core features -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d2" style="border-top:3px solid var(--cyan); flex:1;">
-        <div style="font-size:2rem; margin-bottom:8px; text-align:center; opacity:0.8;">&#128172;</div>
-        <div style="font-weight:700; font-size:1.1rem; color:var(--cyan); margin-bottom:12px; text-align:center;">The AI Companion</div>
-
-        <div class="flex flex-col gap-sm">
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--cyan-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--cyan);flex-shrink:0;">&#128483;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">Chat in Singlish</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">"Uncle, take medicine lah!" &mdash; powered by SEA-LION v4. Not clinical English that nobody reads.</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--purple-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--purple);flex-shrink:0;">&#127908;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">Voice Check-ins</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">MERaLiON detects mood from voice. "I'm fine lah" said tiredly triggers proactive care.</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--amber);flex-shrink:0;">&#128247;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">Glucose OCR</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Snap a photo of the meter. No typing. AI reads the number automatically.</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--emerald);flex-shrink:0;">&#127942;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">Daily Challenges &amp; Streaks</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Gamified health goals. Loss-aversion vouchers: "You'll lose $1.50 if you miss today's dose."</div>
-            </div>
-          </div>
+  <div class="two-col">
+    <!-- Left: Features -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="feat-card anim d2">
+        <div class="feat-title">One-glance Dashboard</div>
+        <div class="feat-desc">Green / yellow / red. Is my parent safe? Answered in under one second.</div>
+      </div>
+      <div class="feat-card anim d3">
+        <div class="feat-title">One-tap Alert Response</div>
+        <div class="feat-desc">Acknowledge, call, or escalate. No app-switching. No confusion.</div>
+      </div>
+      <div class="feat-card anim d4">
+        <div class="feat-title">3-Tier Escalation</div>
+        <div class="feat-desc">
+          <span style="color: var(--emerald);">Info</span> &rarr; push.
+          <span style="color: var(--amber);">Warning</span> &rarr; SMS.
+          <span style="color: var(--rose);">Critical</span> &rarr; phone call.
         </div>
+      </div>
+      <div class="feat-card anim d5">
+        <div class="feat-title">Burden Scoring</div>
+        <div class="feat-desc">Detects caregiver fatigue. Auto-switches to digest mode &mdash; fewer, summarised updates.</div>
       </div>
     </div>
 
-    <!-- Right: Design philosophy + persona -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d3" style="border-left:3px solid var(--cyan);">
-        <div class="t-section t-cyan" style="margin-bottom:10px;">Design Philosophy</div>
-        <div class="flex flex-col gap-sm" style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <div><span style="color:var(--emerald); font-weight:700;">&#10003;</span> <strong style="color:var(--text-primary);">No forms, no apps to learn, no data entry</strong></div>
-          <div><span style="color:var(--emerald); font-weight:700;">&#10003;</span> <strong style="color:var(--text-primary);">WhatsApp-native</strong> &mdash; no downloads, no passwords</div>
-          <div><span style="color:var(--emerald); font-weight:700;">&#10003;</span> <strong style="color:var(--text-primary);">Proactive, not reactive</strong> &mdash; nudges timed to your routine</div>
-          <div><span style="color:var(--emerald); font-weight:700;">&#10003;</span> <strong style="color:var(--text-primary);">Counterfactual "what-if"</strong> &mdash; "Take medicine now = 18% risk vs 45%"</div>
-          <div><span style="color:var(--emerald); font-weight:700;">&#10003;</span> <strong style="color:var(--text-primary);">Learns what works for YOU</strong> &mdash; 14-day behavioural decay</div>
+    <!-- Right: context -->
+    <div class="anim d4 hero-center">
+      <div class="callout">
+        <div class="callout-text">
+          Designed for a working daughter checking her phone during lunch.
         </div>
-      </div>
-
-      <div class="card anim d4" style="background:rgba(6,182,212,0.04); border-color:rgba(6,182,212,0.2);">
-        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-          <strong style="color:var(--cyan);">Works for Mr. Tan</strong> who can barely use a phone. He doesn't need to understand AI, install anything, or change his routine. The companion meets him where he is &mdash; <strong style="color:var(--text-primary);">in his language, on his schedule, on a platform he already uses.</strong>
-        </div>
-      </div>
-
-      <div class="card card-sm anim d5" style="background:rgba(245,158,11,0.04); border-color:rgba(245,158,11,0.15); border-left:3px solid var(--amber);">
-        <div style="font-size:0.68rem; color:var(--amber); font-weight:600; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Personalisation Engine</div>
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">Baum-Welch EM adapts the HMM to each patient over 7 days. Nudge timing, tone, and channel all adjust based on what actually changes behaviour &mdash; <strong style="color:var(--text-primary);">14-day exponential decay</strong> ensures stale strategies are replaced.</div>
-      </div>
-
-      <div class="anim d6" style="text-align:center;">
-        <div class="card card-sm" style="display:inline-block; background:rgba(6,182,212,0.04); border-color:rgba(6,182,212,0.2);">
-          <span class="t-mono" style="font-size:0.8rem; color:var(--cyan); font-weight:700;">~32,400 lines of production code</span>
-          <span style="font-size:0.8rem; color:var(--text-secondary);"> &mdash; not a mockup.</span>
+        <div class="callout-sub">
+          Peace of mind without burden. The system handles monitoring. The caregiver gets clarity.
         </div>
       </div>
     </div>
@@ -1271,529 +965,151 @@ body {
 </section>
 
 <!-- ============================================================
-     SLIDE 10: CAREGIVER EXPERIENCE
+     SLIDE 12: FOR THE NURSE
      ============================================================ -->
-<section class="slide" data-slide="10" style="background: radial-gradient(ellipse at 60% 50%, rgba(16,185,129,0.04) 0%, var(--bg-slide) 60%), var(--bg-slide);">
-  <div class="t-section t-emerald anim d1" style="margin-bottom:6px;">Caregiver Experience</div>
-  <div class="t-title anim d1" style="margin-bottom:24px;">"Your Father Is Safe" &mdash; One-Glance Peace of Mind</div>
+<section class="slide" data-slide="12">
+  <div class="section-label amber anim d1">For the Nurse</div>
+  <div class="slide-title anim d1">The system surfaces. The human decides.</div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: Dashboard features -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d2" style="border-top:3px solid var(--emerald); flex:1;">
-        <div style="font-size:2rem; margin-bottom:8px; text-align:center; opacity:0.8;">&#128106;</div>
-        <div style="font-weight:700; font-size:1.1rem; color:var(--emerald); margin-bottom:14px; text-align:center;">Caregiver Dashboard</div>
-
-        <div class="flex flex-col gap-sm">
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--emerald);flex-shrink:0;">&#128994;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">One-Glance Status</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Green = safe. Yellow = watch. Red = act now. Status in 3 seconds, not 30.</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--cyan-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--cyan);flex-shrink:0;">&#128076;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">One-Tap Alert Responses</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Four actions: <em>Acknowledge</em> &middot; <em>On my way</em> &middot; <em>Need help</em> &middot; <em>Escalate</em>. No typing required.</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--amber);flex-shrink:0;">&#128276;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">3-Tier Escalation</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Matches severity to channel. Low: in-app digest. Medium: SMS. High: phone call + nurse alert.</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:6px;background:var(--purple-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--purple);flex-shrink:0;">&#128200;</div>
-            <div>
-              <div style="font-weight:600; font-size:0.85rem;">Burden Scoring + Auto-Digest</div>
-              <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Tracks caregiver alert load. When burden is high, batches non-urgent alerts into a single daily summary.</div>
-            </div>
-          </div>
+  <div class="two-col">
+    <!-- Left: Features -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="feat-card anim d2" style="border-left: 3px solid var(--cyan); border-top: none; border-right: none; border-bottom: none;">
+        <div class="feat-title">Auto-SBAR Reports</div>
+        <div class="feat-desc">
+          Generated in <span style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">3 seconds</span>. Manual SBAR takes 15 minutes.
+        </div>
+      </div>
+      <div class="feat-card anim d3" style="border-left: 3px solid var(--amber); border-top: none; border-right: none; border-bottom: none;">
+        <div class="feat-title">Urgency-ranked Triage</div>
+        <div class="feat-desc">Patients sorted by risk. Highest urgency surfaces first.</div>
+      </div>
+      <div class="feat-card anim d4" style="border-left: 3px solid var(--rose); border-top: none; border-right: none; border-bottom: none;">
+        <div class="feat-title">Drug Interaction Engine</div>
+        <div class="feat-desc">
+          <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">16</span> interaction pairs, <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">39</span> drug classes. Flags conflicts before they reach the patient.
         </div>
       </div>
     </div>
 
-    <!-- Right: Context + callouts -->
-    <div class="flex flex-col gap-md">
-      <div class="card anim d3" style="border-left:3px solid var(--emerald);">
-        <div class="t-section t-emerald" style="margin-bottom:10px;">The Invisible Burden</div>
-        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px;">
-          <strong style="color:var(--text-primary);">40%</strong> of informal caregivers report high emotional stress (AARP 2023). The constant worry &mdash; <em>"Is Dad okay?"</em> &mdash; is as damaging as the disease itself.
-        </div>
-        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-          Bewo doesn't just monitor the patient. It <strong style="color:var(--emerald);">protects the caregiver</strong> by turning anxiety into actionable, bounded information.
-        </div>
+    <!-- Right: Hero stat -->
+    <div class="anim d3 hero-center">
+      <div class="hero-number" style="font-size: 5rem; color: var(--amber);">
+        1:100
       </div>
-
-      <div class="card anim d4" style="background:rgba(16,185,129,0.04); border-color:rgba(16,185,129,0.2);">
-        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-          <strong style="color:var(--emerald);">Designed for Mei Ling</strong> &mdash; checking her phone during lunch break. She needs to know her father is safe in <strong style="color:var(--text-primary);">3 seconds, not 30</strong>. She doesn't want to learn an app. She wants peace of mind.
-        </div>
+      <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 14px; line-height: 1.5;">
+        nurse-to-patient ratio
       </div>
-
-      <div class="card anim d5" style="border-left:3px solid var(--amber);">
-        <div class="t-section t-amber" style="margin-bottom:8px;">Weekly Digest</div>
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          Auto-generated weekly summary of father's progress: medication adherence trend, glucose stability, mood indicators, upcoming appointments. <strong style="color:var(--text-primary);">Replace anxiety with data.</strong>
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;" class="anim d6">
-        <div class="metric-card" style="border-color:rgba(16,185,129,0.3);">
-          <div class="metric-value" style="color:var(--emerald); font-size:2rem;">&#8595;40%</div>
-          <div class="metric-label">Alert Fatigue Reduction</div>
-          <div class="t-caption" style="margin-top:2px;">via auto-digest mode</div>
-        </div>
-        <div class="metric-card" style="border-color:rgba(6,182,212,0.3);">
-          <div class="metric-value" style="color:var(--cyan); font-size:2rem;">3s</div>
-          <div class="metric-label">Time to Status</div>
-          <div class="t-caption" style="margin-top:2px;">from 30+ seconds</div>
-        </div>
+      <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">
+        from 1:20 today
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 11: CLINICAL INTEGRATION
+     SLIDE 13: SAFETY & GOVERNANCE
      ============================================================ -->
-<section class="slide" data-slide="11" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Clinical Integration</div>
-  <div class="t-title anim d1" style="margin-bottom:24px;">Zero-Effort Clinical Intelligence</div>
+<section class="slide" data-slide="13" style="background: radial-gradient(ellipse at 50% 50%, rgba(244,63,94,0.03) 0%, var(--bg-deep) 60%);">
+  <div class="section-label rose anim d1">Safety & Governance</div>
+  <div class="slide-title anim d1">Safety is never probabilistic.</div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: Before/After -->
-    <div class="flex flex-col gap-md anim d2">
-      <div class="t-section" style="color:var(--text-muted); margin-bottom:4px;">Transformation</div>
-      <div class="flex flex-col gap-xs">
-        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
-          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
-            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
-            <div style="font-size:0.8rem; color:var(--text-secondary);">Nurse reviews 220 patient files manually</div>
-          </div>
-          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
-          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
-            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
-            <div style="font-size:0.8rem; color:var(--text-primary);">Auto-triaged: IMMEDIATE / SOON / MONITOR</div>
-          </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
-          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
-            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
-            <div style="font-size:0.8rem; color:var(--text-secondary);">Nurse writes clinical handoff notes</div>
-          </div>
-          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
-          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
-            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
-            <div style="font-size:0.8rem; color:var(--text-primary);">SBAR auto-generated in 3 seconds</div>
-          </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 28px 1fr; gap:8px; align-items:center;">
-          <div class="card-sm" style="padding:10px 12px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
-            <div style="font-size:0.68rem; color:var(--rose); font-weight:600; margin-bottom:2px;">BEFORE</div>
-            <div style="font-size:0.8rem; color:var(--text-secondary);">Crisis discovered at ER admission</div>
-          </div>
-          <div style="text-align:center; color:var(--cyan); font-size:1.2rem;">&#8594;</div>
-          <div class="card-sm" style="padding:10px 12px; background:rgba(6,182,212,0.04); border-radius:8px; border:1px solid rgba(6,182,212,0.15);">
-            <div style="font-size:0.68rem; color:var(--cyan); font-weight:600; margin-bottom:2px;">AFTER</div>
-            <div style="font-size:0.8rem; color:var(--text-primary);">Predicted 48h early with survival curve</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;" class="anim d4">
-        <div class="metric-card">
-          <div class="metric-value t-cyan">1:100</div>
-          <div class="metric-label">Nurse-to-patient ratio</div>
-          <div class="t-caption" style="margin-top:4px;">from 1:20</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value t-cyan">3s</div>
-          <div class="metric-label">SBAR generation</div>
-          <div class="t-caption" style="margin-top:4px;">from 15 minutes</div>
-        </div>
+  <div class="three-col" style="flex: 1;">
+    <div class="card anim d2">
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--rose); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;">Data Protection</div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55;">
+        <div>PDPA compliant</div>
+        <div>Data never leaves Singapore</div>
+        <div>PII de-identified before every LLM call</div>
       </div>
     </div>
 
-    <!-- Right: SBAR + Nurse Dashboard Preview -->
-    <div class="flex flex-col gap-md anim d3">
-      <div class="card" style="flex:1;">
-        <div class="t-section t-amber" style="margin-bottom:12px;">Auto-Generated SBAR Report</div>
-        <div class="flex flex-col gap-sm">
-          <div>
-            <div style="font-size:0.72rem; font-weight:700; color:var(--rose); margin-bottom:3px;">S &mdash; SITUATION</div>
-            <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.4;">67M with T2DM in WARNING state (72% confidence). Glucose trending upward over 48h. Medication adherence declined to 68%.</div>
-          </div>
-          <div>
-            <div style="font-size:0.72rem; font-weight:700; color:var(--amber); margin-bottom:3px;">B &mdash; BACKGROUND</div>
-            <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.4;">HbA1c 8.1%. History of hypertension, hyperlipidaemia. On Metformin 1000mg BD, Amlodipine 5mg OD. Lives alone, limited social support.</div>
-          </div>
-          <div>
-            <div style="font-size:0.72rem; font-weight:700; color:var(--cyan); margin-bottom:3px;">A &mdash; ASSESSMENT</div>
-            <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.4;">HMM top factors: medication adherence (35% weight), glucose variability (22%), sleep quality declining. Monte Carlo 48h crisis risk: 38%. Merlion velocity: +0.3 mmol/h, accelerating.</div>
-          </div>
-          <div>
-            <div style="font-size:0.72rem; font-weight:700; color:var(--emerald); margin-bottom:3px;">R &mdash; RECOMMENDATION</div>
-            <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.4;">Counterfactual: Metformin dose escalation reduces 48h risk by 31%. Consider clinic follow-up within 72h. Caregiver notified (daughter, SMS).</div>
-          </div>
-        </div>
+    <div class="card anim d3">
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;">Clinical Safety</div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55;">
+        <div>6-dimension safety classifier</div>
+        <div>Drug interaction engine</div>
+        <div>ADA 2024 guidelines hardcoded</div>
       </div>
+    </div>
 
-      <div class="card card-sm anim d5" style="background:rgba(245,158,11,0.04); border-color:rgba(245,158,11,0.15);">
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--amber);">Multi-patient triage:</strong> Patients auto-sorted by urgency. Drug interactions flagged with severity. Nurse reviews and approves — <strong style="color:var(--text-primary);">the system surfaces, the human decides.</strong>
-        </div>
+    <div class="card anim d4">
+      <div style="font-size: 0.65rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;">Audit & Compliance</div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55;">
+        <div>Full decision audit trail</div>
+        <div>Every HMM state transition logged</div>
+        <div>Deterministic rules override AI</div>
       </div>
-      <div class="card card-sm anim d6" style="background:rgba(16,185,129,0.04); border-color:rgba(16,185,129,0.15); border-left:3px solid var(--emerald);">
-        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-          <strong style="color:var(--emerald);">3 stakeholders, 1 intelligence engine:</strong> Patient sees encouragement. Nurse sees SBAR. Caregiver sees status. Same HMM state, three purpose-built views &mdash; each showing exactly what that person needs to act.
-        </div>
-      </div>
+    </div>
+  </div>
+
+  <div class="anim d5" style="text-align: center; margin-top: 32px;">
+    <div style="font-size: 1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      "Take double insulin" is <span style="color: var(--rose); font-weight: 700;">impossible to generate</span>. Safety rules are deterministic. They fire before the AI ever speaks.
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 12: GOVERNANCE
+     SLIDE 14: THE NUMBERS
      ============================================================ -->
-<section class="slide" data-slide="12" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Governance</div>
-  <div class="t-title anim d1" style="margin-bottom:24px;">Privacy by Architecture, Not by Policy</div>
+<section class="slide" data-slide="14">
+  <div class="section-label cyan anim d1">The Numbers</div>
+  <div class="slide-title anim d1">Built to deploy, not to demo.</div>
 
-  <!-- Top-level compliance badges — most important info first -->
-  <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;" class="anim d2">
-    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.2);">
-      <span style="font-size:0.85rem; font-weight:800; color:var(--rose);">&#9632;</span>
-      <span style="font-size:0.82rem; font-weight:700; color:var(--rose);">PDPA Compliant</span>
-      <span style="font-size:0.72rem; color:var(--text-muted);">Sections 20, 24, 25</span>
+  <div class="three-col">
+    <div class="metric anim d2">
+      <div class="metric-value" style="font-size: 3.5rem; color: var(--cyan);">$0.40</div>
+      <div class="metric-label">per patient / month<br>operating cost</div>
     </div>
-    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2);">
-      <span style="font-size:0.85rem; font-weight:800; color:var(--cyan);">&#9632;</span>
-      <span style="font-size:0.82rem; font-weight:700; color:var(--cyan);">Data Never Leaves Singapore</span>
+    <div class="metric anim d3">
+      <div class="metric-value" style="font-size: 3.5rem; color: var(--emerald);">$8,800</div>
+      <div class="metric-label">saved per prevented<br>ER admission</div>
     </div>
-    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2);">
-      <span style="font-size:0.85rem; font-weight:800; color:var(--emerald);">&#9632;</span>
-      <span style="font-size:0.82rem; font-weight:700; color:var(--emerald);">PII De-identified Before LLM</span>
-    </div>
-    <div style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2);">
-      <span style="font-size:0.85rem; font-weight:800; color:var(--purple);">&#9632;</span>
-      <span style="font-size:0.82rem; font-weight:700; color:var(--purple);">Full Audit Trail</span>
+    <div class="metric anim d4">
+      <div class="metric-value" style="font-size: 3.5rem; color: var(--amber);">22,000</div>
+      <div class="metric-label">months of Bewo funded<br>by 1 prevented admission</div>
     </div>
   </div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex:1;">
-    <!-- Left: Data Protection Layers -->
-    <div class="flex flex-col gap-sm anim d3">
-      <div class="t-section" style="color:var(--rose); margin-bottom:4px;">4 Core Data Protection Layers</div>
-
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
-        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">1</div>
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">PII Firewall <span class="badge badge-rose" style="font-size:0.55rem; padding:2px 6px; vertical-align:middle;">Mandatory</span></div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Name, NRIC, address, phone, email <strong style="color:var(--text-primary);">stripped before any LLM call</strong>. AI never sees who the patient is. Regex + NER dual pass.</div>
-        </div>
-      </div>
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
-        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">2</div>
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">Data Sovereignty</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">All infrastructure in <strong style="color:var(--text-primary);">Singapore region only</strong>. HMM runs on-device. No patient data crosses national borders.</div>
-        </div>
-      </div>
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
-        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">3</div>
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">Immutable Audit Trail</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Every AI decision logged: input state, model output, safety gate result, final action. <strong style="color:var(--text-primary);">Fully auditable by MOH</strong> at any time.</div>
-        </div>
-      </div>
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle);">
-        <div style="width:28px;height:28px;border-radius:6px;background:var(--rose-dim);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--rose);flex-shrink:0;margin-top:2px;">4</div>
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">6-Month Rolling Retention</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Auto-deletion triggers on glucose, HMM states, voice transcripts. <strong style="color:var(--text-primary);">PDPA Section 25</strong> compliant.</div>
-        </div>
-      </div>
+  <div class="three-col" style="margin-top: 20px;">
+    <div class="metric anim d5">
+      <div class="metric-value" style="font-size: 3.5rem; color: var(--text-primary);">87%</div>
+      <div class="metric-label">gross margin<br>at $3/month B2G</div>
     </div>
-
-    <!-- Right: Ethics Framework -->
-    <div class="flex flex-col gap-sm anim d4">
-      <div class="t-section" style="color:var(--purple); margin-bottom:4px;">Ethics &amp; Consent Framework</div>
-
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">Informed Consent (Tiered)</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">BASIC (phone sensors) &#8594; ENHANCED (+Fitbit) &#8594; PREMIUM (+CGM). Granular opt-in, not all-or-nothing.</div>
-        </div>
-      </div>
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">Right to Explanation (PDPA S.20)</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Every HMM state: which feature, what weight, what probability. Patient asks "why WARNING?" and gets a readable answer.</div>
-        </div>
-      </div>
-      <div class="card-sm" style="display:flex; gap:12px; align-items:flex-start; background:var(--bg-surface); border-radius:10px; border:1px solid var(--border-subtle); border-left:3px solid var(--purple);">
-        <div>
-          <div style="font-weight:600; font-size:0.82rem;">Human-in-the-Loop</div>
-          <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Medication suggestions NEVER auto-applied. Always flagged for doctor review. The system recommends. The human decides.</div>
-        </div>
-      </div>
-
-      <!-- Data flow diagram -->
-      <div class="card-sm" style="background:rgba(6,182,212,0.03); border-color:rgba(6,182,212,0.12); border-radius:10px; margin-top:4px;">
-        <div style="font-size:0.7rem; font-weight:600; color:var(--cyan); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em;">Data Flow: What the LLM Sees</div>
-        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.6; font-family:var(--font-mono);">
-          <span style="color:var(--text-muted);">Raw:</span> <span style="text-decoration:line-through; color:var(--rose);">Tan Ah Kow, S1234567A</span><br>
-          <span style="color:var(--text-muted);">LLM sees:</span> <span style="color:var(--emerald);">Patient-0x7A2F, glucose=8.2, state=WARNING</span>
-        </div>
-      </div>
+    <div class="metric anim d6">
+      <div class="metric-value" style="font-size: 3.5rem; color: var(--text-primary);">186ms</div>
+      <div class="metric-label">core inference<br>runs on a phone</div>
+    </div>
+    <div class="metric anim d7">
+      <div class="metric-value" style="font-size: 3.5rem; color: var(--text-primary);">32,400</div>
+      <div class="metric-label">lines of<br>production code</div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SLIDE 13: TECHNICAL METRICS
+     SLIDE 15: CLOSE
      ============================================================ -->
-<section class="slide" data-slide="13" style="background: radial-gradient(ellipse at 50% 40%, rgba(6,182,212,0.05) 0%, var(--bg-slide) 60%), var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Technical Rigour</div>
-  <div class="t-title anim d1" style="margin-bottom:28px;">The Numbers Behind the System</div>
+<section class="slide" data-slide="15" style="justify-content: center; align-items: center; text-align: center; background: radial-gradient(ellipse at 50% 50%, rgba(6,182,212,0.05) 0%, rgba(16,185,129,0.03) 35%, var(--bg-deep) 70%);">
+  <div class="anim d1" style="font-size: 2.6rem; font-weight: 700; line-height: 1.5; max-width: 780px; letter-spacing: -0.025em;">
+    Bewo doesn't wait for crisis.<br>
+    It <span style="color: var(--cyan);">predicts</span>. It <span style="color: var(--emerald);">prevents</span>. It <span style="color: var(--text-primary); font-weight: 900;">protects</span>.
+  </div>
 
-  <div style="max-width:900px; margin:0 auto; flex:1; display:flex; flex-direction:column; gap:20px;">
-    <!-- Top: Core validation metrics -->
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;" class="anim d2">
-      <div class="metric-card card-glow-amber" style="border-color:rgba(245,158,11,0.3);">
-        <div class="metric-value" style="color:var(--amber); font-size:2.4rem;">82.1%</div>
-        <div class="metric-label" style="font-weight:700;">Hardened Accuracy</div>
-        <div class="t-caption" style="margin-top:2px;">5K adversarial patients</div>
-      </div>
-      <div class="metric-card card-glow-emerald" style="border-color:rgba(16,185,129,0.3);">
-        <div class="metric-value" style="color:var(--emerald); font-size:2.4rem;">87.8%</div>
-        <div class="metric-label" style="font-weight:700;">CRISIS Recall</div>
-        <div class="t-caption" style="margin-top:2px;">catches real emergencies</div>
-      </div>
-      <div class="metric-card card-glow-cyan" style="border-color:rgba(6,182,212,0.3);">
-        <div class="metric-value" style="color:var(--cyan); font-size:2.4rem;">0.967</div>
-        <div class="metric-label" style="font-weight:700;">AUC</div>
-        <div class="t-caption" style="margin-top:2px;">hardened suite</div>
-      </div>
-      <div class="metric-card card-glow-rose" style="border-color:rgba(244,63,94,0.3);">
-        <div class="metric-value" style="color:var(--rose); font-size:2.4rem;">0</div>
-        <div class="metric-label" style="font-weight:700;">Unsafe Misclass</div>
-        <div class="t-caption" style="margin-top:2px;">CRISIS&#8594;STABLE errors</div>
-      </div>
-    </div>
+  <div class="anim d2" style="margin-top: 44px; font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; max-width: 440px;">
+    From diabetes to all chronic disease.<br>
+    From Singapore to ASEAN.
+  </div>
 
-    <!-- Middle: Test coverage + system metrics -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-      <div class="card anim d3" style="border-left:3px solid var(--purple);">
-        <div class="t-section t-purple" style="margin-bottom:10px;">Test Coverage</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--text-primary);">230/230</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Tests Passed</div>
-          </div>
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--text-primary);">76/76</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Validation Gates</div>
-          </div>
-        </div>
-        <div style="margin-top:10px; text-align:center;">
-          <span class="t-mono" style="font-size:0.85rem; font-weight:700; color:var(--purple);">8,772</span>
-          <span style="font-size:0.82rem; color:var(--text-secondary);"> lines of test code</span>
-        </div>
-      </div>
-
-      <div class="card anim d4" style="border-left:3px solid var(--cyan);">
-        <div class="t-section t-cyan" style="margin-bottom:10px;">System Performance</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--cyan);">$0.40</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Cost/patient/month</div>
-          </div>
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.8rem; color:var(--emerald);">&lt;200ms</div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">HMM Core Pipeline</div>
-            <div style="font-size:0.62rem; color:var(--text-muted);">on-device real-time capable</div>
-          </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.4rem; color:var(--cyan);">12.7ms</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">HMM Inference</div>
-            <div style="font-size:0.62rem; color:var(--text-muted);">14 days, 9 features</div>
-          </div>
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.4rem; color:var(--cyan);">173.6ms</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Monte Carlo</div>
-            <div style="font-size:0.62rem; color:var(--text-muted);">2K sims, 48h</div>
-          </div>
-          <div style="text-align:center; padding:12px; background:var(--bg-surface-2); border-radius:8px;">
-            <div style="font-family:var(--font-mono); font-weight:900; font-size:1.4rem; color:var(--amber);">~10&ndash;15s</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Full /chat Pipeline</div>
-            <div style="font-size:0.62rem; color:var(--text-muted);">HMM + Merlion + Gemini + SEA-LION</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom: RCT plan -->
-    <div class="card anim d5" style="padding:16px 24px;">
-      <div class="t-section t-emerald" style="margin-bottom:10px;">Proposed RCT Evaluation</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; font-size:0.8rem;">
-        <div>
-          <div style="color:var(--text-muted); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Design</div>
-          <div style="color:var(--text-secondary); line-height:1.4;">Treatment vs Control across 2 polyclinics. ~400 patients per arm. IRB approval via NUS.</div>
-        </div>
-        <div>
-          <div style="color:var(--text-muted); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Primary Endpoints</div>
-          <div style="color:var(--text-secondary); line-height:1.4;">30-day readmission rate. HbA1c at 3 &amp; 6 months. Medication adherence.</div>
-        </div>
-        <div>
-          <div style="color:var(--text-muted); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Secondary Endpoints</div>
-          <div style="color:var(--text-secondary); line-height:1.4;">Patient NPS. Nurse hours/patient. 90-day retention. Caregiver Zarit Burden.</div>
-        </div>
-      </div>
+  <div class="anim d3" style="margin-top: 64px;">
+    <div style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">
+      <span style="color: var(--cyan);">B</span>ewo Health
     </div>
   </div>
-</section>
 
-<!-- ============================================================
-     SLIDE 14: IMPACT
-     ============================================================ -->
-<section class="slide slide-impact" data-slide="14" style="background: var(--bg-slide);">
-  <div class="t-section t-cyan anim d1" style="margin-bottom:6px;">Impact</div>
-  <div class="t-title anim d1" style="margin-bottom:28px;">Why This Matters &mdash; At Scale</div>
-
-  <div style="max-width:900px; margin:0 auto; flex:1; display:flex; flex-direction:column; gap:20px;">
-    <!-- Hero cost comparison -->
-    <div style="display:grid; grid-template-columns:1fr 80px 1fr; gap:0; align-items:center;" class="anim d2">
-      <div class="metric-card card-glow-cyan" style="border-color:rgba(6,182,212,0.3);">
-        <div class="metric-value" style="color:var(--cyan);">$0.40</div>
-        <div class="metric-label" style="font-weight:700;">Cost / Patient / Month</div>
-        <div class="t-caption" style="margin-top:4px;">Bewo monitoring cost</div>
-      </div>
-      <div style="text-align:center; font-size:1.5rem; color:var(--text-muted); font-weight:300;">vs</div>
-      <div class="metric-card card-glow-rose" style="border-color:rgba(244,63,94,0.3);">
-        <div class="metric-value" style="color:var(--rose);">$8,800</div>
-        <div class="metric-label" style="font-weight:700;">Per Preventable ER Visit</div>
-        <div class="t-caption" style="margin-top:4px;">1 prevented admission = 22,000 months of Bewo</div>
-      </div>
-    </div>
-
-    <!-- Impact grid -->
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;" class="anim d3">
-      <div class="metric-card card-glow-cyan">
-        <div class="metric-value t-cyan" style="font-size:2.2rem;">1:100</div>
-        <div class="metric-label">Nurse-to-Patient Ratio</div>
-        <div class="t-caption" style="margin-top:2px;">from 1:20 today</div>
-      </div>
-      <div class="metric-card card-glow-amber">
-        <div class="metric-value t-amber" style="font-size:2.2rem;">~40%</div>
-        <div class="metric-label">Fewer ER Admissions</div>
-        <div class="t-caption" style="margin-top:2px;">preventable cases</div>
-      </div>
-      <div class="metric-card card-glow-emerald">
-        <div class="metric-value t-emerald" style="font-size:2.2rem;">&#8595;40%</div>
-        <div class="metric-label">Caregiver Alert Fatigue</div>
-        <div class="t-caption" style="margin-top:2px;">auto-digest mode</div>
-      </div>
-      <div class="metric-card" style="border-color:rgba(139,92,246,0.3); box-shadow: 0 0 40px rgba(139,92,246,0.08);">
-        <div class="metric-value t-purple" style="font-size:2.2rem;">87%</div>
-        <div class="metric-label">Gross Margin</div>
-        <div class="t-caption" style="margin-top:2px;">at $3/mo B2G pricing</div>
-      </div>
-    </div>
-
-    <!-- Community impact -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-      <div class="card anim d4" style="border-left:3px solid var(--emerald);">
-        <div class="t-section t-emerald" style="margin-bottom:8px;">Community Impact</div>
-        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-          <strong style="color:var(--text-primary);">440K Singaporeans with diabetes.</strong> Each one has a caregiver. Bewo protects both &mdash; <strong style="color:var(--emerald);">reducing caregiver burden</strong> through auto-digest alerts, weekly summaries, and one-tap responses. The sandwich generation doesn't need another app. They need peace of mind.
-        </div>
-      </div>
-
-      <div class="card anim d5" style="border-left:3px solid var(--cyan);">
-        <div class="t-section t-cyan" style="margin-bottom:8px;">Healthcare System Impact</div>
-        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-          <strong style="color:var(--text-primary);">Shift from reactive to predictive care.</strong> Nurses see 5x more patients. Doctors get SBAR reports in 3 seconds. Polyclinics prevent admissions instead of processing them. <strong style="color:var(--cyan);">The system works FOR the clinician, not the other way around.</strong>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     SLIDE 15: ROADMAP + CLOSE
-     ============================================================ -->
-<section class="slide slide-close" data-slide="15">
-  <div style="width:100%; max-width:900px; margin:0 auto;">
-    <div class="t-section t-cyan anim d1" style="margin-bottom:6px; text-align:center;">Roadmap</div>
-    <div class="t-title anim d1" style="margin-bottom:32px; text-align:center;">From Pilot to Platform</div>
-
-    <!-- 3-Phase Roadmap -->
-    <div class="anim d2" style="margin-bottom:40px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
-        <div class="card" style="border-top:3px solid var(--cyan);">
-          <div style="font-size:0.7rem; color:var(--cyan); font-weight:700; margin-bottom:8px;">PHASE 1 &middot; 2026-27</div>
-          <div style="font-size:1rem; color:var(--text-primary); font-weight:700; margin-bottom:8px;">Singapore Pilot</div>
-          <div class="flex flex-col gap-xs" style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-            <div>&bull; 3 polyclinics &middot; 20K patients</div>
-            <div>&bull; HealthHub integration</div>
-            <div>&bull; IRB-approved RCT</div>
-            <div>&bull; MERaLiON voice integration</div>
-          </div>
-          <div style="margin-top:12px; padding:6px 10px; background:rgba(6,182,212,0.06); border-radius:6px; border:1px solid rgba(6,182,212,0.12);">
-            <div style="font-size:0.72rem; color:var(--cyan); font-weight:600;">Status: 32K lines built, validation complete</div>
-          </div>
-        </div>
-        <div class="card" style="border-top:3px solid var(--purple);">
-          <div style="font-size:0.7rem; color:var(--purple); font-weight:700; margin-bottom:8px;">PHASE 2 &middot; 2028-29</div>
-          <div style="font-size:1rem; color:var(--text-primary); font-weight:700; margin-bottom:8px;">ASEAN Scale</div>
-          <div class="flex flex-col gap-xs" style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-            <div>&bull; Malaysia, Thailand, Indonesia</div>
-            <div>&bull; SEA-LION 11 languages</div>
-            <div>&bull; Same architecture, local data</div>
-            <div>&bull; Regional regulatory compliance</div>
-          </div>
-          <div style="margin-top:12px; padding:6px 10px; background:rgba(139,92,246,0.06); border-radius:6px; border:1px solid rgba(139,92,246,0.12);">
-            <div style="font-size:0.72rem; color:var(--purple); font-weight:600;">Requires: ASEAN regulatory mapping</div>
-          </div>
-        </div>
-        <div class="card" style="border-top:3px solid var(--emerald);">
-          <div style="font-size:0.7rem; color:var(--emerald); font-weight:700; margin-bottom:8px;">PHASE 3 &middot; 2030+</div>
-          <div style="font-size:1rem; color:var(--text-primary); font-weight:700; margin-bottom:8px;">Multi-Chronic</div>
-          <div class="flex flex-col gap-xs" style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">
-            <div>&bull; Hypertension, CKD, cardiovascular</div>
-            <div>&bull; Same architecture, new biomarkers</div>
-            <div>&bull; Population health analytics</div>
-            <div>&bull; National chronic disease platform</div>
-          </div>
-          <div style="margin-top:12px; padding:6px 10px; background:rgba(16,185,129,0.06); border-radius:6px; border:1px solid rgba(16,185,129,0.12);">
-            <div style="font-size:0.72rem; color:var(--emerald); font-weight:600;">Feasible: HMM is condition-agnostic</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Closing statement -->
-    <div class="anim d4" style="text-align:center;">
-      <div class="close-quote">
-        The future of healthcare isn't reactive.<br>
-        It's <em>predictive</em>, <em>personalised</em>, and <em>proactive</em>.<br>
-        <span style="font-weight:900; font-size:1.15em; display:inline-block; margin-top:8px;">Bewo doesn't wait for the crisis. It sees it coming.</span>
-      </div>
-      <div style="margin-top:36px; font-size:2rem; font-weight:800; letter-spacing:-0.02em;">
-        <span style="color:var(--cyan);">B</span>ewo Health
-      </div>
-      <div style="margin-top:14px; font-size:0.9rem; color:var(--text-muted); letter-spacing:0.03em;">
-        NUS-Synapxe-IMDA AI Innovation Challenge 2026 &middot; Problem Statement 1
-      </div>
-    </div>
+  <div class="anim d4" style="margin-top: 20px; font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.05em;">
+    NUS-Synapxe-IMDA AI Innovation Challenge 2026
   </div>
 </section>
 
