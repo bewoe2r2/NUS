@@ -126,11 +126,6 @@ export default function Slide11NationalAI() {
             </div>
           </div>
 
-          <div className="w-px h-10 bg-zinc-800" />
-
-          <div className="bg-amber-400/[0.08] border border-amber-400/20 rounded-full px-5 py-2">
-            <span className="text-amber-400 font-mono text-sm font-bold">NMLP Award</span>
-          </div>
         </motion.div>
       </div>
     </div>
