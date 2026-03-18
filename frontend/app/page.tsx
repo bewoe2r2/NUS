@@ -1,8 +1,10 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { DailyInsightCard } from "@/components/patient/home/DailyInsightCard";
+import { DailyChallengeCard } from "@/components/patient/home/DailyChallengeCard";
+import { StreakDisplay } from "@/components/patient/home/StreakDisplay";
+import { WeeklySummaryCard } from "@/components/patient/home/WeeklySummaryCard";
 import { BentoGrid } from "@/components/patient/metrics/BentoGrid";
 import { MedicationList } from "@/components/patient/medication/MedicationList";
 import { ChatContainer } from "@/components/patient/chat/ChatContainer";
@@ -89,9 +91,9 @@ export default function Home() {
       </header>
 
       {/* 2. BODY CONTENT */}
-      <div className="pt-24 px-6 max-w-md mx-auto space-y-8">
+      <div className="pt-24 px-6 max-w-md mx-auto space-y-6">
 
-        {/* STATUS ORGANISM */}
+        {/* STATUS — Daily Insight */}
         <section id="patient-insight" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:50ms] fill-mode-backwards">
           <DailyInsightCard
             state={data.current_state}
@@ -101,12 +103,22 @@ export default function Home() {
           />
         </section>
 
+        {/* STREAKS — inline badges */}
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:80ms] fill-mode-backwards">
+          <StreakDisplay />
+        </section>
+
+        {/* DAILY CHALLENGE */}
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms] fill-mode-backwards">
+          <DailyChallengeCard />
+        </section>
+
         {/* REWARDS */}
         <section id="patient-voucher" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:120ms] fill-mode-backwards">
           <VoucherCard />
         </section>
 
-        {/* METRICS ORGANISM */}
+        {/* METRICS — with embedded glucose sparkline */}
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:200ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Overview</h2>
           <BentoGrid
@@ -114,13 +126,18 @@ export default function Home() {
           />
         </section>
 
-        {/* MEDICATION ORGANISM */}
+        {/* WEEKLY SUMMARY — collapsible */}
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:250ms] fill-mode-backwards">
+          <WeeklySummaryCard />
+        </section>
+
+        {/* MEDICATION */}
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Schedule</h2>
           <MedicationList />
         </section>
 
-        {/* CHAT ORGANISM */}
+        {/* CHAT */}
         <section id="patient-chat" className="animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:400ms] fill-mode-backwards">
           <h2 className="text-h4 mb-3 px-1 text-neutral-800">Care Assistant</h2>
           <ChatContainer />

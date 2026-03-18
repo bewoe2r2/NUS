@@ -320,6 +320,16 @@ export const api = {
         return data.safety_events || [];
     },
 
+    getDailyChallenge: async (id: string): Promise<any> => {
+        try {
+            const res = await authFetch(`${API_BASE}/agent/daily-challenge/${id}`);
+            if (!res.ok) return null;
+            return res.json();
+        } catch {
+            return null;
+        }
+    },
+
     getStreaks: async (id: string): Promise<any> => {
         const res = await authFetch(`${API_BASE}/agent/streaks/${id}`);
         if (!res.ok) return { streaks: {} };
@@ -420,6 +430,20 @@ export const api = {
         return res.json();
     },
 
+    caregiverRespond: async (alertId: string, action: string, patientId: string = "P001"): Promise<any> => {
+        try {
+            const res = await authFetch(`${API_BASE}/caregiver/respond`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ alert_id: alertId, action, patient_id: patientId }),
+            });
+            if (!res.ok) return { success: false };
+            return res.json();
+        } catch {
+            return { success: false };
+        }
+    },
+
     // --- HMM ---
     trainHMM: async (id: string): Promise<any> => {
         const res = await authFetch(`${API_BASE}/hmm/train/${id}`, { method: "POST" });
@@ -501,6 +525,16 @@ export const api = {
             return res.json();
         } catch {
             return { backend: "offline_mock", model: null, status: "offline" };
+        }
+    },
+
+    getMeralionStatus: async (): Promise<{ backend: string; asr_model: string | null; ser_model: string | null; status: string }> => {
+        try {
+            const res = await authFetch(`${API_BASE}/meralion/status`);
+            if (!res.ok) return { backend: "unavailable", asr_model: null, ser_model: null, status: "inactive" };
+            return res.json();
+        } catch {
+            return { backend: "unavailable", asr_model: null, ser_model: null, status: "inactive" };
         }
     },
 

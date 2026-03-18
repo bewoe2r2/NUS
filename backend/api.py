@@ -2471,6 +2471,22 @@ async def sealion_translate(body: SeaLionTranslateRequest, api_key: str = Depend
 
 
 # =============================================================================
+# MERaLiON ENDPOINTS (A*STAR Speech AI)
+# =============================================================================
+
+@app.get("/meralion/status")
+async def meralion_status(api_key: str = Depends(verify_api_key)):
+    """Returns MERaLiON backend info (ASR + SER model status)."""
+    try:
+        from meralion_interface import MeralionInterface
+        info = MeralionInterface().get_backend_info()
+        return info
+    except Exception as e:
+        logger.exception(f"MERaLiON status error: {e}")
+        return {"backend": "unavailable", "asr_model": None, "ser_model": None, "status": "inactive"}
+
+
+# =============================================================================
 # STARTUP
 # =============================================================================
 

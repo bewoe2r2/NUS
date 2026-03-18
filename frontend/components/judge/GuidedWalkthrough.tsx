@@ -26,9 +26,10 @@ import {
     Zap,
     Send,
     Globe,
+    Users,
 } from "lucide-react";
 
-type TabId = "overview" | "patient" | "nurse" | "intelligence" | "tooldemo";
+type TabId = "overview" | "patient" | "nurse" | "caregiver" | "intelligence" | "tooldemo";
 type CardPos = "center" | "below" | "right" | "left" | "bottom-left";
 
 interface WalkthroughStep {
@@ -201,9 +202,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             title: "Layer 5: Cultural Intelligence — SEA-LION v4",
             subtitle: "Same medical truth, different cultural encoding — trust through language",
             body: sealionResult
-                ? "BEFORE — Cold Clinical English:\n\"" + sealionResult.original + "\"\n\nAFTER — Warm Singlish via SEA-LION v4:\n\"" + sealionResult.translated + "\"\n\nSame medical truth. Completely different emotional impact. Mr. Tan reads the first and ignores it. He reads the second and takes his medication.\n\nSEA-LION v4 27B (by AI Singapore) performs semiotic translation — not just words, but trust signals. Topic-comment syntax, discourse particles (lah, lor, meh), hawker-centre vocabulary. The model runs via AI Singapore's official API (api.sea-lion.ai) with Cloudflare and Gemini fallbacks.\n\nThis layer is eligible for the $5,000 NMLP Special Award — a real-world deployment of AI Singapore's models for culturally-adapted healthcare. The MERaLiON-compatible architecture enables future voice integration."
+                ? "BEFORE — Cold Clinical English:\n\"" + sealionResult.original + "\"\n\nAFTER — Warm Singlish via SEA-LION v4:\n\"" + sealionResult.translated + "\"\n\nSame medical truth. Completely different emotional impact. Mr. Tan reads the first and ignores it. He reads the second and takes his medication.\n\nSEA-LION v4 27B (by AI Singapore) performs semiotic translation — not just words, but trust signals. Topic-comment syntax, discourse particles (lah, lor, meh), hawker-centre vocabulary. The model runs via AI Singapore's official API (api.sea-lion.ai) with Cloudflare and Gemini fallbacks.\n\nThis layer is eligible for the $5,000 NMLP Special Award — a real-world deployment of AI Singapore's models for culturally-adapted healthcare. The MERaLiON speech emotion recognition enables future voice integration."
                 : "Before we continue Mr. Tan's story, let's see the layer that makes him trust the system.\n\nSEA-LION v4 27B (by AI Singapore) is the Cultural Translation layer. It rewrites clinical English into culturally resonant Singlish — and the difference is dramatic.\n\nClick below to see a live translation. Watch closely:\n\nBEFORE (Clinical English):\n\"Your glucose levels have been elevated. Please take your medication and consider reducing carbohydrate intake.\"\n\nMr. Tan would read that and think \"hospital letter, not for me.\" SEA-LION transforms it into language that feels like family talking.\n\nThis is eligible for the $5,000 NMLP Special Award — real-world use of AI Singapore's models for culturally-adapted healthcare.",
-            insight: "Language is not cosmetic — it is the primary trust interface. Elderly Singaporean patients comply 2.3x more with instructions delivered in their home register (Singlish) vs clinical English. SEA-LION makes every message feel like it comes from family, not a hospital. NMLP Award eligible: SEA-LION v4 27B + MERaLiON-compatible architecture.",
+            insight: "Language is not cosmetic — it is the primary trust interface. Elderly Singaporean patients comply 2.3x more with instructions delivered in their home register (Singlish) vs clinical English. SEA-LION makes every message feel like it comes from family, not a hospital. NMLP Award eligible: SEA-LION v4 27B + MERaLiON speech emotion recognition.",
             tab: "patient",
             action: async () => {
                 try {
@@ -317,7 +318,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 3: DAYS 6-10 — Something shifts (Steps 9-12)
+        // ACT 3: DAYS 6-10 — Something shifts (Steps 9-13)
         // ===============================================
         {
             id: "crisis_narrative",
@@ -364,6 +365,20 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             pos: "center",
         },
         {
+            id: "caregiver_alert",
+            phase: "DAYS 6–10: WARNING",
+            phaseColor: "from-amber-500 to-orange-500",
+            title: "The Caregiver: Right Information, Right Time",
+            subtitle: "Mr. Tan’s daughter gets a notification — and can respond with one tap",
+            body: "Mr. Tan’s daughter, Mei Ling, just received a push notification: \"Dad’s health is declining slightly. He missed his evening Metformin twice this week.\"\n\nShe didn’t have to call the clinic. She didn’t have to guess. One tap: \"I’ll check in on Dad tonight.\"\n\nBewo uses a 3-tier escalation system that matches alert severity to communication channel:\n\n• Info tier (stable drift) → in-app push notification\n• Warning tier (pattern shift) → SMS with action link\n• Critical tier (crisis detected) → SMS + automated phone call\n\nBut here’s what no competitor does: Bewo tracks caregiver burden. Mei Ling’s burden score (0–100) measures how many alerts she’s received, how often she’s responded, and her response latency. If her burden exceeds 70, the system auto-switches to daily digest mode — batching non-urgent updates into one evening summary.\n\nThis prevents alert fatigue. Overwhelmed caregivers stop responding entirely. Bewo keeps Mei Ling engaged by respecting her capacity.\n\nLook at: Switch to the Caregiver tab to see the caregiver experience. On the Intelligence tab, find the Caregiver Burden gauge.",
+            insight: "Caregiver burnout is invisible but deadly. 40% of informal caregivers report high emotional stress. When caregivers disengage, patients lose their strongest safety net. Bewo’s burden scoring and auto-digest mode keep caregivers in the loop without burning them out.",
+            tab: "caregiver",
+            icon: <Users size={20} />,
+            stat: { value: "3-tier", label: "Escalation System" },
+            highlight: "#tab-bar-group",
+            pos: "below",
+        },
+        {
             id: "warning_stakeholders",
             phase: "DAYS 6–10: WARNING",
             phaseColor: "from-amber-500 to-orange-500",
@@ -379,7 +394,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 4: DAYS 11-14 — Full crisis (Steps 13-15)
+        // ACT 4: DAYS 11-14 — Full crisis (Steps 14-16)
         // ===============================================
         {
             id: "inject_crisis",
@@ -428,7 +443,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 5: RECOVERY (Steps 16-17)
+        // ACT 5: RECOVERY (Steps 17-18)
         // ===============================================
         {
             id: "inject_recovery",
@@ -463,7 +478,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // ACT 6: DEEP DIVE (Steps 18-19)
+        // ACT 6: DEEP DIVE (Steps 19-21)
         // ===============================================
         {
             id: "tool_demo",
@@ -495,7 +510,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // TECHNICAL METRICS (Step 20)
+        // TECHNICAL METRICS (Step 21)
         // ===============================================
         {
             id: "tech-metrics",
@@ -521,7 +536,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         },
 
         // ===============================================
-        // CLOSING (Step 21)
+        // CLOSING (Step 22)
         // ===============================================
         {
             id: "closing",
@@ -530,7 +545,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             title: "Before Crisis. Not After.",
             subtitle: judgeName ? `Thank you, ${judgeName}. Everything you saw is live.` : "A working system. Not a prototype.",
             body: "Mr. Tan Ah Kow is 67. He lives alone in Toa Payoh. He has Type 2 Diabetes. And today, he's safe at home — because Bewo caught his crisis 48 hours before he felt it.\n\nYou watched the full journey:\n1. Health State Engine — detected STABLE → WARNING → CRISIS from 9 biomarkers\n2. Risk Forecasting — predicted glucose trajectory 48 hours ahead\n3. AI Care Agent — 18 tools acted autonomously at each state\n4. Safety Layer — 6-dimension check on every response\n5. Cultural Intelligence (SEA-LION + MERaLiON-ready) — spoke to him in Singlish, like family\n\nThe numbers that prove it works:\n• 230/230 tests passed, 76/76 validation gates — zero failures\n• 82.1% hardened accuracy on 5,000 patients with contradictory signals\n• Zero CRISIS-as-STABLE misclassifications — the metric that matters most\n• HMM beats glucose-only by +25.3%\n• $0.40/patient/month. One prevented ER visit = $8,800 saved.\n• 440,000 diabetics in Singapore. Doubling by 2035.\n\nThis is not a prototype. This is a working system.\n\nExplore freely — inject any of the 7 scenarios from the sidebar, chat with the AI, click every button. Everything is live.",
-            insight: "Mr. Tan is one patient. Singapore has 440,000 diabetics. ASEAN has 56M. At $0.40/month and 87% gross margin, preventing just 55 ER visits covers the entire operating cost of 100,000 patients. Built for Singapore (Singlish, hawker food, NTUC vouchers). Eligible for the $5,000 NMLP Special Award — SEA-LION v4 27B + MERaLiON-compatible architecture. Before crisis. Not after.",
+            insight: "Mr. Tan is one patient. Singapore has 440,000 diabetics. ASEAN has 56M. At $0.40/month and 87% gross margin, preventing just 55 ER visits covers the entire operating cost of 100,000 patients. Built for Singapore (Singlish, hawker food, NTUC vouchers). Eligible for the $5,000 NMLP Special Award — SEA-LION v4 27B + MERaLiON speech emotion recognition. Before crisis. Not after.",
             icon: <Sparkles size={20} />,
             stat: { value: "$0.40", label: "Per Patient/Month" },
             pos: "center",
@@ -709,11 +724,11 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         { name: "Welcome", steps: [0], color: "bg-blue-500" },
         { name: "Characters", steps: [1, 2, 3, 4], color: "bg-emerald-500" },
         { name: "Stable", steps: [5, 6, 7, 8], color: "bg-green-500" },
-        { name: "Warning", steps: [9, 10, 11, 12], color: "bg-amber-500" },
-        { name: "Crisis", steps: [13, 14, 15], color: "bg-rose-500" },
-        { name: "Recovery", steps: [16, 17], color: "bg-teal-500" },
-        { name: "Deep Dive", steps: [18, 19, 20], color: "bg-purple-500" },
-        { name: "Close", steps: [21], color: "bg-zinc-700" },
+        { name: "Warning", steps: [9, 10, 11, 12, 13], color: "bg-amber-500" },
+        { name: "Crisis", steps: [14, 15, 16], color: "bg-rose-500" },
+        { name: "Recovery", steps: [17, 18], color: "bg-teal-500" },
+        { name: "Deep Dive", steps: [19, 20, 21], color: "bg-purple-500" },
+        { name: "Close", steps: [22], color: "bg-zinc-700" },
     ];
 
     const avgSecondsPerStep = 25;

@@ -52,7 +52,7 @@ interface TriagePatient {
 // JUDGE PAGE
 // ============================================================================
 export default function JudgePage() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'patient' | 'nurse' | 'intelligence' | 'tooldemo'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'patient' | 'nurse' | 'caregiver' | 'intelligence' | 'tooldemo'>('overview');
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(false);
     const [showWalkthrough, setShowWalkthrough] = useState(true); // Auto-launch for judges
@@ -153,6 +153,7 @@ export default function JudgePage() {
         { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
         { id: 'patient' as const, label: 'Patient View', icon: Heart },
         { id: 'nurse' as const, label: 'Nurse View', icon: Stethoscope },
+        { id: 'caregiver' as const, label: 'Caregiver', icon: Users },
         { id: 'intelligence' as const, label: 'AI Intelligence', icon: Brain },
         { id: 'tooldemo' as const, label: 'Tool Demo', icon: Terminal },
     ];
@@ -230,6 +231,23 @@ export default function JudgePage() {
                     {activeTab === 'nurse' && (
                         <div className="h-full overflow-auto">
                             <NurseDashboard />
+                        </div>
+                    )}
+                    {activeTab === 'caregiver' && (
+                        <div className="h-full overflow-auto flex items-center justify-center bg-zinc-50">
+                            <div className="text-center max-w-md mx-auto p-8">
+                                <Users size={48} className="mx-auto text-indigo-600 mb-4" />
+                                <h2 className="text-xl font-bold text-zinc-900 mb-2">Caregiver Dashboard</h2>
+                                <p className="text-zinc-500 text-sm mb-6">View the caregiver experience &mdash; notification tiers, burden scoring, and escalation management.</p>
+                                <a
+                                    href="/caregiver"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                                >
+                                    Open Caregiver Dashboard
+                                </a>
+                            </div>
                         </div>
                     )}
                     {activeTab === 'intelligence' && (
