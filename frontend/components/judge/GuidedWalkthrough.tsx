@@ -777,10 +777,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             <div
                 className="wt-highlight-ring"
                 style={{
-                    top: highlightRect?.top ?? -100,
-                    left: highlightRect?.left ?? -100,
-                    width: highlightRect?.width ?? 0,
-                    height: highlightRect?.height ?? 0,
+                    top: (highlightRect?.top ?? -100) - 4,
+                    left: (highlightRect?.left ?? -100) - 4,
+                    width: (highlightRect?.width ?? 0) + 8,
+                    height: (highlightRect?.height ?? 0) + 8,
                     opacity: highlightRect ? 1 : 0,
                 }}
             />
@@ -902,22 +902,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                             </div>
                         )}
 
-                        {/* Judge name personalization — welcome step only */}
-                        {step.id === 'welcome' && (
-                            <div className="mt-3">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.12em]">
-                                    Your name (optional)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={judgeName}
-                                    onChange={(e) => setJudgeName(e.target.value)}
-                                    placeholder="Enter your name to personalize"
-                                    className="mt-1 w-full px-3 py-2 text-[12px] bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-700 placeholder-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
-                                    onKeyDown={(e) => { if (e.key === 'Enter') goNext(); }}
-                                />
-                            </div>
-                        )}
+                        {/* Judge name removed — presenting via recorded video */}
 
                         {hasAction && (
                             <div className="mt-3">

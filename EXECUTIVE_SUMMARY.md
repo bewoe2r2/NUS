@@ -20,18 +20,17 @@ Bewo is an **agentic AI companion** that continuously monitors, predicts, and ac
 - **Nurses** get an urgency-ranked triage dashboard with auto-generated SBAR summaries — who needs attention *now*, zero manual documentation.
 - **Caregivers** get severity-tiered alerts with fatigue detection that auto-adjusts frequency to prevent burnout.
 
-## Architecture: Hybrid Neuro-Symbolic Pipeline
+## Architecture: 5-Layer Diamond Architecture
 
-Deterministic clinical safety fused with generative empathy — each layer constrains and enriches the next:
+Safety bookends the pipeline — deterministic clinical safety fused with generative empathy, each layer constrains and enriches the next:
 
-| Layer | Function | Why It Matters |
-|-------|----------|----------------|
-| **HMM State Engine** | Viterbi decoding + Baum-Welch learning across 9 biomarkers → Stable / Warning / Crisis | Fully deterministic — every classification is mathematically auditable. Never hallucinates. |
-| **48h Risk Forecast** | Monte Carlo (2,000 paths) with counterfactual projections: "what if you take your meds?" | Predicts crisis *before* symptoms. Patients see risk drop from 35% → 12%. |
-| **Agentic ReAct Loop (18 Tools)** | Outcome-based tool selection with 14-day effectiveness decay. Appointment booking, SBAR escalation, drug interaction checks, loss-aversion vouchers (Prospect Theory). | Reasons over HMM context, executes interventions, learns what works per patient. |
-| **6-Dimension Safety Filter** | Screens for medical overclaims, hallucination, emotional mismatch, scope violations | Hard overrides: glucose <3.0 or >20.0 mmol/L → forced Crisis regardless of model output. |
-| **SEA-LION v4 27B** | AI Singapore's National LLM for Singlish cultural adaptation via official API | *"Uncle, sugar drop already lah — makan something sweet now!"* |
-| **MERaLiON SER** | A*STAR's National LLM for paralinguistic speech emotion recognition | Detects fatigue/distress in voice check-ins — "I'm fine lah" said tiredly triggers proactive care |
+| Layer | Name | Function | Why It Matters |
+|-------|------|----------|----------------|
+| **L1** | **Safety Foundation** | Deterministic rules: ADA 2024 guidelines, drug interaction checks (16 pairs), PII de-identification | Hard constraints *before* any inference. Glucose <3.0 or >20.0 mmol/L → forced Crisis regardless of model output. |
+| **L2** | **Statistical Engine** | HMM Viterbi decoding + Baum-Welch learning across 9 biomarkers → Stable / Warning / Crisis. Monte Carlo (2,000 paths, 48h) with counterfactual projections. Merlion ARIMA forecasting. | Fully deterministic — every classification is mathematically auditable. Predicts crisis *before* symptoms. |
+| **L3** | **Agentic Reasoning** | Gemini + 18 tools + ReAct loop + memory + proactive triggers. Outcome-based tool selection with 14-day effectiveness decay. | Reasons over HMM context, executes interventions, learns what works per patient. |
+| **L4** | **Safety Classifier** | 6-dimension response filter (medical claims, hallucination, emotional mismatch, cultural sensitivity, scope boundaries, dangerous advice). Fail-closed. | Every AI response screened *after* generation — safety bookends the pipeline. |
+| **L5** | **Cultural Intelligence** | SEA-LION v4 27B (AI Singapore) for Singlish adaptation + MERaLiON SER (A*STAR) for paralinguistic emotion recognition | *"Uncle, sugar drop already lah — makan something sweet now!"* Detects fatigue/distress in voice. |
 
 ## Privacy & Data
 

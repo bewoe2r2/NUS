@@ -2,33 +2,6 @@
 
 import { motion } from "framer-motion";
 
-const stats = [
-  {
-    number: "440K",
-    description: "diabetics in Singapore",
-    detail: "one in nine adults",
-    color: "text-rose-400",
-    borderColor: "border-l-rose-400",
-    glowColor: "rgba(244,63,94,0.3)",
-  },
-  {
-    number: "3-6mo",
-    description: "between clinic visits",
-    detail: "alone, unmonitored",
-    color: "text-amber-400",
-    borderColor: "border-l-amber-400",
-    glowColor: "rgba(251,191,36,0.3)",
-  },
-  {
-    number: "$8,800",
-    description: "per preventable ER visit",
-    detail: "paid by the system, suffered by the patient",
-    color: "text-cyan-400",
-    borderColor: "border-l-cyan-400",
-    glowColor: "rgba(6,182,212,0.3)",
-  },
-];
-
 const personaItems = [
   { label: "Condition", value: "Type 2 Diabetes + Hypertension", dot: "bg-rose-400" },
   { label: "HbA1c", value: "8.1% (target: 7.0%)", dot: "bg-amber-400" },
@@ -39,120 +12,125 @@ const personaItems = [
 
 export default function Slide02Problem() {
   return (
-    <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
-      {/* Animated gradient background */}
-      <motion.div
-        className="absolute w-[800px] h-[800px] rounded-full opacity-[0.03]"
+    <div className="relative flex w-full h-full overflow-hidden">
+      {/* Dark rose-tinted atmosphere */}
+      <div
+        className="absolute inset-0"
         style={{
-          background: "radial-gradient(circle, rgba(244,63,94,0.6), transparent 70%)",
-          bottom: "-20%",
-          right: "-10%",
+          background:
+            "radial-gradient(ellipse 80% 60% at 80% 20%, rgba(244,63,94,0.06) 0%, transparent 60%), linear-gradient(180deg, #000 0%, #0a0506 100%)",
         }}
-        animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <div className="relative z-10 w-full py-[10vh] px-[10vw]">
-        {/* Label & Title */}
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="text-rose-400 font-mono text-base tracking-[0.3em] uppercase mb-4"
-        >
-          The Problem
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.4 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-12"
-        >
-          Between visits, <span className="text-rose-400">nobody is watching.</span>
-        </motion.h2>
+      {/* Dot grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
 
-        {/* Two-column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-12">
-          {/* Left: Stats - left aligned with colored left border */}
-          <div className="flex flex-col gap-10">
-            {stats.map((stat, i) => (
+      <div className="relative z-10 w-full py-[8vh] px-[10vw]">
+        {/* Top section -- stats as massive numbers */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr_1px_1fr] gap-0 items-start mb-16">
+          {/* Stat 1 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="px-8 py-6"
+          >
+            <span className="font-mono text-[5.5rem] font-black text-rose-400 leading-none block">
+              440K
+            </span>
+            <p className="text-zinc-300 text-lg font-medium mt-4">diabetics in Singapore</p>
+            <p className="text-zinc-600 text-sm mt-1">one in nine adults</p>
+          </motion.div>
+
+          {/* Divider */}
+          <div className="hidden lg:block w-px h-full bg-gradient-to-b from-transparent via-rose-400/20 to-transparent" />
+
+          {/* Stat 2 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="px-8 py-6"
+          >
+            <span className="font-mono text-[5.5rem] font-black text-amber-400 leading-none block">
+              3-6mo
+            </span>
+            <p className="text-zinc-300 text-lg font-medium mt-4">between clinic visits</p>
+            <p className="text-zinc-600 text-sm mt-1">alone, unmonitored</p>
+          </motion.div>
+
+          {/* Divider */}
+          <div className="hidden lg:block w-px h-full bg-gradient-to-b from-transparent via-amber-400/20 to-transparent" />
+
+          {/* Stat 3 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.5 }}
+            className="px-8 py-6"
+          >
+            <span className="font-mono text-[5.5rem] font-black text-cyan-400 leading-none block">
+              $8,800
+            </span>
+            <p className="text-zinc-300 text-lg font-medium mt-4">per preventable ER visit</p>
+            <p className="text-zinc-600 text-sm mt-1">paid by the system, suffered by the patient</p>
+          </motion.div>
+        </div>
+
+        {/* Bottom section -- persona card, left-aligned */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+          className="max-w-md"
+        >
+          {/* 1px rose top accent */}
+          <div className="w-20 h-px bg-rose-400/60 mb-6" />
+
+          <h3 className="text-xl font-bold text-white mb-1">Mr. Tan Ah Kow</h3>
+          <p className="text-zinc-600 text-sm mb-6">67, lives alone, Toa Payoh HDB</p>
+
+          <div className="flex flex-col gap-3">
+            {personaItems.map((item, i) => (
               <motion.div
-                key={stat.number}
-                initial={{ opacity: 0, x: -24 }}
+                key={item.label}
+                initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + i * 0.12, duration: 0.5 }}
-                className={`${stat.borderColor} border-l-4 pl-8`}
+                transition={{ delay: 0.7 + i * 0.06, duration: 0.3 }}
+                className="flex items-start gap-3"
               >
-                <span
-                  className={`font-mono text-[4rem] font-bold ${stat.color} block leading-none`}
-                  style={{ textShadow: `0 0 80px ${stat.glowColor}` }}
-                >
-                  {stat.number}
-                </span>
-                <div className="flex flex-col gap-1 mt-2">
-                  <span className="text-zinc-300 text-lg leading-snug font-medium">
-                    {stat.description}
-                  </span>
-                  <span className="text-zinc-500 text-sm">
-                    {stat.detail}
-                  </span>
+                <span className={`w-2 h-2 rounded-full ${item.dot} mt-1.5 shrink-0`} />
+                <div>
+                  <span className="text-zinc-600 text-sm">{item.label}: </span>
+                  <span className="text-zinc-300 text-sm">{item.value}</span>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          {/* Right: Persona card */}
-          <motion.div
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.35, duration: 0.5 }}
-            className="rounded-3xl bg-white/[0.03] border border-white/[0.06] p-10"
-          >
-            <div className="mb-6">
-              <h3 className="text-2xl font-semibold text-white">
-                Mr. Tan Ah Kow
-              </h3>
-              <p className="text-zinc-500 text-sm mt-2">
-                67, lives alone, Toa Payoh HDB
-              </p>
-            </div>
-
-            {/* Accent divider */}
-            <div className="w-full h-px bg-gradient-to-r from-rose-400/30 via-white/[0.06] to-transparent mb-6" />
-
-            <div className="flex flex-col gap-4">
-              {personaItems.map((item, i) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 + i * 0.08, duration: 0.4 }}
-                  className="flex items-start gap-4"
-                >
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full ${item.dot} mt-1.5 shrink-0`}
-                  />
-                  <div>
-                    <span className="text-zinc-500 text-sm">{item.label}: </span>
-                    <span className="text-zinc-200 text-sm font-medium">{item.value}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Thin divider + bottom line */}
-            <div className="w-full h-px bg-white/[0.06] mt-8" />
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9, duration: 0.4 }}
-              className="mt-5 text-zinc-400 text-base italic"
-            >
-              He represents <span className="text-rose-400 font-semibold not-italic">440,000</span> Singaporeans.
-            </motion.p>
-          </motion.div>
-        </div>
+          <p className="mt-6 text-zinc-500 text-base">
+            He represents <span className="text-rose-400 font-semibold">440,000</span> Singaporeans.
+          </p>
+        </motion.div>
       </div>
+
+      {/* Bottom-right label */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.5 }}
+        className="absolute bottom-[6vh] right-[8vw] z-10"
+      >
+        <span className="text-rose-400/60 font-mono text-[11px] uppercase tracking-[0.4em]">
+          The Problem
+        </span>
+      </motion.div>
     </div>
   );
 }

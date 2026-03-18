@@ -6,10 +6,14 @@ import { Target, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Challenge {
-    challenge: string;
+    challenge?: string;
+    goal?: string;
+    type?: string;
+    metric?: string;
     progress?: number;
     target?: number;
     unit?: string;
+    reward?: unknown;
 }
 
 export function DailyChallengeCard() {
@@ -57,7 +61,7 @@ export function DailyChallengeCard() {
                 <div>
                     <div className="text-xs uppercase font-bold tracking-widest text-neutral-500">Today&apos;s Goal</div>
                     <div className="text-lg font-semibold text-neutral-800 leading-tight">
-                        {challenge.challenge}
+                        {typeof challenge.challenge === 'string' ? challenge.challenge : typeof challenge.goal === 'string' ? challenge.goal : 'Stay active today'}
                     </div>
                 </div>
             </div>

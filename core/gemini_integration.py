@@ -614,12 +614,13 @@ class GeminiIntegration:
 
     def generate_patient_insight(self, patient_profile, hmm_result, recent_observations, full_context=None):
         """
-        [AGENTIC NODE v3.0 - DIAMOND ARCHITECTURE]
-        Orchestrates the 4-Node Flow:
-        1. Node 1 (HMM): Current State (Passed in args)
-        2. Node 3A (Merlion): Future Risk (Calculated here)
-        3. Node 2 (Gemini): Strategy Synthesis
-        4. Node 3B (Sea-Lion): Cultural Delivery
+        [AGENTIC NODE v3.0 - 5-LAYER DIAMOND ARCHITECTURE]
+        Orchestrates the 5-Layer Pipeline:
+        L1. Safety Foundation: Deterministic rules, drug interactions, PII (pre-applied)
+        L2. Statistical Engine (HMM + Merlion): Current State + Future Risk
+        L3. Agentic Reasoning (Gemini): Strategy Synthesis
+        L4. Safety Classifier: 6-dimension response filter
+        L5. Cultural Intelligence (SEA-LION): Cultural Delivery
         """
         # Lazy import to avoid circular defaults
         from merlion_risk_engine import MerlionRiskEngine

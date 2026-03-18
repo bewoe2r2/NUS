@@ -2,7 +2,7 @@
 Bewo 2026 - Node 3B: SEA-LION Interface (The Cultural Translator)
 file: sealion_interface.py
 
-This module represents the 'Cultural Layer' of the Diamond Architecture.
+This module represents Layer 5 (Cultural Intelligence) of the 5-layer Diamond Architecture.
 It calls the REAL SEA-LION v4 27B model via AI Singapore's official API,
 with fallback to Cloudflare Workers AI, then Gemini simulation.
 

@@ -2646,8 +2646,8 @@ def run_agent(
     """
     Main entry point for the agent runtime.
 
-    Orchestrates the full Diamond Architecture pipeline:
-      HMM → Merlion forecast → Multi-turn Gemini reasoning loop → SEA-LION translation
+    Orchestrates the full 5-layer Diamond Architecture pipeline:
+      L1 Safety Foundation → L2 Statistical Engine (HMM + Merlion) → L3 Agentic Reasoning (Gemini ReAct) → L4 Safety Classifier → L5 Cultural Intelligence (SEA-LION)
 
     The agent OBSERVES tool results, THINKS about what else is needed,
     and ACTS accordingly across up to 5 reasoning turns.

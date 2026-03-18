@@ -3,132 +3,107 @@
 import { motion } from "framer-motion";
 
 const agents = [
-  {
-    name: "Planning Agent",
-    description: "Orchestrates the daily care plan",
-    color: "bg-cyan-400",
-    iconBg: "bg-cyan-400/15",
-    borderColor: "border-cyan-400/20",
-  },
-  {
-    name: "Check-in Agent",
-    description: "Proactive outreach, mood sensing",
-    color: "bg-emerald-400",
-    iconBg: "bg-emerald-400/15",
-    borderColor: "border-emerald-400/20",
-  },
-  {
-    name: "Caregiver Agent",
-    description: "Family alerts, burden management",
-    color: "bg-purple-400",
-    iconBg: "bg-purple-400/15",
-    borderColor: "border-purple-400/20",
-  },
-  {
-    name: "Clinician Agent",
-    description: "SBAR reports, drug interaction checks",
-    color: "bg-rose-400",
-    iconBg: "bg-rose-400/15",
-    borderColor: "border-rose-400/20",
-  },
-  {
-    name: "Behavior Coach",
-    description: "Nudges, challenges, loss-aversion streaks",
-    color: "bg-amber-400",
-    iconBg: "bg-amber-400/15",
-    borderColor: "border-amber-400/20",
-  },
-  {
-    name: "Cultural Agent",
-    description: "Singlish translation, local dietary context",
-    color: "bg-pink-400",
-    iconBg: "bg-pink-400/15",
-    borderColor: "border-pink-400/20",
-  },
+  { name: "Planning", desc: "Daily care plan", color: "#06b6d4" },
+  { name: "Check-in", desc: "Proactive outreach", color: "#10b981" },
+  { name: "Caregiver", desc: "Family alerts", color: "#a855f7" },
+  { name: "Clinician", desc: "SBAR reports", color: "#f43f5e" },
+  { name: "Behavior", desc: "Nudges & streaks", color: "#f59e0b" },
+  { name: "Cultural", desc: "Singlish translation", color: "#ec4899" },
 ];
 
 export default function Slide08Agent() {
   return (
-    <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
-      {/* Rotating accent orb */}
-      <motion.div
-        className="absolute w-[500px] h-[500px] rounded-full opacity-[0.03]"
+    <div className="relative flex w-full h-full overflow-hidden">
+      {/* Dark zinc background -- neutral, different from other slides */}
+      <div
+        className="absolute inset-0"
         style={{
-          background: "conic-gradient(from 0deg, rgba(6,182,212,0.5), rgba(168,85,247,0.5), rgba(244,63,94,0.5), rgba(251,191,36,0.5), rgba(6,182,212,0.5))",
-          bottom: "-10%",
-          left: "10%",
+          background: "linear-gradient(135deg, #09090b 0%, #0f0f12 50%, #09090b 100%)",
         }}
-        animate={{ rotate: [0, 360] }}
-        transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
       />
 
-      <div className="relative z-10 w-full py-[10vh] px-[10vw]">
-        {/* Content LEFT, hero RIGHT -- asymmetric layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.7fr] gap-14 items-start">
-          {/* Left */}
-          <div>
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="text-cyan-400 font-mono text-base tracking-[0.3em] uppercase mb-4"
-            >
+      <div className="relative z-10 w-full h-full flex">
+        {/* LEFT content area */}
+        <div className="w-[55%] h-full flex flex-col justify-center py-[8vh] pl-[8vw] pr-[4vw]">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="mb-10"
+          >
+            <span className="text-cyan-400 font-mono text-[11px] uppercase tracking-[0.4em] block mb-4">
               Agentic AI
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.4 }}
-              className="text-4xl md:text-5xl font-bold text-white mb-12"
-            >
-              Not a chatbot.<br /><span className="text-cyan-400">A background agent.</span>
-            </motion.h2>
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-3">
+              Not a chatbot.
+            </h2>
+            <h2 className="text-4xl md:text-5xl font-extralight text-cyan-400 leading-tight">
+              A background agent.
+            </h2>
+          </motion.div>
 
-            {/* 2x3 Bento Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-              {agents.map((agent, i) => (
-                <motion.div
-                  key={agent.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.08, duration: 0.5 }}
-                  className={`bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] ${agent.borderColor} rounded-2xl p-6 transition-colors hover:bg-white/[0.06]`}
-                >
-                  {/* Accent dot */}
-                  <div className={`w-3 h-3 rounded-full ${agent.color} mb-4`} />
-                  <h3 className="text-white font-semibold text-sm mb-2">
-                    {agent.name}
-                  </h3>
-                  <p className="text-zinc-400 text-xs leading-relaxed">
-                    {agent.description}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
+          {/* Agent grid -- 2x3, minimal pills */}
+          <div className="grid grid-cols-3 gap-3 mb-10">
+            {agents.map((agent, i) => (
+              <motion.div
+                key={agent.name}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.06, duration: 0.4 }}
+                className="flex items-center gap-3 py-3 px-4 rounded-lg border border-white/[0.05] bg-white/[0.02]"
+              >
+                <div
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: agent.color }}
+                />
+                <div>
+                  <span className="text-zinc-200 text-sm font-medium block leading-tight">{agent.name}</span>
+                  <span className="text-zinc-600 text-[11px]">{agent.desc}</span>
+                </div>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Right -- hero stats */}
+          {/* Capabilities */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="flex gap-6"
+          >
+            {[
+              { label: "ReAct reasoning", detail: "up to 5 turns" },
+              { label: "Cross-session memory", detail: "episodic + semantic" },
+              { label: "Autonomous escalation", detail: "6 trigger conditions" },
+            ].map((item) => (
+              <div key={item.label} className="border-l border-cyan-400/20 pl-4">
+                <span className="text-zinc-300 text-sm block">{item.label}</span>
+                <span className="text-zinc-600 text-xs">{item.detail}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* RIGHT -- the "18" bleeds off the right edge */}
+        <div className="w-[45%] h-full flex items-center justify-end overflow-hidden relative">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="flex flex-col items-center justify-center lg:pt-20"
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="relative"
           >
             <span
-              className="font-mono text-[7rem] md:text-[9rem] font-bold text-white leading-none"
-              style={{
-                textShadow: "0 0 100px rgba(6,182,212,0.3), 0 0 200px rgba(6,182,212,0.1)",
-              }}
+              className="font-mono text-[28rem] font-bold text-white/[0.03] leading-none select-none block"
+              style={{ marginRight: "-8rem" }}
             >
               18
             </span>
-            <span className="text-cyan-400 font-mono text-2xl mt-3">tools</span>
-            <div className="w-16 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent my-6" />
-
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 text-center">
-              <p className="text-zinc-300 text-base mb-2">ReAct reasoning loop</p>
-              <p className="text-zinc-500 text-sm">Cross-session memory</p>
-              <p className="text-zinc-500 text-sm mt-1">Autonomous escalation</p>
+            {/* Overlaid accent */}
+            <div className="absolute inset-0 flex items-center justify-center" style={{ marginRight: "-8rem" }}>
+              <div className="text-center">
+                <span className="font-mono text-8xl font-bold text-cyan-400 block">18</span>
+                <span className="text-cyan-400/60 font-mono text-xl mt-2 block">tools</span>
+              </div>
             </div>
           </motion.div>
         </div>

@@ -4,132 +4,115 @@ import { motion } from "framer-motion";
 
 export default function Slide16CostEconomics() {
   return (
-    <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
-      {/* Teal orb */}
-      <motion.div
-        className="absolute w-[600px] h-[600px] rounded-full opacity-[0.04]"
+    <div className="relative flex w-full h-full overflow-hidden">
+      {/* Gradient mesh -- teal + emerald layered */}
+      <div
+        className="absolute inset-0"
         style={{
-          background: "radial-gradient(circle, rgba(45,212,191,0.6), transparent 70%)",
-          top: "20%",
-          right: "15%",
+          background: `
+            radial-gradient(ellipse 60% 40% at 70% 60%, rgba(45,212,191,0.06) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 50% at 20% 30%, rgba(52,211,153,0.04) 0%, transparent 60%),
+            #000
+          `,
         }}
-        animate={{ scale: [1, 1.08, 1] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <div className="relative z-10 w-full py-[10vh] px-[10vw]">
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="text-teal-400 font-mono text-base tracking-[0.3em] uppercase mb-4"
-        >
-          Cost Economics
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.4 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-16"
-        >
-          One ER save funds <span className="text-teal-400">years</span> of operation.
-        </motion.h2>
+      <div className="relative z-10 w-full h-full flex items-center px-[8vw]">
+        <div className="w-full">
+          {/* Title */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="mb-14"
+          >
+            <span className="text-teal-400 font-mono text-[11px] uppercase tracking-[0.4em] block mb-4">
+              Cost Economics
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+              One ER save funds{" "}
+              <span className="font-extralight text-teal-400">years</span> of operation.
+            </h2>
+          </motion.div>
 
-        {/* Asymmetric 60/40 -- hero LEFT, breakdown RIGHT */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16 items-center">
-          {/* Left: Three hero metrics stacked */}
-          <div className="flex flex-col gap-12">
+          {/* Three hero metrics -- large, side by side, no cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-14">
             {[
               {
                 number: "$0.40",
                 label: "per patient per month",
                 context: "Cheaper than a single blood test",
                 color: "text-teal-400",
-                glow: "rgba(45,212,191,0.3)",
               },
               {
                 number: "$8,800",
                 label: "saved per prevented ER visit",
                 context: "The cost society pays for each failure",
                 color: "text-emerald-400",
-                glow: "rgba(52,211,153,0.3)",
               },
               {
                 number: "22,000",
-                label: "patient-months funded by one ER save",
-                context: "That is 1,833 patient-years of monitoring",
+                label: "patient-months funded by one save",
+                context: "1,833 patient-years of monitoring",
                 color: "text-amber-400",
-                glow: "rgba(251,191,36,0.3)",
               },
             ].map((m, i) => (
               <motion.div
                 key={m.number}
-                initial={{ opacity: 0, x: -24 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 + i * 0.12, duration: 0.5 }}
-                className="flex items-baseline gap-8"
+                className="border-t border-white/[0.06] pt-6"
               >
-                <span
-                  className={`font-mono text-6xl md:text-7xl font-bold ${m.color} min-w-[200px]`}
-                  style={{ textShadow: `0 0 80px ${m.glow}` }}
-                >
+                <span className={`font-mono text-5xl md:text-6xl font-bold ${m.color} block tabular-nums`}>
                   {m.number}
                 </span>
-                <div className="flex flex-col gap-1">
-                  <span className="text-zinc-200 text-lg font-medium">{m.label}</span>
-                  <span className="text-zinc-500 text-sm">{m.context}</span>
-                </div>
+                <span className="text-zinc-200 text-base font-medium block mt-3">{m.label}</span>
+                <span className="text-zinc-600 text-sm block mt-1">{m.context}</span>
               </motion.div>
             ))}
           </div>
 
-          {/* Right: ROI visualization -- glass panel */}
+          {/* ROI bar visualization -- minimal */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-3xl p-10"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65, duration: 0.5 }}
+            className="max-w-2xl"
           >
-            <h3 className="text-white font-semibold text-2xl mb-8">ROI Multiplier</h3>
-
-            <div className="flex flex-col gap-8">
-              {/* Bar visualization */}
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-zinc-400">Cost per patient</span>
-                  <span className="text-teal-400 font-mono font-bold">$0.40/mo</span>
-                </div>
-                <div className="w-full h-3 bg-white/[0.06] rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "2%" }}
-                    transition={{ delay: 0.7, duration: 0.8 }}
-                    className="h-full bg-teal-400 rounded-full"
-                  />
-                </div>
+            <div className="mb-4">
+              <div className="flex justify-between text-sm mb-1.5">
+                <span className="text-zinc-500">Cost per patient/month</span>
+                <span className="text-teal-400 font-mono font-bold">$0.40</span>
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-zinc-400">One ER save</span>
-                  <span className="text-emerald-400 font-mono font-bold">$8,800</span>
-                </div>
-                <div className="w-full h-3 bg-white/[0.06] rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ delay: 0.9, duration: 0.8 }}
-                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"
-                  />
-                </div>
+              <div className="w-full h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "2%" }}
+                  transition={{ delay: 0.9, duration: 0.8 }}
+                  className="h-full bg-teal-400 rounded-full"
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-sm mb-1.5">
+                <span className="text-zinc-500">One ER save</span>
+                <span className="text-emerald-400 font-mono font-bold">$8,800</span>
+              </div>
+              <div className="w-full h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ delay: 1.1, duration: 0.8 }}
+                  className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"
+                />
               </div>
             </div>
 
-            <div className="w-full h-px bg-gradient-to-r from-teal-400/20 via-white/[0.06] to-transparent my-8" />
-
-            <p className="text-zinc-300 text-lg">
-              <span className="text-emerald-400 font-mono font-bold text-3xl">22,000x</span>
-              <span className="text-zinc-400 ml-3">return on a single save</span>
-            </p>
+            <div className="flex items-baseline gap-3 mt-6">
+              <span className="text-emerald-400 font-mono text-3xl font-bold">22,000x</span>
+              <span className="text-zinc-600 text-sm">return on a single save</span>
+            </div>
           </motion.div>
         </div>
       </div>

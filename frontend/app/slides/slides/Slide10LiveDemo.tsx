@@ -4,112 +4,91 @@ import { motion } from "framer-motion";
 
 export default function Slide10LiveDemo() {
   return (
-    <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
-      {/* Animated gradient sweep */}
-      <motion.div
-        className="absolute inset-0 opacity-[0.04]"
+    <div className="relative flex w-full h-full overflow-hidden">
+      {/* Animated gradient border effect */}
+      <style>{`
+        @keyframes borderGlow {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.8; }
+        }
+      `}</style>
+
+      {/* Pure black -- dramatic pause */}
+      <div className="absolute inset-0 bg-black" />
+
+      {/* Animated border frame */}
+      <div
+        className="absolute inset-[3vh] rounded-2xl pointer-events-none"
         style={{
-          background: "linear-gradient(135deg, rgba(6,182,212,0.4) 0%, rgba(168,85,247,0.4) 50%, rgba(52,211,153,0.4) 100%)",
+          border: "1px solid rgba(168,85,247,0.15)",
+          animation: "borderGlow 4s ease-in-out infinite",
         }}
-        animate={{ opacity: [0.03, 0.06, 0.03] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <div className="relative z-10 w-full flex flex-col items-center text-center py-[10vh] px-[10vw]">
-        {/* Label */}
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
+      {/* Content -- centered, minimal */}
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center px-[10vw]">
+        {/* Small pill */}
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="text-purple-400 font-mono text-base tracking-[0.3em] uppercase mb-10"
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-16"
         >
-          Live Demo
-        </motion.p>
+          <span className="inline-block text-[11px] font-mono uppercase tracking-[0.35em] text-purple-400/80 border border-purple-400/20 rounded-full px-5 py-2">
+            Live Demo
+          </span>
+        </motion.div>
 
-        {/* Hero text -- big centered */}
+        {/* Hero text -- massive, light weight */}
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-5xl md:text-7xl font-bold text-white mb-10 leading-tight max-w-4xl"
+          transition={{ delay: 0.4, duration: 0.7 }}
+          className="text-6xl md:text-8xl font-extralight text-white text-center leading-tight mb-6"
         >
           Let&apos;s meet
-          <br />
-          <span
-            className="text-cyan-400"
-            style={{ textShadow: "0 0 100px rgba(6,182,212,0.3)" }}
-          >
-            Mr. Tan.
-          </span>
+        </motion.h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.7 }}
+          className="text-6xl md:text-8xl font-black text-cyan-400 text-center leading-tight mb-20"
+        >
+          Mr. Tan.
         </motion.h1>
 
-        {/* Divider */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="w-24 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent mb-12"
-        />
-
-        {/* Three demo flow steps */}
+        {/* Three demo steps -- horizontal, minimal */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl mb-14"
+          transition={{ delay: 0.9, duration: 0.5 }}
+          className="flex gap-16"
         >
           {[
-            {
-              step: "01",
-              title: "Morning Check-in",
-              desc: "Bewo calls Mr. Tan in Singlish. MERaLiON detects slight fatigue in his voice.",
-              color: "text-cyan-400",
-              borderColor: "border-t-cyan-400",
-            },
-            {
-              step: "02",
-              title: "Risk Spike Detected",
-              desc: "HMM transitions to elevated state. Monte Carlo shows 31% crisis probability in 24 hours.",
-              color: "text-amber-400",
-              borderColor: "border-t-amber-400",
-            },
-            {
-              step: "03",
-              title: "Cascade Response",
-              desc: "Patient gets nudge. Daughter gets dashboard alert. Nurse gets auto-SBAR. All within 90 seconds.",
-              color: "text-emerald-400",
-              borderColor: "border-t-emerald-400",
-            },
-          ].map((item) => (
-            <div
-              key={item.step}
-              className={`bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-3xl p-8 border-t-4 ${item.borderColor}`}
-            >
-              <span className={`font-mono text-4xl font-bold ${item.color} block mb-4`}>
-                {item.step}
+            { num: "01", title: "Morning Check-in", color: "text-cyan-400", accent: "bg-cyan-400" },
+            { num: "02", title: "Risk Spike Detected", color: "text-amber-400", accent: "bg-amber-400" },
+            { num: "03", title: "Cascade Response", color: "text-emerald-400", accent: "bg-emerald-400" },
+          ].map((step) => (
+            <div key={step.num} className="flex items-center gap-3">
+              <span className={`font-mono text-3xl font-bold ${step.color} opacity-30`}>
+                {step.num}
               </span>
-              <h3 className="text-white font-semibold text-xl mb-3">
-                {item.title}
-              </h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">
-                {item.desc}
-              </p>
+              <div>
+                <div className={`w-6 h-px ${step.accent} opacity-40 mb-2`} />
+                <span className="text-zinc-300 text-sm font-medium">{step.title}</span>
+              </div>
             </div>
           ))}
         </motion.div>
 
-        {/* Bottom prompt */}
+        {/* Bottom URL */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl px-10 py-5 inline-block"
+          transition={{ delay: 1.2, duration: 0.5 }}
+          className="absolute bottom-[6vh]"
         >
-          <p className="text-zinc-300 text-lg">
-            <span className="text-purple-400 font-mono font-bold">bewo.health</span>
-            <span className="text-zinc-500 mx-4">&middot;</span>
-            <span className="text-zinc-400">Switching to live system now</span>
-          </p>
+          <span className="text-purple-400/60 font-mono text-sm">bewo.health</span>
         </motion.div>
       </div>
     </div>

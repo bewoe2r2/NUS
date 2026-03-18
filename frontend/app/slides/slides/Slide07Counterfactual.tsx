@@ -4,106 +4,111 @@ import { motion } from "framer-motion";
 
 export default function Slide07Counterfactual() {
   return (
-    <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
-      {/* Split gradient -- rose left, emerald right */}
+    <div className="relative flex w-full h-full overflow-hidden">
+      {/* Split background -- rose left half, emerald right half */}
       <div
         className="absolute inset-0"
         style={{
-          background:
-            "radial-gradient(ellipse 40% 50% at 25% 50%, rgba(244,63,94,0.05) 0%, transparent 70%), radial-gradient(ellipse 40% 50% at 75% 50%, rgba(52,211,153,0.05) 0%, transparent 70%)",
+          background: `
+            linear-gradient(90deg, rgba(244,63,94,0.04) 0%, transparent 50%),
+            linear-gradient(270deg, rgba(52,211,153,0.04) 0%, transparent 50%),
+            #000
+          `,
         }}
       />
 
-      <div className="relative z-10 w-full flex flex-col items-center py-[10vh] px-[10vw]">
-        {/* Label */}
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="text-emerald-400 font-mono text-base tracking-[0.3em] uppercase mb-4 self-start"
-        >
-          Counterfactual Reasoning
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.4 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-6 self-start"
-        >
-          &ldquo;What if you take your meds?&rdquo;
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-          className="text-zinc-400 text-lg max-w-3xl mb-16 self-start"
-        >
-          The patient sees the math behind the nudge. Not guilt -- evidence.
-        </motion.p>
+      {/* Center divider line */}
+      <div className="absolute left-1/2 top-[10%] bottom-[10%] w-px bg-gradient-to-b from-transparent via-zinc-800 to-transparent" />
 
-        {/* Central hero -- risk reduction */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.35, duration: 0.6 }}
-          className="flex items-center gap-12 md:gap-20 mb-16"
-        >
-          {/* Before */}
-          <div className="flex flex-col items-center">
-            <span className="text-zinc-500 font-mono text-xs uppercase tracking-wider mb-4">Without meds</span>
-            <span
-              className="font-mono text-[7rem] md:text-[9rem] font-bold text-rose-400 leading-none"
-              style={{ textShadow: "0 0 120px rgba(244,63,94,0.3)" }}
-            >
+      <div className="relative z-10 w-full h-full flex">
+        {/* LEFT half -- "Without meds" */}
+        <div className="w-1/2 h-full flex flex-col items-center justify-center px-[6vw]">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="flex flex-col items-center text-center"
+          >
+            <span className="text-rose-400/50 font-mono text-[10px] uppercase tracking-[0.4em] mb-8">
+              Without meds
+            </span>
+            <span className="font-mono text-[10rem] md:text-[12rem] font-extralight text-rose-400 leading-none tabular-nums">
               35%
             </span>
-            <span className="text-rose-400 text-lg font-medium mt-3">crisis risk</span>
-          </div>
-
-          {/* Arrow */}
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="flex flex-col items-center gap-2"
-          >
-            <span className="text-5xl text-zinc-600">&#8594;</span>
-            <span className="text-emerald-400 font-mono text-sm font-bold">-66%</span>
+            <span className="text-rose-400/60 text-lg font-light mt-4">crisis risk</span>
           </motion.div>
+        </div>
 
-          {/* After */}
-          <div className="flex flex-col items-center">
-            <span className="text-zinc-500 font-mono text-xs uppercase tracking-wider mb-4">With adherence</span>
-            <span
-              className="font-mono text-[7rem] md:text-[9rem] font-bold text-emerald-400 leading-none"
-              style={{ textShadow: "0 0 120px rgba(52,211,153,0.3)" }}
-            >
+        {/* RIGHT half -- "With adherence" */}
+        <div className="w-1/2 h-full flex flex-col items-center justify-center px-[6vw]">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="flex flex-col items-center text-center"
+          >
+            <span className="text-emerald-400/50 font-mono text-[10px] uppercase tracking-[0.4em] mb-8">
+              With adherence
+            </span>
+            <span className="font-mono text-[10rem] md:text-[12rem] font-extralight text-emerald-400 leading-none tabular-nums">
               12%
             </span>
-            <span className="text-emerald-400 text-lg font-medium mt-3">crisis risk</span>
+            <span className="text-emerald-400/60 text-lg font-light mt-4">crisis risk</span>
+          </motion.div>
+        </div>
+
+        {/* Center overlay -- the arrow and delta */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20"
+        >
+          <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+            <span className="text-emerald-400 font-mono text-sm font-bold">-66%</span>
           </div>
         </motion.div>
 
-        {/* Bottom explanatory glass panel */}
+        {/* Top-left label */}
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="absolute top-[6vh] left-[6vw]"
+        >
+          <span className="inline-block text-[11px] font-mono uppercase tracking-[0.35em] text-emerald-400/80 border border-emerald-400/20 rounded-full px-4 py-1.5">
+            Counterfactual Reasoning
+          </span>
+        </motion.div>
+
+        {/* Top title */}
+        <motion.h2
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="absolute top-[12vh] left-[6vw] text-3xl md:text-4xl font-bold text-white"
+        >
+          &ldquo;What if you take your meds?&rdquo;
+        </motion.h2>
+
+        {/* Bottom bar -- three stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-3xl p-8 w-full max-w-4xl"
+          transition={{ delay: 0.9, duration: 0.5 }}
+          className="absolute bottom-[6vh] left-[6vw] right-[6vw] flex justify-between"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <span className="text-cyan-400 font-mono text-3xl font-bold">2,000</span>
-              <p className="text-zinc-400 text-sm mt-2">simulated paths compared</p>
-            </div>
-            <div className="text-center">
-              <span className="text-amber-400 font-mono text-3xl font-bold">Causal</span>
-              <p className="text-zinc-400 text-sm mt-2">not correlation -- actual intervention modeling</p>
-            </div>
-            <div className="text-center">
-              <span className="text-emerald-400 font-mono text-3xl font-bold">Visual</span>
-              <p className="text-zinc-400 text-sm mt-2">patient sees risk drop in real-time</p>
-            </div>
+          <div>
+            <span className="text-cyan-400 font-mono text-xl font-bold">2,000</span>
+            <p className="text-zinc-600 text-xs mt-1">simulated paths compared</p>
+          </div>
+          <div>
+            <span className="text-amber-400 font-mono text-xl font-bold">Causal</span>
+            <p className="text-zinc-600 text-xs mt-1">actual intervention modeling</p>
+          </div>
+          <div>
+            <span className="text-emerald-400 font-mono text-xl font-bold">Visual</span>
+            <p className="text-zinc-600 text-xs mt-1">patient sees risk drop live</p>
           </div>
         </motion.div>
       </div>

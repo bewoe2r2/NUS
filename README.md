@@ -2,39 +2,39 @@
 
 **An agentic healthcare companion for Type 2 Diabetes management, built with multi-turn AI reasoning, Hidden Markov Models, and culturally-aware communication.**
 
-Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic patients by providing continuous, intelligent health monitoring through a three-layer Diamond Architecture that combines statistical modeling (HMM), predictive AI (Gemini), and clinical safety systems.
+Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic patients by providing continuous, intelligent health monitoring through a five-layer Diamond Architecture: Safety Foundation, Statistical Engine (HMM), Agentic Reasoning (Gemini + 18 tools), Safety Classifier (6-dimension filter), and Cultural Intelligence (SEA-LION + MERaLiON).
 
 ---
 
 ## Architecture
 
 ```
-                    Diamond Architecture v7
+                    Diamond Architecture v7 — 5 Layers
 
-    Patient Data ──> HMM Engine (Viterbi + Baum-Welch)
+    Patient Data ──> L1: Safety Foundation (ADA 2024, drug interactions, PII)
                          │
                          ▼
-                    Merlion Risk Engine (Monte Carlo 48h forecast)
+                    L2: Statistical Engine (HMM Viterbi + Monte Carlo + Merlion ARIMA + Baum-Welch)
                          │
                          ▼
-                    Gemini Agent (Multi-turn ReAct, 18 tools)
+                    L3: Agentic Reasoning (Gemini + 18 tools + ReAct loop + memory)
                          │
                          ▼
-                    SEA-LION + MERaLiON (Singlish/cultural + voice emotion)
+                    L4: Safety Classifier (6-dimension response filter, fail-closed)
                          │
                          ▼
-                    Safety Classifier (6-dimension filter)
+                    L5: Cultural Intelligence (SEA-LION + MERaLiON)
                          │
                          ▼
                     Patient / Nurse / Caregiver
 ```
 
-**How it works:**
-1. **HMM Engine** classifies patient state (STABLE / WARNING / CRISIS) using 9 orthogonal health features with Viterbi decoding. Baum-Welch trains personalized transition and emission parameters per patient.
-2. **Merlion Risk Engine** runs Monte Carlo simulation (2,000 paths, 48h horizon) to predict crisis probability.
-3. **Gemini Agent** reasons in a multi-turn ReAct loop (Observe → Think → Act → Observe, up to 5 turns) with access to 18 specialized healthcare tools.
-4. **SEA-LION** adapts responses for Singapore's multilingual elderly population (Singlish, cultural norms). **MERaLiON** (A*STAR) provides paralinguistic emotion detection from voice check-ins.
-5. **Safety Classifier** screens every AI response across 6 dimensions before delivery.
+**How it works — 5 layers, safety bookends the pipeline:**
+1. **Safety Foundation** (L1) applies deterministic rules first: ADA 2024 guidelines, drug interaction checks (16 pairs), PII de-identification. Hard constraints before any inference.
+2. **Statistical Engine** (L2) classifies patient state (STABLE / WARNING / CRISIS) using HMM Viterbi decoding across 9 features. Baum-Welch personalizes parameters. Monte Carlo (2,000 paths, 48h) predicts crisis probability. Merlion ARIMA forecasts trends.
+3. **Agentic Reasoning** (L3) reasons in a multi-turn ReAct loop (up to 5 turns) with Gemini and 18 specialized healthcare tools, memory, and proactive triggers.
+4. **Safety Classifier** (L4) screens every AI response across 6 dimensions before delivery: medical claims, emotional mismatch, hallucination, cultural sensitivity, scope boundaries, dangerous advice. Fail-closed.
+5. **Cultural Intelligence** (L5) adapts responses via SEA-LION for Singlish cultural adaptation and MERaLiON (A*STAR) for paralinguistic emotion detection from voice check-ins.
 
 ---
 
