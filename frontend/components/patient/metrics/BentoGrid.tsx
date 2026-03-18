@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Activity, Heart, Footprints } from "lucide-react";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeInUp } from "@/lib/animation-utils";
+import { GlucoseMiniChart } from "./GlucoseMiniChart";
 
 interface Biometrics {
     glucose: number;
@@ -66,6 +67,8 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
                             transition={{ duration: 1, delay: 0.5 }}
                         />
                     </div>
+                    {/* 7-Day Glucose Sparkline */}
+                    <GlucoseMiniChart />
                 </Card>
             </motion.div>
 
