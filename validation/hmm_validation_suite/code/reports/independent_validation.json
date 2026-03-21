@@ -555,16 +555,16 @@
   },
   "S10_montecarlo": {
     "STABLE": {
-      "mean_risk": 22.0,
-      "std": 4.7
+      "mean_risk": 21.9,
+      "std": 4.5
     },
     "WARNING": {
-      "mean_risk": 38.8,
-      "std": 3.2
+      "mean_risk": 39.1,
+      "std": 3.0
     },
     "CRISIS": {
-      "mean_risk": 91.1,
-      "std": 20.2
+      "mean_risk": 91.0,
+      "std": 20.4
     }
   },
   "S11_intervention": {
@@ -705,7 +705,7 @@
     "gates_passed": 38,
     "gates_total": 38,
     "failed_gates": [],
-    "runtime_seconds": 54.7,
-    "timestamp": "2026-03-17T23:34:02.114274"
+    "runtime_seconds": 89.2,
+    "timestamp": "2026-03-18T21:22:25.519709"
   }
 }

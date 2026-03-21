@@ -81,10 +81,10 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
 
     const [pipelineStage, setPipelineStage] = useState<string | null>(null);
 
-    // Bug #10: Store interval in a ref to clear on unmount
+    // Store interval in a ref to clear on unmount
     const stageObserverRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Bug #10: Cleanup interval on unmount
+    // Cleanup interval on unmount
     useEffect(() => () => { if (stageObserverRef.current) clearInterval(stageObserverRef.current); }, []);
 
     const runAction = useCallback(async (action: () => Promise<void>, stepIdx: number) => {
@@ -92,7 +92,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         setActionError(null);
         setPipelineStage("Initializing...");
 
-        // Bug #10: Assign to ref instead of local variable
+        // Assign to ref instead of local variable
         stageObserverRef.current = setInterval(() => {
             const consoleEl = document.querySelector('#sidebar-console');
             if (consoleEl) {
@@ -109,7 +109,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             setActionDone(prev => new Set(prev).add(stepIdx));
             onRefresh();
         } catch (e) {
-            // Bug #1: Do NOT add to actionDone on error — just set the error message
+            // Do NOT add to actionDone on error — just set the error message
             console.error("Walkthrough action failed:", e);
             setActionError("Pipeline encountered an issue. You can retry or skip to the next step.");
         } finally {
@@ -138,14 +138,14 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         try { await withTimeout(api.trainHMM("P001"), 5000); } catch { /* ok */ }
     }, []);
 
-    // Bug #6: Replace DOM-click fallback with direct API calls
+    // Use direct API calls instead of DOM-click fallback
     const injectScenario = useCallback(async (scenario: string) => {
         await withTimeout(api.injectScenario(scenario, 14), 10000);
         try { await withTimeout(api.runHMM(), 10000); } catch { /* ok */ }
         try { await withTimeout(api.trainHMM("P001"), 5000); } catch { /* ok */ }
     }, []);
 
-    // Bug #14: Wrap steps array in useMemo
+    // Memoize steps array to avoid unnecessary re-renders
     const steps: WalkthroughStep[] = useMemo(() => [
         // ===============================================
         // ACT 1: SETUP (Steps 0-4) — Meet the characters
@@ -407,8 +407,6 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                     Promise.all([api.getCaregiverDashboard("P001"), api.getCaregiverBurden("P001")]),
                     timeout.then(() => [null, null]),
                 ]);
-                console.log("[Walkthrough] Caregiver dashboard loaded:", dashboard);
-                console.log("[Walkthrough] Caregiver burden:", burden);
             },
             actionLabel: "Load Caregiver Dashboard",
             icon: <Users size={20} />,
@@ -593,9 +591,8 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                         api.getMetricsDashboard("P001"),
                         new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 3000)),
                     ]);
-                    console.log("[Walkthrough] Technical Metrics:", metrics);
                 } catch {
-                    console.log("[Walkthrough] Metrics endpoint unavailable — validated numbers shown in step body.");
+                    // Metrics endpoint unavailable — validated numbers shown in step body
                 }
             },
             actionLabel: "Load Live Metrics",
@@ -631,7 +628,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
 
     const canProceed = !hasAction || isDone;
 
-    // Bug #7: Prevent stacked animations with animatingRef
+    // Prevent stacked animations with animatingRef
     const animatingRef = useRef(false);
     const animateTransition = (direction: "next" | "prev", callback: () => void) => {
         if (animatingRef.current) return;
@@ -658,7 +655,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         });
     };
 
-    // Bug #2: Helper to check if jump is allowed (action-gated steps must be completed)
+    // Helper to check if jump is allowed (action-gated steps must be completed)
     const canJumpToStep = (targetStep: number): boolean => {
         if (targetStep <= safeStep) return true; // backwards always ok
         for (let i = safeStep; i < targetStep; i++) {
@@ -676,7 +673,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
     actionRunningRef.current = actionRunning;
     isFirstRef.current = isFirst;
 
-    // Bug #3: Refs for goNext, goPrev, onClose to avoid stale closures
+    // Refs for goNext, goPrev, onClose to avoid stale closures
     const goNextRef = useRef(goNext);
     goNextRef.current = goNext;
     const goPrevRef = useRef(goPrev);
@@ -684,14 +681,14 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
     const onCloseRef = useRef(onClose);
     onCloseRef.current = onClose;
 
-    // Bug #8: Ref for transitioning to use in keyboard handler
+    // Ref for transitioning state, used in keyboard handler
     const transitioningRef = useRef(false);
     transitioningRef.current = transitioning;
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if (e.key === "Escape") { onCloseRef.current(); return; }
-            // Bug #8: Check transitioningRef too
+            // Skip navigation while transitioning
             if (transitioningRef.current || navThrottleRef.current) return;
             if (e.key === "ArrowRight" && canProceedRef.current && !actionRunningRef.current) {
                 navThrottleRef.current = true;
@@ -706,9 +703,9 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
-    }, []); // Bug #3: No deps needed — refs handle freshness
+    }, []); // No deps needed — refs handle freshness
 
-    // Bug #4: Refs for onTabChange and onStepChange
+    // Refs for onTabChange and onStepChange to avoid stale closures
     const onTabChangeRef = useRef(onTabChange);
     onTabChangeRef.current = onTabChange;
     const onStepChangeRef = useRef(onStepChange);
@@ -725,13 +722,13 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
         contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     }, [currentStep]);
 
-    // Bug #9: More robust sidebar width detection
+    // Robust sidebar width detection
     const getSidebarWidth = () => {
         const sidebar = document.querySelector('[data-sidebar]') || document.querySelector('aside');
         return sidebar ? sidebar.getBoundingClientRect().width : 320;
     };
 
-    // Bug #5: Helper to wait for an element to appear in the DOM
+    // Helper to wait for an element to appear in the DOM
     const waitForElement = (selector: string, timeoutMs = 4000): Promise<Element | null> => {
         return new Promise(resolve => {
             const el = document.querySelector(selector);
@@ -773,7 +770,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
             const vh = window.innerHeight;
             const sidebarW = getSidebarWidth();
 
-            // Bug #12: Use waitForElement for scrollTo targets
+            // Use waitForElement for scrollTo targets
             if (step.scrollTo) {
                 const scrollTarget = await waitForElement(step.scrollTo, 4000);
                 if (scrollTarget) {
@@ -798,7 +795,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                 return;
             }
 
-            // Bug #5: Use waitForElement for highlight elements
+            // Use waitForElement for highlight elements
             let el: Element | null = null;
             if (step.highlight) {
                 el = await waitForElement(step.highlight);
@@ -916,7 +913,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
 
     return (
         <>
-            {/* Bug #11: Only render scrim/highlight when mounted (SSR safety) */}
+            {/* Only render scrim/highlight when mounted (SSR safety) */}
             {mounted && (
                 <>
                     {/* Scrim — does NOT close on click (prevents accidental dismissal) */}
@@ -1014,7 +1011,7 @@ export function GuidedWalkthrough({ onClose, onTabChange, onRefresh, onStepChang
                                 <button
                                     key={pi}
                                     onClick={() => {
-                                        // Bug #2: Check canJumpToStep before allowing jump
+                                        // Check canJumpToStep before allowing jump
                                         if (phaseStart !== safeStep && !actionRunning && canJumpToStep(phaseStart)) {
                                             animateTransition(phaseStart > safeStep ? "next" : "prev", () => {
                                                 setCurrentStep(phaseStart);

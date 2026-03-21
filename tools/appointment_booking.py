@@ -161,39 +161,12 @@ class HealthHubProvider(AppointmentProvider):
         Production: GET /Slot?schedule.actor=Practitioner/{npi}&status=free
         Parses FHIR Slot resources into our internal format.
         """
-        # NOTE: Real implementation would use `requests` library:
-        #   import requests
-        #   params = {"status": "free", "start": start_date.isoformat(), "end": end_date.isoformat()}
-        #   if preferred_doctor:
-        #       npi = next((d["npi"] for d in CLINIC_REGISTRY if d["name"] == preferred_doctor), None)
-        #       if npi:
-        #           params["schedule.actor"] = f"Practitioner/{npi}"
-        #   response = requests.get(f"{self.base_url}/Slot", headers=self.headers, params=params, timeout=10)
-        #   response.raise_for_status()
-        #   bundle = response.json()
-        #   return [self._parse_fhir_slot(entry["resource"]) for entry in bundle.get("entry", [])]
         raise NotImplementedError("Enable by setting HEALTHHUB_API_KEY and implementing FHIR R4 slot parsing")
 
     def confirm_booking(self, patient_id: str, slot: Dict, reason: str) -> Dict:
         """
         Production: POST /Appointment with FHIR Appointment resource.
         """
-        # NOTE: Real implementation:
-        #   appointment_resource = {
-        #       "resourceType": "Appointment",
-        #       "status": "booked",
-        #       "serviceType": [{"coding": [{"system": "http://snomed.info/sct", "code": "394580004"}]}],
-        #       "reasonCode": [{"text": reason}],
-        #       "participant": [
-        #           {"actor": {"reference": f"Patient/{patient_id}"}, "status": "accepted"},
-        #           {"actor": {"reference": f"Practitioner/{slot.get('npi', '')}"}, "status": "accepted"},
-        #       ],
-        #       "slot": [{"reference": f"Slot/{slot.get('slot_id', '')}"}],
-        #   }
-        #   response = requests.post(f"{self.base_url}/Appointment", headers=self.headers,
-        #                            json=appointment_resource, timeout=10)
-        #   response.raise_for_status()
-        #   return self._parse_fhir_appointment(response.json())
         raise NotImplementedError("Enable by setting HEALTHHUB_API_KEY and implementing FHIR R4 booking")
 
     def cancel_booking(self, confirmation_code: str) -> bool:

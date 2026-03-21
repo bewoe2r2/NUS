@@ -35,6 +35,9 @@ import {
     ExternalLink,
     Phone,
     SmartphoneNfc,
+    Presentation,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 
 // ============================================================================
@@ -55,12 +58,12 @@ interface TriagePatient {
 // JUDGE PAGE
 // ============================================================================
 export default function JudgePage() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'patient' | 'nurse' | 'caregiver' | 'intelligence' | 'tooldemo'>('overview');
+    const [activeTab, setActiveTab] = useState<'slides' | 'overview' | 'patient' | 'nurse' | 'caregiver' | 'intelligence' | 'tooldemo'>('slides');
     const [refreshKey, setRefreshKey] = useState(0);
     const [loadingOverview, setLoadingOverview] = useState(false);
     const [loadingIntelligence, setLoadingIntelligence] = useState(false);
     const [loadingCaregiver, setLoadingCaregiver] = useState(false);
-    const [showWalkthrough, setShowWalkthrough] = useState(true); // Auto-launch for judges
+    const [showWalkthrough, setShowWalkthrough] = useState(false); // Disabled — presenting manually
     const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
     const [walkthroughResumeStep, setWalkthroughResumeStep] = useState<number | undefined>(undefined);
     const lastWalkthroughStepRef = useRef(0);
@@ -108,18 +111,20 @@ export default function JudgePage() {
     const fetchOverviewData = useCallback(async () => {
         setLoadingOverview(true);
         try {
-            const [state, triageRes, drugs, summary, impact] = await Promise.all([
+            // Fast endpoints first
+            const [state, triageRes, drugs, impact] = await Promise.all([
                 api.getPatientState("P001").catch(() => null),
                 api.getNurseTriage().catch(() => null),
                 api.getDrugInteractions("P001").catch(() => null),
-                api.getClinicianSummary("P001").catch(() => null),
                 api.getImpactMetrics("P001").catch(() => null),
             ]);
             setPatientState(state);
             setTriage(triageRes);
             setDrugInteractions(drugs);
-            setClinicianSummary(summary);
             setImpactMetrics(impact);
+
+            // SBAR uses Gemini — fetch in background, don't block UI
+            api.getClinicianSummary("P001").then(s => setClinicianSummary(s)).catch(() => {});
         } catch (e) {
             console.error(e);
         } finally {
@@ -130,7 +135,7 @@ export default function JudgePage() {
     const fetchIntelligenceData = useCallback(async () => {
         setLoadingIntelligence(true);
         try {
-            const [mem, tools, safety, actions, str, eng, hmm, cg, proactive, cf] = await Promise.all([
+            const [mem, tools, safety, actions, str, eng, hmm, cg, proactive] = await Promise.all([
                 api.getAgentMemory("P001").catch(() => []),
                 api.getToolEffectiveness("P001").catch(() => null),
                 api.getSafetyLog("P001").catch(() => []),
@@ -140,7 +145,6 @@ export default function JudgePage() {
                 api.getHMMParams("P001").catch(() => null),
                 api.getCaregiverBurden("P001").catch(() => null),
                 api.getProactiveHistory("P001").catch(() => []),
-                api.runCounterfactual("P001").catch(() => null),
             ]);
             setAgentMemory(mem);
             setToolEffectiveness(tools);
@@ -151,7 +155,9 @@ export default function JudgePage() {
             setHmmParams(hmm);
             setCaregiverBurden(cg);
             setProactiveHistory(proactive);
-            setCounterfactual(cf);
+
+            // Counterfactual may use Gemini — fetch in background
+            api.runCounterfactual("P001").then(cf => setCounterfactual(cf)).catch(() => {});
         } catch (e) {
             console.error(e);
         } finally {
@@ -176,6 +182,7 @@ export default function JudgePage() {
     };
 
     const tabs = [
+        { id: 'slides' as const, label: 'Slides', icon: Presentation },
         { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
         { id: 'patient' as const, label: 'Patient View', icon: Heart },
         { id: 'nurse' as const, label: 'Nurse View', icon: Stethoscope },
@@ -214,22 +221,6 @@ export default function JudgePage() {
                     </div>
                     <div className="flex items-center gap-3">
                         {(loadingOverview || loadingIntelligence || loadingCaregiver) && <Loader2 size={14} className="animate-spin text-zinc-400" />}
-                        {walkthroughCompleted && lastWalkthroughStepRef.current > 0 && (
-                            <button
-                                onClick={() => { setWalkthroughResumeStep(lastWalkthroughStepRef.current); setShowWalkthrough(true); }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
-                            >
-                                <Play size={12} className="fill-current" />
-                                Resume (Step {lastWalkthroughStepRef.current + 1})
-                            </button>
-                        )}
-                        <button
-                            onClick={() => { setWalkthroughResumeStep(undefined); setShowWalkthrough(true); }}
-                            className={`${walkthroughCompleted ? 'bg-zinc-600 hover:bg-zinc-700' : 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300 ring-offset-2 animate-pulse'} text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm`}
-                        >
-                            <Play size={12} className="fill-current" />
-                            {walkthroughCompleted ? 'Restart Demo' : 'Guided Demo'}
-                        </button>
                         <span className="bg-zinc-900 text-white px-3 py-1 rounded-full text-[11px] font-bold tracking-widest">
                             JUDGE MODE
                         </span>
@@ -238,6 +229,9 @@ export default function JudgePage() {
 
                 {/* CONTENT */}
                 <div className="flex-1 overflow-y-auto">
+                    <div className={`h-full ${activeTab === 'slides' ? '' : 'hidden'}`}>
+                        <SlidesTab />
+                    </div>
                     <div className={`h-full ${activeTab === 'overview' ? '' : 'hidden'}`}>
                         <OverviewTab
                             patientState={patientState}
@@ -320,7 +314,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                     <p className="text-sm text-zinc-500 mt-1">
                         {hasData
                             ? 'Real-time patient state after simulation pipeline'
-                            : 'Use the Guided Demo or inject a scenario from the sidebar to begin'
+                            : 'Select a scenario from the sidebar and click Run Full Simulation to begin'
                         }
                     </p>
                 </div>
@@ -432,7 +426,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                     {triage?.patients && triage.patients.length > 0 ? (
                         <div className="space-y-3">
                             {triage.patients.map((p: TriagePatient, i: number) => (
-                                <div key={p.patient_id || i} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                                <div key={`triage-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${
                                         p.triage_category === 'IMMEDIATE' ? 'bg-rose-500' :
                                         p.triage_category === 'SOON' ? 'bg-amber-500' :
@@ -1389,7 +1383,7 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                                 const sev = typeof rawSev === 'string' ? rawSev : String(rawSev);
                                 const sevLower = sev.toLowerCase();
                                 return (
-                                    <div key={alert.id || `alert-${i}`} className="p-3 rounded-lg bg-zinc-50 border border-zinc-100 flex items-start gap-3">
+                                    <div key={`cg-alert-${i}`} className="p-3 rounded-lg bg-zinc-50 border border-zinc-100 flex items-start gap-3">
                                         <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${
                                             sevLower === 'critical' || sevLower === 'high' ? 'bg-rose-500' :
                                             sevLower === 'warning' || sevLower === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
@@ -1602,4 +1596,336 @@ function IntelCard({ title, icon, color, children }: { title: string; icon: Reac
 
 function EmptyState({ text }: { text: string }) {
     return <p className="text-xs text-zinc-400 italic py-4 text-center">{text}</p>;
+}
+
+// ============================================================================
+// SLIDES TAB — Presentation slides embedded for demo flow
+// ============================================================================
+const PRESENTATION_SLIDES = [
+    {
+        id: 1,
+        title: 'The Hook',
+        label: 'EVERY 6 MINUTES',
+        content: (
+            <div className="flex flex-col items-center justify-center h-full text-center gap-6">
+                <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">Every 6 Minutes</span>
+                <h1 className="text-4xl font-bold text-white">One <span className="text-cyan-400">preventable</span> admission.</h1>
+                <div className="text-8xl font-mono font-bold text-cyan-400" style={{ textShadow: '0 0 60px rgba(6,182,212,0.3)' }}>6<span className="text-2xl font-light ml-2">minutes</span></div>
+                <p className="text-zinc-400 text-lg max-w-xl">That is how often a diabetic patient lands in a Singapore ER.</p>
+                <p className="text-white font-semibold text-lg max-w-xl">Most were predictable. None were predicted.</p>
+            </div>
+        ),
+    },
+    {
+        id: 2,
+        title: 'The Problem',
+        label: 'THE PROBLEM',
+        content: (
+            <div className="grid grid-cols-2 gap-12 items-center h-full">
+                <div className="space-y-6">
+                    <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">The Problem</span>
+                    <h2 className="text-3xl font-bold text-white">Between visits, <span className="text-cyan-400">nobody</span> is watching.</h2>
+                    <div className="space-y-3 text-zinc-300">
+                        <p><span className="font-mono text-cyan-400 font-bold">440,000</span> diabetics in Singapore — one in nine adults</p>
+                        <p><span className="font-mono text-cyan-400 font-bold">180 days</span> alone between clinic visits</p>
+                        <p><span className="font-mono text-rose-400 font-bold">$8,800</span> per preventable ER visit</p>
+                    </div>
+                </div>
+                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 space-y-4">
+                    <div>
+                        <div className="text-xl font-bold text-white">Mr. Tan Ah Kow</div>
+                        <div className="text-sm text-zinc-500">67, lives alone, Toa Payoh HDB</div>
+                    </div>
+                    <hr className="border-white/[0.06]" />
+                    <div className="space-y-2 text-zinc-300 text-sm">
+                        <p>• Type 2 Diabetes + Hypertension</p>
+                        <p>• HbA1c <span className="font-mono text-amber-400 font-semibold">8.1%</span> (target: 7.0%)</p>
+                        <p>• Speaks Singlish and Hokkien</p>
+                        <p>• Can barely use a phone</p>
+                        <p>• Misses meds 2–3x per week</p>
+                    </div>
+                    <hr className="border-white/[0.06]" />
+                    <p className="text-white font-semibold text-sm">He represents 440,000 Singaporeans falling through the cracks.</p>
+                </div>
+            </div>
+        ),
+    },
+    {
+        id: 3,
+        title: 'The Insight',
+        label: 'THE INSIGHT',
+        content: (
+            <div className="flex flex-col items-center justify-center h-full text-center gap-6">
+                <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">The Insight</span>
+                <h2 className="text-3xl font-bold text-white max-w-2xl">LLMs hallucinate. In healthcare, <span className="bg-gradient-to-r from-amber-400 to-red-500 bg-clip-text text-transparent">that kills.</span></h2>
+                <div className="grid grid-cols-2 gap-8 mt-6 max-w-3xl w-full">
+                    <div className="bg-white/[0.04] border border-red-500/20 rounded-2xl p-6 text-left space-y-3">
+                        <span className="text-red-400 text-xs font-bold tracking-[0.1em] uppercase">Everyone Else</span>
+                        <div className="space-y-2 text-zinc-300 text-sm">
+                            <p>• Wrap an LLM in a chatbot</p>
+                            <p>• Hope it gets the answer right</p>
+                            <p>• Cannot guarantee patient safety</p>
+                        </div>
+                    </div>
+                    <div className="bg-white/[0.04] border border-cyan-500/20 rounded-2xl p-6 text-left space-y-3">
+                        <span className="text-cyan-400 text-xs font-bold tracking-[0.1em] uppercase">Our Answer</span>
+                        <div className="space-y-2 text-zinc-300 text-sm">
+                            <p>• Math decides the risk level</p>
+                            <p>• AI communicates it naturally</p>
+                            <p>• Safety is guaranteed, not hoped for</p>
+                        </div>
+                    </div>
+                </div>
+                <p className="text-white font-medium text-lg mt-4 max-w-lg">Separate the decision from the conversation. Make safety deterministic.</p>
+            </div>
+        ),
+    },
+    {
+        id: 4,
+        title: 'Diamond Architecture',
+        label: 'SYSTEM DESIGN',
+        content: (
+            <div className="flex flex-col justify-center h-full gap-4">
+                <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">System Design</span>
+                <h2 className="text-3xl font-bold text-white">The <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">5-Layer Diamond.</span></h2>
+                <div className="space-y-3 mt-4">
+                    {[
+                        { level: 'L5', name: 'Cultural Intelligence', desc: 'Speaks Singlish and Hokkien so Mr. Tan actually understands', tag: 'Voice', color: 'emerald' },
+                        { level: 'L4', name: 'Safety Classifier', desc: 'Blocks every unsafe response before it reaches the patient', tag: 'Guard', color: 'purple' },
+                        { level: 'L3', name: 'Agentic Reasoning', desc: 'Plans meals, explains meds, answers questions with 18 tools', tag: 'Brain', color: 'cyan' },
+                        { level: 'L2', name: 'Statistical Engine', desc: 'Predicts risk trajectories and detects crises before they hit', tag: 'Core', color: 'amber' },
+                        { level: 'L1', name: 'Safety Foundation', desc: 'Hard clinical rules that never bend — drug checks, dose limits, ADA guidelines', tag: 'Floor', color: 'red' },
+                    ].map((layer) => {
+                        const colors: Record<string, string> = {
+                            emerald: 'border-l-emerald-500 text-emerald-400',
+                            purple: 'border-l-purple-400 text-purple-400',
+                            cyan: 'border-l-cyan-400 text-cyan-400',
+                            amber: 'border-l-amber-400 text-amber-400',
+                            red: 'border-l-red-400 text-red-400',
+                        };
+                        const tagColors: Record<string, string> = {
+                            emerald: 'border-emerald-500/30 text-emerald-400',
+                            purple: 'border-purple-400/30 text-purple-400',
+                            cyan: 'border-cyan-400/30 text-cyan-400',
+                            amber: 'border-amber-400/30 text-amber-400',
+                            red: 'border-red-400/30 text-red-400',
+                        };
+                        return (
+                            <div key={layer.level} className={`bg-white/[0.04] border border-white/[0.08] border-l-[3px] ${colors[layer.color]} rounded-xl px-5 py-3 flex items-center gap-4`}>
+                                <span className={`font-mono font-bold text-sm ${colors[layer.color]}`}>{layer.level}</span>
+                                <div className="flex-1">
+                                    <div className="text-white font-semibold text-sm">{layer.name}</div>
+                                    <div className="text-zinc-400 text-xs">{layer.desc}</div>
+                                </div>
+                                <span className={`text-[10px] font-bold tracking-[0.1em] uppercase border rounded-full px-3 py-1 ${tagColors[layer.color]}`}>{layer.tag}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+                <p className="text-white font-medium mt-4">Every layer does one job. No layer trusts another. Safety flows from the bottom up.</p>
+            </div>
+        ),
+    },
+    {
+        id: 5,
+        title: 'Why HMM',
+        label: 'CORE INNOVATION',
+        content: (
+            <div className="grid grid-cols-2 gap-12 items-center h-full">
+                <div className="space-y-6">
+                    <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">Core Innovation</span>
+                    <h2 className="text-3xl font-bold text-white">Why <span className="text-cyan-400">HMM</span>, not neural nets.</h2>
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-white/[0.08]">
+                                <th className="text-left py-2 text-zinc-500 font-semibold text-xs uppercase tracking-wider">Dimension</th>
+                                <th className="text-left py-2 text-cyan-400 font-semibold text-xs uppercase tracking-wider">HMM</th>
+                                <th className="text-left py-2 text-zinc-500 font-semibold text-xs uppercase tracking-wider">LSTM</th>
+                                <th className="text-left py-2 text-zinc-500 font-semibold text-xs uppercase tracking-wider">LLM</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-zinc-300">
+                            {[
+                                ['Explainability', 'Full trace', 'Black box', '"I think..."'],
+                                ['Can hallucinate?', 'Impossible', 'Low risk', 'High risk'],
+                                ['Inference speed', '12.7ms', 'GPU needed', 'Cloud only'],
+                                ['Cold-start', '7 days data', '10K+ samples', 'N/A'],
+                                ['Safety guarantee', 'Deterministic', 'None', 'None'],
+                            ].map(([dim, hmm, lstm, llm]) => (
+                                <tr key={dim} className="border-b border-white/[0.04]">
+                                    <td className="py-2 text-zinc-400">{dim}</td>
+                                    <td className="py-2 text-emerald-400 font-semibold">{hmm}</td>
+                                    <td className="py-2">{lstm}</td>
+                                    <td className="py-2">{llm}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <p className="text-white font-medium italic">&ldquo;Can you explain WHY to a doctor, a patient, and a regulator?&rdquo;</p>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                    <div className="text-7xl font-mono font-bold text-cyan-400" style={{ textShadow: '0 0 60px rgba(6,182,212,0.3)' }}>12.7<span className="text-xl font-light ml-1">ms</span></div>
+                    <p className="text-zinc-400 mt-2">HMM inference time</p>
+                    <p className="text-zinc-600 text-xs mt-1">Explainable. Auditable. Cannot hallucinate.</p>
+                </div>
+            </div>
+        ),
+    },
+    {
+        id: 6,
+        title: 'Validation',
+        label: 'VALIDATION',
+        content: (
+            <div className="flex flex-col items-center justify-center h-full text-center gap-6" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(16,185,129,0.06) 0%, transparent 70%)' }}>
+                <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">Validation</span>
+                <h2 className="text-3xl font-bold text-white"><span className="text-emerald-400">Zero</span> unsafe misclassifications.</h2>
+                <p className="text-zinc-400 text-lg max-w-lg">No patient in danger was ever told they were safe.</p>
+                <div className="grid grid-cols-4 gap-6 mt-4">
+                    <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 text-center">
+                        <div className="text-4xl font-mono font-bold text-emerald-400">99.3%</div>
+                        <div className="text-zinc-400 text-sm mt-2">clean accuracy</div>
+                        <div className="text-zinc-600 text-xs mt-1">standard patient profiles</div>
+                    </div>
+                    <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 text-center">
+                        <div className="text-4xl font-mono font-bold text-amber-400">82.1%</div>
+                        <div className="text-zinc-400 text-sm mt-2">hardened accuracy</div>
+                        <div className="text-zinc-600 text-xs mt-1">adversarial edge cases</div>
+                    </div>
+                    <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 text-center">
+                        <div className="text-4xl font-mono font-bold text-emerald-400">100%</div>
+                        <div className="text-zinc-400 text-sm mt-2">clean crisis recall</div>
+                        <div className="text-zinc-600 text-xs mt-1">every crisis caught</div>
+                    </div>
+                    <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 text-center">
+                        <div className="text-4xl font-mono font-bold text-amber-400">87.8%</div>
+                        <div className="text-zinc-400 text-sm mt-2">hardened crisis recall</div>
+                        <div className="text-zinc-600 text-xs mt-1">under adversarial attack</div>
+                    </div>
+                </div>
+                <p className="text-zinc-500 mt-2">5,000 hardened patients. 32 clinical archetypes. Zero unsafe misses.</p>
+            </div>
+        ),
+    },
+    {
+        id: 7,
+        title: 'The Numbers',
+        label: 'IMPACT',
+        content: (
+            <div className="flex flex-col justify-center h-full gap-4">
+                <span className="text-cyan-400 text-xs font-bold tracking-[0.15em] uppercase">The Numbers</span>
+                <h2 className="text-3xl font-bold text-white">Built to <span className="text-cyan-400">deploy</span>, not to demo.</h2>
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                    {[
+                        { value: '$0.40', label: 'per patient per month', sub: 'Gemini API + compute + storage', color: 'text-cyan-400' },
+                        { value: '$8,800', label: 'saved per prevented ER visit', sub: 'one save pays for 22,000 patient-months', color: 'text-emerald-400' },
+                        { value: '22,000', label: 'patient-months per ER save', sub: 'the economics are overwhelming', color: 'text-amber-400' },
+                        { value: '186ms', label: 'total pipeline latency', sub: 'real-time on any smartphone', color: 'text-cyan-400' },
+                        { value: '230/230', label: 'tests, 76/76 gates', sub: 'every validation gate green', color: 'text-emerald-400' },
+                    ].map((m) => (
+                        <div key={m.value} className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 text-center">
+                            <div className={`text-3xl font-mono font-bold ${m.color}`} style={m.color !== 'text-white' ? { textShadow: '0 0 40px rgba(6,182,212,0.15)' } : {}}>{m.value}</div>
+                            <div className="text-zinc-400 text-sm mt-2">{m.label}</div>
+                            <div className="text-zinc-600 text-xs mt-1">{m.sub}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        ),
+    },
+    {
+        id: 8,
+        title: 'Close',
+        label: 'VISION',
+        content: (
+            <div className="flex flex-col items-center justify-center h-full text-center gap-6" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(16,185,129,0.08) 100%)' }}>
+                <h1 className="text-3xl font-bold text-white leading-relaxed max-w-3xl">
+                    Bewo does not wait for crisis.<br />
+                    It <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">predicts.</span>{' '}
+                    It <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">prevents.</span>{' '}
+                    It <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">protects.</span>
+                </h1>
+                <p className="text-zinc-400 text-xl">From diabetes to all chronic disease.<br />From Singapore to Southeast Asia.</p>
+                <div className="mt-6">
+                    <span className="text-4xl font-bold text-white">Bewo Health</span>
+                </div>
+                <p className="text-zinc-500 text-sm tracking-[0.06em]">Predicts. Prevents. Protects.</p>
+            </div>
+        ),
+    },
+];
+
+function SlidesTab() {
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const total = PRESENTATION_SLIDES.length;
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                setCurrentSlide(prev => Math.min(prev + 1, total - 1));
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                setCurrentSlide(prev => Math.max(prev - 1, 0));
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [total]);
+
+    const slide = PRESENTATION_SLIDES[currentSlide];
+
+    return (
+        <div className="h-full flex flex-col bg-[#09090b] relative select-none">
+            {/* Progress bar */}
+            <div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-cyan-400 to-cyan-400/60 z-20 transition-all duration-300" style={{ width: `${((currentSlide + 1) / total) * 100}%` }} />
+
+            {/* Slide content */}
+            <div className="flex-1 px-[8%] py-[6%] overflow-hidden">
+                {slide.content}
+            </div>
+
+            {/* Bottom bar */}
+            <div className="h-14 border-t border-white/[0.06] flex items-center justify-between px-6 shrink-0">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setCurrentSlide(prev => Math.max(prev - 1, 0))}
+                        disabled={currentSlide === 0}
+                        className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500 transition-all"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button
+                        onClick={() => setCurrentSlide(prev => Math.min(prev + 1, total - 1))}
+                        disabled={currentSlide === total - 1}
+                        className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500 transition-all"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+
+                {/* Slide thumbnails */}
+                <div className="flex items-center gap-1">
+                    {PRESENTATION_SLIDES.map((s, i) => (
+                        <button
+                            key={s.id}
+                            onClick={() => setCurrentSlide(i)}
+                            className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider transition-all ${
+                                i === currentSlide
+                                    ? 'bg-cyan-400/20 text-cyan-400'
+                                    : 'text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.04]'
+                            }`}
+                        >
+                            {s.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Counter */}
+                <span className="font-mono text-xs text-zinc-600">
+                    {String(currentSlide + 1).padStart(2, '0')}<span className="mx-1 opacity-50">—</span>{String(total).padStart(2, '0')}
+                </span>
+            </div>
+        </div>
+    );
 }

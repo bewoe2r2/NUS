@@ -6,6 +6,24 @@ Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic pat
 
 ---
 
+## Submission Contents
+
+| File | Description |
+|------|-------------|
+| `EXECUTIVE_SUMMARY.md` | One-page A4 executive summary (also available as `EXECUTIVE_SUMMARY.html` — open in browser and print to PDF for formatted A4 output) |
+| `Bewo_Slides_Demo.pptx` | Presentation slides (15 slides, PowerPoint format) |
+| `slides/nusslides.html` | Interactive presentation slides (open in browser, navigate with arrow keys) |
+| `Bewo_Demo_Video.mp4` | 6-minute product demonstration video |
+| `README.md` | This file — setup instructions, architecture, API documentation |
+| `backend/` | FastAPI backend (67 endpoints) |
+| `core/` | HMM engine, agent runtime, Gemini/SEA-LION/MERaLiON integrations |
+| `frontend/` | Next.js frontend (patient, nurse, caregiver, judge views) |
+| `tests/` | 230 unit tests |
+| `validation/` | Independent validation suite (10,000 synthetic patients) |
+| `Dockerfile` + `docker-compose.yml` | One-command deployment |
+
+---
+
 ## Architecture
 
 ```
@@ -71,7 +89,7 @@ The agent autonomously decides which tools to use based on patient context:
 
 ### Safety Systems
 - **Response Safety Classifier**: 6-dimension check on every AI response (medical claims, emotional mismatch, hallucination, cultural sensitivity, scope boundaries, dangerous advice)
-- **Drug Interaction Engine**: 16 interaction pairs, 39 drug-class mappings, auto-blocks CONTRAINDICATED combinations
+- **Drug Interaction Engine**: 16 interaction pairs, 45 drug-class mappings, auto-blocks CONTRAINDICATED combinations
 - **Agent Memory**: Cross-session episodic + semantic + preference learning with Gemini-powered extraction
 - **Proactive Scheduler**: 6 trigger conditions (glucose_rising, sustained_risk, logging_gap, medication_nudge, streak_save, mood_followup)
 
@@ -134,13 +152,14 @@ Healthcare/
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+ (for frontend)
-- Google Gemini API key ([get one here](https://aistudio.google.com/app/apikey))
+- Optional: Google Gemini API key for live AI chat (demo works without it)
 
 ### Option A: Docker (Recommended)
 
 ```bash
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+# Optional: add GEMINI_API_KEY for live AI chat
+# The demo runs fully without API keys — all scenarios use pre-computed data
 
 docker compose up --build
 ```
@@ -152,7 +171,7 @@ Frontend: `http://localhost:3000` | API: `http://localhost:8000` | Swagger: `htt
 ```bash
 # 1. Backend
 pip install -r backend/requirements.txt
-cp .env.example .env       # Add your GEMINI_API_KEY
+cp .env.example .env
 python scripts/init_db.py  # Initialize database (first time only)
 uvicorn backend.api:app --host 0.0.0.0 --port 8000 --reload
 
@@ -162,7 +181,18 @@ cd frontend && npm install && npm run dev
 
 ### For Judges
 
-Open `http://localhost:3000/judge` — the **Guided Walkthrough** launches automatically and walks you through every feature, view, and scenario in 23 steps. Just follow the prompts.
+**No API keys required.** The demo runs fully offline — HMM inference, scenario injection, SBAR reports, agent intelligence, and all stakeholder views work without any external API keys.
+
+Open `http://localhost:3000/judge` for the full demo console:
+
+1. **Slides tab** — presentation slides embedded for easy viewing
+2. **Overview tab** — inject scenarios from the sidebar, see real-time HMM state
+3. **Patient View** — what Mr. Tan sees on his phone (proactive Singlish messages, emergency alerts)
+4. **Nurse View** — triage dashboard, auto-SBAR reports, drug interaction checks
+5. **Caregiver** — alert history, burden scoring, escalation tiers
+6. **AI Intelligence** — agent memory, tool execution logs, safety audit trail, proactive history
+
+Select a scenario (e.g. "Warning → Crisis") from the left sidebar and click "Run Full Simulation" to see the full pipeline in action across all views.
 
 | View | URL | Description |
 |------|-----|-------------|
@@ -316,7 +346,7 @@ The CI pipeline (`.github/workflows/ci.yml`) runs backend tests, frontend lint, 
 - Cross-session memory (episodic + semantic + preference)
 - 6-dimension response safety classifier
 - Proactive scheduling with 6 trigger conditions
-- Drug interaction engine (16 pairs, 39 class mappings)
+- Drug interaction engine (16 pairs, 45 class mappings)
 - SBAR auto-generation for nurse escalations
 
 ---
@@ -352,18 +382,43 @@ Measured latency benchmarks (14-day patient window, 9 features):
 
 ---
 
-## Competition Context
+## Security & Privacy
 
-Built for the **NUS-Synapxe-IMDA Healthcare AI Innovation Challenge**, targeting Singapore's aging population with Type 2 Diabetes. The system integrates with Singapore's national healthcare infrastructure through:
+### Data Protection (PDPA Compliance)
+- **PII De-identification**: All patient data (name, NRIC, address, phone, email, emergency contacts) is stripped by `_deidentify_profile_for_llm()` before any data reaches Gemini, SEA-LION, or any external AI service. Only anonymised clinical context (age, conditions, medications, patient_id) is sent.
+- **HMM Runs Offline**: The core statistical engine (Viterbi, Monte Carlo, Baum-Welch) executes entirely locally. No patient data is transmitted for state classification.
+- **Tiered Data Retention**: Sensor data is ephemeral. Clinical data encrypted locally with 6-month retention. Only anonymised outcome metrics sync externally.
 
-- **Merlion** (A*STAR): Time-series risk forecasting
-- **SEA-LION** (AI Singapore): Singlish/multilingual cultural adaptation
-- **MERaLiON** (A*STAR): Paralinguistic speech emotion recognition for voice check-ins
-- **SBAR**: Standardized clinical reporting used in Singapore hospitals
-- **CDC Voucher Integration**: Aligned with Singapore's Community Development Council voucher system for gamified health engagement
+### API Security
+- **Constant-Time Authentication**: API key comparison uses `secrets.compare_digest()` to prevent timing attacks.
+- **Rate Limiting**: 60 req/min general, 30 req/min for `/chat` (Gemini cost control). Per-IP in-memory store.
+- **Input Sanitisation**: All user input capped at 2,000 characters, stripped of control characters and prompt injection patterns before processing.
+- **SQL Injection Prevention**: All database queries use parameterised statements. Table names in admin endpoints use hardcoded allowlists only.
+
+### Clinical Safety
+- **Fail-Closed Safety Classifier**: If the 6-dimension safety classifier is unavailable (API down, error, timeout), the AI response is blocked — never delivered unfiltered.
+- **Drug Interaction Engine**: 16 interaction pairs, 45 drug-class mappings. CONTRAINDICATED combinations are hard-blocked. The system cannot suggest a dangerous drug combination.
+- **Deterministic Overrides**: L1 safety rules fire before any AI inference. Glucose <3.0 or >20.0 mmol/L forces CRISIS regardless of model output. These rules are hardcoded and cannot be overridden by the AI.
+- **No Dosage Modification**: The system can never autonomously change medication dosages. All dosage suggestions are flagged for clinician review only.
+
+### Prompt Injection Defence
+- User messages are sanitised before being included in LLM prompts. Control characters, XML/HTML injection patterns, and known prompt injection techniques are stripped.
+- The safety classifier independently evaluates every response — even if a prompt injection caused the reasoning layer to generate something unsafe, the classifier catches it before delivery.
+
+---
+
+## References
+
+- ADA Standards of Care 2024
+- UKPDS (Lancet 1998)
+- ARIC Study (Diabetes Care 2019)
+- Danne et al. (Diabetes Care 2017)
+- MOH Singapore Emergency Department Statistics 2024
+- AI Singapore SEA-LION v4 27B
+- A*STAR MERaLiON (I²R)
 
 ---
 
 ## License
 
-Built by Team Antigravity for the NUS-Synapxe-IMDA Healthcare AI Innovation Challenge 2026.
+Built by Team Bewo for the NUS-Synapxe-IMDA Healthcare AI Innovation Challenge 2026.

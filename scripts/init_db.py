@@ -1,14 +1,17 @@
 import sqlite3
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 SCHEMA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_schema.sql")
 
 def init_db():
     if not os.path.exists(SCHEMA_PATH):
-        print(f"Error: {SCHEMA_PATH} not found.")
+        logger.error(f"{SCHEMA_PATH} not found.")
         return
-    
+
     conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -23,12 +26,12 @@ def init_db():
         try:
             cursor.execute("ALTER TABLE hmm_states ADD COLUMN confidence_margin REAL")
         except Exception as e:
-            print(f"Warning: {e}")
+            logger.debug(f"Column may already exist: {e}")
 
         try:
             cursor.execute("ALTER TABLE hmm_states ADD COLUMN patient_tier TEXT DEFAULT 'BASIC'")
         except Exception as e:
-            print(f"Warning: {e}")
+            logger.debug(f"Column may already exist: {e}")
 
         # Add retention_until to all relevant tables if missing
         tables_with_retention = ['glucose_readings', 'medication_logs', 'passive_metrics', 'voice_checkins', 'hmm_states']
@@ -36,38 +39,39 @@ def init_db():
             try:
                 # Default to +6 months (15552000 seconds) from now
                 cursor.execute(f"ALTER TABLE {table} ADD COLUMN retention_until INTEGER DEFAULT (strftime('%s', 'now') + 15552000)")
-                print(f"Added retention_until to {table}")
+                logger.info(f"Added retention_until to {table}")
             except Exception as e:
-                print(f"Skipping {table} (might exist or error): {e}")
+                logger.debug(f"Skipping {table} (might exist or error): {e}")
 
         # Add social_interactions to passive_metrics
         try:
             cursor.execute("ALTER TABLE passive_metrics ADD COLUMN social_interactions INTEGER DEFAULT 0")
-            print("Added social_interactions to passive_metrics")
+            logger.info("Added social_interactions to passive_metrics")
         except Exception as e:
-            print(f"Warning: {e}")
+            logger.debug(f"Column may already exist: {e}")
 
         # Add HRV columns to fitbit_heart_rate (critical for diabetic autonomic neuropathy detection)
         try:
             cursor.execute("ALTER TABLE fitbit_heart_rate ADD COLUMN hrv_rmssd REAL")
-            print("Added hrv_rmssd to fitbit_heart_rate")
+            logger.info("Added hrv_rmssd to fitbit_heart_rate")
         except Exception as e:
-            print(f"Warning: {e}")
+            logger.debug(f"Column may already exist: {e}")
 
         try:
             cursor.execute("ALTER TABLE fitbit_heart_rate ADD COLUMN hrv_sdnn REAL")
-            print("Added hrv_sdnn to fitbit_heart_rate")
+            logger.info("Added hrv_sdnn to fitbit_heart_rate")
         except Exception as e:
-            print(f"Warning: {e}")
+            logger.debug(f"Column may already exist: {e}")
 
         conn.commit()
-        print(f"Successfully initialized {DB_PATH}")
+        logger.info(f"Successfully initialized {DB_PATH}")
 
     except Exception as e:
-        print(f"Database Initialization Error: {e}")
+        logger.error(f"Database Initialization Error: {e}")
     finally:
         if conn:
             conn.close()
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     init_db()

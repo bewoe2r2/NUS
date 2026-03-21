@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export function ChatContainer() {
     const [messages, setMessages] = useState<ChatMessage[]>([]); // Start empty, wait for interaction
     const [isTyping, setIsTyping] = useState(false);
+    const [userHasTyped, setUserHasTyped] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const msgCounterRef = useRef(0);
     const nextId = () => `msg-${Date.now()}-${++msgCounterRef.current}`;
@@ -34,18 +35,42 @@ export function ChatContainer() {
         return "Good evening";
     };
 
-    // Initial Greeting from "System" or Real History could go here
-    useEffect(() => {
-        // For now, let's just push a subtle welcome if empty
-        if (messages.length === 0) {
-            setMessages([{
-                id: "init-legacy",
-                role: "ai",
-                content: `${getGreeting()}, Mr. Tan. I noticed your glucose is slightly elevated. Have you had breakfast?`,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }]);
+    // Load conversation history on mount (includes hardcoded proactive messages from scenario injection)
+    const loadHistory = useCallback(async () => {
+        try {
+            const history = await api.getConversationHistory('P001', 10);
+            if (history.length > 0) {
+                const loaded: ChatMessage[] = history.map((h, i) => ({
+                    id: `hist-${i}-${h.timestamp_utc || i}`,
+                    role: h.role === 'assistant' ? 'ai' as const : h.role === 'user' ? 'user' as const : 'system' as const,
+                    content: h.message,
+                    timestamp: h.timestamp_utc
+                        ? new Date(h.timestamp_utc * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : '',
+                    hmm_state: h.hmm_state as "STABLE" | "WARNING" | "CRISIS" | undefined,
+                }));
+                setMessages(loaded);
+                return;
+            }
+        } catch {
+            // Fall through to default greeting
         }
+        // Fallback: default greeting if no history
+        setMessages([{
+            id: "init-legacy",
+            role: "ai",
+            content: `${getGreeting()}, Mr. Tan. I noticed your glucose is slightly elevated. Have you had breakfast?`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
     }, []);
+
+    useEffect(() => {
+        loadHistory();
+        const interval = setInterval(() => {
+            if (!userHasTyped) loadHistory();
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [loadHistory, userHasTyped]);
 
     const handleSendMessage = async (text: string) => {
         const userMsg: ChatMessage = {
@@ -57,6 +82,7 @@ export function ChatContainer() {
         };
 
         setMessages(prev => [...prev, userMsg]);
+        setUserHasTyped(true);
         setIsTyping(true);
 
         try {

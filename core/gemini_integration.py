@@ -427,7 +427,6 @@ class GeminiIntegration:
             model = self._get_model()
             
             # Read image for upload
-            # In a real deployed scenario, we might use the file API or inline data
             with open(image_path, 'rb') as f:
                 image_data = f.read()
                 
@@ -650,8 +649,7 @@ class GeminiIntegration:
         # Extract glucose history from context or observations
         glucose_history = []
         if full_context.get('glucose_pattern') and full_context.get('glucose_pattern').get('readings_24h', 0) > 0:
-             # Ideally fetch actual list, here we might have to mock if full history not in context dict yet
-             # For now, let's look for it in the DB or use a placeholder
+             # Fetch glucose history from DB for Merlion risk calculation
              conn = None
              try:
                  conn = self._get_db_connection()
@@ -830,9 +828,9 @@ class GeminiIntegration:
         # --- 9. DIGITAL BEHAVIOR ---
         digital_context = ""
         if full_context.get('digital_behavior'):
-            db = full_context['digital_behavior']
-            if db.get('avg_screen_hours', 0) > 4:
-                digital_context = f"📱 Screen time: {db['avg_screen_hours']}h/day (high - may affect sleep)"
+            digital = full_context['digital_behavior']
+            if digital.get('avg_screen_hours', 0) > 4:
+                digital_context = f"📱 Screen time: {digital['avg_screen_hours']}h/day (high - may affect sleep)"
 
         # --- STEP 3: STRATEGIC REASONING (GEMINI) ---
         

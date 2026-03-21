@@ -8,6 +8,7 @@ Updated for HMM v2.0 orthogonal feature set.
 import sqlite3
 import time
 import json
+import logging
 import random
 import os
 import sys
@@ -15,6 +16,8 @@ import sys
 # Add core directory to path so we can import hmm_engine
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core"))
 from hmm_engine import HMMEngine
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "nexus_health.db")
 SCENARIO = "warning_to_crisis"  # Default scenario
@@ -47,7 +50,7 @@ def _inject_tiered_scenario_impl(conn, observations, tier, days):
     start_time = now - (days * 24 * 3600)
     window_size = 4 * 3600
 
-    print(f"Cleaning old data from {DB_PATH}...")
+    logger.info(f"Cleaning old data from {DB_PATH}...")
     # Clear ALL data tables first (allowlisted table names only — never user input)
     _ALLOWED_TABLES = frozenset({
         'glucose_readings', 'cgm_readings', 'passive_metrics',
@@ -75,7 +78,7 @@ def _inject_tiered_scenario_impl(conn, observations, tier, days):
             # cannot be used for table names in SQLite.
             conn.execute(f"DELETE FROM {table}")  # noqa: S608
         except Exception as e:
-            print(f"Warning clearing {table}: {e}")
+            logger.warning(f"Error clearing {table}: {e}")
 
     # Seed prescribed medications
     medications_data = [
@@ -95,7 +98,7 @@ def _inject_tiered_scenario_impl(conn, observations, tier, days):
         except Exception:
             pass
 
-    print(f"Injecting {len(observations)} observations for {tier} tier...")
+    logger.info(f"Injecting {len(observations)} observations for {tier} tier...")
 
     for i, obs in enumerate(observations):
         t = start_time + (i * window_size)
@@ -198,15 +201,15 @@ def _inject_tiered_scenario_impl(conn, observations, tier, days):
                 """, ('P001', day_start, int(sleep_q * 50), sleep_q * 10))  # 7 hours sleep at quality 7
 
     conn.commit()
-    print("Data injection complete.")
+    logger.info("Data injection complete.")
 
 def run_analysis_and_save(engine, days=14):
     """Run HMM inference on injected data and save states to DB."""
-    print("Running HMM Analysis on injected data...")
+    logger.info("Running HMM analysis on injected data...")
     observations = engine.fetch_observations(days=days)
 
     if not observations:
-        print("No observations found after injection!")
+        logger.warning("No observations found after injection!")
         return
 
     conn = get_db_connection()
@@ -236,7 +239,7 @@ def run_analysis_and_save(engine, days=14):
                       result.get('confidence_margin', 0), TIER, json.dumps(obs)))
 
         conn.commit()
-        print(f"Analyzed {len(observations)} time buckets and saved states.")
+        logger.info(f"Analyzed {len(observations)} time buckets and saved states.")
     finally:
         conn.close()
 
@@ -251,12 +254,12 @@ def print_summary(engine, days=14):
             GROUP BY detected_state
         """).fetchall()
 
-        print("\n" + "=" * 50)
-        print("HMM ANALYSIS SUMMARY")
-        print("=" * 50)
+        logger.info("=" * 50)
+        logger.info("HMM ANALYSIS SUMMARY")
+        logger.info("=" * 50)
 
         for row in rows:
-            print(f"  {row['detected_state']}: {row['count']} buckets (avg confidence: {row['avg_conf']:.1%})")
+            logger.info(f"  {row['detected_state']}: {row['count']} buckets (avg confidence: {row['avg_conf']:.1%})")
 
         # Get latest state
         latest = conn.execute("""
@@ -267,19 +270,21 @@ def print_summary(engine, days=14):
         """).fetchone()
 
         if latest:
-            print(f"\nCurrent State: {latest['detected_state']}")
-            print(f"Confidence: {latest['confidence_score']:.1%}")
-            print(f"Margin: {latest['confidence_margin']:.1%}")
+            logger.info(f"Current State: {latest['detected_state']}")
+            logger.info(f"Confidence: {latest['confidence_score']:.1%}")
+            logger.info(f"Margin: {latest['confidence_margin']:.1%}")
     finally:
         conn.close()
 
 if __name__ == "__main__":
     import argparse
 
+    logging.basicConfig(level=logging.INFO)
+
     parser = argparse.ArgumentParser(description='Inject demo data for Bewo 2026')
     parser.add_argument('--scenario', type=str, default=SCENARIO,
                         choices=['stable_perfect', 'stable_realistic', 'stable_noisy', 'missing_data',
-                                'gradual_decline', 'warning_to_crisis', 'warning_recovery', 'sudden_crisis', 
+                                'gradual_decline', 'warning_to_crisis', 'warning_recovery', 'sudden_crisis',
                                 'sudden_spike', 'recovery',
                                 # Competition scenarios
                                 'demo_merlion', 'demo_counterfactual', 'demo_intervention_success',
@@ -296,7 +301,7 @@ if __name__ == "__main__":
     engine = HMMEngine()
 
     # Generate Scenario Data
-    print(f"\nGenerating '{args.scenario}' scenario for {args.days} days ({args.tier} tier)...")
+    logger.info(f"Generating '{args.scenario}' scenario for {args.days} days ({args.tier} tier)...")
     obs = engine.generate_demo_scenario(args.scenario, days=args.days)
 
     # Inject into DB

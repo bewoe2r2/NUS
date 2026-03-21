@@ -23,12 +23,7 @@ class TestCounterfactualEngine(unittest.TestCase):
         
         intervention = {'meds_adherence': 0.95}
         result = self.engine.simulate_intervention(current_probs, intervention)
-        
-        print("\n[Scenario 1] Happy Path (Meds):")
-        print(f"  Baseline Crisis Risk: {result['baseline_risk']:.4f}")
-        print(f"  New Crisis Risk:      {result['new_risk']:.4f}")
-        print(f"  Reduction:            {result['improvement_pct']:.1f}%")
-        
+
         self.assertEqual(result['validity'], 'VALID')
         self.assertGreater(result['risk_reduction'], 0.0, "Risk should decrease")
         self.assertGreater(result['improvement_pct'], 10.0, "Should be significant improvement")
@@ -44,12 +39,7 @@ class TestCounterfactualEngine(unittest.TestCase):
         
         intervention = {'social_engagement': 4} # Moderate attempt, but insufficient
         result = self.engine.simulate_intervention(current_probs, intervention)
-        
-        print("\n[Scenario 2] Futile Intervention (Crisis):")
-        print(f"  Baseline Crisis Risk: {result['baseline_risk']:.4f}")
-        print(f"  New Crisis Risk:      {result['new_risk']:.4f}")
-        print(f"  Reduction:            {result['improvement_pct']:.1f}%")
-        
+
         # Should be small reduction or Warning transition, but not full cure
         # Crisis (0.84 transition) is sticky.
         # 4 is close to Warning (5), far from Stable (10).
@@ -67,11 +57,7 @@ class TestCounterfactualEngine(unittest.TestCase):
         
         intervention = {'steps_daily': 10000}
         result = self.engine.simulate_intervention(current_probs, intervention)
-        
-        print("\n[Scenario 3] Already Perfect:")
-        print(f"  Baseline Crisis Risk: {result['baseline_risk']:.4f}")
-        print(f"  New Crisis Risk:      {result['new_risk']:.4f}")
-        
+
         self.assertLess(result['new_risk'], 0.01, "Risk should stay negligible")
 
     def test_04_adversarial_intervention(self):
@@ -85,12 +71,7 @@ class TestCounterfactualEngine(unittest.TestCase):
         
         intervention = {'carbs_intake': 450} # Massive binge
         result = self.engine.simulate_intervention(current_probs, intervention)
-        
-        print("\n[Scenario 4] Adversarial (Carb Binge):")
-        print(f"  Baseline Crisis Risk: {result['baseline_risk']:.4f}")
-        print(f"  New Crisis Risk:      {result['new_risk']:.4f}")
-        print(f"  Reduction:            {result['risk_reduction']:.4f}")
-        
+
         self.assertLess(result['risk_reduction'], 0.0, "Risk should INCREASE (negative reduction)")
         self.assertIn("INCREASES", result['message'], "Message should warn about increase")
 
@@ -108,11 +89,7 @@ class TestCounterfactualEngine(unittest.TestCase):
         
         # Case B: Meds + Tachycardia
         res_conflict = self.engine.simulate_intervention(current_probs, {'meds_adherence': 1.0, 'resting_hr': 110})
-        
-        print("\n[Scenario 5] Conflict (Meds vs Tachycardia):")
-        print(f"  Meds Only Risk:       {res_meds['new_risk']:.4f}")
-        print(f"  Meds + High HR Risk:  {res_conflict['new_risk']:.4f}")
-        
+
         # The risk should be HIGHER in the conflict case than in the pure meds case
         self.assertGreater(res_conflict['new_risk'], res_meds['new_risk'], 
                           "Physical distress should partially override behavioral compliance")
@@ -128,11 +105,7 @@ class TestCounterfactualEngine(unittest.TestCase):
         
         intervention = {'meds_adherence': 1.0}
         result = self.engine.simulate_intervention(current_probs, intervention)
-        
-        print("\n[Scenario 6] Sparse Data (Uniform Prior):")
-        print(f"  Baseline: {result['baseline_risk']:.4f}")
-        print(f"  New:      {result['new_risk']:.4f}")
-        
+
         self.assertEqual(result['validity'], 'VALID') # Engine itself returns valid math
         # We verify it doesn't crash or return NaN
 

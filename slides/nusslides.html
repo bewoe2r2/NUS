@@ -577,10 +577,6 @@ html, body {
   background-clip: text;
 }
 
-.bg-glow {
-  position: relative;
-}
-
 .bg-glow::before {
   content: '';
   position: absolute;
@@ -611,9 +607,6 @@ html, body {
 }
 
 /* Background variants for slide variety */
-.bg-red-glow {
-  position: relative;
-}
 .bg-red-glow::before {
   content: '';
   position: absolute;
@@ -629,9 +622,6 @@ html, body {
 }
 .bg-red-glow > * { position: relative; z-index: 1; }
 
-.bg-green-glow {
-  position: relative;
-}
 .bg-green-glow::before {
   content: '';
   position: absolute;
@@ -954,11 +944,11 @@ html, body {
      ============================================================ -->
 <section class="slide bg-glow active" data-slide="1">
   <div class="center">
-    <div class="anim s1 label accent">Every 6 Minutes</div>
-    <div class="anim s2 title mt-4">One <span class="text-accent">preventable</span> admission.</div>
+    <div class="anim s1 label accent">Singapore, 2024</div>
+    <div class="anim s2 title mt-4">One diabetic hits the ER. <span class="text-accent">Preventable.</span></div>
     <div class="anim s3 hero-xl glow-text text-accent mono mt-6">6<span class="subtitle w-300 ml-2" style="margin-left: 0.5em;">minutes</span></div>
-    <div class="anim s4 body mt-6 max-w-lg">That is how often a diabetic ER admission happens in Singapore.</div>
-    <div class="anim s5 body max-w-lg">Most were predictable. None were predicted.</div>
+    <div class="anim s4 body mt-6 max-w-lg">That is how often it happens. 87,600 admissions per year.</div>
+    <div class="anim s5 body max-w-lg">Every one of them was predictable. None of them were predicted.</div>
   </div>
 </section>
 
@@ -971,24 +961,24 @@ html, body {
       <div class="label accent anim s1">The Problem</div>
       <div class="title anim s2 mt-2">Between visits, <span class="text-accent">nobody</span> is watching.</div>
       <div class="stack mt-4 gap-3">
-        <div class="anim s3 body"><span class="accent-dot"></span><span class="mono text-accent w-700">440K</span> diabetics in Singapore &mdash; one in nine adults</div>
-        <div class="anim s4 body"><span class="accent-dot"></span><span class="mono text-accent w-700">3&ndash;6 months</span> between clinic visits &mdash; that is 180 days alone</div>
-        <div class="anim s5 body"><span class="accent-dot"></span><span class="mono text-rose w-700">$8,800</span> per preventable ER visit &mdash; paid by the system, suffered by the patient</div>
+        <div class="anim s3 body"><span class="accent-dot"></span><span class="mono text-accent w-700">440,000</span> diabetics in Singapore &mdash; one in nine adults</div>
+        <div class="anim s4 body"><span class="accent-dot"></span><span class="mono text-accent w-700">180 days</span> between clinic visits &mdash; six months with no monitoring</div>
+        <div class="anim s5 body"><span class="accent-dot"></span><span class="mono text-rose w-700">$8,800</span> per ER visit &mdash; the system pays, the patient suffers</div>
       </div>
     </div>
     <div class="glass-panel anim-scale s4">
       <div class="subtitle w-700 mb-2">Mr. Tan Ah Kow</div>
-      <div class="caption mb-3">67, lives alone, Toa Payoh HDB</div>
+      <div class="caption mb-3">67 &bull; lives alone &bull; Toa Payoh HDB</div>
       <hr class="divider">
       <div class="stack gap-2 mt-2">
         <div class="body"><span class="accent-dot"></span>Type 2 Diabetes + Hypertension</div>
-        <div class="body"><span class="accent-dot"></span>HbA1c <span class="mono text-amber w-600">8.1%</span> (target: 7.0%)</div>
-        <div class="body"><span class="accent-dot"></span>Speaks Singlish and Hokkien</div>
-        <div class="body"><span class="accent-dot"></span>Can barely use a phone</div>
-        <div class="body"><span class="accent-dot"></span>Misses meds 2&ndash;3x per week</div>
+        <div class="body"><span class="accent-dot"></span>HbA1c <span class="mono text-amber w-600">8.1%</span> &mdash; target is 7.0%</div>
+        <div class="body"><span class="accent-dot"></span>Speaks Singlish and Hokkien, not English</div>
+        <div class="body"><span class="accent-dot"></span>Struggles with smartphone apps</div>
+        <div class="body"><span class="accent-dot"></span>Forgets medication 2&ndash;3 times a week</div>
       </div>
       <hr class="divider">
-      <div class="body w-600 text-primary mt-2">He represents 440,000 Singaporeans.</div>
+      <div class="body w-600 text-primary mt-2">He is 1 of 440,000. The gap between his visits is where crises happen.</div>
     </div>
   </div>
 </section>
@@ -1002,23 +992,23 @@ html, body {
     <div class="anim s2 title mt-4 max-w-xl">LLMs hallucinate. In healthcare, <span class="gradient-warm">that kills.</span></div>
     <div class="split mt-8 anim s3" style="width: 100%; max-width: 1000px;">
       <div class="glass-panel" style="border-color: rgba(239, 68, 68, 0.2);">
-        <div class="label text-red mb-3">The Problem</div>
+        <div class="label text-red mb-3">Why Most AI Fails Here</div>
         <div class="stack gap-2">
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>LLMs are black boxes</div>
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>Cannot explain why</div>
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>Cannot guarantee safety</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>LLMs invent facts with full confidence</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>No explainability for regulators</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>No safety guarantee &mdash; ever</div>
         </div>
       </div>
       <div class="glass-panel" style="border-color: rgba(6, 182, 212, 0.2);">
-        <div class="label accent mb-3">Our Answer</div>
+        <div class="label accent mb-3">Bewo's Approach</div>
         <div class="stack gap-2">
-          <div class="body"><span class="accent-dot"></span>The math decides</div>
-          <div class="body"><span class="accent-dot"></span>The AI communicates</div>
-          <div class="body"><span class="accent-dot"></span>Safety is deterministic</div>
+          <div class="body"><span class="accent-dot"></span>Math decides risk &mdash; not an LLM</div>
+          <div class="body"><span class="accent-dot"></span>AI communicates &mdash; in the patient's language</div>
+          <div class="body"><span class="accent-dot"></span>Safety is deterministic &mdash; rules fire before AI speaks</div>
         </div>
       </div>
     </div>
-    <div class="anim s5 body mt-6 max-w-lg w-500 text-primary">You cannot wrap GPT around a chatbot and deploy it for clinical decisions.</div>
+    <div class="anim s5 body mt-6 max-w-lg w-500 text-primary">A chatbot wrapper on GPT cannot make clinical decisions. We separated the brain from the mouth.</div>
   </div>
 </section>
 
@@ -1028,14 +1018,14 @@ html, body {
 <section class="slide" data-slide="4">
   <div class="stack" style="height: 100%; justify-content: center;">
     <div class="anim s1 label accent">System Design</div>
-    <div class="anim s2 title mt-2">The <span class="gradient-accent">Diamond Architecture.</span></div>
+    <div class="anim s2 title mt-2">The <span class="gradient-accent">Diamond Architecture.</span> Five layers.</div>
     <div class="stack mt-6 gap-3">
       <div class="glass-panel anim s3" style="border-left: 3px solid var(--green);">
         <div class="flex items-center gap-3">
           <div class="mono text-green w-700">L5</div>
           <div>
             <div class="body w-600 text-primary">Cultural Intelligence</div>
-            <div class="body">SEA-LION + MERaLiON for Singlish voice</div>
+            <div class="body">Speaks Singlish via SEA-LION. Reads emotions via MERaLiON voice analysis.</div>
           </div>
           <div class="tag" style="margin-left: auto;">IMDA</div>
         </div>
@@ -1045,7 +1035,7 @@ html, body {
           <div class="mono w-700" style="color: #c084fc;">L4</div>
           <div>
             <div class="body w-600 text-primary">Safety Classifier</div>
-            <div class="body">6-dimension response filter, fail-closed</div>
+            <div class="body">Every response scored on 6 dimensions. Dangerous output blocked before delivery.</div>
           </div>
           <div class="tag" style="margin-left: auto; border-color: #c084fc; color: #c084fc;">Guard</div>
         </div>
@@ -1055,7 +1045,7 @@ html, body {
           <div class="mono text-accent w-700">L3</div>
           <div>
             <div class="body w-600 text-primary">Agentic Reasoning</div>
-            <div class="body">Gemini + 18 tools + ReAct loop + memory</div>
+            <div class="body">Gemini orchestrates 18 tools. Remembers context across sessions. Acts without prompting.</div>
           </div>
           <div class="tag" style="margin-left: auto;">NUS</div>
         </div>
@@ -1065,7 +1055,7 @@ html, body {
           <div class="mono text-amber w-700">L2</div>
           <div>
             <div class="body w-600 text-primary">Statistical Engine</div>
-            <div class="body">HMM Viterbi + Monte Carlo + Merlion ARIMA + Baum-Welch</div>
+            <div class="body">HMM classifies risk. Monte Carlo simulates futures. Merlion forecasts glucose trends.</div>
           </div>
           <div class="tag amber" style="margin-left: auto;">Core</div>
         </div>
@@ -1075,13 +1065,13 @@ html, body {
           <div class="mono text-red w-700">L1</div>
           <div>
             <div class="body w-600 text-primary">Safety Foundation</div>
-            <div class="body">Deterministic rules, ADA 2024, drug interactions, PII de-identification</div>
+            <div class="body">ADA 2024 guidelines hardcoded. Drug interactions checked. PII stripped before any LLM call.</div>
           </div>
           <div class="tag red" style="margin-left: auto;">Synapxe</div>
         </div>
       </div>
     </div>
-    <div class="anim s8 body mt-6 w-600 text-primary">The math decides. The AI communicates. Safety never bends.</div>
+    <div class="anim s8 body mt-6 w-600 text-primary">Every clinical decision flows through all five layers. No shortcuts.</div>
   </div>
 </section>
 
@@ -1098,7 +1088,7 @@ html, body {
           <thead>
             <tr>
               <th>Dimension</th>
-              <th class="accent">HMM</th>
+              <th class="accent">HMM (Bewo)</th>
               <th>LSTM</th>
               <th>LLM</th>
             </tr>
@@ -1106,38 +1096,38 @@ html, body {
           <tbody>
             <tr>
               <td>Explainability</td>
-              <td class="highlight">Full trace</td>
+              <td class="highlight">Full state trace</td>
               <td>Black box</td>
-              <td>"I think..."</td>
+              <td>Narratives, not proofs</td>
             </tr>
             <tr>
               <td>Hallucination</td>
-              <td class="highlight">Impossible</td>
+              <td class="highlight">Mathematically impossible</td>
               <td>Low</td>
-              <td>High</td>
+              <td>Frequent</td>
             </tr>
             <tr>
-              <td>On-device</td>
-              <td class="highlight">&lt;1ms</td>
-              <td>GPU needed</td>
-              <td>Cloud only</td>
+              <td>Inference speed</td>
+              <td class="highlight">12.7ms</td>
+              <td>GPU required</td>
+              <td>Cloud-dependent</td>
             </tr>
             <tr>
               <td>Cold-start</td>
-              <td class="highlight">7 days</td>
+              <td class="highlight">7 days of data</td>
               <td>10K+ samples</td>
               <td>N/A</td>
             </tr>
             <tr>
-              <td>Safety</td>
-              <td class="highlight">0 unsafe</td>
+              <td>Unsafe outputs</td>
+              <td class="highlight">0 in testing</td>
               <td>No guarantee</td>
-              <td>Hallucination risk</td>
+              <td>No guarantee</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div class="anim s5 body mt-4 text-primary w-500">"Can you explain WHY to a doctor, a patient, and a regulator?"</div>
+      <div class="anim s5 body mt-4 text-primary w-500">The test: can you explain your decision to a doctor, a patient, and a regulator? HMM can.</div>
     </div>
     <div class="center">
       <div class="anim s4 hero-lg mono glow-text text-accent">12.7<span class="subtitle w-300" style="margin-left: 0.3em;">ms</span></div>
@@ -1157,15 +1147,15 @@ html, body {
       <div class="stack mt-4 gap-4">
         <div class="anim s3">
           <div class="body w-600 text-primary">Monte Carlo Simulation</div>
-          <div class="body mt-1">2,000 paths over a 48-hour horizon. A probability distribution of futures &mdash; not a single guess.</div>
+          <div class="body mt-1">2,000 possible futures simulated over a 48-hour window. Not a single prediction &mdash; a probability distribution.</div>
         </div>
         <div class="anim s4">
           <div class="body w-600 text-primary">Counterfactual Reasoning</div>
-          <div class="body mt-1">"What if you take your meds?" Risk drops 35% to 12%. The patient sees the math behind the nudge.</div>
+          <div class="body mt-1">"What if Mr. Tan takes his metformin?" Risk drops from 35% to 12%. He sees the math, not a lecture.</div>
         </div>
         <div class="anim s5">
-          <div class="body w-600 text-primary">Merlion Time Series</div>
-          <div class="body mt-1">ARIMA glucose velocity forecasting. 45-minute hypo/hyperglycemia lookahead.</div>
+          <div class="body w-600 text-primary">Merlion Forecasting</div>
+          <div class="body mt-1">ARIMA-based glucose velocity prediction. 45-minute lookahead for hypo- and hyperglycemia events.</div>
         </div>
       </div>
     </div>
@@ -1186,30 +1176,30 @@ html, body {
     <div class="layout-bento cols-3 mt-6" style="height: auto;">
       <div class="glass-panel anim-scale s3">
         <div class="body w-600 text-primary mb-2">Planning Agent</div>
-        <div class="body">Orchestrates the daily care plan</div>
+        <div class="body">Builds and adjusts the daily care plan without clinician input</div>
       </div>
       <div class="glass-panel anim-scale s4">
         <div class="body w-600 text-primary mb-2">Check-in Agent</div>
-        <div class="body">Proactive outreach, mood sensing</div>
+        <div class="body">Initiates contact. Senses mood from voice. Escalates if needed.</div>
       </div>
       <div class="glass-panel anim-scale s5">
         <div class="body w-600 text-primary mb-2">Caregiver Agent</div>
-        <div class="body">Family alerts, burden management</div>
+        <div class="body">Alerts family. Tracks caregiver fatigue. Adjusts update frequency.</div>
       </div>
       <div class="glass-panel anim-scale s6">
         <div class="body w-600 text-primary mb-2">Clinician Agent</div>
-        <div class="body">SBAR reports, drug interaction checks</div>
+        <div class="body">Auto-generates SBAR. Checks drug interactions before every suggestion.</div>
       </div>
       <div class="glass-panel anim-scale s7">
         <div class="body w-600 text-primary mb-2">Behavior Coach</div>
-        <div class="body">Nudges, challenges, loss-aversion streaks</div>
+        <div class="body">Loss-aversion nudges. Streaks. Voucher challenges grounded in behavioral economics.</div>
       </div>
       <div class="glass-panel anim-scale s8">
         <div class="body w-600 text-primary mb-2">Cultural Agent</div>
-        <div class="body">Singlish translation, local dietary context</div>
+        <div class="body">Singlish translation. Local dietary context. Hawker centre meal logging.</div>
       </div>
     </div>
-    <div class="anim s8 body mt-4 w-500 text-primary">18 tools. ReAct reasoning. Cross-session memory. Reaches out without being asked.</div>
+    <div class="anim s8 body mt-4 w-500 text-primary">18 tools. ReAct reasoning loop. Cross-session memory. Reaches out before the patient asks.</div>
   </div>
 </section>
 
@@ -1221,20 +1211,24 @@ html, body {
     <div class="anim s1 label accent">Validation</div>
     <div class="anim s2 title mt-4"><span class="text-green">Zero</span> unsafe misclassifications.</div>
     <div class="anim s3 hero-xl glow-text text-green mono mt-6" style="font-size: 14rem;">0</div>
-    <div class="anim s4 body mt-4 max-w-lg">No patient in danger was ever told they were safe.</div>
-    <div class="anim s5 body max-w-lg">5,000 hardened patients. 32 clinical archetypes. 230 tests passing.</div>
-    <div class="metric-grid mt-8 anim s6" style="max-width: 800px;">
+    <div class="anim s4 body mt-4 max-w-lg">No patient in crisis was ever classified as safe. Not once.</div>
+    <div class="anim s5 body max-w-lg">Tested across 5,000 hardened patient profiles and 32 clinical archetypes.</div>
+    <div class="metric-grid mt-8 anim s6" style="max-width: 1000px;">
       <div class="metric">
         <div class="metric-value text-green">99.3%</div>
-        <div class="metric-label">accuracy on clean clinical data</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value text-green">100%</div>
-        <div class="metric-label">crisis recall (every true crisis detected)</div>
+        <div class="metric-label">accuracy (clean data)</div>
       </div>
       <div class="metric">
         <div class="metric-value text-amber">82.1%</div>
-        <div class="metric-label">accuracy on hardened validation</div>
+        <div class="metric-label">accuracy (hardened data)</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value text-green">100%</div>
+        <div class="metric-label">crisis recall (clean)</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value text-amber">87.8%</div>
+        <div class="metric-label">crisis recall (hardened)</div>
       </div>
     </div>
   </div>
@@ -1252,14 +1246,14 @@ html, body {
         <div class="flex items-center gap-2 mb-3">
           <div class="body w-700 text-primary">SEA-LION</div>
           <div class="tag">AI Singapore</div>
-          <div class="caption mono">27B parameters</div>
+          <div class="caption mono">Singlish translation</div>
         </div>
         <div class="tint-red mb-3">
-          <div class="body text-red w-600 mb-1">Before:</div>
-          <div class="body">"Your blood glucose level of 15.2 mmol/L is significantly elevated..."</div>
+          <div class="body text-red w-600 mb-1">Generic LLM output:</div>
+          <div class="body">"Your blood glucose level of 15.2 mmol/L is significantly elevated. Please consult..."</div>
         </div>
         <div class="tint-green">
-          <div class="body text-green w-600 mb-1">After:</div>
+          <div class="body text-green w-600 mb-1">After SEA-LION:</div>
           <div class="body text-primary w-500">"Uncle, your sugar a bit high lah. After makan, better take your medicine first, ok?"</div>
         </div>
       </div>
@@ -1270,15 +1264,15 @@ html, body {
           <div class="body w-700 text-primary">MERaLiON</div>
           <div class="tag">I2R / A*STAR</div>
         </div>
-        <div class="body mb-2">Paralinguistic Analysis</div>
+        <div class="body mb-2">Voice emotion detection</div>
         <div class="stack gap-2 mt-2">
-          <div class="body"><span class="accent-dot"></span>Speech emotion recognition from voice</div>
-          <div class="body"><span class="accent-dot"></span>Detects distress, fatigue, confusion &mdash; even when their words say "I'm fine"</div>
+          <div class="body"><span class="accent-dot"></span>Detects distress, fatigue, and confusion from tone of voice</div>
+          <div class="body"><span class="accent-dot"></span>Catches what words hide &mdash; when Mr. Tan says "I'm fine" but his voice says otherwise</div>
         </div>
       </div>
       <div class="anim s5 mt-4 text-center">
         <div class="hero-lg mono glow-text text-accent">2</div>
-        <div class="body mt-1">national LLMs integrated</div>
+        <div class="body mt-1">Singapore national AI models integrated</div>
       </div>
     </div>
   </div>
@@ -1292,30 +1286,30 @@ html, body {
     <div class="stack">
       <div class="anim s1 label accent">For the Patient</div>
       <div class="anim s2 title mt-2"><span class="text-accent">Zero effort.</span> The system does the work.</div>
-      <div class="anim s3 subtitle mt-4 text-primary w-500">Works for Mr. Tan who can barely use a phone.</div>
+      <div class="anim s3 subtitle mt-4 text-primary w-500">Designed for Mr. Tan &mdash; who struggles with apps.</div>
       <div class="stack mt-4 gap-3">
         <div class="anim s4">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Singlish Chat</div>
-          <div class="body mt-1">Talks like a friend, not a doctor. SEA-LION translates clinical language.</div>
+          <div class="body mt-1">Talks like a friend, not a clinic. SEA-LION converts clinical language to natural Singlish.</div>
         </div>
         <div class="anim s5">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Voice Check-ins</div>
-          <div class="body mt-1">MERaLiON detects emotional state from tone. No typing required.</div>
+          <div class="body mt-1">No typing. MERaLiON reads emotional state from tone alone.</div>
         </div>
         <div class="anim s6">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Glucose OCR</div>
-          <div class="body mt-1">Point camera at meter. Reading captured automatically.</div>
+          <div class="body mt-1">Point camera at meter. Reading captured. No manual entry.</div>
         </div>
         <div class="anim s7">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Loss-aversion Vouchers</div>
-          <div class="body mt-1">Losses motivate 2x more than gains (Kahneman's Prospect Theory).</div>
+          <div class="body mt-1">"You'll lose your $5 streak." Losses motivate 2x more than gains (Kahneman).</div>
         </div>
       </div>
     </div>
     <div class="center anim s5">
       <div class="glass-panel text-center border-left-teal">
         <div class="body w-600 text-primary">Voice-first. Proactive outreach.</div>
-        <div class="body mt-2">The patient never has to initiate.</div>
+        <div class="body mt-2">Bewo calls Mr. Tan. He never has to remember to open an app.</div>
       </div>
     </div>
   </div>
@@ -1331,22 +1325,22 @@ html, body {
     <div class="layout-bento cols-2 mt-6 anim s3" style="height: auto;">
       <div class="glass-panel anim-scale s3 border-left-green">
         <div class="body w-600 text-primary mb-2">One-glance Dashboard</div>
-        <div class="body">Green / yellow / red. Answered in under one second.</div>
+        <div class="body">Green, yellow, or red. Is dad okay? Answered in under one second.</div>
       </div>
       <div class="glass-panel anim-scale s4 border-left-green">
         <div class="body w-600 text-primary mb-2">3-Tier Escalation</div>
-        <div class="body">Info = push notification. Warning = SMS. Critical = phone call.</div>
+        <div class="body">Routine = push notification. Warning = SMS. Critical = automated phone call.</div>
       </div>
       <div class="glass-panel anim-scale s5 border-left-green">
         <div class="body w-600 text-primary mb-2">One-tap Response</div>
-        <div class="body">Acknowledge, call, or escalate. No app-switching.</div>
+        <div class="body">Acknowledge, call parent, or escalate to nurse. No app-switching.</div>
       </div>
       <div class="glass-panel anim-scale s6 border-left-green">
-        <div class="body w-600 text-primary mb-2">Burden Scoring</div>
-        <div class="body">Detects caregiver fatigue. Auto-switches to digest mode.</div>
+        <div class="body w-600 text-primary mb-2">Burden Auto-throttle</div>
+        <div class="body">Scores caregiver fatigue. Reduces notification frequency before burnout hits.</div>
       </div>
     </div>
-    <div class="anim s7 body mt-4 w-500 text-primary">Designed for a working daughter checking her phone during lunch.</div>
+    <div class="anim s7 body mt-4 w-500 text-primary">Designed for a working daughter checking her phone between meetings.</div>
   </div>
 </section>
 
@@ -1357,25 +1351,25 @@ html, body {
   <div class="split">
     <div class="stack">
       <div class="anim s1 label accent">For the Nurse</div>
-      <div class="anim s2 title mt-2">The system <span class="text-amber">surfaces.</span> The human decides.</div>
+      <div class="anim s2 title mt-2">Bewo <span class="text-amber">surfaces.</span> The nurse decides.</div>
       <div class="stack mt-4 gap-4">
         <div class="anim s4">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Auto-SBAR Reports</div>
-          <div class="body mt-1">Generated in 3 seconds. Manual takes 15 minutes.</div>
+          <div class="body mt-1">Situation, Background, Assessment, Recommendation &mdash; generated in 3 seconds. Manual takes 15 minutes.</div>
         </div>
         <div class="anim s5">
-          <div class="body w-600 text-primary"><span class="accent-dot"></span>Urgency-ranked Triage</div>
-          <div class="body mt-1">Patients sorted by risk. Highest urgency surfaces first.</div>
+          <div class="body w-600 text-primary"><span class="accent-dot"></span>Triage Dashboard</div>
+          <div class="body mt-1">100 patients ranked by risk score. Highest urgency surfaces first. No scrolling.</div>
         </div>
         <div class="anim s6">
           <div class="body w-600 text-primary"><span class="accent-dot"></span>Drug Interaction Engine</div>
-          <div class="body mt-1">16 interaction pairs, 39 drug classes. Checked before every suggestion.</div>
+          <div class="body mt-1">16 interaction pairs across 45 drug classes. Checked before every suggestion reaches the patient.</div>
         </div>
       </div>
     </div>
     <div class="center">
       <div class="anim s3 hero-lg mono glow-text text-amber">1:100</div>
-      <div class="anim s4 body mt-2">nurse-to-patient ratio (from 1:20 today)</div>
+      <div class="anim s4 body mt-2">nurse-to-patient ratio &mdash; up from 1:20 today</div>
     </div>
   </div>
 </section>
@@ -1386,37 +1380,37 @@ html, body {
 <section class="slide" data-slide="13">
   <div class="stack" style="height: 100%; justify-content: center;">
     <div class="anim s1 label accent">Safety and Governance</div>
-    <div class="anim s2 title mt-2">Safety is <span class="text-red">never</span> <span class="gradient-accent">probabilistic.</span></div>
+    <div class="anim s2 title mt-2">Safety is <span class="text-red">deterministic</span>, not <span class="gradient-accent">probabilistic.</span></div>
     <div class="layout-bento cols-3 mt-6" style="height: auto;">
       <div class="glass-panel anim-scale s3">
         <div class="label text-red mb-3">Data Protection</div>
         <div class="stack gap-2">
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>PDPA compliant by design</div>
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>Data never leaves Singapore</div>
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>PII de-identified before every LLM call</div>
-          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>Prompt injection sanitization</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>PDPA compliant &mdash; data never leaves Singapore</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>PII stripped before every LLM call</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>Prompt injection sanitized at input boundary</div>
+          <div class="body"><span class="accent-dot" style="background: var(--red);"></span>Constant-time auth comparison (timing attack prevention)</div>
         </div>
       </div>
       <div class="glass-panel anim-scale s4">
         <div class="label text-amber mb-3">Clinical Safety</div>
         <div class="stack gap-2">
-          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>6-dimension safety classifier</div>
-          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>Drug interaction engine pre-screens every output</div>
-          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>ADA 2024 guidelines hardcoded</div>
-          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>Fail-closed: system crash = safe fallback, never dangerous silence</div>
+          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>6-dimension classifier scores every response</div>
+          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>Drug interaction engine blocks unsafe suggestions</div>
+          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>ADA 2024 guidelines encoded as hard rules</div>
+          <div class="body"><span class="accent-dot" style="background: var(--amber);"></span>Fail-closed: if anything crashes, the fallback is safe &mdash; never silent</div>
         </div>
       </div>
       <div class="glass-panel anim-scale s5">
-        <div class="label accent mb-3">Audit and Compliance</div>
+        <div class="label accent mb-3">Audit Trail</div>
         <div class="stack gap-2">
-          <div class="body"><span class="accent-dot"></span>Full decision audit trail</div>
-          <div class="body"><span class="accent-dot"></span>Every HMM state transition logged</div>
-          <div class="body"><span class="accent-dot"></span>Deterministic rules override AI &mdash; always</div>
-          <div class="body"><span class="accent-dot"></span>Constant-time API key comparison (timing attack prevention)</div>
+          <div class="body"><span class="accent-dot"></span>Every decision logged with full reasoning chain</div>
+          <div class="body"><span class="accent-dot"></span>Every HMM state transition recorded</div>
+          <div class="body"><span class="accent-dot"></span>Deterministic rules override AI output &mdash; always</div>
+          <div class="body"><span class="accent-dot"></span>Complete audit history for regulatory review</div>
         </div>
       </div>
     </div>
-    <div class="anim s6 body mt-4 w-500 text-primary">"Take double insulin" is impossible to generate. Safety rules are deterministic. They fire before the AI ever speaks.</div>
+    <div class="anim s6 body mt-4 w-500 text-primary">"Take double insulin" is impossible to generate. Deterministic safety rules fire before the AI speaks.</div>
   </div>
 </section>
 
@@ -1433,42 +1427,35 @@ html, body {
           <div class="metric-value text-accent glow-text">$0.40</div>
           <div class="metric-label mt-2">per patient per month</div>
         </div>
-        <div class="caption mt-2">cheaper than a single blood test</div>
+        <div class="caption mt-2">$0.05 Gemini + $0.10 SEA-LION + $0.25 infra</div>
       </div>
       <div class="glass-panel anim-scale s4 text-center">
         <div class="metric">
           <div class="metric-value text-green glow-text">$8,800</div>
           <div class="metric-label mt-2">saved per prevented ER visit</div>
         </div>
-        <div class="caption mt-2">one save funds the system for years</div>
+        <div class="caption mt-2">one prevented admission pays for 22,000 patient-months</div>
       </div>
       <div class="glass-panel anim-scale s5 text-center">
         <div class="metric">
           <div class="metric-value text-amber glow-text">22,000</div>
-          <div class="metric-label mt-2">patient-months funded by a single ER save</div>
+          <div class="metric-label mt-2">patient-months per ER save</div>
         </div>
-        <div class="caption mt-2">the economics are overwhelming</div>
+        <div class="caption mt-2">the ROI makes the decision obvious</div>
       </div>
       <div class="glass-panel anim-scale s6 text-center">
         <div class="metric">
           <div class="metric-value text-accent glow-text">186ms</div>
-          <div class="metric-label mt-2">total core pipeline</div>
+          <div class="metric-label mt-2">end-to-end pipeline latency</div>
         </div>
-        <div class="caption mt-2">real-time on a phone, no server dependency</div>
+        <div class="caption mt-2">real-time on a phone</div>
       </div>
       <div class="glass-panel anim-scale s7 text-center">
         <div class="metric">
           <div class="metric-value text-green glow-text">230/230</div>
-          <div class="metric-label mt-2">tests, 76/76 gates</div>
+          <div class="metric-label mt-2">tests passing &bull; 76/76 gates green</div>
         </div>
-        <div class="caption mt-2">every validation gate green</div>
-      </div>
-      <div class="glass-panel anim-scale s8 text-center">
-        <div class="metric">
-          <div class="metric-value">32,400</div>
-          <div class="metric-label mt-2">lines of production code</div>
-        </div>
-        <div class="caption mt-2">this is not a prototype</div>
+        <div class="caption mt-2">every validation gate clean</div>
       </div>
     </div>
   </div>
@@ -1480,12 +1467,12 @@ html, body {
 <section class="slide bg-glow bg-teal-green-gradient" data-slide="15">
   <div class="center">
     <div class="anim s1 title" style="font-size: 3.5rem; line-height: 1.3; max-width: 900px;">
-      Bewo does not wait for crisis.<br>
-      It <span class="gradient-accent">predicts.</span> It <span class="gradient-accent">prevents.</span> It <span class="gradient-accent">protects.</span>
+      440,000 patients. 180 days between visits.<br>
+      Bewo <span class="gradient-accent">predicts.</span> Bewo <span class="gradient-accent">prevents.</span> Bewo <span class="gradient-accent">protects.</span>
     </div>
     <div class="anim s2 subtitle mt-6">
-      From diabetes to all chronic disease.<br>
-      From Singapore to ASEAN.
+      Starting with diabetes. Expanding to all chronic disease.<br>
+      Starting in Singapore. Built for ASEAN.
     </div>
     <div class="anim s3 mt-8">
       <div style="font-size: 3rem; font-weight: 700; letter-spacing: -0.03em;">

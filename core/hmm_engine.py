@@ -764,9 +764,7 @@ class HMMEngine:
             for feat, val in current_observation.items():
                 if feat in self.features and val is not None:
                     params = self.emission_params[feat]
-                    # Check for personalized params
-                    # (Simplified: using global params for speed in this demo version)
-                    # In production: self.get_personalized_baseline(pid)
+                    # Uses population params for speed; run_inference() handles personalization
 
                     mean = params['means'][i]
                     var = params['vars'][i]

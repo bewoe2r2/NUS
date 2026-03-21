@@ -54,26 +54,28 @@ export default function NurseDashboard() {
     const [triage, setTriage] = useState<any>(null);
     const [nurseAlerts, setNurseAlerts] = useState<any[]>([]);
 
-    // Fetch initial data
+    // Fetch initial data — fast endpoints first, slow ones (SBAR) in background
     useEffect(() => {
         async function fetchData() {
             try {
                 setLoading(true);
-                const [stateRes, analysisRes, sbar, drugs, triageRes, alerts] = await Promise.all([
+                // Fast endpoints — render immediately
+                const [stateRes, analysisRes, drugs, triageRes, alerts] = await Promise.all([
                     api.getPatientState("P001").catch(() => null),
                     api.getPatientAnalysis("P001").catch(() => null),
-                    api.getClinicianSummary("P001").catch(() => null),
                     api.getDrugInteractions("P001").catch(() => null),
                     api.getNurseTriage().catch(() => null),
                     api.getNurseAlerts().catch(() => []),
                 ]);
                 setPatientState(stateRes);
                 setAnalysisHistory((analysisRes?.history as DayAnalysis[]) || []);
-                setClinicianSummary(sbar);
                 setDrugInteractions(drugs);
                 setTriage(triageRes);
                 setNurseAlerts(alerts);
                 setError(null);
+
+                // Slow endpoint — SBAR uses Gemini, fetch in background
+                api.getClinicianSummary("P001").then(sbar => setClinicianSummary(sbar)).catch(() => {});
             } catch (e) {
                 console.error("Failed to fetch patient data", e);
                 setError("Failed to load patient data. Is the backend running?");
@@ -300,7 +302,7 @@ export default function NurseDashboard() {
                                                     </span>
                                                 )}
                                             </div>
-                                            {/* Mini Chart Placeholder - curves from API */}
+                                            {/* Mini chart rendered from API curve data */}
                                             <div className="h-24 bg-white rounded border border-slate-100 flex items-center justify-center text-xs text-slate-400">
                                                 {plot.curves.length > 0 ? (
                                                     <div className="w-full h-full relative">
@@ -649,7 +651,7 @@ export default function NurseDashboard() {
                                                     p.triage_category === 'SOON' ? 'bg-amber-500' :
                                                     p.triage_category === 'MONITOR' ? 'bg-blue-500' : 'bg-emerald-500';
                                                 return (
-                                                <div key={p.patient_id || i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 transition-all duration-150 hover:shadow-sm">
+                                                <div key={`triage-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 transition-all duration-150 hover:shadow-sm">
                                                     <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                                                         p.triage_category === 'IMMEDIATE' ? 'bg-rose-500 animate-pulse' :
                                                         p.triage_category === 'SOON' ? 'bg-amber-500' :
@@ -711,7 +713,7 @@ export default function NurseDashboard() {
                                     {nurseAlerts && nurseAlerts.length > 0 ? (
                                         <div className="space-y-2 max-h-64 overflow-y-auto">
                                             {nurseAlerts.map((alert: any, i: number) => (
-                                                <div key={alert.id || i} className={`p-3 rounded-lg border text-sm ${
+                                                <div key={`alert-${i}`} className={`p-3 rounded-lg border text-sm ${
                                                     alert.priority === 'critical' ? 'bg-rose-50 border-rose-200 text-rose-800' :
                                                     alert.priority === 'high' ? 'bg-amber-50 border-amber-200 text-amber-800' :
                                                     'bg-slate-50 border-slate-200 text-slate-700'

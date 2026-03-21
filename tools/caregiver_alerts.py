@@ -102,9 +102,6 @@ class TwilioDelivery(AlertDeliveryProvider):
     def __init__(self):
         if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER]):
             raise RuntimeError("Twilio credentials not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER in .env")
-        # NOTE: Real implementation would initialize Twilio client:
-        #   from twilio.rest import Client
-        #   self.client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
     def send_push(self, recipient: Dict, message: str, severity: str) -> str:
         """

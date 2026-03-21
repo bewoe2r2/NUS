@@ -86,28 +86,10 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
             // 2. Run HMM Viterbi
             addLog("Running HMM Viterbi inference...", 'system');
             try {
-                await api.runHMM();
+                await api.runHMM(selectedScenario);
                 addLog("HMM analysis converged", 'success');
             } catch {
                 addLog("HMM Viterbi inference skipped", 'info');
-            }
-
-            // 3. Train Baum-Welch
-            addLog("Training Baum-Welch (EM algorithm)...", 'system');
-            try {
-                await api.trainHMM("P001");
-                addLog("Baum-Welch parameters learned", 'success');
-            } catch {
-                addLog("Baum-Welch training skipped (no data)", 'info');
-            }
-
-            // 4. Run proactive scan
-            addLog("Running proactive trigger scan...", 'system');
-            try {
-                await api.runProactiveScan("P001");
-                addLog("Proactive triggers evaluated", 'success');
-            } catch {
-                addLog("Proactive scan skipped", 'info');
             }
 
             addLog("Full simulation pipeline complete", 'success');

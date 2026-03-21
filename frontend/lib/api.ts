@@ -452,6 +452,17 @@ export const api = {
         }
     },
 
+    getConversationHistory: async (id: string, limit: number = 20): Promise<{ role: string; message: string; hmm_state?: string; timestamp_utc?: number }[]> => {
+        try {
+            const res = await authFetch(`${API_BASE}/agent/conversation/${id}?limit=${limit}`);
+            if (!res.ok) return [];
+            const data = await res.json();
+            return data.history || [];
+        } catch {
+            return [];
+        }
+    },
+
     getProactiveHistory: async (id: string): Promise<any[]> => {
         try {
             const res = await authFetch(`${API_BASE}/agent/proactive-history/${id}`);
@@ -635,9 +646,10 @@ export const api = {
         }
     },
 
-    runHMM: async (): Promise<any> => {
+    runHMM: async (scenario?: string): Promise<any> => {
         try {
-            const res = await authFetch(`${API_BASE}/admin/run-hmm`, { method: "POST" });
+            const params = scenario ? `?scenario=${encodeURIComponent(scenario)}` : '';
+            const res = await authFetch(`${API_BASE}/admin/run-hmm${params}`, { method: "POST" });
             if (!res.ok) { console.warn("Run HMM returned non-OK:", res.status); return { success: false }; }
             return res.json();
         } catch (e) {

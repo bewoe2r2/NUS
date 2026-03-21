@@ -48,7 +48,7 @@ export default function Home() {
     fetchData();
     const interval = setInterval(() => {
       if (!stopped) fetchData();
-    }, 15000);
+    }, 30000);
     return () => { stopped = true; clearInterval(interval); };
   }, []);
 

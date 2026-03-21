@@ -2232,7 +2232,7 @@ Return valid JSON:
 
     engagement = calculate_engagement_score(patient_id)
 
-    # Agent memory (cross-session learning) — BUG FIX: was never injected into v2 prompt
+    # Agent memory (cross-session learning) — injected into prompt context
     memory_text = _load_agent_memory(patient_id)
     tool_pref_text = _update_tool_preferences(patient_id)
     mood_info = detect_mood_from_message(user_message) if user_message else {"mood": "neutral", "adapt_tone": "calm", "confidence": 0.5}
@@ -2740,7 +2740,9 @@ def run_agent(
         result["_safety_verdict"] = verdict
         result["_safety_flags"] = safety.get("flags", [])
     except Exception as e:
-        logger.error(f"Safety classifier failed — original message passed through unfiltered: {e}")
+        logger.error(f"Safety classifier failed — fail-closed, blocking response: {e}")
+        result["message_to_patient"] = "I want to help you lah, but let me check with your doctor first before giving advice on this. Stay safe!"
+        result["_safety_verdict"] = "SYSTEM_ERROR_FAILCLOSED"
 
     # 7. Store assistant response
     assistant_message = result.get("message_to_patient", result.get("message", ""))
@@ -2763,7 +2765,7 @@ def run_agent(
 
     # 8. Add metadata
     end_time = time.time()
-    latency_ms = (end_time - (end_time - (result.get("_turns_used", 1) * 0))) * 1000  # placeholder
+    latency_ms = (end_time - start_time) * 1000
     tool_trace = result.get("_tool_trace", [])
     turns_used = result.get("_turns_used", 1)
 

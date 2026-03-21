@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bewo — Executive Summary</title>
+<style>
+@page { size: A4; margin: 14mm 16mm; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 8pt;
+  line-height: 1.42;
+  color: #1a1a1a;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 14mm 16mm;
+}
+h1 { font-size: 16pt; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0pt; }
+.tagline { font-size: 8.5pt; color: #555; margin-bottom: 2pt; }
+.comp { font-size: 6.5pt; color: #999; margin-bottom: 5pt; }
+h2 { font-size: 8.5pt; font-weight: 700; margin-top: 7pt; margin-bottom: 2pt; border-bottom: 1px solid #e0e0e0; padding-bottom: 1pt; }
+p { margin-bottom: 3pt; }
+strong { font-weight: 700; }
+blockquote {
+  background: #f7f7f7; border-left: 3px solid #0891b2; padding: 4pt 8pt;
+  margin: 4pt 0; font-size: 7.5pt; color: #333; line-height: 1.4;
+}
+table { width: 100%; border-collapse: collapse; margin: 3pt 0; font-size: 7pt; }
+th { background: #f5f5f5; text-align: left; padding: 2pt 4pt; font-weight: 700; border: 1px solid #ddd; }
+td { padding: 2pt 4pt; border: 1px solid #ddd; }
+hr { border: none; border-top: 1px solid #e0e0e0; margin: 5pt 0; }
+@media print {
+  body { padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<h1>Bewo</h1>
+<div class="tagline">Autonomous AI Health Companion for Type 2 Diabetes</div>
+<div class="comp">NUS-Synapxe-IMDA Healthcare AI Innovation Challenge 2026 | Problem Statement 1</div>
+
+<blockquote>
+Mr. Tan is 67, diabetic, lives alone in Toa Payoh. His next clinic visit is 3 months away. Yesterday, his glucose spiked after skipping medication. Nobody noticed — but <strong>Bewo did.</strong> It detected a dangerous trend in his data, predicted a 78% chance of crisis within 48 hours, messaged him in Singlish he actually understood, checked the message for safety, alerted his daughter via SMS, and sent his nurse a clinical report. He never pressed a button.
+</blockquote>
+
+<h2>The Problem</h2>
+<p>440,000 Singaporeans live with diabetes — one in nine adults. Between clinic visits (3–6 months apart), they manage alone. The most vulnerable — elderly patients who struggle with phones and forget their medication — are the least likely to seek help. The result: one preventable diabetic ER admission every 6 minutes in Singapore, costing ~$8,800 each (MOH 2024).</p>
+
+<h2>What Bewo Does</h2>
+<p>Bewo monitors patients continuously between clinic visits, predicts health deterioration before it becomes an emergency, and acts — without waiting to be asked.</p>
+<p><strong>For patients:</strong> Proactive outreach in Singlish. Shows impact of choices — "If you take your Metformin, your crisis risk drops from 78% to 12%." Detects emotional distress through voice check-ins. No digital literacy needed.</p>
+<p><strong>For nurses:</strong> Urgency-ranked triage dashboard. SBAR clinical reports in 3 seconds (vs 15 minutes by hand). Drug interactions checked across 16 interaction pairs and 45 drug classes.</p>
+<p><strong>For caregivers:</strong> Three-tier alerts (push/SMS/call). Caregiver fatigue tracking with automatic alert throttling.</p>
+
+<h2>How It Works — The Diamond Architecture</h2>
+<p>Five layers. Safety comes first and last — the AI cannot bypass safety at either end.</p>
+<p><strong>Layer 1</strong> checks hard clinical rules before anything else. Glucose &lt;3.0 or &gt;20.0 mmol/L → forced crisis. Drug interactions screened. Patient identifiers stripped before any AI model sees data.</p>
+<p><strong>Layer 2</strong> is a Hidden Markov Model that classifies patients as STABLE, WARNING, or CRISIS from 9 health signals. Runs in 12.7ms on a phone, no GPU. Cannot hallucinate — output is pure math, fully traceable. Monte Carlo runs 2,000 futures over 48 hours. Personalises to each patient over time.</p>
+<p><strong>Layer 3</strong> — Gemini with 18 healthcare tools decides what to do: remind medication, alert caregiver, generate clinical report, suggest diet change, escalate to nurse. Remembers context across sessions. Reaches out proactively on 6 trigger conditions.</p>
+<p><strong>Layer 4</strong> checks every AI message across 6 safety dimensions before delivery. If the classifier fails, the message is blocked — never sent unfiltered.</p>
+<p><strong>Layer 5</strong> translates to Singlish via SEA-LION v4 (AI Singapore). Detects emotion from voice via MERaLiON (A*STAR) — catches distress even when patients say "I'm fine."</p>
+
+<h2>Does It Work?</h2>
+<p>Validated on 10,000 synthetic patients (5,000 per round, 32 clinical archetypes). Clean data: 99.3% accuracy, 100% crisis recall. Adversarial data with contradictory signals: 82.1% accuracy, 87.8% crisis recall. <strong>Zero patients in crisis were ever classified as safe — in either round.</strong> The 12.2% missed in the hardened test were flagged as WARNING (still receiving attention), never as STABLE. 230 tests + 76 validation gates, all passing. +25.3% lift over glucose-only baselines (p&lt;0.0001).</p>
+
+<h2>Cost and Performance</h2>
+<p>Core pipeline: 186ms on consumer hardware, no GPU. Operating cost: $0.40/patient/month. One prevented ER visit ($8,800) funds 22,000 patient-months of monitoring.</p>
+
+<hr>
+<p style="text-align:center; color:#999; font-size: 6.5pt;"><em>Team Bewo — NUS-Synapxe-IMDA Healthcare AI Innovation Challenge 2026</em></p>
+
+</body>
+</html>

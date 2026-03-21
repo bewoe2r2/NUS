@@ -89,9 +89,6 @@ class ClinicalEngine:
                 raise ValueError(f"Patient {user_id} not found in database.")
 
             # 2. Get Real-time HMM State
-            # In a real system, we'd fetch the persistent HMM state. 
-            # For now, we instantiate/retrieve logic associated with the user/demo.
-            # Assuming HMM state is stored or re-computed from recent observations.
             observations = self.hmm_engine.fetch_observations(days=14, patient_id=user_id)
             if not observations or len(observations) == 0:
                  state = "STABLE"
@@ -153,11 +150,6 @@ class ClinicalEngine:
                  'adherence_pct': 0, 'sleep_quality': 0, 'sleep_hours': 0, 'steps': 0
              }
 
-        # Observation format: [(timestamp, feature_name, value), ...]
-        # Note: hmm_engine.fetch_observations returns time-bucketed dictionaries?
-        # Let's check hmm_engine.py. fetch_observations returns List[Dict[feature, value]]
-        # Wait, hmm_engine.fetch_observations actually returns list of dicts representing time steps.
-        
         glucose_vals = []
         adherence_vals = []
         sleep_vals = []
