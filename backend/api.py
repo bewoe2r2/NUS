@@ -1328,6 +1328,46 @@ async def get_voucher_qr(patient_id: str):
         logger.exception(f"Error generating QR: {e}")
         raise HTTPException(status_code=500, detail="Internal server error. Check server logs for details.")
 
+@app.post("/voucher/{patient_id}/redeem")
+async def redeem_voucher(patient_id: str, api_key: str = Depends(verify_api_key)):
+    """Redeem current week's voucher. Only available on Sundays."""
+    try:
+        vs = get_voucher_system(user_id=patient_id)
+        if not vs:
+            raise HTTPException(status_code=500, detail="Voucher system unavailable")
+
+        voucher = vs.get_current_voucher()
+        if not voucher or not voucher.get('can_redeem'):
+            raise HTTPException(status_code=400, detail="Voucher can only be redeemed on Sundays")
+
+        value = voucher['current_value']
+        if value <= 0:
+            raise HTTPException(status_code=400, detail="No voucher balance to redeem")
+
+        # Mark as redeemed by setting value to 0
+        conn = get_db()
+        try:
+            conn.execute("""
+                UPDATE voucher_tracker SET current_value = 0
+                WHERE user_id = ? AND week_start_utc = ?
+            """, (patient_id, voucher['week_start_ts']))
+            conn.commit()
+        finally:
+            conn.close()
+
+        return {
+            "success": True,
+            "redeemed_value": value,
+            "message": f"${value:.2f} voucher redeemed successfully! Present QR code at any participating hawker centre.",
+            "partner": "FairPrice / Kopitiam",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Voucher redemption error: {e}")
+        raise HTTPException(status_code=500, detail="Redemption failed")
+
+
 # =============================================================================
 # VOICE CHECK-IN ENDPOINTS
 # =============================================================================
@@ -1983,6 +2023,22 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
             VALUES (?, ?, ?, ?)
         """, (patient_id, 'Mr. Tan Ah Kow (67M)', 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
               'Metformin 500mg BD, Amlodipine 5mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD'))
+
+        # Populate prescribed medications table for patient view
+        try:
+            conn.execute("DELETE FROM medications WHERE user_id = ?", (patient_id,))
+            meds = [
+                (patient_id, 'Metformin', '500mg', 'BID', '["08:00", "20:00"]', now),
+                (patient_id, 'Amlodipine', '5mg', 'OD', '["08:00"]', now),
+                (patient_id, 'Atorvastatin', '20mg', 'ON', '["21:00"]', now),
+                (patient_id, 'Aspirin', '100mg', 'OD', '["08:00"]', now),
+            ]
+            conn.executemany("""
+                INSERT INTO medications (user_id, medication_name, dosage, frequency, scheduled_times, prescribed_date)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, meds)
+        except Exception as e:
+            logger.debug(f"Could not populate medications: {e}")
 
         for i, obs in enumerate(observations):
             t = start_time + (i * window_size)
@@ -3337,10 +3393,9 @@ def _seed_demo_patients(conn):
 
 
 def _seed_demo_scenario():
-    """Generate and inject a demo scenario using HMM engine."""
+    """Generate and inject demo scenarios for all 3 patients using HMM engine."""
     try:
         engine = HMMEngine()
-        obs = engine.generate_demo_scenario("demo_intervention_success", days=14)
 
         # Import inject function
         scripts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts")
@@ -3352,11 +3407,36 @@ def _seed_demo_scenario():
         original_db = inject_data.DB_PATH
         inject_data.DB_PATH = DB_PATH
 
+        # P001: Main demo patient (PREMIUM) — intervention success story
+        obs = engine.generate_demo_scenario("demo_intervention_success", days=14)
         inject_tiered_scenario_to_db(obs, tier="PREMIUM", days=14)
         run_analysis_and_save(engine, days=14)
 
+        # P002 + P003: Seed basic observations so nurse triage shows 3 patients
+        conn = sqlite3.connect(DB_PATH, timeout=10)
+        conn.row_factory = sqlite3.Row
+        now = int(time.time())
+        try:
+            # P002 — Mdm Lim, stable patient
+            for day in range(7):
+                t = now - ((7 - day) * 24 * 3600)
+                conn.execute("INSERT OR IGNORE INTO glucose_readings (user_id, reading_value, reading_timestamp_utc, source_type) VALUES (?, ?, ?, ?)",
+                             ("P002", 6.2 + (day * 0.1), t, "MANUAL"))
+                conn.execute("INSERT OR IGNORE INTO passive_metrics (user_id, window_start_utc, window_end_utc, step_count) VALUES (?, ?, ?, ?)",
+                             ("P002", t, t + 14400, 5000 + day * 100))
+            # P003 — Mr Ahmad, warning state
+            for day in range(7):
+                t = now - ((7 - day) * 24 * 3600)
+                conn.execute("INSERT OR IGNORE INTO glucose_readings (user_id, reading_value, reading_timestamp_utc, source_type) VALUES (?, ?, ?, ?)",
+                             ("P003", 9.5 + (day * 0.5), t, "MANUAL"))
+                conn.execute("INSERT OR IGNORE INTO passive_metrics (user_id, window_start_utc, window_end_utc, step_count) VALUES (?, ?, ?, ?)",
+                             ("P003", t, t + 14400, 2000 - day * 100))
+            conn.commit()
+        finally:
+            conn.close()
+
         inject_data.DB_PATH = original_db
-        logger.info("Demo scenario injected successfully.")
+        logger.info("Demo scenarios injected for P001, P002, P003.")
     except Exception as e:
         logger.warning(f"Demo scenario injection failed: {e}")
 
