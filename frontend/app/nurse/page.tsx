@@ -89,6 +89,7 @@ export default function NurseDashboard() {
     }, []);
 
     // Fetch detail when date selected
+    const [detailRetry, setDetailRetry] = useState(0);
     useEffect(() => {
         if (!selectedDate) {
             setSelectedDetail(null);
@@ -105,7 +106,7 @@ export default function NurseDashboard() {
             }
         }
         fetchDetail();
-    }, [selectedDate]);
+    }, [selectedDate, detailRetry]);
 
     // State distribution from actual HMM analysis history
     const stateData = useMemo(() => {
@@ -240,7 +241,7 @@ export default function NurseDashboard() {
                                     <TimelineStrip
                                         days={timelineDays}
                                         selectedDate={selectedDate}
-                                        onSelectDate={setSelectedDate}
+                                        onSelectDate={(d) => { setSelectedDate(d); setDetailRetry(r => r + 1); }}
                                     />
                                 ) : (
                                     <p className="text-sm text-slate-400 text-center py-6">Run HMM analysis to populate the timeline.</p>
@@ -338,7 +339,7 @@ export default function NurseDashboard() {
                                                             })}
                                                             {/* Observed value line */}
                                                             {plot.observed_value !== null && plot.curves.length > 0 && (() => {
-                                                                const allPoints = plot.curves.flatMap(c => c.points);
+                                                                const allPoints = plot.curves.flatMap(c => c?.points || []);
                                                                 if (allPoints.length === 0) return null;
                                                                 const globalMinX = Math.min(...allPoints.map(p => p.x));
                                                                 const globalMaxX = Math.max(...allPoints.map(p => p.x));

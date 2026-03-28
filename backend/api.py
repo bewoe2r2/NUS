@@ -2695,8 +2695,8 @@ async def caregiver_dashboard(patient_id: str):
                 }
         finally:
             conn.close()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Caregiver dashboard fetch failed: {e}")
     # Hardcoded fallback
     now_ts = int(time.time())
     return {
@@ -2704,8 +2704,8 @@ async def caregiver_dashboard(patient_id: str):
         "patient_name": "Mr. Tan Ah Kow",
         "burden": {"burden_score": 42, "level": "moderate", "trend": "stable"},
         "recent_alerts": [
-            {"severity": "warning", "message": "Your father's glucose has been trending up. We are monitoring.", "channel": "sms", "status": "delivered", "timestamp_utc": now_ts - 3600},
-            {"severity": "info", "message": "Daily summary: medication taken 2/3 times. Glucose average 11.2 mmol/L.", "channel": "push", "status": "delivered", "timestamp_utc": now_ts - 86400},
+            {"id": 9001, "severity": "warning", "message": "Your father's glucose has been trending up. We are monitoring.", "channel": "sms", "status": "delivered", "timestamp_utc": now_ts - 3600},
+            {"id": 9002, "severity": "info", "message": "Daily summary: medication taken 2/3 times. Glucose average 11.2 mmol/L.", "channel": "push", "status": "delivered", "timestamp_utc": now_ts - 86400},
         ],
     }
 

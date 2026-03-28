@@ -10,12 +10,16 @@ const REFRESH_INTERVAL_MS = 30_000;
 type AlertAction = "acknowledge" | "on_my_way" | "need_help" | "escalate";
 
 interface Alert {
-    id: string;
+    id: string | number;
     message: string;
-    severity: "low" | "medium" | "high";
-    timestamp: string;
+    severity: string;
+    timestamp?: string | number;
+    timestamp_utc?: number;
     responded?: boolean;
     response_action?: string;
+    channel?: string;
+    status?: string;
+    reason?: string;
 }
 
 interface WeeklyReport {
@@ -83,10 +87,11 @@ function severityBadge(severity: string): { classes: string; label: string; card
     }
 }
 
-function formatTime(ts: string): string {
-    if (!ts) return "";
+function formatTime(ts: string | number): string {
+    if (!ts && ts !== 0) return "";
     try {
-        const d = new Date(ts);
+        // Handle Unix timestamps (seconds) from backend — multiply by 1000 for JS Date
+        const d = typeof ts === "number" ? new Date(ts > 1e12 ? ts : ts * 1000) : new Date(ts);
         const now = new Date();
         const diffMs = now.getTime() - d.getTime();
         if (diffMs < 0) return "Just now";
@@ -98,7 +103,7 @@ function formatTime(ts: string): string {
         const diffDays = Math.floor(diffHours / 24);
         return `${diffDays}d ago`;
     } catch {
-        return ts;
+        return String(ts);
     }
 }
 
@@ -200,7 +205,7 @@ function AlertFeed({
                                 {badge.label}
                             </span>
                         </div>
-                        <p className="text-xs text-neutral-400 mt-1.5">{formatTime(alert.timestamp)}</p>
+                        <p className="text-xs text-neutral-400 mt-1.5">{formatTime(alert.timestamp ?? alert.timestamp_utc ?? "")}</p>
 
                         {alert.responded ? (
                             <div className="mt-3 flex items-center gap-1.5 text-sm text-success-600 font-medium">
@@ -215,7 +220,7 @@ function AlertFeed({
                                     <button
                                         key={btn.action}
                                         disabled={respondingId === alert.id}
-                                        onClick={() => onRespond(alert.id, btn.action)}
+                                        onClick={() => onRespond(String(alert.id), btn.action)}
                                         className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${btn.style} disabled:opacity-50 min-h-[44px]`}
                                     >
                                         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -505,7 +510,7 @@ function CaregiverDashboard() {
         setRespondingId(alertId);
         try {
             const result = await api.caregiverRespond(alertId, action, patientId);
-            if (result?.success !== false) {
+            if (result?.success === true) {
                 setAlerts((prev) =>
                     prev.map((a) =>
                         a.id === alertId ? { ...a, responded: true, response_action: action } : a

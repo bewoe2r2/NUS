@@ -28,26 +28,24 @@ export default function Home() {
   const [showFood, setShowFood] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
 
+  const refreshData = async () => {
+    try {
+      const stateRes = await api.getPatientState("P001");
+      setData(stateRes);
+      setError(false);
+    } catch (err) {
+      console.error(err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let stopped = false;
-
-    async function fetchData() {
-      if (stopped) return;
-      try {
-        const stateRes = await api.getPatientState("P001");
-        setData(stateRes);
-        setError(false);
-      } catch (err) {
-        console.error(err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
+    refreshData();
     const interval = setInterval(() => {
-      if (!stopped) fetchData();
+      if (!stopped) refreshData();
     }, 30000);
     return () => { stopped = true; clearInterval(interval); };
   }, []);
@@ -165,9 +163,9 @@ export default function Home() {
       />
       </div>
 
-      <GlucoseModal isOpen={showGlucose} onClose={() => setShowGlucose(false)} />
-      <FoodModal isOpen={showFood} onClose={() => setShowFood(false)} />
-      <VoiceModal isOpen={showVoice} onClose={() => setShowVoice(false)} />
+      <GlucoseModal isOpen={showGlucose} onClose={() => { setShowGlucose(false); refreshData(); }} />
+      <FoodModal isOpen={showFood} onClose={() => { setShowFood(false); refreshData(); }} />
+      <VoiceModal isOpen={showVoice} onClose={() => { setShowVoice(false); refreshData(); }} />
 
     </main>
   );

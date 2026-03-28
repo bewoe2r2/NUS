@@ -946,8 +946,7 @@ function ToolDemoTab() {
             const res = await api.chatWithAgent("I need to book a follow-up appointment with my endocrinologist", "P001");
             addLog({ type: 'result', tool: 'book_appointment', text: res.message?.slice(0, 200) || 'Appointment booking initiated via agent' });
         } catch {
-            addLog({ type: 'result', tool: 'book_appointment', text: 'Appointment booked: Endocrinology follow-up, Dr. Lee Wei Ming, NUH Diabetes Centre, next available slot' });
-            addLog({ type: 'info', text: '  Confirmation sent to caregiver' });
+            addLog({ type: 'error', tool: 'book_appointment', text: 'Agent unavailable — appointment booking requires Gemini API key' });
         }
     };
 
@@ -973,7 +972,7 @@ function ToolDemoTab() {
             const res = await api.chatWithAgent("What should I eat for dinner tonight? I want something low GI and healthy for my diabetes", "P001");
             addLog({ type: 'result', tool: 'recommend_food', text: res.message?.slice(0, 300) || 'Food recommendation generated' });
         } catch {
-            addLog({ type: 'result', tool: 'recommend_food', text: 'Recommendation: Steamed fish with ginger, brown rice (3/4 cup), stir-fried kai lan. GI ~48, Carbs: 42g' });
+            addLog({ type: 'error', tool: 'recommend_food', text: 'Agent unavailable — food recommendation requires Gemini API key' });
         }
     };
 
@@ -993,7 +992,7 @@ function ToolDemoTab() {
                 addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING state | B: 67M, T2DM+HTN+HLD, on Metformin+Lisinopril+Atorvastatin+Aspirin | A: Glucose trending up, adherence 60%, rising Merlion velocity | R: Review medication dosage, schedule f/u' });
             }
         } catch {
-            addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING | B: 67M, T2DM+HTN | A: Glucose rising, adherence declining | R: Urgent review needed' });
+            addLog({ type: 'error', tool: 'generate_clinician_summary', text: 'SBAR generation failed — check backend logs' });
         }
     };
 
