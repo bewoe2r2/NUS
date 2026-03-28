@@ -2322,10 +2322,11 @@ async def run_hmm_analysis(scenario: str = ""):
         now = int(time.time())
         start_time = now - (14 * 24 * 3600)
 
-        # Clear old HMM states
-        conn.execute("DELETE FROM hmm_states WHERE timestamp_utc >= ?", (start_time,))
-
         patient_ids = ["P001"]
+
+        # Clear old HMM states for these patients
+        for pid in patient_ids:
+            conn.execute("DELETE FROM hmm_states WHERE user_id = ?", (pid,))
         total_analyzed = 0
 
         cached_scenario_name = scenario if scenario else None

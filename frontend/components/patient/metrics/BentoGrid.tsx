@@ -94,7 +94,7 @@ export function BentoGrid({ biometrics, className }: BentoGridProps) {
                         <Heart size={16} /> Heart Rate
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-neutral-900">{hasData ? (hr ?? 0) : "\u2014"}</div>
+                        <div className="text-2xl font-bold text-neutral-900">{hasData && hr != null ? hr : "\u2014"}</div>
                         <div className="text-sm text-neutral-400 mt-1">bpm (resting)</div>
                     </div>
                 </Card>
