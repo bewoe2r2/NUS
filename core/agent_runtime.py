@@ -1291,11 +1291,13 @@ def _compute_impact_metrics_inner(patient_id: str, period_days: int, conn) -> Di
             w_start = period_start + (week * 7 * 86400)
             w_end = w_start + (7 * 86400)
             row = conn.execute("""
-                SELECT AVG(taken) as avg_adh
-                FROM medication_adherence
-                WHERE patient_id = ? AND logged_at >= ? AND logged_at < ?
+                SELECT COUNT(*) as taken_count
+                FROM medication_logs
+                WHERE user_id = ? AND taken_timestamp_utc >= ? AND taken_timestamp_utc < ?
             """, (patient_id, w_start, w_end)).fetchone()
-            adh = row["avg_adh"] if row and row["avg_adh"] else None
+            taken_count = row["taken_count"] if row else 0
+            # Assume 2 doses/day (Metformin BD) for 7 days = 14 expected doses
+            adh = min(1.0, taken_count / 14.0) if taken_count > 0 else None
             weekly_adherence.append({
                 "week": week + 1,
                 "adherence": round(adh * 100, 1) if adh else None,
@@ -4343,15 +4345,20 @@ def compute_caregiver_burden_score(patient_id: str) -> Dict:
 
         # Factor 3: Unresolved alert ratio (0-25 pts)
         try:
-            total = conn.execute("""
+            total_row = conn.execute("""
                 SELECT COUNT(*) as cnt FROM caregiver_alerts
                 WHERE patient_id = ? AND timestamp_utc >= ?
-            """, (patient_id, week_ago)).fetchone()["cnt"]
-            responded = conn.execute("""
-                SELECT COUNT(DISTINCT ca.id) as cnt FROM caregiver_alerts ca
-                JOIN caregiver_responses cr ON cr.alert_id = ca.id
-                WHERE ca.patient_id = ? AND ca.timestamp_utc >= ?
-            """, (patient_id, week_ago)).fetchone()["cnt"]
+            """, (patient_id, week_ago)).fetchone()
+            total = total_row["cnt"] if total_row else 0
+            try:
+                responded_row = conn.execute("""
+                    SELECT COUNT(DISTINCT ca.id) as cnt FROM caregiver_alerts ca
+                    JOIN caregiver_responses cr ON cr.alert_id = ca.id
+                    WHERE ca.patient_id = ? AND ca.timestamp_utc >= ?
+                """, (patient_id, week_ago)).fetchone()
+                responded = responded_row["cnt"] if responded_row else 0
+            except Exception:
+                responded = 0
             if total > 0:
                 unresolved = 1 - (responded / total)
                 ratio_score = int(unresolved * 25)

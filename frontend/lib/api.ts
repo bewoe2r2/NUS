@@ -83,7 +83,7 @@ export const api = {
             }
             return data;
         } catch {
-            return { current_state: "STABLE", risk_score: 12, biometrics: { glucose: 5.8, steps: 3240, hr: 72 }, last_updated: new Date().toISOString(), message: "Showing recent data", trend: "STABLE" };
+            return { current_state: "STABLE", risk_score: 0.12, biometrics: { glucose: 5.8, steps: 3240, hr: 72 }, last_updated: new Date().toISOString(), message: "Showing recent data", trend: "STABLE" };
         }
     },
 
