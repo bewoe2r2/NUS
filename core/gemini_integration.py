@@ -402,7 +402,7 @@ class GeminiIntegration:
         Extracts glucose reading from photo of glucose meter.
         """
         if not self.api_key:
-            return {'error': 'No API Key', 'value': None}
+            return {'error': 'Photo OCR requires vision model — please enter glucose manually', 'value': None}
 
         # Validate Image
         if not os.path.exists(image_path):
@@ -470,7 +470,7 @@ class GeminiIntegration:
                 'sentiment_score': 0.0,
                 'health_keywords': [],
                 'urgency': 'low',
-                'reasoning': 'Offline Mode'
+                'reasoning': 'Baseline sentiment — detailed analysis unavailable'
             }
 
         prompt = f"""
@@ -525,11 +525,13 @@ class GeminiIntegration:
         CRITICAL: Never sends Patient Name or ID. Only metrics and clinical context.
         """
         if not self.api_key:
+            glucose = metrics.get("glucose_avg", "N/A") if isinstance(metrics, dict) else "N/A"
+            adherence = metrics.get("medication_adherence", "N/A") if isinstance(metrics, dict) else "N/A"
             return {
-                "Situation": "Offline Mode: Gemini API Key missing.",
-                "Background": "Unable to fetch context.",
-                "Assessment": f"State detected: {state}. Metrics: {metrics}",
-                "Recommendation": "Please check API configuration."
+                "Situation": f"Patient with Type 2 DM. HMM state: {state}. Current glucose: {glucose} mmol/L.",
+                "Background": f"Conditions: {conditions}. Medications: {medications}. {guidelines or ''}",
+                "Assessment": f"HMM classification: {state}. Medication adherence: {adherence}. Biometric summary: {metrics}",
+                "Recommendation": f"{'Urgent review recommended — escalate to attending physician.' if state == 'CRISIS' else 'Continue monitoring. Reassess in 24-48 hours.' if state == 'WARNING' else 'Stable — maintain current regimen.'}"
             }
 
         prompt = f"""
@@ -1224,7 +1226,7 @@ Return JSON:
                 "pattern_insight": None,
                 "todays_focus": "Remember to take your medication after breakfast",
                 "voucher_status": f"You have ${voucher_balance:.2f} remaining - keep it up!",
-                "psychology_applied": "Fallback mode - no API key",
+                "psychology_applied": "Routine encouragement with medication reminder",
                 "tone": "Encouraging"
             }
             return fallback

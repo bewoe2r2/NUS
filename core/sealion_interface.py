@@ -238,13 +238,16 @@ class SeaLionInterface:
             return None
 
     def _offline_mock(self, core_message, mood):
-        """Last resort: basic string transformation for offline/testing."""
+        """Last resort: Singlish cultural adaptation for offline/testing. Uses topic-comment structure and particles authentic to elderly Singaporean speech."""
+        msg = core_message.rstrip('. ')
         if mood == "urgent_command":
-            return f"Oi! {core_message} Now, quick!"
+            return f"Eh Uncle/Auntie, {msg} — must do now ah, very important lor!"
         elif mood == "celebratory":
-            return f"Wah, steady lah! {core_message} Keep it up!"
+            return f"Wah, very good lah! {msg}. Steady, keep going like this can already!"
+        elif mood == "concerned":
+            return f"Uncle/Auntie ah, {msg}. Jaga yourself ok, don't anyhow skip medicine lor."
         else:
-            return f"Uncle/Auntie ah, {core_message} Take care lah."
+            return f"Uncle/Auntie ah, {msg}. Take care hor, remember drink water!"
 
     def generate_cultural_sbar(self, sbar_data):
         """

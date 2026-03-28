@@ -716,6 +716,17 @@ class HMMEngine:
         self._personalized_baselines = {}
         # Minimum observations required for calibration (7 days × 6 buckets)
         self.MIN_CALIBRATION_OBS = 42
+        # Personalized transition matrices (from Baum-Welch)
+        self._personalized_transitions = {}
+
+    def clear_patient_cache(self, patient_id: str = None):
+        """Clear cached personalized parameters. Called after scenario re-injection."""
+        if patient_id:
+            self._personalized_baselines.pop(patient_id, None)
+            self._personalized_transitions.pop(patient_id, None)
+        else:
+            self._personalized_baselines.clear()
+            self._personalized_transitions.clear()
 
     # ==========================================================================
     # PREDICTIVE ORACLE (INNOVATION #8: HMM MONTE CARLO)

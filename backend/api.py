@@ -1956,6 +1956,7 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
     conn = None
     try:
         engine = get_engine()
+        engine.clear_patient_cache(patient_id)
         observations = engine.generate_demo_scenario(scenario, days=days)
         if not observations:
             raise HTTPException(status_code=400, detail=f"Unknown scenario '{scenario}' or no observations generated.")
@@ -1965,13 +1966,23 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
         start_time = now - (days * 24 * 3600)
         window_size = 4 * 3600
 
-        # Clear existing data (hardcoded allowlist — no user input in table names)
+        # Clear existing data for THIS patient only (hardcoded allowlist — no user input in table names)
         SAFE_TABLES_SCENARIO = {'glucose_readings', 'passive_metrics', 'medication_logs', 'fitbit_heart_rate', 'fitbit_sleep', 'food_logs', 'hmm_states', 'conversation_history', 'agent_memory', 'agent_actions_log', 'nurse_alerts', 'caregiver_alerts', 'proactive_checkins'}
         for table in SAFE_TABLES_SCENARIO:
             try:
-                conn.execute(f"DELETE FROM {table}")  # nosec: table name from hardcoded allowlist
-            except Exception as e:
-                logger.debug(f"Could not clear {table}: {e}")
+                conn.execute(f"DELETE FROM {table} WHERE user_id = ? OR patient_id = ?", (patient_id, patient_id))  # nosec: table name from hardcoded allowlist
+            except Exception:
+                try:
+                    conn.execute(f"DELETE FROM {table} WHERE user_id = ?", (patient_id,))  # nosec: fallback for tables without patient_id column
+                except Exception as e:
+                    logger.debug(f"Could not clear {table} for {patient_id}: {e}")
+
+        # Ensure patient profile exists
+        conn.execute("""
+            INSERT OR REPLACE INTO patients (user_id, name, conditions, medications)
+            VALUES (?, ?, ?, ?)
+        """, (patient_id, 'Mr. Tan Ah Kow (67M)', 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
+              'Metformin 500mg BD, Amlodipine 5mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD'))
 
         for i, obs in enumerate(observations):
             t = start_time + (i * window_size)

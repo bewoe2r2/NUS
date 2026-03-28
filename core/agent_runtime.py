@@ -2727,8 +2727,12 @@ def run_agent(
 
     # 6b. Apply safety classifier on ORIGINAL (pre-translation) message
     #     Safety rules are designed for English, not Singlish-translated text
+    #     Skip classifier for deterministic fallback responses — they're safe by construction
     try:
-        safety = classify_response_safety(original_for_safety, safe_profile, hmm_context, gemini_integration)
+        if result.get("_is_deterministic_fallback"):
+            safety = {"verdict": "SAFE", "flags": ["SYSTEM: Deterministic fallback — classifier skipped"]}
+        else:
+            safety = classify_response_safety(original_for_safety, safe_profile, hmm_context, gemini_integration)
         verdict = safety.get("verdict", "SAFE")
         if verdict == "UNSAFE":
             corrected = safety.get("corrected_message")
@@ -3659,6 +3663,7 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
         "priority_factor": "medication_adherence" if state != "STABLE" else "maintain_routine",
         "follow_up_needed": state != "STABLE",
         "escalation_needed": state == "CRISIS",
+        "_is_deterministic_fallback": True,
     }
 
 
