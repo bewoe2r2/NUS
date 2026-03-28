@@ -711,8 +711,8 @@ def _exec_adjust_nudge_schedule(args, patient_id, conn, now):
             INSERT OR REPLACE INTO agent_memory (patient_id, memory_type, key, value_json, confidence, created_at, updated_at, source)
             VALUES (?, 'preference', 'nudge_schedule', ?, 0.9, ?, ?, 'agent')
         """, (patient_id, json.dumps({"times": new_times, "reason": reason}), now, now))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to persist nudge schedule for {patient_id}: {e}")
     conn.commit()
     return {"success": True, "new_times": new_times, "reason": reason}
 
@@ -2664,6 +2664,7 @@ def run_agent(
         Complete response dict with message, executed actions, and metadata
     """
     # Ensure tables exist
+    _run_agent_start = time.time()
     ensure_runtime_tables()
 
     # 1. Build full HMM context (extracts EVERYTHING)
@@ -2765,7 +2766,7 @@ def run_agent(
 
     # 8. Add metadata
     end_time = time.time()
-    latency_ms = (end_time - start_time) * 1000
+    latency_ms = (end_time - _run_agent_start) * 1000
     tool_trace = result.get("_tool_trace", [])
     turns_used = result.get("_turns_used", 1)
 
@@ -3818,9 +3819,8 @@ def check_drug_interactions(current_medications: List[str], proposed_medication:
     if proposed_medication and proposed_medication.strip():
         proposed_normalized = proposed_medication.lower().strip().split()[0]
         check_pairs = [(proposed_normalized, m) for m in all_meds]
-    elif proposed_medication and not proposed_medication.strip():
-        check_pairs = []
     else:
+        # No proposed medication — check all internal pairs
         check_pairs = [(all_meds[i], all_meds[j])
                        for i in range(len(all_meds))
                        for j in range(i + 1, len(all_meds))]

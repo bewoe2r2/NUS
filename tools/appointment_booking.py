@@ -181,7 +181,7 @@ class HealthHubProvider(AppointmentProvider):
         return {
             "slot_id": slot_resource.get("id"),
             "datetime": slot_resource.get("start"),
-            "time_category": "morning" if int(slot_resource.get("start", "T12:00")[11:13]) < 12 else "afternoon",
+            "time_category": "morning" if int((slot_resource.get("start") or "T12:00")[11:13]) < 12 else "afternoon",
             "doctor": slot_resource.get("_practitioner_name", ""),
             "clinic": slot_resource.get("_location_name", ""),
             "specialization": "",

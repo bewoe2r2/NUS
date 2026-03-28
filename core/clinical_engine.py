@@ -216,8 +216,15 @@ class ClinicalEngine:
             """, (user_id, timestamp_utc, "sbar", json.dumps(sbar)))
             conn.commit()
         except sqlite3.OperationalError as e:
-            # Table might not exist yet if schema update hasn't run
-            logger.error(f"Failed to save SBAR history for {user_id}: {e}")
+            # Table might not exist — create it and retry
+            logger.warning(f"SBAR table missing, creating: {e}")
+            try:
+                conn.execute("CREATE TABLE IF NOT EXISTS clinical_notes_history (id INTEGER PRIMARY KEY, patient_id TEXT, timestamp_utc INTEGER, note_type TEXT, content TEXT)")
+                conn.execute("INSERT INTO clinical_notes_history (patient_id, timestamp_utc, note_type, content) VALUES (?, ?, ?, ?)",
+                             (user_id, int(time.time()), "sbar", json.dumps(sbar)))
+                conn.commit()
+            except Exception as e2:
+                logger.error(f"Failed to save SBAR history for {user_id} after retry: {e2}")
         except Exception as e:
             logger.error(f"Unexpected error saving SBAR history for {user_id}: {e}", exc_info=True)
         finally:

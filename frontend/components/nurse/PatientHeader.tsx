@@ -50,7 +50,9 @@ export function PatientHeader({
                         type="text"
                         placeholder="Search records..."
                         aria-label="Search patients"
-                        className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-64"
+                        readOnly
+                        tabIndex={-1}
+                        className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm transition-all w-64 cursor-default opacity-60"
                     />
                 </div>
                 <button aria-label="Notifications" className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full relative">

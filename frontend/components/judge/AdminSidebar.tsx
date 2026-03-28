@@ -41,7 +41,7 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
 
     const addLog = (msg: string, type: LogType = 'info') => {
         const entry: LogEntry = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: Math.random().toString(36).slice(2, 11),
             timestamp: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
             message: msg,
             type

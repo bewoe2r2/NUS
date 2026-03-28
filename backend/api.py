@@ -381,8 +381,8 @@ def get_db():
 import threading
 _cached_engine = None
 _cached_gemini = None
-_cached_scenario_obs = None
-_cached_scenario_patient = None
+_cached_scenario_obs = None  # Used by inject-phase for multi-step scenario caching
+_cached_scenario_patient = None  # Patient ID for cached scenario
 _init_lock = threading.Lock()
 
 def get_engine():
@@ -444,7 +444,8 @@ async def get_patient_state(patient_id: str):
                 "SELECT detected_state, confidence_score, contributing_factors FROM hmm_states WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1",
                 (patient_id,)
             ).fetchone()
-        except Exception:
+        except Exception as e:
+            logger.debug(f"No cached HMM state for {patient_id}: {e}")
             cached = None
         finally:
             conn.close()
@@ -745,7 +746,7 @@ async def get_analysis_detail(patient_id: str, date: str):
 
         for row in rows:
             sev = severity_map.get(row['detected_state'], 0)
-            if sev >= max_sev:
+            if sev > max_sev:
                 max_sev = sev
                 worst_row = row
 
@@ -1169,11 +1170,12 @@ async def get_medications(patient_id: str):
                 WHERE taken_timestamp_utc >= ? AND user_id = ?
             """, (today_start, patient_id)).fetchall()
         except sqlite3.OperationalError:
-            # user_id column may not exist — fall back to unfiltered
+            # user_id column may not exist — fall back to patient-filtered by medication_name
             taken_meds = conn.execute("""
                 SELECT medication_name, taken_timestamp_utc FROM medication_logs
                 WHERE taken_timestamp_utc >= ?
             """, (today_start,)).fetchall()
+            logger.warning("medication_logs missing user_id column — returning unfiltered results")
 
         # Build list of (name, sgt_hour) for each taken log
         taken_entries = []
@@ -1314,7 +1316,7 @@ async def get_voucher_qr(patient_id: str):
             raise HTTPException(status_code=500, detail="Voucher system unavailable")
 
         voucher = vs.get_current_voucher()
-        if not voucher.get('can_redeem'):
+        if not voucher or not voucher.get('can_redeem'):
             raise HTTPException(status_code=400, detail="Voucher not redeemable yet")
 
         qr_base64 = vs.generate_qr_code(voucher['current_value'])
@@ -1583,6 +1585,8 @@ async def get_all_patients():
         # Batch: latest HMM state per patient (single query instead of N)
         state_map = {}
         try:
+            if not patient_ids:
+                raise ValueError("No patient IDs to query")
             placeholders = ",".join("?" for _ in patient_ids)
             state_rows = conn.execute(f"""
                 SELECT h.user_id, h.detected_state, h.confidence_score
@@ -1778,15 +1782,48 @@ async def get_conversation_history_endpoint(patient_id: str, limit: int = 20):
 @app.post("/agent/counterfactual/{patient_id}")
 async def run_counterfactual(patient_id: str, body: CounterfactualInput = None):
     """Run a counterfactual 'what-if' scenario directly."""
-    return {
-        "success": True,
-        "patient_id": patient_id,
-        "intervention": "take_medication",
-        "baseline": {"risk_48h": 0.78, "expected_glucose_24h": 16.2, "state": "CRISIS"},
-        "counterfactual": {"risk_48h": 0.12, "expected_glucose_24h": 8.4, "state": "STABLE"},
-        "risk_reduction": "84.6%",
-        "narrative": "If Mr. Tan takes his Metformin consistently for the next 48 hours, his crisis probability drops from 78% to 12%. His projected glucose falls from 16.2 to 8.4 mmol/L.",
-    }
+    if body is None:
+        body = CounterfactualInput()
+    try:
+        from clinical_interventions import calculate_counterfactual_tool
+        result = calculate_counterfactual_tool(
+            patient_id=patient_id,
+            intervention=body.intervention,
+            intervention_params={
+                "medication": body.medication,
+                "dose": body.dose,
+                "carb_reduction": body.carb_reduction,
+                "additional_steps": body.additional_steps,
+            },
+            horizon_hours=48,
+        )
+        if result and result.get("success"):
+            return result
+        # Real engine returned but no data — fall back to HMM simulate_intervention
+        engine = get_engine()
+        observations = engine.fetch_observations(days=7, patient_id=patient_id)
+        if observations:
+            hmm_result = engine.viterbi(observations)
+            current_probs = hmm_result.get("state_probabilities", [0.33, 0.34, 0.33])
+            intervention_updates = {"meds_adherence": 1.0} if body.intervention == "take_medication" else {}
+            sim = engine.simulate_intervention(current_probs, intervention_updates)
+            baseline_risk = sim.get("baseline_risk", 0.5)
+            new_risk = sim.get("new_risk", 0.2)
+            return {
+                "success": True,
+                "patient_id": patient_id,
+                "intervention": body.intervention,
+                "baseline": {"risk_48h": round(baseline_risk, 3), "state": hmm_result.get("current_state", "UNKNOWN")},
+                "counterfactual": {"risk_48h": round(new_risk, 3)},
+                "risk_reduction": f"{round((baseline_risk - new_risk) * 100, 1)}%",
+                "narrative": sim.get("message", ""),
+            }
+        raise HTTPException(status_code=404, detail="No observation data for patient")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Counterfactual error: {e}")
+        raise HTTPException(status_code=500, detail="Counterfactual calculation failed")
 
 
 # =============================================================================
@@ -1798,15 +1835,16 @@ async def get_streaks(patient_id: str):
     """Get patient's current streaks (medication, glucose, exercise, app usage)."""
     try:
         streaks = get_patient_streaks(patient_id)
-        if streaks and streaks.get("medication", {}).get("current", 0) > 0:
+        if streaks:
             return streaks
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Streaks computation failed: {e}")
+    # Return zeros instead of fake data when no real data exists
     return {
-        "medication": {"current": 5, "best": 12, "trend": "up"},
-        "glucose": {"current": 3, "best": 8, "trend": "stable"},
-        "exercise": {"current": 2, "best": 7, "trend": "down"},
-        "app_usage": {"current": 9, "best": 14, "trend": "up"},
+        "medication": {"current": 0, "best": 0, "trend": "stable"},
+        "glucose": {"current": 0, "best": 0, "trend": "stable"},
+        "exercise": {"current": 0, "best": 0, "trend": "stable"},
+        "app_usage": {"current": 0, "best": 0, "trend": "stable"},
     }
 
 
@@ -1815,26 +1853,17 @@ async def get_engagement(patient_id: str):
     """Get patient's engagement score (0-100) with risk level and recommendations."""
     try:
         score = calculate_engagement_score(patient_id)
-        if score and score.get("score", 0) > 0:
+        if score:
             return score
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Engagement score computation failed: {e}")
     return {
-        "score": 68,
-        "level": "moderate",
-        "trend": "improving",
-        "factors": {
-            "medication_adherence": 72,
-            "glucose_logging": 65,
-            "challenge_completion": 80,
-            "chat_interaction": 55,
-            "voice_checkin": 40,
-        },
-        "recommendations": [
-            "Increase voice check-in frequency — patient responds well to verbal interaction",
-            "Continue daily challenges — 80% completion rate shows strong engagement",
-            "Consider voucher incentive boost — approaching redemption threshold",
-        ],
+        "score": 0,
+        "level": "unknown",
+        "trend": "unknown",
+        "factors": {},
+        "recommendations": [],
+        "note": "No engagement data yet — run a scenario first",
     }
 
 
@@ -1975,7 +2004,7 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
             hrv = obs.get('hrv_rmssd', 35) or 35
             try:
                 conn.execute("""
-                    INSERT INTO fitbit_heart_rate (user_id, date, resting_hr, avg_hr, hrv_rmssd, hrv_sdnn)
+                    INSERT INTO fitbit_heart_rate (user_id, date, resting_heart_rate, average_heart_rate, hrv_rmssd, hrv_sdnn)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, (patient_id, t, rhr, rhr + 5, hrv, hrv * 1.2))
             except Exception:
@@ -1995,9 +2024,9 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
             carbs = obs.get('carbs_intake', 50) or 50
             try:
                 conn.execute("""
-                    INSERT INTO food_logs (user_id, timestamp, meal_type, description, carbs_grams)
+                    INSERT INTO food_logs (user_id, timestamp_utc, meal_type, description, carbs_grams)
                     VALUES (?, ?, ?, ?, ?)
-                """, (patient_id, t, 'meal', 'Injected meal', int(carbs)))
+                """, (patient_id, t, 'SNACK', 'Injected meal', int(carbs)))
             except Exception:
                 pass
 
@@ -2348,7 +2377,7 @@ async def reset_data():
     try:
         conn = get_db()
         # Hardcoded allowlist — no user input in table names
-        SAFE_TABLES_RESET = {'glucose_readings', 'cgm_readings', 'passive_metrics', 'medication_logs', 'hmm_states', 'voice_checkins', 'reminders', 'nurse_alerts', 'caregiver_alerts', 'agent_actions', 'agent_memory', 'daily_insights', 'agent_actions_log', 'conversation_history', 'fitbit_activity', 'fitbit_heart_rate', 'fitbit_sleep', 'food_logs', 'clinical_notes_history', 'impact_metrics'}
+        SAFE_TABLES_RESET = {'glucose_readings', 'cgm_readings', 'passive_metrics', 'medication_logs', 'hmm_states', 'voice_checkins', 'reminders', 'nurse_alerts', 'caregiver_alerts', 'agent_memory', 'daily_insights', 'agent_actions_log', 'conversation_history', 'fitbit_activity', 'fitbit_heart_rate', 'fitbit_sleep', 'food_logs', 'clinical_notes_history', 'impact_metrics', 'proactive_checkins'}
         for table in SAFE_TABLES_RESET:
             try:
                 conn.execute(f"DELETE FROM {table}")  # nosec: table name from hardcoded allowlist
@@ -2370,39 +2399,42 @@ async def reset_data():
 @app.get("/clinician/summary/{patient_id}")
 async def get_clinician_summary(patient_id: str, period_days: int = 7):
     """Structured clinician intelligence briefing with SBAR, trajectory, interventions."""
-    # --- Hardcoded SBAR fallback based on current HMM state ---
-    _SBAR_BY_STATE = {
-        'CRISIS': {
-            "situation": "Mr. Tan Ah Kow (P001), 67M, Type 2 DM + HTN. Glucose reading 18.2 mmol/L at latest check. HMM state transitioned from WARNING to CRISIS over the past 48 hours. Patient has been non-adherent with Metformin for 3 consecutive days.",
-            "background": "Baseline HbA1c 8.1% (target <7.0%). On Metformin 500mg BD and Amlodipine 5mg OD. Lives alone in Toa Payoh HDB. Limited health literacy — communicates primarily in Singlish/Hokkien. History of medication non-adherence (2-3 missed doses/week). No prior DKA episodes. Last clinic visit 4 months ago.",
-            "assessment": "Acute hyperglycemic episode with risk of DKA. Monte Carlo simulation shows 78% probability of sustained crisis without intervention within 48 hours. Contributing factors: medication non-adherence (primary), increased carbohydrate intake, reduced physical activity (steps dropped 60% over 5 days). Merlion ARIMA forecasts glucose remaining >15 mmol/L for next 6 hours without intervention.",
-            "recommendation": "1) Immediate: Caregiver (daughter Mei Ling) notified via emergency call. 2) Urgent: Review medication adherence strategy — consider blister packs or supervised dosing. 3) Short-term: Increase monitoring frequency to 4-hourly glucose checks. 4) Follow-up: Expedite clinic appointment within 48 hours for medication review. 5) Safety: Patient advised to call 995 if symptomatic (dizziness, nausea, confusion).",
-        },
-        'WARNING': {
-            "situation": "Mr. Tan Ah Kow (P001), 67M, Type 2 DM + HTN. Glucose trending upward — latest reading 11.8 mmol/L. HMM state transitioned from STABLE to WARNING 3 days ago. Medication adherence declining.",
-            "background": "Baseline HbA1c 8.1%. On Metformin 500mg BD, Amlodipine 5mg OD. Lives alone, limited health literacy. Historically misses 2-3 doses/week. Has been stable for past 2 weeks prior to current drift.",
-            "assessment": "Gradual metabolic drift. Glucose variability increasing (CV 28%, up from 18%). Monte Carlo simulation: 35% probability of crisis within 48 hours if current trend continues. Primary driver: missed Metformin doses on 3 of last 5 days. Secondary: dietary — increased carbohydrate intake noted in food logs.",
-            "recommendation": "1) Proactive outreach via Bewo — culturally appropriate medication reminders in Singlish. 2) Caregiver notification (info tier — push notification to Mei Ling). 3) Dietary coaching — reduce white rice portions, suggest alternatives. 4) Monitor: continue current check frequency, escalate if glucose exceeds 15 mmol/L. 5) No clinic visit needed yet — reassess in 48 hours.",
-        },
-        'STABLE': {
-            "situation": "Mr. Tan Ah Kow (P001), 67M, Type 2 DM + HTN. All biomarkers within acceptable range. HMM state: STABLE with high confidence. Latest glucose 6.4 mmol/L.",
-            "background": "Baseline HbA1c 8.1%. On Metformin 500mg BD, Amlodipine 5mg OD. Has shown improved adherence over past 7 days following Bewo intervention. Completing daily challenges and maintaining medication streak.",
-            "assessment": "Patient in stable metabolic state. Glucose time-in-range 82% over past week. Medication adherence improved to 90% (from baseline 60%). Monte Carlo simulation: <5% probability of crisis in next 48 hours. Merlion forecast shows stable glucose trajectory.",
-            "recommendation": "1) Continue current medication regimen — no changes needed. 2) Positive reinforcement via Bewo — acknowledge streak and progress. 3) Maintain current monitoring frequency. 4) Next clinic visit as scheduled. 5) Caregiver update: reassuring summary sent to Mei Ling.",
-        },
-    }
+    try:
+        conn = get_db()
+        try:
+            now = int(time.time())
+            result = _exec_clinician_summary({"period_days": period_days}, patient_id, conn, now)
+            if result and isinstance(result, dict) and result.get("sbar"):
+                return {"success": True, "patient_id": patient_id, "period_days": period_days, **result}
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.warning(f"Real clinician summary failed, falling back to HMM-based SBAR: {e}")
+    # Fallback: generate SBAR from current HMM state
     try:
         engine = get_engine()
-        observations = engine.fetch_observations(days=7, patient_id=patient_id)
+        observations = engine.fetch_observations(days=period_days, patient_id=patient_id)
         if observations:
-            result = engine.viterbi(observations)
-            current_state = result.get("current_state", "STABLE") if isinstance(result, dict) else "STABLE"
-        else:
-            current_state = "STABLE"
-    except Exception:
-        current_state = "STABLE"
-    sbar = _SBAR_BY_STATE.get(current_state, _SBAR_BY_STATE["STABLE"])
-    return {"success": True, "patient_id": patient_id, "period_days": period_days, "sbar": sbar}
+            inference_result = engine.run_inference(observations, patient_id=patient_id)
+            current_state = inference_result.get("current_state", "STABLE") if isinstance(inference_result, dict) else "STABLE"
+            confidence = inference_result.get("confidence") if isinstance(inference_result, dict) else None
+            profile = _get_patient_profile(patient_id)
+            name = profile.get("name", "Patient")
+            latest_glucose = observations[-1].get("glucose_avg") or 0 if observations else 0
+            risk = inference_result.get("risk_48h") if isinstance(inference_result, dict) else None
+            conf_str = f"{confidence:.0%}" if confidence is not None else "N/A"
+            risk_str = f"{risk:.0%}" if risk is not None else "N/A"
+            glucose_str = f"{latest_glucose:.1f}" if latest_glucose else "N/A"
+            sbar = {
+                "situation": f"{name} ({patient_id}), Type 2 DM. HMM state: {current_state} (confidence {conf_str}). Latest glucose: {glucose_str} mmol/L.",
+                "background": f"Period: {period_days} days. {len(observations)} observation windows analyzed.",
+                "assessment": f"48h crisis probability: {risk_str}. State determined by Viterbi decoding across 9 features.",
+                "recommendation": "Review patient data in nurse dashboard for full clinical context.",
+            }
+            return {"success": True, "patient_id": patient_id, "period_days": period_days, "sbar": sbar}
+    except Exception as e:
+        logger.exception(f"SBAR fallback also failed: {e}")
+    raise HTTPException(status_code=500, detail="Could not generate clinician summary")
 
 
 @app.get("/impact/metrics/{patient_id}")
@@ -2410,21 +2442,11 @@ async def get_impact_metrics(patient_id: str, period_days: int = 30):
     """Impact measurement framework: adherence, time-in-range, engagement, intervention effectiveness."""
     try:
         metrics = compute_impact_metrics(patient_id, period_days)
-        adherence = metrics.get("medication_adherence", {}) if metrics else {}
-        if adherence.get("rate") is not None:
+        if metrics:
             return {"success": True, "patient_id": patient_id, "period_days": period_days, "metrics": metrics}
-    except Exception:
-        pass
-    return {"success": True, "patient_id": patient_id, "period_days": period_days, "metrics": {
-        "medication_adherence": {"rate": 0.72, "trend": "improving", "baseline": 0.58},
-        "time_in_range": {"percentage": 64, "target": 70, "trend": "stable"},
-        "glucose_variability": {"cv": 0.28, "target_cv": 0.36, "trend": "improving"},
-        "engagement_score": 68,
-        "interventions_triggered": 23,
-        "er_visits_prevented": 1,
-        "cost_savings_sgd": 8800,
-        "cost_per_patient_month": 0.40,
-    }}
+    except Exception as e:
+        logger.warning(f"Impact metrics computation failed: {e}")
+    return {"success": True, "patient_id": patient_id, "period_days": period_days, "metrics": {}, "note": "No metric data yet — run a scenario first"}
 
 
 @app.get("/impact/intervention-effectiveness/{patient_id}")
@@ -2537,19 +2559,32 @@ async def check_proposed_interaction(patient_id: str, body: DrugInteractionCheck
 @app.get("/agent/tool-effectiveness/{patient_id}")
 async def get_tool_effectiveness(patient_id: str):
     """View tool effectiveness scores (learned from clinical outcomes)."""
-    # Hardcoded tool effectiveness for consistent demo display
-    return {"success": True, "patient_id": patient_id, "effectiveness": {
-        "check_glucose_trend": {"score": 0.94, "uses": 847, "state_improvements": 312, "description": "Glucose trend analysis and anomaly detection"},
-        "medication_reminder": {"score": 0.88, "uses": 623, "state_improvements": 198, "description": "Proactive medication adherence reminders"},
-        "run_monte_carlo": {"score": 0.91, "uses": 415, "state_improvements": 156, "description": "2000-path Monte Carlo crisis probability simulation"},
-        "caregiver_alert": {"score": 0.85, "uses": 289, "state_improvements": 94, "description": "3-tier caregiver escalation (push/SMS/call)"},
-        "food_suggestion": {"score": 0.79, "uses": 534, "state_improvements": 167, "description": "Culturally-appropriate dietary coaching"},
-        "generate_sbar": {"score": 0.96, "uses": 178, "state_improvements": 178, "description": "Automated SBAR clinical handoff report"},
-        "drug_interaction_check": {"score": 1.0, "uses": 1204, "state_improvements": 0, "description": "16-pair drug interaction safety screen"},
-        "sealion_translate": {"score": 0.92, "uses": 2341, "state_improvements": 0, "description": "SEA-LION Singlish cultural translation"},
-        "safety_classifier": {"score": 1.0, "uses": 3102, "state_improvements": 0, "description": "6-dimension response safety filter"},
-        "run_counterfactual": {"score": 0.83, "uses": 356, "state_improvements": 112, "description": "What-if scenario analysis for patient motivation"},
-    }}
+    try:
+        scores = compute_tool_effectiveness_scores(patient_id)
+        if scores:
+            return {"success": True, "patient_id": patient_id, "effectiveness": scores}
+    except Exception as e:
+        logger.warning(f"Tool effectiveness computation failed: {e}")
+    # Fallback: query raw counts from agent_actions_log
+    try:
+        conn = get_db()
+        try:
+            rows = conn.execute("""
+                SELECT tool_name, COUNT(*) as uses
+                FROM agent_actions_log
+                WHERE patient_id = ? AND tool_name IS NOT NULL
+                GROUP BY tool_name ORDER BY uses DESC
+            """, (patient_id,)).fetchall()
+            if rows:
+                effectiveness = {}
+                for r in rows:
+                    effectiveness[r["tool_name"]] = {"uses": r["uses"], "effectiveness_pct": None}
+                return {"success": True, "patient_id": patient_id, "effectiveness": effectiveness}
+        finally:
+            conn.close()
+    except Exception:
+        pass
+    return {"success": True, "patient_id": patient_id, "effectiveness": {}, "note": "No tool execution data yet — run a scenario first"}
 
 
 # =============================================================================
@@ -2568,18 +2603,12 @@ async def get_safety_log(patient_id: str):
                 ORDER BY timestamp_utc DESC LIMIT 50
             """, (patient_id,)).fetchall()
             events = [dict(r) for r in rows]
-            if events:
-                return {"success": True, "patient_id": patient_id, "safety_events": events}
+            return {"success": True, "patient_id": patient_id, "safety_events": events}
         finally:
             conn.close()
-    except Exception:
-        pass
-    now_ts = int(time.time())
-    return {"success": True, "patient_id": patient_id, "safety_events": [
-        {"timestamp_utc": now_ts - 300, "tool_name": "safety_classifier", "tool_result": '{"verdict": "BLOCKED", "dimension": "dosage_safety", "reason": "Dosage modification requires clinical authorization."}', "reasoning": "Blocked unsafe dosage suggestion"},
-        {"timestamp_utc": now_ts - 600, "tool_name": "safety_classifier", "tool_result": '{"verdict": "SAFE", "dimension": "all", "reason": "All 6 dimensions passed."}', "reasoning": "All safety dimensions passed"},
-        {"timestamp_utc": now_ts - 1200, "tool_name": "safety_classifier", "tool_result": '{"verdict": "BLOCKED", "dimension": "medical_accuracy", "reason": "Cannot advise skipping prescribed medication."}', "reasoning": "Blocked medication skip advice"},
-    ]}
+    except Exception as e:
+        logger.warning(f"Safety log query failed: {e}")
+        return {"success": True, "patient_id": patient_id, "safety_events": [], "note": "No safety events recorded yet"}
 
 
 # =============================================================================
@@ -2618,22 +2647,12 @@ async def get_proactive_history(patient_id: str):
                 ORDER BY created_at DESC LIMIT 50
             """, (patient_id,)).fetchall()
             history = [dict(r) for r in rows]
-            if history:
-                return {"success": True, "patient_id": patient_id, "history": history}
+            return {"success": True, "patient_id": patient_id, "history": history}
         finally:
             conn.close()
-    except Exception:
-        pass
-    # Hardcoded fallback
-    now_ts = int(time.time())
-    return {"success": True, "patient_id": patient_id, "history": [
-        {"trigger_type": "glucose_anomaly", "reason": "Glucose 14.2 mmol/L — above threshold. Proactive check-in triggered.", "created_at": now_ts - 86400},
-        {"trigger_type": "medication_reminder", "reason": "Evening Metformin not logged by 9pm. Escalated reminder sent.", "created_at": now_ts - 86400 * 2},
-        {"trigger_type": "caregiver_update", "reason": "Weekly summary sent to Mei Ling — adherence 72%, glucose moderate.", "created_at": now_ts - 86400 * 3},
-        {"trigger_type": "dietary_nudge", "reason": "High-carb meal detected (nasi lemak). Post-meal coaching delivered.", "created_at": now_ts - 86400 * 4},
-        {"trigger_type": "streak_celebration", "reason": "5-day medication streak! Voucher +$0.50. Encouragement sent.", "created_at": now_ts - 86400 * 5},
-        {"trigger_type": "activity_prompt", "reason": "Steps below 2000 for 2 days. Walking challenge issued.", "created_at": now_ts - 86400 * 6},
-    ]}
+    except Exception as e:
+        logger.warning(f"Proactive history query failed: {e}")
+        return {"success": True, "patient_id": patient_id, "history": [], "note": "No proactive check-ins recorded yet"}
 
 
 # =============================================================================

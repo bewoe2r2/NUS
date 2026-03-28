@@ -30,7 +30,7 @@ export function DailyChallengeCard() {
         async function fetchChallenge() {
             try {
                 const data = await api.getDailyChallenge("P001");
-                if (data && typeof data === "object" && (data.challenge || data.goal)) {
+                if (data && typeof data === "object" && !Array.isArray(data) && (data.challenge || data.goal)) {
                     setChallenge(data);
                 }
                 // If API returns null/empty, keep fallback — never show spinner or empty

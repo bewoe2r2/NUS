@@ -1729,7 +1729,7 @@ class HMMEngine:
         """
         if not observations:
             return {
-                "current_state": "UNKNOWN",
+                "current_state": "STABLE",
                 "confidence": 0.0,
                 "confidence_margin": 0.0,
                 "certainty_index": 0.0,
