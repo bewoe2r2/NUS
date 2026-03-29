@@ -219,14 +219,14 @@ function AlertFeed({
                                 {actionButtons.map((btn) => (
                                     <button
                                         key={btn.action}
-                                        disabled={respondingId === alert.id}
+                                        disabled={respondingId === String(alert.id)}
                                         onClick={() => onRespond(String(alert.id), btn.action)}
                                         className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${btn.style} disabled:opacity-50 min-h-[44px]`}
                                     >
                                         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d={btn.icon} />
                                         </svg>
-                                        {respondingId === alert.id ? "..." : btn.label}
+                                        {respondingId === String(alert.id) ? "..." : btn.label}
                                     </button>
                                 ))}
                             </div>
