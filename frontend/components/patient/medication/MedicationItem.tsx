@@ -89,6 +89,9 @@ export function MedicationItem({ id, name, dose, time, isTaken, onToggle }: Medi
                 {/* Checkbox Fallback (Clickable) */}
                 <button
                     onClick={() => onToggle(id)}
+                    role="checkbox"
+                    aria-checked={isTaken}
+                    aria-label={`Mark ${name} as ${isTaken ? 'not taken' : 'taken'}`}
                     className={cn(
                         "h-11 w-11 rounded-full border-2 ml-4 flex items-center justify-center transition-all shrink-0",
                         isTaken ? "bg-[var(--success-solid)] border-[var(--success-solid)]" : "border-neutral-300 hover:border-[var(--accent-500)]"

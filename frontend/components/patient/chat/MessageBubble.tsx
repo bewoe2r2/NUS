@@ -64,10 +64,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     !isUser && message.hmm_state === "WARNING" && "border-warning-500 border-l-4",
                     !isUser && message.hmm_state !== "CRISIS" && message.hmm_state !== "WARNING" && "border-neutral-200"
                 )}>
-                    <span className="inline-flex items-center gap-1">
-                        {message.hmm_state === "CRISIS" && <span className="w-2 h-2 rounded-full bg-error-500 inline-block mr-1 shrink-0" />}
-                        {message.hmm_state === "WARNING" && <span className="w-2 h-2 rounded-full bg-warning-500 inline-block mr-1 shrink-0" />}
-                    </span>
+                    {(message.hmm_state === "CRISIS" || message.hmm_state === "WARNING") && (
+                        <span className="inline-flex items-center gap-1">
+                            {message.hmm_state === "CRISIS" && <span className="w-2 h-2 rounded-full bg-error-500 inline-block mr-1 shrink-0" />}
+                            {message.hmm_state === "WARNING" && <span className="w-2 h-2 rounded-full bg-warning-500 inline-block mr-1 shrink-0" />}
+                        </span>
+                    )}
                     {message.content}
 
                     {/* TIMESTAMP */}

@@ -68,7 +68,7 @@ export function ChatContainer() {
         loadHistory();
         const interval = setInterval(() => {
             if (!userHasTyped) loadHistory();
-        }, 5000);
+        }, 15000);
         return () => clearInterval(interval);
     }, [loadHistory, userHasTyped]);
 

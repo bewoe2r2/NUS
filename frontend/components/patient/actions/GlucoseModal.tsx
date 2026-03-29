@@ -91,8 +91,10 @@ export function GlucoseModal({ isOpen, onClose }: GlucoseModalProps) {
             if (!result.success) throw new Error("Failed to save reading");
             setSuccess(true);
             successTimerRef.current = setTimeout(() => {
+                setValue("");
                 setSuccess(false);
                 setLoading(false);
+                setError(null);
                 onClose();
             }, 1500);
         } catch (e) {

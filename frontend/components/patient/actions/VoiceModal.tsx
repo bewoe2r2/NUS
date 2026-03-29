@@ -148,7 +148,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
                         exit={{ scale: 0.9, opacity: 0 }}
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-2xl z-50"
                     >
-                        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-neutral-100 rounded-full text-neutral-500">
+                        <button onClick={onClose} aria-label="Close voice check-in" className="absolute top-4 right-4 p-2 min-h-[44px] min-w-[44px] bg-neutral-100 rounded-full text-neutral-500">
                             <X size={20} />
                         </button>
 

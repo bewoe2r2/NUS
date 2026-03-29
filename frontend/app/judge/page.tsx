@@ -317,7 +317,7 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
                         }
                     </p>
                 </div>
-                <button onClick={onRefresh} className="p-2 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors">
+                <button onClick={onRefresh} aria-label="Refresh data" className="p-2 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors">
                     <RefreshCw size={18} />
                 </button>
             </div>
@@ -1068,33 +1068,34 @@ function ToolDemoTab() {
 
         // 1. Drug check
         addLog({ type: 'system', text: '--- Phase 1: Safety Pre-Check ---' });
-        await runDrugCheck(); successCount++;
+        const runAndCount = async (fn: () => Promise<void>) => { try { await fn(); successCount++; } catch { /* counted by liveTools */ } };
+        await runAndCount(runDrugCheck);
         await delay(200);
-        await runSafetyCheck(); successCount++;
+        await runAndCount(runSafetyCheck);
         await delay(200);
 
         // 2. Clinical
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 2: Clinical Intelligence ---' });
-        await runClinicianSummary(); successCount++;
+        await runAndCount(runClinicianSummary);
         await delay(200);
-        await runNurseTriage(); successCount++;
+        await runAndCount(runNurseTriage);
         await delay(200);
 
         // 3. Patient engagement
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 3: Patient Engagement ---' });
-        await runFoodRecommendation(); successCount++;
+        await runAndCount(runFoodRecommendation);
         await delay(200);
-        await runStreakCelebrate(); successCount++;
+        await runAndCount(runStreakCelebrate);
         await delay(200);
 
         // 4. Proactive
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 4: Proactive & Communication ---' });
-        await runBookAppointment(); successCount++;
+        await runAndCount(runBookAppointment);
         await delay(200);
-        await runCaregiverAlert(); successCount++;
+        await runAndCount(runCaregiverAlert);
         await delay(200);
 
         // Additional tools (simulated)
@@ -1885,6 +1886,7 @@ function SlidesTab({ isActive = true }: { isActive?: boolean }) {
                     <button
                         onClick={() => setCurrentSlide(prev => Math.max(prev - 1, 0))}
                         disabled={currentSlide === 0}
+                        aria-label="Previous slide"
                         className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500 transition-all"
                     >
                         <ChevronLeft size={18} />
@@ -1892,6 +1894,7 @@ function SlidesTab({ isActive = true }: { isActive?: boolean }) {
                     <button
                         onClick={() => setCurrentSlide(prev => Math.min(prev + 1, total - 1))}
                         disabled={currentSlide === total - 1}
+                        aria-label="Next slide"
                         className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500 transition-all"
                     >
                         <ChevronRight size={18} />
