@@ -84,7 +84,7 @@ The agent autonomously decides which tools to use based on patient context:
 | `celebrate_streak` | Behavioral reinforcement |
 | `generate_weekly_report` | Progress summaries |
 | `adjust_nudge_schedule` | Adaptive timing optimization |
-| `generate_clinician_summary` | SBAR clinical notes |
+| `generate_clinician_summary` | SBAR report for nurse-to-doctor handoff |
 | `check_drug_interactions` | Pharmacological safety check |
 
 ### Safety Systems
@@ -97,7 +97,7 @@ The agent autonomously decides which tools to use based on patient context:
 - **Patient**: Chat companion, glucose logging (manual + OCR), medication tracking, voucher rewards, voice check-ins
 - **Nurse**: Multi-patient triage dashboard with urgency scoring, attention decay, auto-SBAR for IMMEDIATE cases
 - **Caregiver**: Bidirectional communication (5 response types), burden scoring (4-factor, 0-100), auto-digest mode
-- **Clinician**: SBAR summaries, impact metrics, intervention effectiveness tracking
+- **Clinician (via Nurse)**: Auto-generated SBAR reports for nurse-to-doctor handoff, impact metrics, intervention tracking
 
 ---
 
@@ -245,10 +245,10 @@ Select a scenario (e.g. "Warning → Crisis") from the left sidebar and click "R
 | GET | `/caregiver/dashboard/{id}` | Caregiver view of patient |
 | GET | `/caregiver/burden/{id}` | Burden score (0-100) |
 
-### Clinical
+### Clinical (Nurse → Doctor Handoff)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinician/summary/{id}` | SBAR clinical summary |
+| GET | `/clinician/summary/{id}` | Auto-generated SBAR for nurse-to-doctor handoff |
 | GET | `/impact/metrics/{id}` | Outcome measurement metrics |
 | GET | `/impact/intervention-effectiveness/{id}` | Intervention ROI analysis |
 
