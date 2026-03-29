@@ -292,10 +292,10 @@ function WeeklySummaryCard({ report, isLoading = true }: { report: WeeklyReport 
 }
 
 function StreakDisplay({ streakData }: { streakData: StreakData | null }) {
-    const streaks = streakData?.streaks;
+    const streaks = streakData?.streaks || streakData;
     const items = [
         { key: "medication", label: "Medication", emoji: "💊" },
-        { key: "glucose", label: "Glucose check", emoji: "🩸" },
+        { key: "glucose_logging", label: "Glucose check", emoji: "🩸" },
     ];
 
     return (
@@ -303,7 +303,7 @@ function StreakDisplay({ streakData }: { streakData: StreakData | null }) {
             <h3 className="text-base font-semibold text-neutral-800 mb-4">Streaks</h3>
             <div className="space-y-4">
                 {items.map(({ key, label, emoji }) => {
-                    const s = streaks?.[key];
+                    const s = (streaks as any)?.[key];
                     const current = s?.current ?? 0;
                     const best = s?.best ?? 0;
                     return (
@@ -490,6 +490,11 @@ function CaregiverDashboard() {
             setPatientState(stateRes);
             setDashboard(dashRes);
             setStreakData(streakRes);
+            // Normalize backend field names
+            if (weeklyRes) {
+                if (weeklyRes.overall_grade && !weeklyRes.grade) weeklyRes.grade = weeklyRes.overall_grade;
+                if (weeklyRes.overall_score != null && weeklyRes.adherence_pct == null) weeklyRes.adherence_pct = weeklyRes.overall_score;
+            }
             setWeeklyReport(weeklyRes);
             setBurden(burdenRes);
             setFetchError(false);

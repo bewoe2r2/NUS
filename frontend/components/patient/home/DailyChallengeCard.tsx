@@ -31,7 +31,15 @@ export function DailyChallengeCard() {
             try {
                 const data = await api.getDailyChallenge("P001");
                 if (data && typeof data === "object" && !Array.isArray(data) && (data.challenge || data.goal)) {
-                    setChallenge(data);
+                    // Backend returns challenge as nested object — flatten for display
+                    const c = typeof data.challenge === 'object' && data.challenge ? data.challenge : data;
+                    setChallenge({
+                        challenge: c.goal || c.challenge || data.goal || 'Stay active today',
+                        goal: c.goal || data.goal,
+                        progress: c.progress ?? data.progress ?? 0,
+                        target: c.target ?? data.target ?? 1,
+                        type: c.type || data.type,
+                    });
                 }
                 // If API returns null/empty, keep fallback — never show spinner or empty
             } catch (e) {
