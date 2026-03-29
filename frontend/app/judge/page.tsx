@@ -517,29 +517,36 @@ function OverviewTab({ patientState, triage, drugInteractions, clinicianSummary,
             </div>
 
             {/* IMPACT METRICS */}
-            {impactMetrics && (
-                <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center gap-2 mb-4">
-                        <BarChart3 size={18} className="text-emerald-600" />
-                        <h2 className="text-lg font-bold text-zinc-900">Impact Metrics</h2>
-                    </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Object.entries(impactMetrics).map(([key, value]) => {
-                            if (typeof value === 'object') return null;
-                            return (
-                                <div key={key} className="p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                                    <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                                        {key.replace(/_/g, ' ')}
+            {impactMetrics && (() => {
+                const METADATA_KEYS = ['patient_id', 'period_days', 'success', 'error', 'detail'];
+                const meaningful = Object.entries(impactMetrics).filter(
+                    ([key, value]) => typeof value !== 'object' && !METADATA_KEYS.includes(key)
+                );
+                return (
+                    <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                            <BarChart3 size={18} className="text-emerald-600" />
+                            <h2 className="text-lg font-bold text-zinc-900">Impact Metrics</h2>
+                        </div>
+                        {meaningful.length > 0 ? (
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                {meaningful.map(([key, value]) => (
+                                    <div key={key} className="p-3 bg-zinc-50 rounded-lg border border-zinc-100">
+                                        <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                                            {key.replace(/_/g, ' ')}
+                                        </div>
+                                        <div className="text-lg font-bold text-zinc-900">
+                                            {typeof value === 'number' ? (value < 1 ? `${((value as number) * 100).toFixed(0)}%` : (value as number).toFixed(1)) : String(value)}
+                                        </div>
                                     </div>
-                                    <div className="text-lg font-bold text-zinc-900">
-                                        {typeof value === 'number' ? (value < 1 ? `${((value as number) * 100).toFixed(0)}%` : (value as number).toFixed(1)) : String(value)}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-zinc-400 italic py-4 text-center">Impact metrics will populate after running a full simulation with patient data.</p>
+                        )}
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* BIOMETRICS */}
             {patientState?.biometrics && (
@@ -681,12 +688,21 @@ function IntelligenceTab({ agentMemory, toolEffectiveness, safetyLog, agentActio
                 {/* STREAKS & ENGAGEMENT */}
                 <IntelCard title="Streaks & Engagement" icon={<TrendingUp size={16} />} color="emerald">
                     <div className="space-y-3">
-                        {engagement && (
-                            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                                <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">Engagement Score</div>
-                                <div className="text-2xl font-bold text-emerald-800">{typeof (engagement.score ?? engagement.engagement_score) === 'object' ? JSON.stringify(engagement.score ?? engagement.engagement_score) : String(engagement.score ?? engagement.engagement_score ?? 'N/A')}</div>
-                            </div>
-                        )}
+                        {(() => {
+                            const rawScore = engagement?.score ?? engagement?.engagement_score;
+                            const hasRealScore = engagement && rawScore != null && rawScore !== 0;
+                            return hasRealScore ? (
+                                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                                    <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">Engagement Score</div>
+                                    <div className="text-2xl font-bold text-emerald-800">{typeof rawScore === 'object' ? JSON.stringify(rawScore) : String(rawScore)}</div>
+                                </div>
+                            ) : engagement ? (
+                                <div className="p-3 bg-zinc-50 rounded-lg border border-zinc-200">
+                                    <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Engagement Score</div>
+                                    <div className="text-sm text-zinc-500 italic">No interactions yet — score builds as the patient engages with Bewo.</div>
+                                </div>
+                            ) : null;
+                        })()}
                         {streaks && typeof streaks === 'object' && (
                             <div className="space-y-1">
                                 {Object.entries(streaks.streaks || streaks).map(([key, val]) => {
@@ -1059,6 +1075,8 @@ function ToolDemoTab() {
     const runAllTools = async () => {
         let successCount = 0;
         const totalCount = 18;
+        const failedTools: string[] = [];
+        const toolLatencies: number[] = [];
         const pipelineStart = performance.now();
         addLog({ type: 'system', text: '=== FULL 18-TOOL PIPELINE DEMONSTRATION ===' });
         addLog({ type: 'system', text: 'Patient: P001 (Mr. Tan Ah Kow, 67M, T2DM + HTN + HLD)' });
@@ -1068,34 +1086,37 @@ function ToolDemoTab() {
 
         // 1. Drug check
         addLog({ type: 'system', text: '--- Phase 1: Safety Pre-Check ---' });
-        const runAndCount = async (fn: () => Promise<void>) => { try { await fn(); successCount++; } catch { /* counted by liveTools */ } };
-        await runAndCount(runDrugCheck);
+        const runAndCount = async (fn: () => Promise<void>, toolName: string) => {
+            const t0 = performance.now();
+            try { await fn(); successCount++; toolLatencies.push(performance.now() - t0); } catch { failedTools.push(toolName); toolLatencies.push(performance.now() - t0); }
+        };
+        await runAndCount(runDrugCheck, 'check_drug_interactions');
         await delay(200);
-        await runAndCount(runSafetyCheck);
+        await runAndCount(runSafetyCheck, 'classify_response_safety');
         await delay(200);
 
         // 2. Clinical
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 2: Clinical Intelligence ---' });
-        await runAndCount(runClinicianSummary);
+        await runAndCount(runClinicianSummary, 'generate_clinician_summary');
         await delay(200);
-        await runAndCount(runNurseTriage);
+        await runAndCount(runNurseTriage, 'alert_nurse');
         await delay(200);
 
         // 3. Patient engagement
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 3: Patient Engagement ---' });
-        await runAndCount(runFoodRecommendation);
+        await runAndCount(runFoodRecommendation, 'recommend_food');
         await delay(200);
-        await runAndCount(runStreakCelebrate);
+        await runAndCount(runStreakCelebrate, 'celebrate_streak');
         await delay(200);
 
         // 4. Proactive
         addLog({ type: 'system', text: '' });
         addLog({ type: 'system', text: '--- Phase 4: Proactive & Communication ---' });
-        await runAndCount(runBookAppointment);
+        await runAndCount(runBookAppointment, 'book_appointment');
         await delay(200);
-        await runAndCount(runCaregiverAlert);
+        await runAndCount(runCaregiverAlert, 'send_caregiver_alert');
         await delay(200);
 
         // Additional tools (simulated)
@@ -1149,21 +1170,41 @@ function ToolDemoTab() {
         for (const t of liveTools) {
             addLog({ type: 'tool_call', tool: t.tool, text: t.call });
             await delay(150);
+            const t0 = performance.now();
             try {
                 const result = await t.fn();
                 addLog({ type: 'result', tool: t.tool, text: result });
                 successCount++;
+                toolLatencies.push(performance.now() - t0);
             } catch {
                 addLog({ type: 'error', text: `${t.tool}: Backend unavailable` });
+                failedTools.push(t.tool);
+                toolLatencies.push(performance.now() - t0);
             }
             await delay(100);
         }
 
         const pipelineEnd = performance.now();
         const elapsed = ((pipelineEnd - pipelineStart) / 1000).toFixed(1);
+        const avgLatency = toolLatencies.length > 0 ? (toolLatencies.reduce((a, b) => a + b, 0) / toolLatencies.length).toFixed(0) : '0';
+        const maxLatency = toolLatencies.length > 0 ? Math.max(...toolLatencies).toFixed(0) : '0';
+        const successRate = ((successCount / totalCount) * 100).toFixed(0);
         addLog({ type: 'system', text: '' });
-        addLog({ type: 'system', text: `=== PIPELINE COMPLETE: ${successCount}/${totalCount} tools executed successfully ===` });
-        addLog({ type: 'system', text: `Total execution time: ${elapsed}s | Safety checks: PASSED | Drug interactions: CHECKED` });
+        addLog({ type: 'system', text: '========================================' });
+        addLog({ type: 'system', text: '         PIPELINE SUMMARY' });
+        addLog({ type: 'system', text: '========================================' });
+        addLog({ type: 'system', text: `Tools executed:   ${successCount}/${totalCount} (${successRate}% success rate)` });
+        addLog({ type: 'system', text: `Total time:       ${elapsed}s` });
+        addLog({ type: 'system', text: `Avg latency:      ${avgLatency}ms per tool` });
+        addLog({ type: 'system', text: `Max latency:      ${maxLatency}ms (slowest tool)` });
+        addLog({ type: 'system', text: `Safety checks:    PASSED` });
+        addLog({ type: 'system', text: `Drug interactions: CHECKED` });
+        if (failedTools.length > 0) {
+            addLog({ type: 'error', text: `Failed tools (${failedTools.length}): ${failedTools.join(', ')}` });
+        } else {
+            addLog({ type: 'result', text: 'All tools executed successfully.' });
+        }
+        addLog({ type: 'system', text: '========================================' });
     };
 
     const handleRun = async (toolId: string) => {

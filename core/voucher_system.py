@@ -177,6 +177,56 @@ class VoucherSystem:
             if conn:
                 conn.close()
 
+    def get_voucher_narrative(self, user_id=None, patient_name=None):
+        """
+        Build a human-readable loss narrative for the current week.
+        Returns a string that makes the loss FELT, not just displayed.
+        E.g. "Mr. Tan started this week with $5.00. Lost $1.00 for missing
+        medication Monday. Current balance: $3.50."
+        """
+        user_id = user_id or self.user_id
+        voucher = self.get_current_voucher(user_id)
+        value = voucher['current_value']
+        penalties = voucher.get('penalties', [])
+        name = patient_name or "You"
+
+        if not penalties:
+            return f"{name} started this week with ${self.WEEKLY_START:.2f} and haven't lost anything yet. Keep it up!"
+
+        total_lost = sum(p.get('amount', 0) for p in penalties)
+        perfect_value = self.WEEKLY_START
+        days_left = voucher.get('days_until_redemption', 0)
+
+        # Build penalty breakdown lines
+        lines = []
+        for p in penalties:
+            reason = p.get('reason', 'Missed action')
+            amt = p.get('amount', 0)
+            ts = p.get('timestamp', 0)
+            if ts:
+                day_name = datetime.fromtimestamp(ts).strftime('%A')
+                lines.append(f"Lost ${amt:.2f} — {reason} ({day_name})")
+            else:
+                lines.append(f"Lost ${amt:.2f} — {reason}")
+
+        breakdown = ". ".join(lines)
+
+        # Project end-of-week loss if current rate continues
+        days_since_monday = datetime.now().weekday()
+        if days_since_monday > 0:
+            daily_loss_rate = total_lost / days_since_monday
+            projected_additional = daily_loss_rate * days_left
+            projected_final = max(0, value - projected_additional)
+            projection = f"At this rate, you'll redeem ${projected_final:.2f} — that's ${perfect_value - projected_final:.2f} less than perfect adherence."
+        else:
+            projection = ""
+
+        narrative = f"{name} started this week with ${self.WEEKLY_START:.2f}. {breakdown}. Current balance: ${value:.2f}."
+        if projection:
+            narrative += f" {projection}"
+
+        return narrative
+
     def generate_qr_code(self, amount):
         """Generate QR code for redemption"""
         if not QRCODE_AVAILABLE:

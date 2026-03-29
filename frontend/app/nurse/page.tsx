@@ -49,6 +49,7 @@ export default function NurseDashboard() {
     const [error, setError] = useState<string | null>(null);
 
     // SBAR, Triage, Drug Interactions
+    const [sbarLoading, setSbarLoading] = useState(true);
     const [clinicianSummary, setClinicianSummary] = useState<any>(null);
     const [drugInteractions, setDrugInteractions] = useState<any>(null);
     const [triage, setTriage] = useState<any>(null);
@@ -75,7 +76,7 @@ export default function NurseDashboard() {
                 setError(null);
 
                 // Slow endpoint — SBAR uses Gemini, fetch in background
-                api.getClinicianSummary("P001").then(sbar => setClinicianSummary(sbar)).catch(() => {});
+                api.getClinicianSummary("P001").then(sbar => setClinicianSummary(sbar)).catch(() => {}).finally(() => setSbarLoading(false));
             } catch (e) {
                 console.error("Failed to fetch patient data", e);
                 setError("Failed to load patient data. Is the backend running?");
@@ -238,11 +239,38 @@ export default function NurseDashboard() {
                                 subtitle="Click a day to view detailed HMM analysis"
                             >
                                 {timelineDays.length > 0 ? (
-                                    <TimelineStrip
-                                        days={timelineDays}
-                                        selectedDate={selectedDate}
-                                        onSelectDate={(d) => { setSelectedDate(d); setDetailRetry(r => r + 1); }}
-                                    />
+                                    <>
+                                        <TimelineStrip
+                                            days={timelineDays}
+                                            selectedDate={selectedDate}
+                                            onSelectDate={(d) => { setSelectedDate(d); setDetailRetry(r => r + 1); }}
+                                        />
+                                        {/* Narrative progression summary */}
+                                        {(() => {
+                                            const stableDays = timelineDays.filter(d => d.state === 'STABLE').length;
+                                            const warningDays = timelineDays.filter(d => d.state === 'WARNING').length;
+                                            const crisisDays = timelineDays.filter(d => d.state === 'CRISIS').length;
+                                            const lastState = timelineDays[timelineDays.length - 1]?.state;
+                                            const hasProgression = warningDays > 0 || crisisDays > 0;
+                                            if (!hasProgression) return null;
+                                            return (
+                                                <div className="mt-3 flex items-center gap-3 px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-2 h-2 rounded-full bg-emerald-500" /><span className="font-medium text-slate-600">{stableDays}d Stable</span>
+                                                    </div>
+                                                    {warningDays > 0 && (
+                                                        <><span className="text-slate-300">&rarr;</span><div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /><span className="font-medium text-slate-600">{warningDays}d Warning</span></div></>
+                                                    )}
+                                                    {crisisDays > 0 && (
+                                                        <><span className="text-slate-300">&rarr;</span><div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /><span className="font-medium text-slate-600">{crisisDays}d Crisis</span></div></>
+                                                    )}
+                                                    <span className="ml-auto text-slate-400">
+                                                        Current: <span className={`font-semibold ${lastState === 'CRISIS' ? 'text-rose-600' : lastState === 'WARNING' ? 'text-amber-600' : 'text-emerald-600'}`}>{lastState}</span>
+                                                    </span>
+                                                </div>
+                                            );
+                                        })()}
+                                    </>
                                 ) : (
                                     <p className="text-sm text-slate-400 text-center py-6">Run HMM analysis to populate the timeline.</p>
                                 )}
@@ -567,6 +595,12 @@ export default function NurseDashboard() {
                                                 );
                                             })()}
                                         </div>
+                                    ) : sbarLoading ? (
+                                        <div className="flex flex-col items-center gap-3 py-8 text-center">
+                                            <Loader2 className="h-6 w-6 text-blue-400 animate-spin" />
+                                            <p className="text-sm text-slate-500 font-medium">Generating SBAR report...</p>
+                                            <p className="text-xs text-slate-400">AI is analyzing patient data across all biometric channels</p>
+                                        </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-2 py-6 text-center">
                                             <FileText className="h-8 w-8 text-slate-200" />
@@ -660,7 +694,10 @@ export default function NurseDashboard() {
                                                     }`} />
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center justify-between mb-1">
-                                                            <div className="text-sm font-semibold text-slate-800">{p.patient_id}</div>
+                                                            <div className="text-sm font-semibold text-slate-800">
+                                                                {p.name || p.patient_id}
+                                                                <span className="text-[10px] text-slate-400 font-normal ml-1.5">{p.patient_id}</span>
+                                                            </div>
                                                             <span className="text-[11px] text-slate-500 font-mono">{urgencyPct}%</span>
                                                         </div>
                                                         {/* Urgency bar */}
@@ -670,8 +707,14 @@ export default function NurseDashboard() {
                                                                 style={{ width: `${urgencyPct}%` }}
                                                             />
                                                         </div>
-                                                        <div className="text-xs text-slate-500">
-                                                            {p.state}
+                                                        <div className="text-xs text-slate-500 flex items-center gap-2">
+                                                            <span className={`font-semibold ${
+                                                                p.state === 'CRISIS' ? 'text-rose-600' :
+                                                                p.state === 'WARNING' ? 'text-amber-600' : 'text-emerald-600'
+                                                            }`}>{p.state}</span>
+                                                            {p.risk_48h != null && (
+                                                                <span className="text-slate-400">48h risk: <span className="font-mono font-medium text-slate-600">{typeof p.risk_48h === 'number' ? `${p.risk_48h.toFixed(0)}%` : p.risk_48h}</span></span>
+                                                            )}
                                                         </div>
                                                         {p.sbar_line && (
                                                             <div className="text-xs text-slate-600 mt-1 bg-white p-2 rounded border border-slate-100">

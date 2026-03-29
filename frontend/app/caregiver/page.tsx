@@ -208,7 +208,27 @@ function AlertFeed({
                                 {badge.label}
                             </span>
                         </div>
-                        <p className="text-xs text-neutral-400 mt-1.5">{formatTime(alert.timestamp ?? alert.timestamp_utc ?? "")}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                            <p className="text-xs text-neutral-400">{formatTime(alert.timestamp ?? alert.timestamp_utc ?? "")}</p>
+                            {alert.channel && (
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                                    alert.channel === 'call' || alert.channel === 'phone' ? 'bg-error-100 text-error-600' :
+                                    alert.channel === 'sms' ? 'bg-warning-100 text-warning-600' :
+                                    'bg-neutral-100 text-neutral-500'
+                                }`}>
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d={
+                                            alert.channel === 'call' || alert.channel === 'phone'
+                                                ? "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                                : alert.channel === 'sms'
+                                                    ? "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                                    : "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                                        } />
+                                    </svg>
+                                    {alert.channel === 'call' || alert.channel === 'phone' ? 'Phone call' : alert.channel === 'sms' ? 'SMS' : 'Push'}
+                                </span>
+                            )}
+                        </div>
 
                         {alert.responded ? (
                             <div className="mt-3 flex items-center gap-1.5 text-sm text-success-600 font-medium">
@@ -383,19 +403,24 @@ function BurdenCard({ burden, isLoading = true }: { burden: BurdenData | null; i
                     )}
                 </div>
             </div>
-            {safeScore != null && (
-                <div className="mt-4 flex items-center gap-3">
-                    <div className="flex-1 h-2.5 bg-white/60 rounded-full overflow-hidden">
-                        <div
-                            className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
-                            style={{ width: `${Math.min(safeScore > 1 ? safeScore : safeScore * 100, 100)}%` }}
-                        />
+            {safeScore != null && (() => {
+                const pct = safeScore > 1 ? safeScore : safeScore * 100;
+                const displayLabel = level === 'critical' ? 'Critical' : level === 'high' ? 'High' : level === 'moderate' ? 'Moderate' : 'Low';
+                return (
+                    <div className="mt-4">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-semibold text-neutral-600 capitalize">{displayLabel} burden</span>
+                            <span className="text-xs font-mono font-medium text-neutral-500">{Math.round(pct)}/100</span>
+                        </div>
+                        <div className="h-2.5 bg-white/60 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
+                                style={{ width: `${Math.min(pct, 100)}%` }}
+                            />
+                        </div>
                     </div>
-                    <span className="text-xs font-medium text-neutral-500 tabular-nums w-8 text-right">
-                        {(safeScore > 1 ? safeScore / 100 : safeScore) <= 0.33 ? "Low" : (safeScore > 1 ? safeScore / 100 : safeScore) <= 0.66 ? "Mid" : "High"}
-                    </span>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 }
@@ -604,6 +629,34 @@ function CaregiverDashboard() {
 
             {/* Caregiver wellbeing */}
             <BurdenCard burden={burden} isLoading={loading} />
+
+            {/* 3-Tier escalation explainer */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-card animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: "160ms" }}>
+                <h3 className="text-base font-semibold text-neutral-800 mb-3">How we reach you</h3>
+                <div className="space-y-2.5">
+                    {[
+                        { tier: "Info", channel: "Push notification", trigger: "Stable — minor updates", color: "bg-success-50 border-success-200", dotColor: "bg-success-solid", icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" },
+                        { tier: "Warning", channel: "SMS with link", trigger: "Pattern shift detected", color: "bg-warning-50 border-warning-200", dotColor: "bg-warning-solid", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" },
+                        { tier: "Critical", channel: "SMS + phone call", trigger: "Crisis — immediate risk", color: "bg-error-50 border-error-200", dotColor: "bg-error-solid", icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" },
+                    ].map((t) => (
+                        <div key={t.tier} className={`flex items-center gap-3 p-3 rounded-xl border ${t.color}`}>
+                            <div className="shrink-0">
+                                <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d={t.icon} />
+                                </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold text-neutral-800">{t.tier}</span>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${t.dotColor}`} />
+                                    <span className="text-xs text-neutral-500">{t.channel}</span>
+                                </div>
+                                <p className="text-xs text-neutral-400 mt-0.5">{t.trigger}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             {/* Weekly summary */}
             <WeeklySummaryCard report={weeklyReport} isLoading={loading} />

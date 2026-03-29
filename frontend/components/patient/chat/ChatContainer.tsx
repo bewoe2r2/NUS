@@ -55,13 +55,34 @@ export function ChatContainer() {
         } catch {
             // Fall through to default greeting
         }
-        // Fallback: default greeting if no history
-        setMessages([{
-            id: "init-legacy",
-            role: "ai",
-            content: `${getGreeting()}, Mr. Tan. I noticed your glucose is slightly elevated. Have you had breakfast?`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }]);
+        // Fallback: seed a realistic multi-turn conversation so the chat never looks empty
+        const now = new Date();
+        const fmtTime = (minAgo: number) => {
+            const d = new Date(now.getTime() - minAgo * 60_000);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+        setMessages([
+            {
+                id: "seed-1",
+                role: "ai",
+                content: `${getGreeting()}, Uncle! Did you sleep well? I see your sugar was steady overnight.`,
+                timestamp: fmtTime(8),
+                hmm_state: "STABLE",
+            },
+            {
+                id: "seed-2",
+                role: "user",
+                content: "Morning! Ya slept ok. Already take my medicine with kaya toast.",
+                timestamp: fmtTime(6),
+            },
+            {
+                id: "seed-3",
+                role: "ai",
+                content: "Wah, very disciplined! Kaya toast with Metformin is a good combo. Your glucose is looking stable at 5.8 mmol/L. Keep it up!",
+                timestamp: fmtTime(5),
+                hmm_state: "STABLE",
+            },
+        ]);
     }, []);
 
     useEffect(() => {

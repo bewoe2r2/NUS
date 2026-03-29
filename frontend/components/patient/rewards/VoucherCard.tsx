@@ -12,6 +12,7 @@ interface VoucherState {
     days_until_redemption: number;
     can_redeem: boolean;
     streak_days: number;
+    narrative: string;
 }
 
 const FALLBACK_VOUCHER: VoucherState = {
@@ -20,6 +21,7 @@ const FALLBACK_VOUCHER: VoucherState = {
     days_until_redemption: 3,
     can_redeem: false,
     streak_days: 5,
+    narrative: "",
 };
 
 export function VoucherCard() {
@@ -124,6 +126,19 @@ export function VoucherCard() {
                     </button>
                 </div>
             </motion.div>
+
+            {/* LOSS NARRATIVE — makes the loss felt, not just displayed */}
+            {voucher.narrative && value < voucher.max_value && (
+                <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="mt-3 px-5 py-4 bg-error-50 border border-error-100 rounded-2xl"
+                >
+                    <p className="text-sm text-error-700 leading-relaxed font-medium">
+                        {voucher.narrative}
+                    </p>
+                </motion.div>
+            )}
 
             {/* QR MODAL */}
             <AnimatePresence>

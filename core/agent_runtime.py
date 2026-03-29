@@ -3318,15 +3318,22 @@ def generate_daily_challenge(patient_id: str, hmm_context: Dict) -> Dict:
     challenges = []
 
     if state == "CRISIS":
-        # Minimal — any action helps
+        # CRISIS: medication and rest ONLY. Never ask patient to "log" during a crisis.
+        # Selection is deterministic — always medication first, rest second.
         challenges = [
-            {"type": "glucose", "goal": "Log glucose once today",
-             "metric": "glucose_readings", "target": 1, "reward": 2},
-            {"type": "medication", "goal": "Take your next medication on time",
+            {"type": "medication", "goal": "Take your medication NOW and rest",
              "metric": "meds_adherence", "target": 0.5, "reward": 2},
-            {"type": "rest", "goal": "Rest for 30 minutes this afternoon",
-             "metric": "rest_period", "target": 1, "reward": 1},
+            {"type": "rest", "goal": "Rest for 30 minutes and drink water",
+             "metric": "rest_period", "target": 1, "reward": 2},
         ]
+        # Force-select medication in CRISIS — no randomization
+        selected = challenges[0] if adherence < 0.9 else challenges[1]
+        return {
+            "challenge": selected,
+            "all_challenges": challenges,
+            "difficulty": "easy",
+            "state_based": True,
+        }
     elif state == "WARNING":
         # Maintenance
         challenges = [
@@ -3622,18 +3629,44 @@ def _get_merlion_forecast(observations: List[Dict]) -> Dict:
 
 
 def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dict:
-    """Safe fallback when Gemini is unavailable. Uses HMM data for rule-based response."""
+    """Safe fallback when Gemini is unavailable. Uses HMM data for rule-based response.
+    References actual patient data so fallback feels personalized, not generic."""
     state = hmm_context.get("current_state", "STABLE")
     risk = hmm_context.get("risk_48h", 0)
     latest = hmm_context.get("latest_obs", {})
     glucose = latest.get("glucose_avg")
+    adherence = latest.get("meds_adherence")
+    steps = latest.get("steps_daily")
+
+    # Patient name for personal touch
+    name = patient_profile.get("name", "").split()[0] if patient_profile.get("name") else ""
+    greeting = f"{name} ah, " if name else ""
+
+    # Build data-aware fragments
+    glucose_str = f"{glucose:.1f} mmol/L" if glucose else None
+    adherence_pct = f"{adherence * 100:.0f}%" if adherence is not None else None
+    steps_str = f"{int(steps):,}" if steps else None
+
+    # Streak context for personalization
+    patient_id = patient_profile.get("id", "")
+    med_streak = 0
+    try:
+        if patient_id:
+            streaks = get_patient_streaks(patient_id)
+            med_val = streaks.get("medication", {})
+            med_streak = med_val.get("current", 0) if isinstance(med_val, dict) else 0
+    except Exception:
+        pass
 
     tool_calls = []
 
     if state == "CRISIS":
+        # Urgent — reference the actual number that's alarming
+        glucose_note = f"Your glucose at {glucose_str} is concerning. " if glucose_str else "Your readings need attention. "
         message = (
-            "Your health readings need attention right now. "
-            "Please rest and drink water. A nurse will contact you soon."
+            f"{greeting}{glucose_note}"
+            "Please rest, drink water, and don't skip your medication. "
+            "A nurse will contact you soon, ok?"
         )
         tone = "urgent"
         tool_calls = [
@@ -3641,25 +3674,44 @@ def _generate_fallback_response(hmm_context: Dict, patient_profile: Dict) -> Dic
             {"tool": "send_caregiver_alert", "args": {"message": f"Patient in crisis state. Glucose: {glucose}", "severity": "critical"}},
         ]
     elif state == "WARNING":
-        message = (
-            "I notice some changes in your health lah. "
-            "Remember to take medicine and check glucose ok?"
-        )
+        # Concerned — cite specific numbers so patient knows we're watching
+        parts = [f"{greeting}"]
+        if glucose_str:
+            parts.append(f"Your glucose is {glucose_str} — a bit high.")
+        if adherence_pct and adherence is not None and adherence < 0.8:
+            parts.append(f"Medicine adherence at {adherence_pct} — try not to miss any doses today.")
+        elif adherence_pct:
+            parts.append(f"Good that medicine adherence is {adherence_pct}.")
+        if not glucose_str and not adherence_pct:
+            parts.append("Some of your readings changed recently.")
+        parts.append("Take care and check glucose before dinner, ok?")
+        message = " ".join(parts)
         tone = "concerned"
         tool_calls = [
             {"tool": "set_reminder", "args": {"reminder_time": "20:00", "message": "Time to take medicine!", "reminder_type": "medication"}},
             {"tool": "alert_nurse", "args": {"priority": "medium", "reason": f"Warning state — risk {risk:.0f}%"}},
         ]
     else:
-        message = (
-            "Your health looking stable lah. Keep it up! "
-            "Remember to stay active today."
-        )
+        # Stable — celebrate with real data, not generic fluff
+        parts = [f"{greeting}"]
+        if glucose_str:
+            parts.append(f"Glucose at {glucose_str} — looking good!")
+        if med_streak >= 3:
+            parts.append(f"{med_streak}-day medication streak, well done!")
+        elif med_streak > 0:
+            parts.append(f"Keep your {med_streak}-day medication streak going!")
+        if steps_str and steps and steps >= 4000:
+            parts.append(f"{steps_str} steps today — very active lah!")
+        elif steps_str:
+            parts.append(f"{steps_str} steps so far — try to walk a bit more today?")
+        if not glucose_str and med_streak == 0 and not steps_str:
+            parts.append("Everything looking stable. Keep up the good work!")
+        message = " ".join(parts)
         tone = "celebratory"
 
     return {
         "message_to_patient": message,
-        "internal_reasoning": f"Fallback response — API unavailable. State={state}, Risk={risk}%",
+        "internal_reasoning": f"Fallback response — API unavailable. State={state}, Risk={risk}%, Glucose={glucose}, Adherence={adherence}, Steps={steps}",
         "tone": tone,
         "tool_calls": tool_calls,
         "priority_factor": "medication_adherence" if state != "STABLE" else "maintain_routine",

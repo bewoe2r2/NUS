@@ -317,6 +317,7 @@ class VoucherResponse(BaseModel):
     can_redeem: bool
     streak_days: int = 0
     deductions_today: List[dict] = []
+    narrative: str = ""
 
 class CaregiverResponseInput(BaseModel):
     caregiver_id: str = ""
@@ -1287,13 +1288,23 @@ async def get_voucher(patient_id: str):
             except Exception as e:
                 logger.debug(f"Streak calculation failed: {e}")
 
+        # Build loss narrative for emotional weight
+        narrative = ""
+        try:
+            profile = _get_patient_profile_from_db(patient_id)
+            patient_name = profile.get('name', 'You')
+            narrative = vs.get_voucher_narrative(user_id=patient_id, patient_name=patient_name)
+        except Exception as e:
+            logger.debug(f"Voucher narrative failed: {e}")
+
         return VoucherResponse(
             current_value=voucher.get('current_value', 5.00),
             max_value=voucher.get('max_value', 5.00),
             days_until_redemption=voucher.get('days_until_redemption', 7),
             can_redeem=voucher.get('can_redeem', False),
             streak_days=streak_days,
-            deductions_today=voucher.get('deductions_today', [])
+            deductions_today=voucher.get('deductions_today', []),
+            narrative=narrative,
         )
 
     except Exception as e:
@@ -2157,21 +2168,78 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
             },
         }
 
+        # --- Seed a realistic multi-turn conversation so the chat looks alive on first view ---
+        # Each scenario gets 2-3 exchanges (assistant greeting, user reply, assistant follow-up,
+        # then the proactive scenario message as the latest). This makes the chat feel like
+        # an ongoing relationship, not a cold start.
+        CONVERSATION_SEEDS = {
+            'stable_perfect': [
+                ('assistant', "Good morning, Uncle! Did you sleep well? I see your sugar was nice and steady overnight.", 'STABLE', ''),
+                ('user', "Morning! Ya slept ok. Already take my medicine with kaya toast.", None, ''),
+                ('assistant', "Wah, very disciplined! Kaya toast with Metformin is a good combo. Your 5-day streak is looking great. Keep it up, Uncle!", 'STABLE', 'tool:check_glucose_trend,tool:streak_update'),
+            ],
+            'stable_noisy': [
+                ('assistant', "Good afternoon, Uncle! I noticed your sugar went up a bit after lunch. What did you eat?", 'STABLE', 'tool:check_glucose_trend'),
+                ('user', "Had char kway teow at the hawker centre. Very nice but maybe too much.", None, ''),
+                ('assistant', "Haha, char kway teow is hard to resist! Next time, try asking for less oil and more veg on the side. Your overall trend still ok lah.", 'STABLE', 'tool:food_suggestion,tool:analyze_variability'),
+            ],
+            'gradual_decline': [
+                ('assistant', "Uncle, I noticed your sugar readings have been going up slowly over the past 3 days. Have you been eating differently?", 'WARNING', 'tool:check_glucose_trend'),
+                ('user', "This week got family dinner every night. Hard to control.", None, ''),
+                ('assistant', "I understand, Uncle. Family time is important. Maybe try to take a short walk after each dinner \u2014 even 15 minutes can help. I'm letting your nurse know to keep an eye.", 'WARNING', 'tool:run_monte_carlo,tool:nurse_escalation'),
+            ],
+            'warning_recovery': [
+                ('assistant', "Uncle, I have good news! Your sugar numbers are coming back down. The adjustments are working.", 'STABLE', 'tool:check_glucose_trend'),
+                ('user', "Ya I tried to walk more like you said. Also eat less rice.", None, ''),
+                ('assistant', "That's exactly what helped! Your nurse noticed the improvement too. Mei Ling will be happy to hear this. You're doing great, Uncle!", 'STABLE', 'tool:run_counterfactual,tool:streak_update,tool:caregiver_notify'),
+            ],
+            'warning_to_crisis': [
+                ('assistant', "Uncle, your sugar has been quite high today. Are you feeling ok? Any dizziness or blurred vision?", 'WARNING', 'tool:check_glucose_trend,tool:run_monte_carlo'),
+                ('user', "Feel a bit blur blur. Very tired today.", None, ''),
+                ('assistant', "Thank you for telling me, Uncle. I'm taking this seriously. Please sit down and drink some water. I'm alerting your care team now.", 'WARNING', 'tool:nurse_escalation,tool:caregiver_alert'),
+            ],
+            'sudden_crisis': [
+                ('assistant', "Uncle, how are you feeling this afternoon? Your morning reading was a bit high.", 'WARNING', 'tool:check_glucose_trend'),
+                ('user', "Not so good today. Head pain and feel giddy.", None, ''),
+                ('assistant', "Uncle, I'm very concerned. Your latest reading just came in very high. Please don't move around \u2014 stay seated. I'm alerting everyone now.", 'CRISIS', 'tool:nurse_escalation,tool:caregiver_emergency_call'),
+            ],
+            'recovery': [
+                ('assistant', "Good morning, Uncle! How are you feeling today after last week's scare?", 'STABLE', 'tool:check_glucose_trend'),
+                ('user', "Much better already. Mei Ling come visit yesterday, she help me arrange my medicine.", None, ''),
+                ('assistant', "So glad to hear! Mei Ling is a wonderful daughter. Your numbers are recovering nicely \u2014 the adjusted medication is working well.", 'STABLE', 'tool:run_counterfactual,tool:caregiver_notify'),
+            ],
+        }
+
         proactive_msg = SCENARIO_MESSAGES.get(scenario)
-        if proactive_msg:
-            try:
-                conn2 = get_db()
-                msg_time = int(time.time()) - 120  # 2 minutes ago
+        try:
+            conn2 = get_db()
+            base_time = int(time.time())
+
+            # Insert the conversation seed (earlier messages)
+            seed_msgs = CONVERSATION_SEEDS.get(scenario, [])
+            for i, (role, message, hmm_state, actions) in enumerate(seed_msgs):
+                # Space messages 90 seconds apart, starting 10 minutes ago
+                msg_time = base_time - 600 + (i * 90)
+                conn2.execute("""
+                    INSERT INTO conversation_history
+                    (patient_id, timestamp_utc, role, message, hmm_state, actions_taken)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (patient_id, msg_time, role, message, hmm_state or '', actions))
+
+            # Insert the proactive scenario message as the latest
+            if proactive_msg:
+                msg_time = base_time - 120  # 2 minutes ago
                 conn2.execute("""
                     INSERT INTO conversation_history
                     (patient_id, timestamp_utc, role, message, hmm_state, actions_taken)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, (patient_id, msg_time, 'assistant', proactive_msg['message'],
                       proactive_msg['hmm_state'], proactive_msg['actions']))
-                conn2.commit()
-                conn2.close()
-            except Exception as e:
-                logger.warning(f"Failed to insert proactive message: {e}")
+
+            conn2.commit()
+            conn2.close()
+        except Exception as e:
+            logger.warning(f"Failed to insert conversation seed: {e}")
 
         # --- Hardcoded agent memory, actions, and alerts for AI Intelligence tab ---
         try:

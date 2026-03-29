@@ -197,14 +197,15 @@ export const api = {
         days_until_redemption: number;
         can_redeem: boolean;
         streak_days: number;
+        narrative: string;
     }> => {
         try {
             const res = await authFetch(`${API_BASE}/voucher/${id}`);
             // Return default structure on failure to avoid UI crash
-            if (!res.ok) return { current_value: 5.00, max_value: 5.00, days_until_redemption: 7, can_redeem: false, streak_days: 0 };
+            if (!res.ok) return { current_value: 5.00, max_value: 5.00, days_until_redemption: 7, can_redeem: false, streak_days: 0, narrative: "" };
             return res.json();
         } catch {
-            return { current_value: 5.00, max_value: 5.00, days_until_redemption: 7, can_redeem: false, streak_days: 0 };
+            return { current_value: 5.00, max_value: 5.00, days_until_redemption: 7, can_redeem: false, streak_days: 0, narrative: "" };
         }
     },
 
