@@ -193,7 +193,7 @@ export default function JudgePage() {
 
     return (
         <div className="flex h-screen overflow-hidden bg-zinc-50 font-sans">
-            <AdminSidebar onScenarioInjected={handleRefresh} onCollapsedChange={setSidebarCollapsed} />
+            <AdminSidebar onScenarioInjected={handleRefresh} onCollapsedChange={setSidebarCollapsed} onTabChange={(t) => handleTabChange(t as typeof activeTab)} />
 
             <div className={`flex-1 ${sidebarCollapsed ? 'ml-14' : 'ml-80'} transition-all duration-300 h-full overflow-hidden flex flex-col`}>
                 {/* TOP BAR */}
@@ -989,7 +989,7 @@ function ToolDemoTab() {
                     addLog({ type: 'info', text: `  ${line.trim()}` });
                 }
             } else {
-                addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'SBAR: S: WARNING state | B: 67M, T2DM+HTN+HLD, on Metformin+Lisinopril+Atorvastatin+Aspirin | A: Glucose trending up, adherence 60%, rising Merlion velocity | R: Review medication dosage, schedule f/u' });
+                addLog({ type: 'result', tool: 'generate_clinician_summary', text: 'No clinical summary available — inject a scenario first' });
             }
         } catch {
             addLog({ type: 'error', tool: 'generate_clinician_summary', text: 'SBAR generation failed — check backend logs' });
@@ -1009,12 +1009,7 @@ function ToolDemoTab() {
                     addLog({ type: 'info', text: `  ${icon} ${p.patient_id}: ${cat} | State: ${p.state || p.current_state} | Urgency: ${((p.urgency_score || 0) * 100).toFixed(0)}%` });
                 }
             } else {
-                addLog({ type: 'result', tool: 'alert_nurse', text: 'Triage: 5 patients scanned' });
-                addLog({ type: 'info', text: '  !!! P001: IMMEDIATE | CRISIS | Urgency: 92%' });
-                addLog({ type: 'info', text: '  !!  P003: SOON | WARNING | Urgency: 61%' });
-                addLog({ type: 'info', text: '  !   P002: MONITOR | WARNING | Urgency: 35%' });
-                addLog({ type: 'info', text: '      P004: STABLE | STABLE | Urgency: 12%' });
-                addLog({ type: 'info', text: '      P005: STABLE | STABLE | Urgency: 8%' });
+                addLog({ type: 'result', tool: 'alert_nurse', text: 'Triage: No patients with data — inject a scenario first' });
             }
         } catch {
             addLog({ type: 'error', text: 'Backend not running' });
@@ -1447,7 +1442,7 @@ function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
                     {burdenScore != null ? (
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
-                                <div className="text-4xl font-bold text-zinc-900">{burdenScore}</div>
+                                <div className="text-4xl font-bold text-zinc-900">{typeof burdenScore === 'number' ? Math.round(burdenScore) : burdenScore}</div>
                                 <div className="text-sm text-zinc-500">/ 100</div>
                                 <div className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
                                     burdenScore > 70 ? 'bg-rose-100 text-rose-700' :

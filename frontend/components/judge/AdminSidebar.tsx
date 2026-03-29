@@ -16,6 +16,7 @@ import {
 interface AdminSidebarProps {
     onScenarioInjected: () => void;
     onCollapsedChange?: (collapsed: boolean) => void;
+    onTabChange?: (tab: string) => void;
 }
 
 type LogType = 'info' | 'success' | 'error' | 'system';
@@ -27,7 +28,7 @@ interface LogEntry {
     type: LogType;
 }
 
-export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSidebarProps) {
+export function AdminSidebar({ onScenarioInjected, onCollapsedChange, onTabChange }: AdminSidebarProps) {
     const [loading, setLoading] = useState(false);
     const [selectedScenario, setSelectedScenario] = useState('stable_perfect');
     const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -60,6 +61,7 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
     ];
 
     const handleReset = async () => {
+        if (!confirm("Reset all demo data? This will clear all patient observations, HMM states, and agent memory.")) return;
         try {
             setLoading(true);
             addLog("Initiating system reset...", 'system');
@@ -94,6 +96,7 @@ export function AdminSidebar({ onScenarioInjected, onCollapsedChange }: AdminSid
 
             addLog("Full simulation pipeline complete", 'success');
             onScenarioInjected();
+            onTabChange?.('overview');
         } catch (e) {
             console.error(e);
             addLog("Simulation sequence failed.", 'error');
