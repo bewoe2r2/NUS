@@ -1630,8 +1630,8 @@ async def get_all_patients():
         if not patients:
             patients = [
                 {"id": "P001", "name": "Mr. Tan Ah Kow", "age": 67},
-                {"id": "P002", "name": "Mrs. Lim Mei Ling", "age": 72},
-                {"id": "P003", "name": "Mr. Wong Keng Huat", "age": 58},
+                {"id": "P002", "name": "Mdm. Lim Siew Eng", "age": 72},
+                {"id": "P003", "name": "Mr. Ahmad bin Ismail", "age": 58},
             ]
 
         patient_ids = [p['id'] for p in patients]
@@ -2032,10 +2032,11 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
                     logger.debug(f"Could not clear {table} for {patient_id}: {e}")
 
         # Ensure patient profile exists
+        _PATIENT_NAMES = {"P001": "Mr. Tan Ah Kow (67M)", "P002": "Mdm. Lim Siew Eng (72F)", "P003": "Mr. Ahmad bin Ismail (58M)"}
         conn.execute("""
             INSERT OR REPLACE INTO patients (user_id, name, conditions, medications)
             VALUES (?, ?, ?, ?)
-        """, (patient_id, 'Mr. Tan Ah Kow (67M)', 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
+        """, (patient_id, _PATIENT_NAMES.get(patient_id, f"Patient {patient_id}"), 'Type 2 Diabetes, Hypertension, Hyperlipidemia',
               'Metformin 500mg BD, Amlodipine 5mg OD, Atorvastatin 20mg ON, Aspirin 100mg OD'))
 
         # Populate prescribed medications table for patient view
@@ -2211,10 +2212,11 @@ async def inject_scenario(scenario: str = "stable_perfect", days: int = 14, tier
                     pass
 
             # Nurse alerts — columns: user_id, timestamp_utc, priority, reason, status
+            _pname = _PATIENT_NAMES.get(patient_id, patient_id)
             _alert_map = {
-                'CRISIS': ('critical', 'URGENT: Patient P001 (Mr. Tan) — HMM CRISIS. Glucose 18.2 mmol/L. Non-adherent 3 days. Caregiver emergency call sent. Requires immediate clinical review.'),
-                'WARNING': ('high', 'ATTENTION: Patient P001 (Mr. Tan) — HMM WARNING. Glucose trending up (11.8 mmol/L). Adherence declining. Caregiver notified via SMS. Monitor closely.'),
-                'STABLE': ('low', 'INFO: Patient P001 (Mr. Tan) — HMM STABLE. All biomarkers in range. Adherence 90%. No action required.'),
+                'CRISIS': ('critical', f'URGENT: Patient {patient_id} ({_pname}) — HMM CRISIS. Glucose 18.2 mmol/L. Non-adherent 3 days. Caregiver emergency call sent. Requires immediate clinical review.'),
+                'WARNING': ('high', f'ATTENTION: Patient {patient_id} ({_pname}) — HMM WARNING. Glucose trending up (11.8 mmol/L). Adherence declining. Caregiver notified via SMS. Monitor closely.'),
+                'STABLE': ('low', f'INFO: Patient {patient_id} ({_pname}) — HMM STABLE. All biomarkers in range. Adherence 90%. No action required.'),
             }
             _pri, _msg = _alert_map.get(hmm_state, _alert_map['STABLE'])
             nurse_alerts = [(patient_id, now_ts - 250, _pri, _msg, 'pending')]
@@ -2783,7 +2785,7 @@ async def caregiver_dashboard(patient_id: str):
     now_ts = int(time.time())
     return {
         "success": True, "patient_id": patient_id,
-        "patient_name": "Mr. Tan Ah Kow",
+        "patient_name": {"P001": "Mr. Tan Ah Kow", "P002": "Mdm. Lim Siew Eng", "P003": "Mr. Ahmad bin Ismail"}.get(patient_id, f"Patient {patient_id}"),
         "burden": {"burden_score": 42, "level": "moderate", "trend": "stable"},
         "recent_alerts": [
             {"id": 9001, "severity": "warning", "message": "Your father's glucose has been trending up. We are monitoring.", "channel": "sms", "status": "delivered", "timestamp_utc": now_ts - 3600},

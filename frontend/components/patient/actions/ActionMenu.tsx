@@ -92,7 +92,7 @@ export function ActionMenu({ onLogGlucose, onLogFood, onVoiceCheckIn }: ActionMe
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setIsOpen(false)}
-                        className="absolute inset-0 bg-white/60 backdrop-blur-sm z-30 pointer-events-auto"
+                        className="fixed inset-0 bg-white/60 backdrop-blur-sm z-30 pointer-events-auto"
                     />
                 )}
             </AnimatePresence>

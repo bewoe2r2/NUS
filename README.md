@@ -11,11 +11,10 @@ Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic pat
 | File | Description |
 |------|-------------|
 | `EXECUTIVE_SUMMARY.md` | One-page A4 executive summary (also available as `EXECUTIVE_SUMMARY.html` — open in browser and print to PDF for formatted A4 output) |
-| `Bewo_Slides_Demo.pptx` | Presentation slides (15 slides, PowerPoint format) |
 | `slides/nusslides.html` | Interactive presentation slides (open in browser, navigate with arrow keys) |
 | `Bewo_Demo_Video.mp4` | 6-minute product demonstration video |
 | `README.md` | This file — setup instructions, architecture, API documentation |
-| `backend/` | FastAPI backend (67 endpoints) |
+| `backend/` | FastAPI backend (68 endpoints) |
 | `core/` | HMM engine, agent runtime, Gemini/SEA-LION/MERaLiON integrations |
 | `frontend/` | Next.js frontend (patient, nurse, caregiver, judge views) |
 | `tests/` | 230 unit tests |
@@ -106,7 +105,7 @@ The agent autonomously decides which tools to use based on patient context:
 ```
 Healthcare/
 ├── backend/
-│   └── api.py                  # FastAPI server (67 API routes)
+│   └── api.py                  # FastAPI server (68 API routes)
 ├── core/
 │   ├── hmm_engine.py           # HMM + Viterbi + Baum-Welch
 │   ├── agent_runtime.py        # Agentic orchestration, 18 tools
@@ -203,7 +202,7 @@ Select a scenario (e.g. "Warning → Crisis") from the left sidebar and click "R
 
 ---
 
-## API Overview (67 Routes)
+## API Overview (68 Routes)
 
 ### Patient
 | Method | Endpoint | Description |
