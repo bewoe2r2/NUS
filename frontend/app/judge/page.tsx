@@ -1294,7 +1294,7 @@ function ToolDemoTab() {
 // CAREGIVER TAB
 // ============================================================================
 function CaregiverTab({ dashboard, burden }: { dashboard: any; burden: any }) {
-    const alerts = dashboard?.alerts || dashboard?.active_alerts || [];
+    const alerts = dashboard?.recent_alerts || dashboard?.alerts || dashboard?.active_alerts || [];
     const rawBurdenScore = burden?.burden_score ?? burden?.score ?? null;
     const burdenScore: number | null = typeof rawBurdenScore === 'number' ? rawBurdenScore : null;
     const burdenLevel = burdenScore != null

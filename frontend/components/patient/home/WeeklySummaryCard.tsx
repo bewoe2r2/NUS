@@ -28,7 +28,10 @@ export function WeeklySummaryCard() {
         async function fetchReport() {
             try {
                 const res = await api.getWeeklyReport("P001");
-                if (res && typeof res === "object" && (res.adherence_pct != null || res.grade != null || res.days_in_target != null)) {
+                if (res && typeof res === "object" && (res.adherence_pct != null || res.grade != null || res.overall_grade != null || res.days_in_target != null || res.overall_score != null)) {
+                    // Normalize backend field names to frontend expected names
+                    if (res.overall_grade && !res.grade) res.grade = res.overall_grade;
+                    if (res.overall_score != null && res.adherence_pct == null) res.adherence_pct = res.overall_score;
                     setData(res);
                 }
                 // If API returns null/empty, keep fallback — never show skeleton

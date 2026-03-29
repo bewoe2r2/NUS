@@ -441,7 +441,7 @@ async def get_patient_state(patient_id: str):
         conn = get_db()
         try:
             cached = conn.execute(
-                "SELECT detected_state, confidence_score, contributing_factors FROM hmm_states WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1",
+                "SELECT detected_state, confidence_score, contributing_factors FROM hmm_states WHERE user_id = ? ORDER BY timestamp_utc DESC LIMIT 1",
                 (patient_id,)
             ).fetchone()
         except Exception as e:
@@ -1416,6 +1416,20 @@ async def voice_checkin(data: VoiceCheckInRequest):
 
             sentiment = (pos_count - neg_count) / max(1, pos_count + neg_count)
 
+            # Store to DB even without Gemini
+            try:
+                conn2 = get_db()
+                try:
+                    conn2.execute("""
+                        INSERT INTO voice_checkins (timestamp_utc, transcript_text, sentiment_score, user_id)
+                        VALUES (?, ?, ?, ?)
+                    """, (int(time.time()), sanitized_transcript, sentiment, data.patient_id))
+                    conn2.commit()
+                finally:
+                    conn2.close()
+            except Exception:
+                pass
+
             return VoiceCheckInResponse(
                 sentiment_score=sentiment,
                 urgency='high' if neg_count > 2 else 'low',
@@ -1882,9 +1896,9 @@ async def get_streaks(patient_id: str):
     # Return zeros instead of fake data when no real data exists
     return {
         "medication": {"current": 0, "best": 0, "trend": "stable"},
-        "glucose": {"current": 0, "best": 0, "trend": "stable"},
+        "glucose_logging": {"current": 0, "best": 0, "trend": "stable"},
         "exercise": {"current": 0, "best": 0, "trend": "stable"},
-        "app_usage": {"current": 0, "best": 0, "trend": "stable"},
+        "app_login": {"current": 0, "best": 0, "trend": "stable"},
     }
 
 
@@ -2321,9 +2335,9 @@ async def inject_phase(
             SAFE_TABLES = {'glucose_readings', 'passive_metrics', 'medication_logs'}
             for table in SAFE_TABLES:
                 try:
-                    conn.execute(f"DELETE FROM {table}")  # nosec: hardcoded allowlist
+                    conn.execute(f"DELETE FROM {table} WHERE user_id = ?", (patient_id,))  # nosec: hardcoded allowlist
                 except Exception as e:
-                    logger.debug(f"Could not clear {table}: {e}")
+                    logger.debug(f"Could not clear {table} for {patient_id}: {e}")
 
         for i, obs in enumerate(phase_observations):
             bucket_index = start_bucket + i
@@ -3435,10 +3449,11 @@ def _seed_demo_scenario():
         finally:
             conn.close()
 
-        inject_data.DB_PATH = original_db
         logger.info("Demo scenarios injected for P001, P002, P003.")
     except Exception as e:
         logger.warning(f"Demo scenario injection failed: {e}")
+    finally:
+        inject_data.DB_PATH = original_db
 
 if __name__ == "__main__":
     import uvicorn

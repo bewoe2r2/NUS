@@ -498,7 +498,7 @@ def _exec_alert_family(args, patient_id, conn, now):
 
 def _exec_award_voucher(args, patient_id, conn, now):
     try:
-        amount = min(float(args.get("amount", 1)), 5.0)
+        amount = max(0, min(float(args.get("amount", 1)), 5.0))
     except (ValueError, TypeError):
         amount = 1.0
     cursor = conn.execute("""
@@ -636,7 +636,7 @@ def _exec_celebrate_streak(args, patient_id, conn, now):
     streak_type = args.get("streak_type", "medication")
     streak_days = args.get("streak_days", 3)
     try:
-        bonus = min(float(args.get("bonus_amount", 2)), 5.0)
+        bonus = max(0, min(float(args.get("bonus_amount", 2)), 5.0))
     except (ValueError, TypeError):
         bonus = 2.0
 

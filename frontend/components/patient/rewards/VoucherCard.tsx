@@ -134,13 +134,13 @@ export function VoucherCard() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowQR(false)}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[999]"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm z-[999]"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-xl z-[1000]"
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-3xl p-6 shadow-xl z-[1000]"
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <div>

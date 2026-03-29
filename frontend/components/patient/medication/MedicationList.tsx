@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MedicationItem } from "./MedicationItem";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeInUp } from "@/lib/animation-utils";
@@ -46,14 +46,18 @@ export function MedicationList() {
         }
     };
 
+    const togglingRef = useRef(false);
+
     useEffect(() => {
         fetchMeds();
-        // Poll every 10s to keep in sync with backend
-        const interval = setInterval(fetchMeds, 10000);
+        const interval = setInterval(() => {
+            if (!togglingRef.current) fetchMeds();
+        }, 10000);
         return () => clearInterval(interval);
     }, []);
 
     const handleToggle = async (id: number) => {
+        togglingRef.current = true;
         let targetName = "";
         let newTaken = false;
         setMeds(prev => {
@@ -75,7 +79,11 @@ export function MedicationList() {
                 console.error(err);
                 // Revert on unexpected error
                 setMeds(prev => prev.map(m => m.name === targetName ? { ...m, taken: !newTaken } : m));
+            } finally {
+                togglingRef.current = false;
             }
+        } else {
+            togglingRef.current = false;
         }
     };
 

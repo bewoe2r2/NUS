@@ -1166,7 +1166,7 @@ You are Bewo, an AI Health Companion delivering a MORNING BRIEFING to an elderly
 ═══════════════════════════════════════════════════════════════════════════════
 PATIENT PROFILE
 ═══════════════════════════════════════════════════════════════════════════════
-Name: {patient_profile.get('name', 'Mr. Tan')}
+Patient: {patient_profile.get('id', 'P001')} (de-identified)
 Age: {patient_profile.get('age', 67)}
 Conditions: {patient_profile.get('conditions', 'Type 2 Diabetes')}
 
@@ -1647,7 +1647,7 @@ State: CRISIS, Risk: 78%, Glucose: 18.5 mmol/L
 ═══════════════════════════════════════════════════════════════════════════════
 PATIENT PROFILE
 ═══════════════════════════════════════════════════════════════════════════════
-Name: {patient_profile.get('name', 'Patient')}
+Patient: {patient_profile.get('id', 'P001')} (de-identified)
 Age: {patient_profile.get('age', 'Unknown')}
 Conditions: {patient_profile.get('conditions', 'Type 2 Diabetes')}
 Medications: {patient_profile.get('medications', 'Metformin')}
@@ -2300,7 +2300,7 @@ Return your response as valid JSON following the format in the system prompt.
                 latest_obs = {}
             
             # Build contextual prompt
-            prompt = f"""You are Bewo, a compassionate AI health companion for {patient_profile.get('name', 'the patient')}.
+            prompt = f"""You are Bewo, a compassionate AI health companion for an elderly Singaporean patient.
 
 PATIENT CONTEXT:
 - Age: {patient_profile.get('age', 67)}
