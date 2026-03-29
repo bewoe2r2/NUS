@@ -47,13 +47,12 @@
 
 ---
 
-### 2019 — NUS-EMC Innovation Challenge
-- **Partner:** EMC (now Dell EMC)
-- **Theme:** Data Analytics / Business Analytics
-- **Details:** Part of the long-running EMC partnership with NUS BAC. Limited public winner information found.
-- **Notable:** An MSBA alumni team won the NUS-EMC Analytics Innovation Challenge (exact year of this win unclear — may be 2019 or earlier).
+### 2019 — NUS-Johnson & Johnson Analytics Innovation Challenge
+- **Partner:** Johnson & Johnson
+- **Theme:** Healthcare Analytics (likely)
+- **Details:** NUS MSBA students won first prize. Referenced in the NUS MSBA brochure. Specific team names not publicly available.
 - **Sources:**
-  - [NUS BizBeat](https://bizbeat.nus.edu.sg/get-inspired/article/msba-alumni-team-wins-nus-emc-analytics-innovation-challenge/)
+  - Referenced in [NUS MSBA brochure 2020](https://msba.nus.edu.sg/wp-content/uploads/2020/09/BA_2020-Brochure-Ecopy.pdf)
 
 ---
 
@@ -126,12 +125,14 @@
 ---
 
 ### 2025 — NUS–Guru Network AI Innovation Challenge
-- **Partner:** Guru Network
-- **Theme:** GenAI Solutions for Business Innovation
-- **Prizes:** S$70,000 total prize pool.
+- **Partner:** Guru Network (Web3/AI company)
+- **Theme:** GenAI Solutions for Business Innovation (open-ended — projects spanned travel, healthcare/productivity, and database technology)
+- **Prizes:** S$70,000–75,000 total prize pool. Over 6,500 public votes cast. Top 8 teams made finals.
 - **Winners:**
-  - **2 Champion teams** were crowned at the finals.
-  - Notable: Team "The Algorithmically Challenged" (including Darrell Goh) claimed a podium finish.
+  - **Champion (tied): Team AskNgo** (NUS MSBA, NUS SoC & NTU) — built an **AI-powered travel companion** 🏆
+  - **Champion (tied): Team Jiaye** (NUS MSBA) 🏆
+  - **2nd Runner-Up: TheAlgorithmicallyChallenged** (NUS MSBA & NUS SoC, including Darrell Goh)
+- **Notable projects from finalists:** AI-powered travel companions, ADHD productivity tools, and advanced database querying solutions.
 - **Sources:**
   - [NUS Computing](https://www.comp.nus.edu.sg/bytes/2-champion-teams-crowned-at-the-guru-network-ai-innovation-challenge-2025-finals/)
   - [NUS MSBA News](https://msba.nus.edu.sg/news/nus-guru-network-ai-innovation-challenge-2025/)
@@ -161,13 +162,13 @@
 | 2016 | ANZ Bank | Financial Services | — | MSBA students (details in press release) |
 | 2017 | CFLD | Real Estate / Land Prices | — | 1st: Team Outliers, 2nd: Team EzInvest, 3rd: Team Fantastic Four |
 | 2018 | CFLD | Real Estate / Property | — | Limited info available |
-| 2019 | EMC (Dell EMC) | Business Analytics | — | MSBA alumni team won |
-| 2020 | EMC (Dell EMC) | Business Analytics (Online/COVID) | — | Limited info available |
+| 2019 | Johnson & Johnson | Healthcare Analytics | — | MSBA students won 1st prize |
+| 2020 | EMC (Dell EMC) | Business Analytics (Online/COVID) | — | MSBA alumni team won |
 | 2021 | PSA unboXed | Port/Logistics/Supply Chain | — | Limited info available |
 | 2022 | Cargill | Agriculture/Commodities | S$5,000 | 1st: Team Multiverse (computer vision for grain quality) |
 | 2023 | Huawei | Finance/Stock Trading | S$10K/5K/3K | MSBA clean sweep of top spots |
 | 2024 | NCS Group | Smart City/Urban Mobility (LLMs) | S$5,000 | "A Symphony of Talent" — details on MSBA site |
-| 2025 | Guru Network | GenAI for Business | S$70,000 pool | 2 Champion teams crowned |
+| 2025 | Guru Network | GenAI for Business (incl. Travel) | S$70K–75K pool | Champions: Team AskNgo (AI travel companion) & Team Jiaye; Runner-up: TheAlgorithmicallyChallenged |
 | 2026 | Synapxe + IMDA | Healthcare/Chronic Disease (AI) | S$5,000+ | Ongoing |
 
 ---
