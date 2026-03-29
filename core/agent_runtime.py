@@ -2724,6 +2724,7 @@ def run_agent(
             if translated:
                 result["_original_message"] = msg
                 result["message_to_patient"] = translated
+            result["_sealion_backend"] = sealion.get_backend_info().get("backend", "unknown")
         except Exception as e:
             logger.warning(f"SEA-LION translation failed (non-critical): {e}")
 
@@ -3044,6 +3045,25 @@ def _generate_weekly_report_inner(patient_id: str, patient_profile: Dict, conn) 
     except Exception:
         report["glucose"] = {"average": None, "note": "No glucose data this week"}
 
+    # Glucose trend (first half vs second half of week)
+    try:
+        mid_week = week_ago + (3.5 * 86400)
+        first_half = conn.execute("""
+            SELECT AVG(reading_value) as avg FROM glucose_readings
+            WHERE user_id = ? AND reading_timestamp_utc >= ? AND reading_timestamp_utc < ?
+        """, (patient_id, week_ago, mid_week)).fetchone()
+        second_half = conn.execute("""
+            SELECT AVG(reading_value) as avg FROM glucose_readings
+            WHERE user_id = ? AND reading_timestamp_utc >= ? AND reading_timestamp_utc <= ?
+        """, (patient_id, mid_week, now)).fetchone()
+        if first_half and first_half["avg"] is not None and second_half and second_half["avg"] is not None:
+            diff = second_half["avg"] - first_half["avg"]
+            report["glucose_trend"] = "rising" if diff > 0.5 else "falling" if diff < -0.5 else "stable"
+        else:
+            report["glucose_trend"] = "stable"
+    except Exception:
+        report["glucose_trend"] = "stable"
+
     # Activity summary
     try:
         row = conn.execute("""
@@ -3315,15 +3335,35 @@ def generate_daily_challenge(patient_id: str, hmm_context: Dict) -> Dict:
     adherence = latest.get("meds_adherence") or 0.7
     streaks = get_patient_streaks(patient_id)
 
+    # Fetch primary medication name for personalized challenge text
+    med_name = "medication"
+    try:
+        conn = _get_db()
+        try:
+            row = conn.execute("SELECT medications FROM patients WHERE user_id = ?", (patient_id,)).fetchone()
+        finally:
+            conn.close()
+        if row and row["medications"]:
+            meds_raw = row["medications"]
+            try:
+                meds_list = json.loads(meds_raw) if isinstance(meds_raw, str) else meds_raw
+            except (json.JSONDecodeError, TypeError):
+                meds_list = [m.strip() for m in meds_raw.split(",") if m.strip()]
+            if isinstance(meds_list, list) and meds_list:
+                med_name = meds_list[0].split(" ")[0]  # e.g. "Metformin" from "Metformin 1000mg BD"
+    except Exception:
+        pass  # fall back to generic "medication"
+
+    glucose_str = f"{glucose:.1f} mmol/L"
     challenges = []
 
     if state == "CRISIS":
         # CRISIS: medication and rest ONLY. Never ask patient to "log" during a crisis.
         # Selection is deterministic — always medication first, rest second.
         challenges = [
-            {"type": "medication", "goal": "Take your medication NOW and rest",
+            {"type": "medication", "goal": f"Take your {med_name} NOW and rest (glucose at {glucose_str})",
              "metric": "meds_adherence", "target": 0.5, "reward": 2},
-            {"type": "rest", "goal": "Rest for 30 minutes and drink water",
+            {"type": "rest", "goal": f"Rest for 30 minutes and drink water (glucose at {glucose_str})",
              "metric": "rest_period", "target": 1, "reward": 2},
         ]
         # Force-select medication in CRISIS — no randomization
@@ -3337,11 +3377,11 @@ def generate_daily_challenge(patient_id: str, hmm_context: Dict) -> Dict:
     elif state == "WARNING":
         # Maintenance
         challenges = [
-            {"type": "glucose", "goal": "Log glucose 2 times today",
+            {"type": "glucose", "goal": f"Log glucose 2 times today (last reading: {glucose_str})",
              "metric": "glucose_readings", "target": 2, "reward": 1.5},
             {"type": "activity", "goal": f"Walk {max(2000, int(steps * 0.8))} steps today",
              "metric": "steps", "target": max(2000, int(steps * 0.8)), "reward": 1.5},
-            {"type": "medication", "goal": "Take all medications today",
+            {"type": "medication", "goal": f"Take all {med_name} doses today",
              "metric": "meds_adherence", "target": 0.9, "reward": 2},
             {"type": "hydration", "goal": "Drink 6 glasses of water today",
              "metric": "hydration", "target": 6, "reward": 1},
@@ -3352,13 +3392,13 @@ def generate_daily_challenge(patient_id: str, hmm_context: Dict) -> Dict:
         challenges = [
             {"type": "activity", "goal": f"Walk {step_goal} steps today",
              "metric": "steps", "target": step_goal, "reward": 2},
-            {"type": "glucose", "goal": "Log glucose 3 times today",
+            {"type": "glucose", "goal": f"Log glucose 3 times today (last reading: {glucose_str})",
              "metric": "glucose_readings", "target": 3, "reward": 1},
             {"type": "social", "goal": "Call a friend or family member today",
              "metric": "social_call", "target": 1, "reward": 1.5},
             {"type": "nutrition", "goal": "Eat a low-GI meal for lunch",
              "metric": "low_gi_meal", "target": 1, "reward": 1},
-            {"type": "streak", "goal": "Keep your medication streak going!",
+            {"type": "streak", "goal": f"Keep your {med_name} streak going!",
              "metric": "streak_maintain", "target": 1, "reward": 1},
         ]
 
@@ -4217,7 +4257,7 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
     try:
         now = int(time.time())
 
-        # 1. Glucose rising (Merlion velocity)
+        # 1. Glucose rising (Merlion velocity, with naive slope fallback)
         try:
             try:
                 from hmm_engine import HMMEngine
@@ -4227,8 +4267,13 @@ def _check_proactive_triggers(patient_id: str) -> List[Dict]:
             obs = engine.fetch_observations(days=3, patient_id=patient_id)
             if obs:
                 merlion = _get_merlion_forecast(obs)
-                if merlion.get("velocity", 0) > 0.3 and merlion.get("acceleration", 0) > 0:
+                if merlion.get("engine") != "failed" and merlion.get("velocity", 0) > 0.3 and merlion.get("acceleration", 0) > 0:
                     triggers.append({"type": "glucose_rising", "reason": f"Glucose rising: velocity={merlion['velocity']:.2f}, acceleration={merlion['acceleration']:.2f}"})
+                elif merlion.get("engine") == "failed" or merlion.get("risk_level") == "unknown":
+                    # Fallback: naive slope from last 3 glucose readings when Merlion is unavailable
+                    recent_glucose = [o.get("glucose_avg") for o in obs[-3:] if o.get("glucose_avg") is not None]
+                    if len(recent_glucose) >= 3 and (recent_glucose[-1] - recent_glucose[0]) / len(recent_glucose) > 0.3:
+                        triggers.append({"type": "glucose_rising", "reason": f"Glucose rising (offline slope): {recent_glucose[0]:.1f} → {recent_glucose[-1]:.1f}"})
         except Exception as e:
             logger.error(f"Proactive trigger 'glucose_rising' failed for {patient_id}: {e}")
 

@@ -285,6 +285,7 @@ class ChatResponse(BaseModel):
     actions: Optional[List[dict]] = None
     priority_factor: Optional[str] = None
     hmm_state: Optional[str] = None
+    sealion_backend: Optional[str] = None
 
 class FoodInput(BaseModel):
     description: str
@@ -957,6 +958,7 @@ async def chat_with_ai(request: ChatRequest):
             actions=actions,
             priority_factor=result.get("priority_factor"),
             hmm_state=metadata.get("hmm_state"),
+            sealion_backend=result.get("_sealion_backend"),
         )
 
     except HTTPException:
@@ -983,6 +985,7 @@ async def chat_with_ai(request: ChatRequest):
             actions=[],
             priority_factor="maintain_routine",
             hmm_state="STABLE",
+            sealion_backend="fallback",
         )
 
 # =============================================================================

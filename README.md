@@ -46,6 +46,8 @@ Bewo bridges the gap between clinic visits for Singapore's 440,000+ diabetic pat
                     Patient / Nurse / Caregiver
 ```
 
+Safety narrows at entry (L1) and exit (L4), with maximum reasoning breadth at L2-L3, forming a diamond-shaped trust profile.
+
 **How it works — 5 layers, safety bookends the pipeline:**
 1. **Safety Foundation** (L1) applies deterministic rules first: ADA 2024 guidelines, drug interaction checks (16 pairs), PII de-identification. Hard constraints before any inference.
 2. **Statistical Engine** (L2) classifies patient state (STABLE / WARNING / CRISIS) using HMM Viterbi decoding across 9 features. Baum-Welch personalizes parameters. Monte Carlo (2,000 paths, 48h) predicts crisis probability. Merlion ARIMA forecasts trends.
@@ -279,6 +281,8 @@ Select a scenario (e.g. "Warning → Crisis") from the left sidebar and click "R
 ## Testing & Validation
 
 **230/230 tests passed, 76/76 validation gates passed. Zero safety-critical misclassifications.**
+
+To verify independently: `PYTHONPATH=. python validation/hmm_validation_suite/code/01_easy_independent_validation.py`
 
 ```bash
 # Core unit tests (metrics, proactive triggers, counterfactuals, baselines)
