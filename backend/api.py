@@ -1908,6 +1908,10 @@ async def get_engagement(patient_id: str):
     try:
         score = calculate_engagement_score(patient_id)
         if score:
+            # Normalise: calculate_engagement_score returns "total_score" but
+            # frontend reads "score".  Emit both so nothing breaks.
+            if "total_score" in score and "score" not in score:
+                score["score"] = score["total_score"]
             return score
     except Exception as e:
         logger.warning(f"Engagement score computation failed: {e}")
