@@ -3754,6 +3754,31 @@ DRUG_INTERACTIONS = {
         "recommendation": "Do NOT combine. Use one or the other.",
         "evidence": "ONTARGET trial"
     },
+    ("metformin", "trimethoprim"): {
+        "severity": "MAJOR", "mechanism": "Trimethoprim inhibits renal tubular secretion of metformin — lactic acidosis risk",
+        "recommendation": "Monitor lactate levels. Consider dose reduction during antibiotic course.",
+        "evidence": "Multiple case reports (CMAJ 2012)"
+    },
+    ("sulfonylureas", "fluconazole"): {
+        "severity": "MAJOR", "mechanism": "CYP2C9 inhibition increases sulfonylurea levels — severe hypoglycemia",
+        "recommendation": "Reduce sulfonylurea dose by 50%. Monitor glucose closely during antifungal treatment.",
+        "evidence": "Well-established"
+    },
+    ("statins", "macrolides"): {
+        "severity": "MAJOR", "mechanism": "Erythromycin/clarithromycin inhibit CYP3A4 — rhabdomyolysis risk",
+        "recommendation": "Pause statin during macrolide course, or use azithromycin (minimal CYP3A4 interaction).",
+        "evidence": "FDA Safety Communication"
+    },
+    ("insulin", "ace inhibitors"): {
+        "severity": "MODERATE", "mechanism": "ACE inhibitors enhance insulin sensitivity — increased hypoglycemia risk",
+        "recommendation": "Monitor glucose more frequently when initiating ACE inhibitor. May need insulin dose reduction.",
+        "evidence": "Meta-analysis (Diabetes Care 2004)"
+    },
+    ("metformin", "iodinated contrast"): {
+        "severity": "MAJOR", "mechanism": "Contrast-induced nephropathy impairs metformin clearance — lactic acidosis",
+        "recommendation": "Hold metformin 48h before procedure. Resume only after eGFR confirmed stable.",
+        "evidence": "ACR Manual on Contrast Media (2024)"
+    },
 }
 
 DRUG_CLASS_MAP = {
@@ -3882,18 +3907,60 @@ def _exec_check_drug_interactions(args, patient_id, patient_profile, conn, now):
 
 SAFETY_FALLBACK_MESSAGE = "I want to help you, but let me check with your doctor first before giving advice on this. Please consult your healthcare provider for guidance."
 
+def _deterministic_safety_precheck(message: str, hmm_context: Dict) -> list:
+    """
+    Fast, deterministic safety rules that run BEFORE the LLM classifier.
+    These catch obvious violations without any API call — works offline.
+    """
+    import re
+    flags = []
+    msg_lower = message.lower()
+    state = hmm_context.get("current_state", "STABLE")
+
+    # Rule 1: MEDICAL_CLAIM — dosage numbers without doctor recommendation
+    dosage_pattern = re.search(r'\b\d+\s*(mg|mcg|ml|units?|tablets?)\b', msg_lower)
+    if dosage_pattern and not any(w in msg_lower for w in ['doctor', 'clinician', 'physician', 'prescribed', 'consult']):
+        flags.append("MEDICAL_CLAIM: Response contains specific dosage without clinician attribution")
+
+    # Rule 2: EMOTIONAL_MISMATCH — celebratory tone during CRISIS state
+    if state == "CRISIS":
+        celebratory = any(w in msg_lower for w in ['congratulations', 'amazing', 'fantastic', 'celebrate', 'wah steady', 'great job', 'well done'])
+        if celebratory:
+            flags.append("EMOTIONAL_MISMATCH: Celebratory language during CRISIS state")
+
+    # Rule 3: DANGEROUS_ADVICE — suggesting to skip or stop medication
+    if any(phrase in msg_lower for phrase in ['stop taking', 'skip your', 'don\'t take your med', 'no need to take']):
+        flags.append("DANGEROUS_ADVICE: Response suggests skipping or stopping medication")
+
+    # Rule 4: SCOPE_VIOLATION — diagnosing conditions
+    if any(phrase in msg_lower for phrase in ['you have diabetes', 'you are diabetic', 'i diagnose', 'your diagnosis']):
+        flags.append("SCOPE_VIOLATION: Response makes diagnostic claims beyond monitoring scope")
+
+    return flags
+
+
 def classify_response_safety(message: str, patient_profile: Dict, hmm_context: Dict, gemini_integration) -> Dict:
     """
     Healthcare safety classifier. Checks 6 dimensions before response reaches patient.
-    Separate Gemini call — independent from the agent reasoning loop.
 
-    FAIL-CLOSED: If the classifier cannot run (API down, error, etc.), the response
-    is blocked and replaced with a safe fallback. Healthcare AI must never fail-open.
+    HYBRID APPROACH:
+    Layer 1: Deterministic pre-checks (regex rules) — fast, offline, guaranteed
+    Layer 2: LLM classifier (Gemini) — nuanced, context-aware
+
+    FAIL-CLOSED: If either layer cannot run, the response is blocked.
     """
     if not message:
         return {"verdict": "SAFE", "flags": []}
 
-    # If Gemini is unavailable, FAIL CLOSED — block the response
+    # Layer 1: Deterministic pre-checks (always run, even without Gemini)
+    rule_flags = _deterministic_safety_precheck(message, hmm_context)
+    if rule_flags:
+        _log_safety_event(patient_profile.get("id", "P001"), "UNSAFE", rule_flags, message)
+        return {"verdict": "UNSAFE", "flags": rule_flags,
+                "corrected_message": SAFETY_FALLBACK_MESSAGE,
+                "method": "deterministic_rules"}
+
+    # Layer 2: LLM classifier (Gemini) — if available
     if not gemini_integration:
         logger.warning("Safety classifier: Gemini unavailable — BLOCKING response (fail-closed)")
         return {"verdict": "UNSAFE", "flags": ["SYSTEM: Safety classifier unavailable, response blocked per fail-closed policy"],

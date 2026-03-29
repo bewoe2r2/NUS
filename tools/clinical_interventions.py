@@ -238,17 +238,32 @@ def _generate_explanation(
     baseline_risk: float,
     intervention_risk: float
 ) -> str:
-    """Generate human-readable explanation of counterfactual"""
-    
-    explanations = {
-        "take_medication": f"Taking your {params.get('medication', 'medication')} now would reduce your crisis risk from {baseline_risk:.1%} to {intervention_risk:.1%} (a reduction of {risk_reduction:.1%}).",
-        
-        "adjust_carbs": f"Reducing carb intake by {params.get('carb_reduction', 0)}g would reduce crisis risk from {baseline_risk:.1%} to {intervention_risk:.1%}.",
-        
-        "increase_activity": f"Adding {params.get('additional_steps', 0)} steps would reduce crisis risk from {baseline_risk:.1%} to {intervention_risk:.1%}."
-    }
-    
-    return explanations.get(intervention, f"This intervention would reduce crisis risk by {risk_reduction:.1%}.")
+    """Generate human-readable explanation of counterfactual with clinical context"""
+
+    med_name = params.get('medication', 'medication')
+
+    if intervention == "take_medication":
+        if baseline_risk >= 0.7:
+            return (f"Your crisis risk is currently very high at {baseline_risk:.0%}. "
+                    f"Taking {med_name} now would bring it down to {intervention_risk:.0%} — "
+                    f"that's a {risk_reduction:.0%} reduction. "
+                    f"{med_name} typically takes 2-4 hours to peak effect. "
+                    f"{'This is strongly recommended to prevent a medical emergency.' if risk_reduction > 0.2 else 'Combined with rest and hydration, this could help stabilize your condition.'}")
+        else:
+            return (f"Taking {med_name} would reduce your crisis risk from {baseline_risk:.0%} to {intervention_risk:.0%}. "
+                    f"This {risk_reduction:.0%} reduction helps keep you in a safer zone.")
+    elif intervention == "adjust_carbs":
+        carbs = params.get('carb_reduction', 30)
+        return (f"Reducing carbohydrate intake by {carbs}g (about one less serving of rice) "
+                f"would lower your crisis risk from {baseline_risk:.0%} to {intervention_risk:.0%}. "
+                f"Consider brown rice or whole grains instead of white rice.")
+    elif intervention == "increase_activity":
+        steps = params.get('additional_steps', 3000)
+        return (f"Adding {steps:,} steps (about a {steps // 100}-minute walk) "
+                f"would reduce your crisis risk from {baseline_risk:.0%} to {intervention_risk:.0%}. "
+                f"Even gentle movement like tai chi helps regulate blood sugar.")
+
+    return f"This intervention would reduce crisis risk from {baseline_risk:.0%} to {intervention_risk:.0%} (a {risk_reduction:.0%} reduction)."
 
 
 def suggest_medication_adjustment_tool(
