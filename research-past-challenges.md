@@ -138,17 +138,21 @@
 
 ---
 
-### 2024 — NUS-NCS Innovation Challenge
+### 2024 — NUS-NCS Innovation Challenge ("Making Travel a Breeze with TransportGPT")
 - **Partner:** NCS Group
-- **Theme:** Smart City / Urban Mobility / Traffic Management
-- **Problem:** Explore cutting-edge traffic management using Large Language Models (LLMs). Integrate LLMs with existing data sources to transform urban mobility and "shape a smarter, greener urban future."
+- **Theme:** Smart City / Urban Mobility / Traffic Management using LLMs
+- **Problem:** Branded as **"Making Travel a Breeze with TransportGPT"** — explore cutting-edge traffic management using Generative AI and Large Language Models (LLMs). Integrate LLMs with existing data sources to transform urban mobility and "shape a smarter, greener urban future."
 - **Prize:** S$5,000 for the winning team.
 - **Open to:** Students from all universities and polytechnics in Singapore.
+- **Kick-off:** 8 February 2024, NUS LT15. Enablement session: 22 February 2024.
 - **Winners:**
-  - Challenge concluded successfully (described as "A Symphony of Talent"). Specific winner names not publicly detailed in available search results.
+  - Challenge concluded successfully (described as "A Symphony of Talent"). Full winner list locked behind NUS MSBA site (403).
+- **Known Finalist Project:**
+  - **Team InnovateX — "TrafficGPT"**: Used LLMs to interpret, predict, and manage crowd control. Tech stack: Google Gemini (LLM), React Native (frontend), Flask (backend), Docker, SQLite, Python. Data from LTA Datamall API and HERE Technologies API. [GitHub repo](https://github.com/J0JIng/TrafficGPT-NUS-NCS-Hackathon-2024) by J0JIng (Jing) and LicongHuang (Huang Licong). Placement unknown.
 - **Sources:**
-  - [NUS MSBA News](https://msba.nus.edu.sg/news/nus-ncs-innovation-challenge-2024-a-symphony-of-talent/)
-  - [NUS MSBA Facebook](https://www.facebook.com/nusmsba/posts/the-nus-ncs-innovation-challenge-2024-has-officially-concluded-after-an-intense-/942081137919845/)
+  - [NUS MSBA News](https://msba.nus.edu.sg/news/nus-ncs-innovation-challenge-2024-a-symphony-of-talent/) *(403)*
+  - [NUS MSBA Facebook](https://www.facebook.com/nusmsba/posts/the-nus-ncs-innovation-challenge-2024-has-officially-concluded-after-an-intense-/942081137919845/) *(403)*
+  - [GitHub — TrafficGPT by Team InnovateX](https://github.com/J0JIng/TrafficGPT-NUS-NCS-Hackathon-2024)
 
 ---
 
@@ -195,7 +199,7 @@
 | 2021 | PSA unboXed | Port/Logistics/Supply Chain | — | Winners unknown (MSBA page blocked by 403) |
 | 2022 | Cargill | Agriculture/Commodities | S$5,000 | 1st: Team Multiverse (computer vision for grain quality) |
 | 2023 | Huawei | Finance/Stock Trading | S$10K/5K/3K | 1st: "404 Not Found", 2nd: "The Wolf of Kent Ridge", 3rd: "V ME 10K" (all MSBA) |
-| 2024 | NCS Group | Smart City/Urban Mobility (LLMs) | S$5,000 | "A Symphony of Talent" — details on MSBA site |
+| 2024 | NCS Group | "TransportGPT" — Urban Mobility with LLMs | S$5,000 | Known finalist: Team InnovateX ("TrafficGPT" — LLM crowd control). Full winners on MSBA site (403) |
 | 2025 | Guru Network | GenAI for Business (incl. Travel) | S$70K–75K pool | Champions: Team AskNgo (AI travel companion) & Team Jiaye; Runner-up: TheAlgorithmicallyChallenged |
 | 2026 | Synapxe + IMDA | Healthcare/Chronic Disease (AI) | S$5,000+ | Ongoing |
 
