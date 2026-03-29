@@ -120,7 +120,7 @@ export default function NurseDashboard() {
             const total = analysisHistory.length;
             const stablePct = Math.round((counts.stable / total) * 100);
             const warningPct = Math.round((counts.warning / total) * 100);
-            const crisisPct = 100 - stablePct - warningPct;
+            const crisisPct = Math.max(0, 100 - stablePct - warningPct);
             return [
                 { name: 'Stable', value: stablePct, fill: '#10b981' },
                 { name: 'Warning', value: warningPct, fill: '#f59e0b' },

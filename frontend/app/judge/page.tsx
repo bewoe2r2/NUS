@@ -26,7 +26,6 @@ import {
     Stethoscope,
     Play,
     Terminal,
-    CheckCircle2,
     Sparkles,
     Calendar,
     Bell,
@@ -230,7 +229,7 @@ export default function JudgePage() {
                 {/* CONTENT */}
                 <div className="flex-1 overflow-y-auto">
                     <div className={`h-full ${activeTab === 'slides' ? '' : 'hidden'}`}>
-                        <SlidesTab />
+                        <SlidesTab isActive={activeTab === 'slides'} />
                     </div>
                     <div className={`h-full ${activeTab === 'overview' ? '' : 'hidden'}`}>
                         <OverviewTab
@@ -1106,11 +1105,11 @@ function ToolDemoTab() {
         const liveTools: Array<{ tool: string; call: string; fn: () => Promise<string> }> = [
             { tool: 'suggest_medication_adjustment', call: 'checkDrugInteraction("P001", "Metformin 1000mg")', fn: async () => {
                 const r = await api.checkDrugInteraction('P001', 'Metformin 1000mg').catch(() => null);
-                return r ? `Interaction check: ${r.interactions_found || 0} interactions found. ${r.has_contraindicated ? 'BLOCKED' : 'Safe to adjust.'}` : 'Dose adjustment checked — no new interactions';
+                return r ? `Interaction check: ${r.interactions_found || 0} interactions found. ${r.has_contraindicated ? 'BLOCKED' : 'Safe to adjust.'}` : '[API unavailable]';
             }},
             { tool: 'set_reminder', call: 'chatWithAgent("Set a reminder for my evening medication at 8pm")', fn: async () => {
                 const r = await api.chatWithAgent('Set a reminder for my evening medication at 8pm', 'P001').catch(() => null);
-                return r?.message?.slice(0, 150) || 'Reminder set: Evening medication at 8:00 PM daily';
+                return r?.message?.slice(0, 150) || '[Agent unavailable — requires Gemini API key]';
             }},
             { tool: 'alert_nurse', call: 'getNurseAlerts()', fn: async () => {
                 const alerts = await api.getNurseAlerts().catch(() => []);
@@ -1118,11 +1117,11 @@ function ToolDemoTab() {
             }},
             { tool: 'alert_family', call: 'chatWithAgent("Send my family an update on my health this week")', fn: async () => {
                 const r = await api.chatWithAgent('Send my family an update on my health this week', 'P001').catch(() => null);
-                return r?.message?.slice(0, 150) || 'Family notification sent with weekly health summary';
+                return r?.message?.slice(0, 150) || '[Agent unavailable — requires Gemini API key]';
             }},
             { tool: 'suggest_activity', call: 'chatWithAgent("Suggest a gentle exercise for me today")', fn: async () => {
                 const r = await api.chatWithAgent('Suggest a gentle exercise for me today considering my age and health', 'P001').catch(() => null);
-                return r?.message?.slice(0, 150) || 'Suggested: 20-min morning tai chi. Est. glucose reduction: 0.5-1.0 mmol/L';
+                return r?.message?.slice(0, 150) || '[Agent unavailable — requires Gemini API key]';
             }},
             { tool: 'award_voucher_bonus', call: 'getVoucher("P001")', fn: async () => {
                 const v = await api.getVoucher('P001').catch(() => null);
@@ -1130,7 +1129,7 @@ function ToolDemoTab() {
             }},
             { tool: 'escalate_to_doctor', call: 'chatWithAgent("I think I need to see my doctor urgently")', fn: async () => {
                 const r = await api.chatWithAgent('I think I need to see my doctor urgently, my readings have been high', 'P001').catch(() => null);
-                return r?.message?.slice(0, 150) || 'Escalation logged — doctor notified';
+                return r?.message?.slice(0, 150) || '[Agent unavailable — requires Gemini API key]';
             }},
             { tool: 'request_medication_video', call: 'getMedications("P001")', fn: async () => {
                 const meds = await api.getMedications('P001').catch(() => []);
@@ -1848,11 +1847,12 @@ const PRESENTATION_SLIDES = [
     },
 ];
 
-function SlidesTab() {
+function SlidesTab({ isActive = true }: { isActive?: boolean }) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const total = PRESENTATION_SLIDES.length;
 
     useEffect(() => {
+        if (!isActive) return;
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -1865,7 +1865,7 @@ function SlidesTab() {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [total]);
+    }, [total, isActive]);
 
     const slide = PRESENTATION_SLIDES[currentSlide];
 

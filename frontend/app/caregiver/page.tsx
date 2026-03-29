@@ -513,7 +513,7 @@ function CaregiverDashboard() {
             if (result?.success === true) {
                 setAlerts((prev) =>
                     prev.map((a) =>
-                        a.id === alertId ? { ...a, responded: true, response_action: action } : a
+                        String(a.id) === alertId ? { ...a, responded: true, response_action: action } : a
                     )
                 );
             }
