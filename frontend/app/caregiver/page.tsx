@@ -38,6 +38,7 @@ interface StreakData {
 }
 
 interface BurdenData {
+    burden_score?: number;
     score?: number;
     level?: string;
     message?: string;
@@ -109,6 +110,8 @@ function formatTime(ts: string | number): string {
 
 function burdenMessage(level: string): string {
     switch (level) {
+        case "critical":
+            return "We are batching non-urgent alerts into a daily digest to give you a break.";
         case "high":
             return "Take a break. We will batch alerts for you.";
         case "moderate":
@@ -348,13 +351,15 @@ function BurdenCard({ burden, isLoading = true }: { burden: BurdenData | null; i
     }
 
     const level = typeof burden.level === 'string' ? burden.level : "low";
-    const safeScore = typeof burden.score === 'number' ? burden.score : null;
+    const rawScore = burden.burden_score ?? burden.score;
+    const safeScore = typeof rawScore === 'number' ? rawScore : null;
     const safeMessage = typeof burden.message === 'string' ? burden.message : null;
     const safeRecommendation = typeof burden.recommendation === 'string' ? burden.recommendation : null;
     const config: Record<string, { bg: string; bar: string; icon: string }> = {
         low: { bg: "bg-success-50 border-success-200", bar: "bg-success-solid", icon: "M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" },
         moderate: { bg: "bg-warning-50 border-warning-200", bar: "bg-warning-solid", icon: "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" },
         high: { bg: "bg-error-50 border-error-200", bar: "bg-error-solid", icon: "M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" },
+        critical: { bg: "bg-error-50 border-error-200", bar: "bg-error-solid", icon: "M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" },
     };
     const cfg = config[level] || config.low;
 
@@ -383,11 +388,11 @@ function BurdenCard({ burden, isLoading = true }: { burden: BurdenData | null; i
                     <div className="flex-1 h-2.5 bg-white/60 rounded-full overflow-hidden">
                         <div
                             className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
-                            style={{ width: `${Math.min(safeScore * 100, 100)}%` }}
+                            style={{ width: `${Math.min(safeScore > 1 ? safeScore : safeScore * 100, 100)}%` }}
                         />
                     </div>
                     <span className="text-xs font-medium text-neutral-500 tabular-nums w-8 text-right">
-                        {safeScore <= 0.33 ? "Low" : safeScore <= 0.66 ? "Mid" : "High"}
+                        {(safeScore > 1 ? safeScore / 100 : safeScore) <= 0.33 ? "Low" : (safeScore > 1 ? safeScore / 100 : safeScore) <= 0.66 ? "Mid" : "High"}
                     </span>
                 </div>
             )}
